@@ -33,6 +33,20 @@ Raw sensor values stay below the `PhysicalState` boundary. See `Docs/ARCHITECTUR
 
 This is a trimmed extract and has not been opened in the Unity editor since extraction. Source files were copied unchanged, and the retained tests were selected because they reference no game or app namespaces. `Packages/manifest.json` is included for reference. A full Unity project (`ProjectSettings`, scenes) is not, so import the `Assets` folder into a Unity 6 project to compile it.
 
+Checks run on 13 Nov 2026 (Linux, branch `track3/phase0-green`):
+
+| Check | Result |
+|---|---|
+| `Tools/TestHarness` (Unity-free suites) | 21 suites, 327 checks, 0 failed. Built as net10.0 with LangVersion 9 because only .NET 10 was available; not yet re-run on net9.0/Windows |
+| Firmware semantic core host test (`g++ -std=c++17`) | 53 checks, 0 failed |
+| `Tools/esp32_sim.py`, all non-interactive scenarios | Emit well-formed contract v1 datagrams |
+
+Not run: Unity, the ESP32 firmware compile, the physical station, the headset. Vortex does not yet estimate motion or trajectory; that is the Track 3 work, tracked in [`Docs/TRACK3_PLAN.md`](Docs/TRACK3_PLAN.md).
+
+## Origin
+
+The code and most docs come from PHYS-XR, a PC-VR horror game (*The Presence*). Docs still refer to "PHYS-XR", "the game" and "The Hollow" (the ghost); they are rebranded as they are revised. The firmware's dashboard variant (`Firmware/physxr-unified`) needs a local `secrets.h`; see `Firmware/README.md`.
+
 ## Credit
 
 Extracted from PHYS-XR by Arnav Jain, Arya M and Nandhitha Chowdary Surapaneni, Manipal Institute of Technology. MIT licensed.

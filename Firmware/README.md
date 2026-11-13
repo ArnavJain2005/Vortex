@@ -8,6 +8,7 @@ ESP32 + VL53L0X (ToF) + HC-SR04 (ultrasonic) + MPU6050, sending the semantic
 | `physxr_station/physxr_station.ino` | The sketch: drivers, cooperative scheduler, serial output |
 | `physxr_station/physxr_semantics.h` | Portable semantic core (proximity classes, fusion, disturbance detector, line format); no Arduino dependency |
 | `tests/semantics_test.cpp` | Host test of the semantic core (runs on a PC, no ESP32) |
+| `physxr-unified/physxr_unified/` | Later variant with a Wi-Fi dashboard soft-AP. Not built, run or tested (see `Docs/TESTING_AND_EVALUATION.md`). Needs `secrets.h`: copy `secrets.example.h` to `secrets.h` (gitignored) and set the password before compiling. |
 
 > **Status (26 Oct 2026).** The project team has accepted the physical hardware system: the VL53L0X time-of-flight and MPU6050 sensors are calibrated and functional, and the full physical integration was demonstrated on Meta Quest 2 and Meta Quest 3 (team-confirmed). The station runs `physxr_station` firmware 1.0.0 (`#HELLO proto=1;fw=1.0.0;dev=phys-xr-01`, I²C on SCL 23), and 15 live runs from 22-24 Oct are logged in [`Evidence/`](../Evidence/README.md). The text below is kept as the record of the 21 Oct bring-up.
 
