@@ -365,8 +365,20 @@ static const char* const DEVICE_ID = "phys-xr-01";  // Unity's expected device I
 static const uint32_t SERIAL_BAUD = 115200;
 // USB belongs to Unity. The other laptop joins this ESP32 access point and
 // opens http://192.168.4.1/ in a browser; it never opens the USB COM port.
-static const char* const DASHBOARD_SSID = "PHYS-XR-Station";
-static const char* const DASHBOARD_PASSWORD = "PhysXRdemo2026"; // >= 8 characters; change for your demo
+// Soft-AP credentials live in secrets.h (gitignored). Copy
+// secrets.example.h to secrets.h next to this sketch and set a password of
+// at least 8 characters before compiling.
+#if __has_include("secrets.h")
+#include "secrets.h"
+#else
+#error "Missing secrets.h: copy secrets.example.h to secrets.h in this sketch folder and set DASHBOARD_PASSWORD."
+#endif
+#ifndef DASHBOARD_SSID_VALUE
+#define DASHBOARD_SSID_VALUE "PHYS-XR-Station"
+#endif
+static const char* const DASHBOARD_SSID = DASHBOARD_SSID_VALUE;
+static const char* const DASHBOARD_PASSWORD = DASHBOARD_PASSWORD_VALUE;
+static_assert(sizeof(DASHBOARD_PASSWORD_VALUE) - 1 >= 8, "DASHBOARD_PASSWORD_VALUE must be at least 8 characters (WPA2)");
 
 static const uint8_t PIN_TRIG = 25;
 static const uint8_t PIN_ECHO = 26;

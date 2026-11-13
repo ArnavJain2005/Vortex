@@ -94,3 +94,10 @@ __pycache__/
 # (curated logs live under Evidence/; builds are uploaded to GitHub Releases)
 /*.log
 /*.zip
+
+# Vortex additions
+# Firmware secrets (copy secrets.example.h -> secrets.h)
+Firmware/**/secrets.h
+# .NET test harness build output
+Tools/TestHarness/bin/
+Tools/TestHarness/obj/
