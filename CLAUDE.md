@@ -50,6 +50,10 @@ physical station exist only on his machine. Wants direct, concise answers; say p
   parameters with a documented default and a note.
 - Small commits with clear messages on a feature branch. Never force-push or rewrite `main`. PR for
   anything that changes a contract or invariant.
+- Every PR gets a detailed description (Arnav's standing request, 13 Nov 2026): why the change exists,
+  what changed file by file, contract/invariant impact (or "none"), tests run with exact counts and the
+  environment, what was not verified, any steps Arnav must run on Windows/hardware with expected output,
+  and the `Docs/TRACK3_PLAN.md` rows it updates.
 - Ask before: changing contract v1, renaming public types or rule IDs, deleting files, adding third-party
   dependencies, touching firmware pin assignments, publishing anything.
 - No secrets in the repo (firmware Wi-Fi password lives in gitignored `secrets.h`; see
