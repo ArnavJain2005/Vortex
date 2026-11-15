@@ -1,0 +1,127 @@
+"""Cross-check vortex/scoring.py against a separately pip-installed evo (GPL-3; not a dependency).
+
+Builds a SYNTHETIC ground-truth / estimate pair (seeded) that exercises every part of the pipeline:
+different sample counts and a 1 ms timestamp offset (association), a rigid transform and a 2% scale
+error (alignment), random-walk drift and noise (APE), and perturbed estimate orientation (RPE).
+Runs evo_ape / evo_rpe on the TUM files and our scorer on the same files, and writes
+Docs/EVO_CROSSCHECK.md.
+
+Usage: python tools/crosscheck_evo.py --evo-bin <folder with evo_ape(.exe), evo_rpe(.exe)> [--seed 0]
+"""
+import argparse
+import os
+import re
+import subprocess
+import sys
+import tempfile
+import time
+
+import numpy as np
+
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, ROOT)
+from vortex import scoring  # noqa: E402
+from vortex.geometry import quat_from_rotvec, quat_to_matrix  # noqa: E402
+
+
+def make_pair(seed):
+    rng = np.random.default_rng(seed)
+    t0 = 1403636579.758555392
+    n_gt = 12000                                     # 60 s at 200 Hz
+    t_gt = t0 + np.arange(n_gt) * 0.005
+    s = t_gt - t0
+    p_gt = np.column_stack([4 * np.sin(0.15 * s), 3 * np.sin(0.1 * s + 1), 1 + 0.5 * np.sin(0.05 * s)])
+    rv = np.column_stack([0.2 * np.sin(0.7 * s), 0.15 * np.cos(0.5 * s), 0.3 * s])
+    R_gt = quat_to_matrix(quat_from_rotvec(rv))
+    gt = scoring.Traj(t_gt, p_gt, R_gt)
+
+    idx = np.arange(5, n_gt - 7)                    # est starts later, ends earlier
+    t_est = t_gt[idx] + 0.001
+    drift = np.cumsum(rng.normal(0, 0.002, (len(idx), 3)), axis=0)
+    p = p_gt[idx] + drift + rng.normal(0, 0.01, (len(idx), 3))
+    R_off = quat_to_matrix(quat_from_rotvec(np.array([0.1, -0.2, 0.9])))
+    t_off = np.array([2.0, -1.0, 0.5])
+    p_est = 1.02 * p @ R_off.T + t_off
+    R_noise = quat_to_matrix(quat_from_rotvec(rng.normal(0, 0.01, (len(idx), 3))))
+    R_est = R_off @ R_gt[idx] @ R_noise
+    return gt, scoring.Traj(t_est, p_est, R_est)
+
+
+def write_tum(path, tr):
+    q = scoring.matrices_to_quat_xyzw(tr.R)
+    with open(path, "w", newline="\n") as f:
+        for t, p, qq in zip(tr.t, tr.p, q):
+            f.write("%.9f %.9f %.9f %.9f %.9f %.9f %.9f %.9f\n" % (t, *p, *qq))
+
+
+def run_evo(exe, args):
+    p = subprocess.run([exe] + args + ["--no_warnings"], capture_output=True, text=True)
+    if p.returncode != 0:
+        raise RuntimeError("%s failed: %s" % (exe, p.stderr[-800:] or p.stdout[-800:]))
+    out = {}
+    for key in ("rmse", "mean", "max"):
+        m = re.search(r"^\s*%s\s+([0-9.eE+-]+)\s*$" % key, p.stdout, re.M)
+        out[key] = float(m.group(1)) if m else None
+    return out
+
+
+def main(argv=None):
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--evo-bin", required=True)
+    ap.add_argument("--seed", type=int, default=0)
+    a = ap.parse_args(argv)
+    ext = ".exe" if os.name == "nt" else ""
+    ape_exe = os.path.join(a.evo_bin, "evo_ape" + ext)
+    rpe_exe = os.path.join(a.evo_bin, "evo_rpe" + ext)
+    evo_ver = subprocess.run([os.path.join(a.evo_bin, "python" + ext), "-c", "import evo;print(evo.__version__)"],
+                             capture_output=True, text=True).stdout.strip() or "unknown"
+
+    gt, est = make_pair(a.seed)
+    d = tempfile.mkdtemp(prefix="vortex_evo_")
+    gpath, epath = os.path.join(d, "gt.txt"), os.path.join(d, "est.txt")
+    write_tum(gpath, gt)
+    write_tum(epath, est)
+    ref, _ = scoring.read_tum(gpath)
+    e, _ = scoring.read_tum(epath)
+
+    cases = [
+        ("APE, no alignment", ape_exe, [], dict(align="none"), "ape"),
+        ("APE, -a (SE3)", ape_exe, ["-a"], dict(align="se3"), "ape"),
+        ("APE, -as (Sim3)", ape_exe, ["-as"], dict(align="sim3"), "ape"),
+        ("APE, --align_origin", ape_exe, ["--align_origin"], dict(align="origin"), "ape"),
+        ("APE, -a --n_to_align 2000", ape_exe, ["-a", "--n_to_align", "2000"], dict(align="se3", n_to_align=2000), "ape"),
+        ("RPE, delta 1 frame (evo default)", rpe_exe, ["--delta", "1", "--delta_unit", "f"], dict(align="none"), "rpe1"),
+        ("RPE, delta 200 frames, -a", rpe_exe, ["-a", "--delta", "200", "--delta_unit", "f"], dict(align="se3"), "rpe200"),
+        ("RPE, delta 200 frames, -as", rpe_exe, ["-as", "--delta", "200", "--delta_unit", "f"], dict(align="sim3"), "rpe200"),
+    ]
+    rows = []
+    worst = 0.0
+    for name, exe, flags, kw, which in cases:
+        ev = run_evo(exe, ["tum", gpath, epath] + flags)
+        r = scoring.score(ref, e, rpe_deltas=(1, 200), **kw)
+        ours = r["ape"] if which == "ape" else r["rpe"]["1" if which == "rpe1" else "200"]
+        diffs = [abs(ours[k] - ev[k]) for k in ("rmse", "mean", "max") if ev[k] is not None]
+        worst = max(worst, max(diffs))
+        rows.append((name, " ".join(flags) or "-", ev, ours, max(diffs)))
+        print("%-34s evo rmse %.9f  ours %.9f  max |diff| %.2e" % (name, ev["rmse"], ours["rmse"], max(diffs)))
+
+    L = ["# evo cross-check (generated by `tools/crosscheck_evo.py`; do not edit by hand)", "",
+         "SYNTHETIC trajectories (seed %d): 60 s at 200 Hz; estimate with 1 ms timestamp offset, different "
+         "sample count, rigid transform, 2%% scale error, random-walk drift, noise and orientation noise." % a.seed,
+         "evo %s (pip, separate venv; GPL-3, not a dependency), Python %s, %s, %s." % (
+             evo_ver, sys.version.split()[0], sys.platform, time.strftime("%Y-%m-%d")),
+         "", "| Case | evo flags | evo RMSE | ours RMSE | evo max | ours max | max abs diff (rmse, mean, max) |",
+         "|---|---|---|---|---|---|---|"]
+    for name, flags, ev, ours, md in rows:
+        L.append("| %s | `%s` | %.9f | %.9f | %.9f | %.9f | %.1e |" % (
+            name, flags, ev["rmse"], ours["rmse"], ev["max"], ours["max"], md))
+    L += ["", "Worst absolute difference: %.1e m. evo prints 6 significant digits, so differences "
+          "below ~1e-6 relative are print rounding." % worst, ""]
+    with open(os.path.join(ROOT, "Docs", "EVO_CROSSCHECK.md"), "w", encoding="utf-8", newline="\n") as f:
+        f.write("\n".join(L))
+    print("worst |diff| %.2e; wrote Docs/EVO_CROSSCHECK.md" % worst)
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())
