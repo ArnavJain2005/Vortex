@@ -58,7 +58,10 @@ concise answers; say plainly what was not verified.
 
 ```
 pip install -e .[dev]
-pytest                                        # 16 Nov 2026: 86 passed (Windows, Python 3.14)
+pytest                                        # 16 Nov 2026: 100 passed (Windows, Python 3.14)
+python -S main.py IMU.csv estimated_trajectory.txt                       # submission entry point (stdlib only)
+python -S benchmark.py --runs 15 --gate [--tag NAME --commit SHA]        # writes Docs/budget/<tag>.json; then:
+python benchmark.py --render                                             # rebuilds Docs/BUDGET.md (never hand-edit)
 python -m vortex check --synthetic
 python -S tools/measure_floor.py --runs 30 [--cbin floor_c.exe]   # 15 Nov 2026: Win 3.13/3.14, WSL2 3.12 (Linux needs /usr/bin/time)
 python tools/measure_floor.py --render                          # rebuilds Docs/FLOOR.md from Docs/floor/*.json
