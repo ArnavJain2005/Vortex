@@ -48,8 +48,9 @@ Around the witnesses:
 Every row of the input still produces exactly one output pose: during dropouts the estimator coasts on
 the last trusted rates, and after failure the forecaster takes over.
 
-**Built to the scoring matrix.** The estimator core is C-style C++ (`main.cpp`, standard library only)
-for the 40 efficiency points, with Python as the reference and test oracle. Because the task is offline,
+**Built to the scoring matrix.** The official entry point is a standalone, lean `main.py` (pure Python,
+no numpy, streaming, fixed-size state) designed for 100 us of compute per IMU sample, targeting the 40
+efficiency points. An optional C-style C++ core mirrors it, for use only if the organisers accept C++. Because the task is offline,
 the file is processed twice, forwards and backwards, and the passes are fused: drift is pinned at both
 take-off and landing, and every 2 s dropout is bracketed by good data on both sides (waypoints 30,
 dropouts 10). For the blind 5 s (20), a self-testing forecaster repeatedly predicts 5 s ahead during the
@@ -100,7 +101,8 @@ python main.py path/to/imu0/data.csv estimated_trajectory.txt
 ```
 
 Output: `timestamp tx ty tz qx qy qz qw`, timestamps in seconds, space-separated, one line per input IMU
-row.
+row. This file is what the organisers score (evo against hidden ground truth); there is no scored front
+end. A replay page (planned, not built) will visualise a run for the walkthrough video and the deck.
 
 ## Demo: live jamming dial on a Galaxy S24
 

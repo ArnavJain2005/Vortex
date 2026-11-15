@@ -22,6 +22,12 @@ healthy opening seconds, and a jamming meter sets the trust of each. No witness 
 alone must bound drift; every other witness is behind a switch and stays on only if `score.py` shows a
 gain on sequences we did not tune on. Full list and plan: `Docs/TRACK3_PLAN.md`.
 
+**Entry point.** Slide 14 asks for a standalone Python script, so `main.py` is the official entry point:
+pure Python, no numpy, streaming, fixed-size state, built for 100 us of compute per IMU sample. Analysis
+tools (`score.py`, `benchmark.py`, degradation, plots) may use numpy; `main.py` may not. An optional
+C-style C++ `main.cpp` mirrors it and is submitted only if the organisers accept C++. No front end is
+scored; the replay page is presentation only.
+
 The S24 loader and live stations (`vortex/data/phone.py`, `vortex/stations.py`) and the ADVIO loader
 are from the earlier direction: keep them working as jury-demo material, do not extend them. The old
 ESP32 station code was deleted on 15 Nov 2026 (it remains in git history before that date).
