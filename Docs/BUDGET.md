@@ -10,36 +10,42 @@ Timing varies about +-15% between reruns on the same laptop.
 
 | Run | Commit | Date | OS | CPU | Python | Input | Rows |
 |---|---|---|---|---|---|---|---|
-| linux-wsl2-py312 | a997d68 | 2026-11-15 | Linux 5.15.167.4-microsoft-standard-WSL2 | Intel(R) Core(TM) i7-14650HX | 3.12.3 | SYNTHETIC (tools/synth_euroc.py, seed 0) | 36000 (180 s) |
-| windows-py313 | a997d68 | 2026-11-16 | Windows 11 | Intel(R) Core(TM) i7-14650HX | 3.13.5 | SYNTHETIC (tools/synth_euroc.py, seed 0) | 36000 (180 s) |
-| windows-py314 | a997d68 | 2026-11-16 | Windows 11 | Intel(R) Core(TM) i7-14650HX | 3.14.7 | SYNTHETIC (tools/synth_euroc.py, seed 0) | 36000 (180 s) |
+| linux-wsl2-py312 | a4f25e3 | 2026-11-15 | Linux 5.15.167.4-microsoft-standard-WSL2 | Intel(R) Core(TM) i7-14650HX | 3.12.3 | SYNTHETIC (tools/synth_euroc.py, seed 0) | 36000 (180 s) |
+| windows-py313 | a4f25e3 | 2026-11-16 | Windows 11 | Intel(R) Core(TM) i7-14650HX | 3.13.5 | SYNTHETIC (tools/synth_euroc.py, seed 0) | 36000 (180 s) |
+| windows-py314 | a4f25e3 | 2026-11-16 | Windows 11 | Intel(R) Core(TM) i7-14650HX | 3.14.7 | SYNTHETIC (tools/synth_euroc.py, seed 0) | 36000 (180 s) |
 
 ## Summary: `python -S main.py` against the budget
 
 | Run | us per row | Left of 100 (of 50 target) | Wall ms per IMU-s | CPU ms per IMU-s | Left of 20 ms | Peak RSS MB | Peak private MB | tracemalloc KB | Left of 4 MB | Output |
 |---|---|---|---|---|---|---|---|---|---|---|
-| linux-wsl2-py312 | 2.12 | 97.9 (47.9) | 0.42 | 0.39 | 19.6 | 8.96 | - | 143.9 | 3952 KB | PASS |
-| windows-py313 | 3.24 | 96.8 (46.8) | 0.65 | 0.61 | 19.4 | 10.19 | 5.51 | 148.0 | 3948 KB | PASS |
-| windows-py314 | 2.93 | 97.1 (47.1) | 0.59 | 0.61 | 19.4 | 10.57 | 6.07 | 267.9 | 3828 KB | PASS |
+| linux-wsl2-py312 | 5.07 | 94.9 (44.9) | 1.01 | 0.67 | 19.0 | 10.14 | - | 158.7 | 3937 KB | PASS |
+| windows-py313 | 5.67 | 94.3 (44.3) | 1.13 | 1.13 | 18.9 | 11.29 | 6.36 | 162.8 | 3933 KB | PASS |
+| windows-py314 | 7.05 | 93.0 (43.0) | 1.41 | 1.39 | 18.6 | 11.66 | 6.88 | 282.7 | 3813 KB | PASS |
 
 ## Stages (in-process, cumulative, median us per row)
 
 | Run | Stage | us per row | min |
 |---|---|---|---|
-| linux-wsl2-py312 | parse (read, split, 6 floats, timestamp) | 1.30 | 1.18 |
-| linux-wsl2-py312 | parse + write (identity poses) | 2.15 | 1.93 |
-| windows-py313 | parse (read, split, 6 floats, timestamp) | 1.58 | 1.48 |
-| windows-py313 | parse + write (identity poses) | 2.31 | 2.20 |
-| windows-py314 | parse (read, split, 6 floats, timestamp) | 1.59 | 1.54 |
-| windows-py314 | parse + write (identity poses) | 2.35 | 2.27 |
+| linux-wsl2-py312 | parse (read, split, 6 floats, timestamp) | 1.16 | 1.11 |
+| linux-wsl2-py312 | parse + write (identity poses) | 1.80 | 1.71 |
+| linux-wsl2-py312 | parse + init + strapdown integrator | 2.34 | 2.14 |
+| linux-wsl2-py312 | parse + init + strapdown integrator + write (full main.py) | 3.50 | 3.07 |
+| windows-py313 | parse (read, split, 6 floats, timestamp) | 1.93 | 1.79 |
+| windows-py313 | parse + write (identity poses) | 2.87 | 2.74 |
+| windows-py313 | parse + init + strapdown integrator | 3.59 | 3.21 |
+| windows-py313 | parse + init + strapdown integrator + write (full main.py) | 4.90 | 4.59 |
+| windows-py314 | parse (read, split, 6 floats, timestamp) | 1.95 | 1.84 |
+| windows-py314 | parse + write (identity poses) | 3.05 | 2.70 |
+| windows-py314 | parse + init + strapdown integrator | 4.03 | 3.70 |
+| windows-py314 | parse + init + strapdown integrator + write (full main.py) | 5.38 | 5.00 |
 
 ## Passes
 
 | Run | Pass | us per row |
 |---|---|---|
-| linux-wsl2-py312 | forward (single pass; no smoother yet) | 2.15 |
-| windows-py313 | forward (single pass; no smoother yet) | 2.31 |
-| windows-py314 | forward (single pass; no smoother yet) | 2.35 |
+| linux-wsl2-py312 | forward (single pass; no smoother yet) | 3.50 |
+| windows-py313 | forward (single pass; no smoother yet) | 4.90 |
+| windows-py314 | forward (single pass; no smoother yet) | 5.38 |
 
 ## Witnesses
 
@@ -57,9 +63,9 @@ None implemented yet.
 
 | Run | Command | us per row | Wall ms per IMU-s | Peak RSS MB |
 |---|---|---|---|---|
-| linux-wsl2-py312 | `python -S main.py` | 2.12 | 0.42 | 8.96 |
-| linux-wsl2-py312 | `python main.py` | 2.50 | 0.50 | 10.25 |
-| windows-py313 | `python -S main.py` | 3.24 | 0.65 | 10.19 |
-| windows-py313 | `python main.py` | 3.39 | 0.68 | 11.01 |
-| windows-py314 | `python -S main.py` | 2.93 | 0.59 | 10.57 |
-| windows-py314 | `python main.py` | 4.12 | 0.82 | 14.05 |
+| linux-wsl2-py312 | `python -S main.py` | 5.07 | 1.01 | 10.14 |
+| linux-wsl2-py312 | `python main.py` | 5.11 | 1.02 | 11.45 |
+| windows-py313 | `python -S main.py` | 5.67 | 1.13 | 11.29 |
+| windows-py313 | `python main.py` | 6.06 | 1.21 | 12.05 |
+| windows-py314 | `python -S main.py` | 7.05 | 1.41 | 11.66 |
+| windows-py314 | `python main.py` | 8.36 | 1.67 | 15.19 |
