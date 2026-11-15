@@ -4,7 +4,7 @@
 
 <br>
 
-<a href="https://research.samsung.com/"><img src="assets/samsung-research.png" alt="Samsung Research (R&amp;D)" width="220"></a>
+<a href="https://research.samsung.com/"><img src="assets/samsung-research-card.svg" alt="Samsung Research (R&amp;D)" width="220"></a>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 <a href="https://www.samsungprism.com/"><img src="assets/samsung-prism.png" alt="Samsung PRISM" width="125"></a>
 
