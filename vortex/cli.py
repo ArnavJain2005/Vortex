@@ -4,6 +4,7 @@
     python -m vortex baselines --advio data/advio --seq 1 [--blackout 60 5] [--out results]
     python -m vortex baselines --synthetic [--seed 0]
     python -m vortex check --phone data/phone/walk-01 [--checkpoints data/phone/checkpoints.csv]
+    python -m vortex station [--source auto|phone|synthetic] [--seconds 60] [--save data/phone/live-01]
 """
 
 from __future__ import annotations
@@ -11,11 +12,12 @@ from __future__ import annotations
 import argparse
 import json
 import sys
+import time
 from pathlib import Path
 
 import numpy as np
 
-from . import baselines, metrics
+from . import baselines, metrics, stations
 from .data import advio, phone, synthetic
 from .trajectory_io import write_tum
 from .types import Sequence
@@ -53,7 +55,18 @@ def main(argv: list[str] | None = None) -> int:
     b.add_argument("--out", type=Path, default=Path("results"), help="output folder (default results/)")
     b.add_argument("--no-plot", action="store_true")
 
+    st = sub.add_parser("station", help="run a live sensor station: the phone (S24) if connected, else synthetic")
+    st.add_argument("--source", choices=["auto", "phone", "synthetic"], default="auto",
+                    help="auto: wait for the phone, fall back to synthetic (default)")
+    st.add_argument("--port", type=int, default=8000, help="HTTP port the phone pushes to (default 8000)")
+    st.add_argument("--wait", type=float, default=30.0, help="seconds to wait for the phone (default 30)")
+    st.add_argument("--seconds", type=float, default=0.0, help="stop after this long; 0 = until Ctrl+C")
+    st.add_argument("--save", type=Path, help="save the stream in Sensor Logger layout to this folder")
+    st.add_argument("--fast", action="store_true", help="synthetic only: do not pace in real time")
+
     args = ap.parse_args(argv)
+    if args.cmd == "station":
+        return _station(args)
     if args.phone is not None:
         if args.cmd != "check":
             ap.error("phone recordings have no ground-truth trajectory, so only 'check' works on them for now")
@@ -135,6 +148,64 @@ def _check_phone(rec: "phone.PhoneRecording", checkpoints_path: Path | None) -> 
               f"never annotated {missing or 'none'}; annotations with no checkpoint {unknown or 'none'}")
     ok = 9.3 < np.median(acc_norm) < 10.3 and bool(spans)
     print("              OK: recording looks usable." if ok else "              WARNING: see the lines above.")
+    return 0
+
+
+def _station(args: argparse.Namespace) -> int:
+    station: stations.SensorStation | None = None
+    if args.source in ("auto", "phone"):
+        phone_st = stations.PhoneStation(port=args.port)
+        phone_st.on_connect(lambda s: print(f"[station] phone connected: device {s.device}, session {s.session}"))
+        phone_st.start()
+        print(f"[station] phone station listening. In Sensor Logger: Settings > Data Streaming > HTTP Push,")
+        print(f"          URL {phone_st.push_url()} , then start a recording. Phone and computer must share a network.")
+        print(f"[station] waiting up to {args.wait:.0f} s for the phone...")
+        if stations.wait_for_phone(phone_st, args.wait):
+            station = phone_st
+        else:
+            phone_st.stop()
+            if args.source == "phone":
+                print("[station] no phone connected. Check the URL, the shared Wi-Fi, and 'Tap to Test Pushing'.")
+                return 1
+            print("[station] no phone connected; using the synthetic station.")
+    if station is None:
+        station = stations.SyntheticStation(duration=max(args.seconds, 60.0), realtime=not args.fast).start()
+        print("[station] synthetic station running (walking sequence with exact ground truth).")
+
+    samples: list[stations.ImuSample] = []
+    was_connected = True
+    t_start = time.monotonic()
+    try:
+        while True:
+            time.sleep(0.05 if args.fast else 1.0)
+            samples.extend(station.read())
+            s = station.status()
+            if s.source == "phone" and s.connected != was_connected:
+                print("[station] phone reconnected" if s.connected else
+                      f"[station] phone quiet for {station.quiet_after_s:g} s (disconnected or recording stopped)")
+                was_connected = s.connected
+            if samples and not args.fast:
+                last = samples[-1]
+                rate = f"{s.rate_hz:6.1f} Hz" if s.rate_hz else "   -   "
+                print(f"[{s.source}] {'connected' if s.connected else 'quiet    '} {rate} samples {len(samples):7d}  "
+                      f"|accel| {np.linalg.norm(last.accel):5.2f} m/s^2  |gyro| {np.linalg.norm(last.gyro):5.2f} rad/s")
+            elapsed = time.monotonic() - t_start
+            if (args.seconds and elapsed >= args.seconds) or (
+                isinstance(station, stations.SyntheticStation) and station.finished and station._queue.empty()
+            ):
+                break
+    except KeyboardInterrupt:
+        print()
+    finally:
+        station.stop()
+        samples.extend(station.read())
+
+    s = station.status()
+    print(f"[station] stopped: {len(samples)} samples from {s.source} ({s.device or 'no device'}); "
+          f"sensors seen: {sorted(s.sensors_seen) or 'none'}")
+    if args.save and len(samples) > 1:
+        out = stations.save_as_sensor_logger(stations.samples_to_imu(samples), args.save, device=s.device or s.source)
+        print(f"[station] saved to {out}. Check it with: python -m vortex check --phone {out}")
     return 0
 
 

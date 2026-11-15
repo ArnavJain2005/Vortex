@@ -138,23 +138,38 @@ def read_checkpoints(path: str | Path) -> dict[str, np.ndarray]:
     return {str(r["name"]).strip(): np.array([r["x"], r["y"], r["z"]], dtype=float) for _, r in df.iterrows()}
 
 
-def still_windows(imu: ImuData, window_s: float = 1.0, gyro_thresh: float = 0.05, acc_thresh: float = 0.3) -> list:
-    """(start, end) spans where the phone is at rest: low rotation rate and |accel| close to g."""
+def still_windows(
+    imu: ImuData, window_s: float = 1.0, gyro_thresh: float = 0.1, acc_std_thresh: float = 0.2
+) -> list[tuple[float, float]]:
+    """(start, end) spans of at least window_s where the phone is at rest.
+
+    Judged on window_s moving averages, so per-sample sensor noise does not break a still period:
+    mean |gyro| below gyro_thresh (rad/s), standard deviation of |accel| below acc_std_thresh (m/s^2),
+    and mean |accel| within 0.5 m/s^2 of g. Thresholds are named defaults, not calibrated values.
+    """
     dt = float(np.median(np.diff(imu.t)))
-    n = max(1, int(round(window_s / dt)))
-    gyro_n = np.linalg.norm(imu.gyro, axis=1)
-    acc_dev = np.abs(np.linalg.norm(imu.accel, axis=1) - 9.80665)
-    still = (gyro_n < gyro_thresh) & (acc_dev < acc_thresh)
-    spans, start = [], None
-    for i, s in enumerate(still):
-        if s and start is None:
-            start = i
-        elif not s and start is not None:
-            if i - start >= n:
-                spans.append((float(imu.t[start]), float(imu.t[i - 1])))
-            start = None
-    if start is not None and len(still) - start >= n:
-        spans.append((float(imu.t[start]), float(imu.t[-1])))
+    n = max(2, int(round(window_s / dt)))
+    if len(imu.t) < n:
+        return []
+    k = np.ones(n) / n
+    # Statistics over every full window [w, w + n); a sample is still if any still window covers it.
+    gyro_mean = np.convolve(np.linalg.norm(imu.gyro, axis=1), k, mode="valid")
+    acc_n = np.linalg.norm(imu.accel, axis=1)
+    acc_mean = np.convolve(acc_n, k, mode="valid")
+    acc_std = np.sqrt(np.maximum(np.convolve(acc_n**2, k, mode="valid") - acc_mean**2, 0.0))
+    win_still = (gyro_mean < gyro_thresh) & (acc_std < acc_std_thresh) & (np.abs(acc_mean - 9.80665) < 0.5)
+    still = np.convolve(win_still.astype(float), np.ones(n), mode="full")[: len(imu.t)] > 0
+    spans, i = [], 0
+    while i < len(still):
+        if still[i]:
+            j = i
+            while j + 1 < len(still) and still[j + 1]:
+                j += 1
+            if j - i + 1 >= n:
+                spans.append((float(imu.t[i]), float(imu.t[j])))
+            i = j + 1
+        else:
+            i += 1
     return spans
 
 
