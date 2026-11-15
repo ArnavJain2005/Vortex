@@ -26,7 +26,9 @@ PRE-REGISTERED DECISION RULE (fixed 16 Nov 2026, before any real EuRoC data was 
   the submission: that also needs a gain in score.py on sequences we did not tune on.
 
 Usage:
-  python tools/drag_fit.py data/euroc/MH_01_easy [more sequences] [--win 1.0] [--no-bias]
+  python tools/drag_fit.py data/euroc/MH_01_easy [more sequences] [--win 1.0] [--no-bias] [--after-rest]
+  --after-rest: EXPLORATORY, added 16 Nov 2026 AFTER seeing MH_01 (hand-carried start): fits only data
+  after the longest ground-truth rest (speed < 0.05 m/s for >= 5 s). Never yields a GO/NO-GO decision.
   python tools/drag_fit.py --synthetic [--k 0.3]     # SYNTHETIC self-check, writes nothing to Docs
   python tools/drag_fit.py --render
 Needs numpy. No plotting library: the SVG is written by hand.
@@ -48,6 +50,7 @@ from vortex.rowspec import is_data_line  # noqa: E402
 
 OUT_DIR = os.path.join(ROOT, "Docs", "drag")
 RULE = {"smooth_s": 1.0, "min_r2_test": 0.5, "max_k_rel_change": 0.3}
+REST_SPEED, REST_MIN_S = 0.05, 5.0   # exploratory --after-rest only
 AXES = "xyz"
 
 
@@ -75,7 +78,7 @@ def gt_path(seq):
     raise FileNotFoundError("no ground truth under %s" % seq)
 
 
-def load(seq, use_bias=True):
+def load(seq, use_bias=True, after_rest=False):
     raw = euroc.read_imu_csv(euroc.imu_path(seq))
     ok = raw.valid
     t_imu = raw.t_ns[ok] / 1e9
@@ -92,6 +95,10 @@ def load(seq, use_bias=True):
     v_b = np.einsum("nji,nj->ni", R, v_w)
     v_b_diff = np.einsum("nji,nj->ni", R, v_w_diff)
     inside = (t_imu >= t_gt[0]) & (t_imu <= t_gt[-1])
+    rest_end = None
+    if after_rest:                        # EXPLORATORY: keep only data after the longest GT rest
+        rest_end = longest_rest_end(t_gt, v_w)
+        inside &= t_imu >= rest_end
     t = t_imu[inside]
     f = acc[inside].copy()
     interp = lambda x: np.column_stack([np.interp(t, t_gt, x[:, i]) for i in range(3)])  # noqa: E731
@@ -99,7 +106,8 @@ def load(seq, use_bias=True):
         f -= interp(ba)
     return {"t": t, "f": f, "v": interp(v_b), "v_diff": interp(v_b_diff), "acc_all": acc,
             "vel_src": vel_src, "bias_removed": ba is not None, "rows_imu": int(len(raw)),
-            "rows_valid": int(ok.sum())}
+            "rows_valid": int(ok.sum()), "after_rest": after_rest,
+            "rest_end_s": None if rest_end is None else float(rest_end - t_gt[0])}
 
 
 # ---------- fitting ----------
@@ -123,6 +131,22 @@ def fit(v, f):
 def r2(y, yhat):
     ss = float(np.sum((y - np.mean(y)) ** 2))
     return 1.0 - float(np.sum((y - yhat) ** 2)) / ss if ss > 0 else float("nan")
+
+
+def longest_rest_end(t, v_w, speed=REST_SPEED, min_s=REST_MIN_S):
+    """End time of the longest interval with ground-truth speed below `speed` (at least min_s long).
+    On EuRoC MH the drone is hand-carried, then set down, then flies; this marks rotors-on flight."""
+    still = np.linalg.norm(v_w, axis=1) < speed
+    best, best_len, start = t[0], 0.0, None
+    for i, s_ in enumerate(still):
+        if s_ and start is None:
+            start = i
+        if (not s_ or i == len(still) - 1) and start is not None:
+            ln = t[i] - t[start]
+            if ln > best_len:
+                best, best_len = t[i], ln
+            start = None
+    return best if best_len >= min_s else t[0]
 
 
 def analyse(d, win_s=RULE["smooth_s"]):
@@ -158,9 +182,11 @@ def analyse(d, win_s=RULE["smooth_s"]):
         ax["pass"] = all(checks.values())
         res["axes"][AXES[i]] = ax
         ax["_plot"] = (vs, fs)
-    rule_applies = win_s == RULE["smooth_s"] and d["bias_removed"]
+    res["after_rest"], res["rest_end_s"] = d.get("after_rest", False), d.get("rest_end_s")
+    rule_applies = win_s == RULE["smooth_s"] and d["bias_removed"] and not res["after_rest"]
     res["decision"] = ("GO" if all(a["pass"] for a in res["axes"].values()) else "NO-GO") \
-        if rule_applies else "n/a (settings differ from the pre-registered rule)"
+        if rule_applies else ("n/a (EXPLORATORY post-hoc airborne-only fit, not the pre-registered rule)"
+                              if res["after_rest"] else "n/a (settings differ from the pre-registered rule)")
     return res
 
 
@@ -235,7 +261,11 @@ def render(out_dir=OUT_DIR, md_path=None):
                 a["k_second_half"], a["k_full"], a["r2_test"], a["r2_full"], a["r2_raw"], a["k_diff_velocity"],
                 "pass" if a["pass"] else "fail (%s)" % ", ".join(k for k, v in a["checks"].items() if not v),
                 d["decision"]))
-    L += ["", "Plots: `Docs/drag/<sequence>.svg`.", ""]
+    L += ["", "Rows named `*_after_rest` are EXPLORATORY (option added 16 Nov 2026 after MH_01 showed a "
+          "hand-carried start, then a ground rest, then flight): they fit only data after the longest "
+          "ground-truth rest, so rotors are on. They never change the pre-registered decision; switching V3 "
+          "on would need a new rule fixed in advance and tested on sequences not used here.", "",
+          "Plots: `Docs/drag/<sequence>.svg`.", ""]
     with open(md_path, "w", encoding="utf-8", newline="\n") as f:
         f.write("\n".join(L))
     return md_path
@@ -286,6 +316,7 @@ def main(argv=None):
     get = lambda key, d: argv[argv.index(key) + 1] if key in argv else d  # noqa: E731
     win = float(get("--win", RULE["smooth_s"]))
     use_bias = "--no-bias" not in argv
+    after_rest = "--after-rest" in argv
     if "--synthetic" in argv:
         k = float(get("--k", 0.3))
         seq = synth_sequence(tempfile.mkdtemp(prefix="vortex_drag_"), k=k)
@@ -305,7 +336,9 @@ def main(argv=None):
         name = os.path.basename(os.path.normpath(seq))
         if win != RULE["smooth_s"] or not use_bias:
             name += "_win%g%s" % (win, "_nobias" if not use_bias else "")
-        res = save(analyse(load(seq, use_bias), win), name)
+        if after_rest:
+            name += "_after_rest"
+        res = save(analyse(load(seq, use_bias, after_rest), win), name)
         print("%s: thrust axis %s, overlap %.0f s, velocity from %s" % (
             name, res["thrust_axis"], res["overlap_s"], res["velocity_source"]))
         for n, a in res["axes"].items():

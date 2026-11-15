@@ -1,0 +1,72 @@
+{
+ "axes": {
+  "y": {
+   "c_first_half": -0.4173221032089139,
+   "c_full": -0.21596195441301833,
+   "checks": {
+    "k_positive": false,
+    "k_stable": false,
+    "r2_test_ok": false
+   },
+   "f_std": 0.28520102464946745,
+   "k_diff_velocity": 0.17530929422355357,
+   "k_first_half": -0.676580261227292,
+   "k_full": 0.17525244129452858,
+   "k_raw": 0.17008412463900174,
+   "k_rel_change": 1.3270184138382002,
+   "k_second_half": 0.22125420386078418,
+   "pass": false,
+   "r2_diff_velocity": 0.03927470855455473,
+   "r2_first_half": 0.14091133806087763,
+   "r2_full": 0.0392459625321816,
+   "r2_raw": 0.010106242678229349,
+   "r2_second_half_refit": 0.8274291949941194,
+   "r2_test": -12.797690414824668,
+   "r2_test_same_offset": -33.37158691235833,
+   "v_std": 0.3223921789024721
+  },
+  "z": {
+   "c_first_half": -4.15901584458605,
+   "c_full": -3.6637546084860606,
+   "checks": {
+    "k_positive": false,
+    "k_stable": false,
+    "r2_test_ok": false
+   },
+   "f_std": 1.1295597284029053,
+   "k_diff_velocity": 0.14710010455439057,
+   "k_first_half": -1.0649209845600782,
+   "k_full": 0.1465776529341293,
+   "k_raw": 0.13145658798086457,
+   "k_rel_change": 1.1709682291279104,
+   "k_second_half": 0.18206765489138738,
+   "pass": false,
+   "r2_diff_velocity": 0.0026662875819745135,
+   "r2_first_half": 0.03251925979764381,
+   "r2_full": 0.002646779025935908,
+   "r2_raw": 0.001552781174085749,
+   "r2_second_half_refit": 0.517286612796475,
+   "r2_test": -23.748291147661693,
+   "r2_test_same_offset": -83.40934513786858,
+   "v_std": 0.3964608239843851
+  }
+ },
+ "bias_removed": true,
+ "date": "2026-11-16",
+ "decision": "NO-GO",
+ "imu_rate_hz": 200.00000041974263,
+ "overlap_s": 149.95499968528748,
+ "rows_imu": 30400,
+ "rows_used": 29992,
+ "rows_valid": 30400,
+ "rule": {
+  "max_k_rel_change": 0.3,
+  "min_r2_test": 0.5,
+  "smooth_s": 1.0
+ },
+ "sequence": "MH_02_easy",
+ "smooth_rows": 200,
+ "smooth_s": 1.0,
+ "thrust_axis": "x",
+ "velocity_source": "ground-truth velocity columns"
+}

@@ -1,0 +1,72 @@
+{
+ "axes": {
+  "y": {
+   "c_first_half": -0.23971028235622666,
+   "c_full": -0.17885664929044215,
+   "checks": {
+    "k_positive": true,
+    "k_stable": true,
+    "r2_test_ok": true
+   },
+   "f_std": 0.28271748462347374,
+   "k_diff_velocity": 0.2173518898554365,
+   "k_first_half": 0.19392934599858605,
+   "k_full": 0.2172984191813614,
+   "k_raw": 0.21684056229456572,
+   "k_rel_change": 0.06784450565980686,
+   "k_second_half": 0.20708638661078976,
+   "pass": true,
+   "r2_diff_velocity": 0.5036641525944968,
+   "r2_first_half": 0.35940552136972015,
+   "r2_full": 0.5031649148567321,
+   "r2_raw": 0.11398849274493628,
+   "r2_second_half_refit": 0.7691962368844064,
+   "r2_test": 0.7660913164128649,
+   "r2_test_same_offset": 0.2905183881226602,
+   "v_std": 0.9228928399194373
+  },
+  "z": {
+   "c_first_half": -3.2518514971791177,
+   "c_full": -3.28985336066717,
+   "checks": {
+    "k_positive": true,
+    "k_stable": true,
+    "r2_test_ok": false
+   },
+   "f_std": 0.29653591474642166,
+   "k_diff_velocity": 0.19951619311002822,
+   "k_first_half": 0.22217246444623673,
+   "k_full": 0.19933198743256256,
+   "k_raw": 0.19198751516703833,
+   "k_rel_change": 0.12339611642700116,
+   "k_second_half": 0.19475724515655513,
+   "pass": false,
+   "r2_diff_velocity": 0.19692179930253895,
+   "r2_first_half": 0.08883978845150997,
+   "r2_full": 0.19632120921404306,
+   "r2_raw": 0.02127878252548876,
+   "r2_second_half_refit": 0.5035011454237419,
+   "r2_test": 0.4935242213905493,
+   "r2_test_same_offset": 0.3896542289201139,
+   "v_std": 0.6591494794737972
+  }
+ },
+ "bias_removed": true,
+ "date": "2026-11-16",
+ "decision": "NO-GO",
+ "imu_rate_hz": 200.000000188552,
+ "overlap_s": 131.50499987602234,
+ "rows_imu": 27008,
+ "rows_used": 26302,
+ "rows_valid": 27008,
+ "rule": {
+  "max_k_rel_change": 0.3,
+  "min_r2_test": 0.5,
+  "smooth_s": 1.0
+ },
+ "sequence": "MH_03_medium",
+ "smooth_rows": 200,
+ "smooth_s": 1.0,
+ "thrust_axis": "x",
+ "velocity_source": "ground-truth velocity columns"
+}

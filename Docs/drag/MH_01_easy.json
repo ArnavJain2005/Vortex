@@ -1,0 +1,72 @@
+{
+ "axes": {
+  "y": {
+   "c_first_half": -0.3456711227249236,
+   "c_full": -0.21679259299394207,
+   "checks": {
+    "k_positive": false,
+    "k_stable": false,
+    "r2_test_ok": false
+   },
+   "f_std": 0.27149534957841914,
+   "k_diff_velocity": 0.21091266571231193,
+   "k_first_half": -0.09271959448595979,
+   "k_full": 0.21093179171210266,
+   "k_raw": 0.20439399110374634,
+   "k_rel_change": 3.437990533221068,
+   "k_second_half": 0.2260494936008663,
+   "pass": false,
+   "r2_diff_velocity": 0.06419832362702926,
+   "r2_first_half": 0.00702802939196423,
+   "r2_full": 0.06423739235697856,
+   "r2_raw": 0.01435444980948064,
+   "r2_second_half_refit": 0.7176645449178873,
+   "r2_test": -0.7094762290806162,
+   "r2_test_same_offset": -12.255406727423239,
+   "v_std": 0.32622279533464404
+  },
+  "z": {
+   "c_first_half": -3.598394790873823,
+   "c_full": -3.4340838012637973,
+   "checks": {
+    "k_positive": false,
+    "k_stable": false,
+    "r2_test_ok": false
+   },
+   "f_std": 0.8033870487559558,
+   "k_diff_velocity": 0.16755882747998416,
+   "k_first_half": -0.11409271727298408,
+   "k_full": 0.16737287796197575,
+   "k_raw": 0.16059056835550467,
+   "k_rel_change": 2.6768648412260974,
+   "k_second_half": 0.1913180662350165,
+   "pass": false,
+   "r2_diff_velocity": 0.004929863421052727,
+   "r2_first_half": 0.0008173354556241241,
+   "r2_full": 0.0049191249690878625,
+   "r2_raw": 0.0026858955257956785,
+   "r2_second_half_refit": 0.42351382662016124,
+   "r2_test": -0.6557419023459796,
+   "r2_test_same_offset": -8.492433772157192,
+   "v_std": 0.33665391580230397
+  }
+ },
+ "bias_removed": true,
+ "date": "2026-11-16",
+ "decision": "NO-GO",
+ "imu_rate_hz": 200.00000015728548,
+ "overlap_s": 181.89999985694885,
+ "rows_imu": 36820,
+ "rows_used": 36381,
+ "rows_valid": 36820,
+ "rule": {
+  "max_k_rel_change": 0.3,
+  "min_r2_test": 0.5,
+  "smooth_s": 1.0
+ },
+ "sequence": "MH_01_easy",
+ "smooth_rows": 200,
+ "smooth_s": 1.0,
+ "thrust_axis": "x",
+ "velocity_source": "ground-truth velocity columns"
+}

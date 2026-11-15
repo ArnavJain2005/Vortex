@@ -51,3 +51,16 @@ def test_save_and_render(with_drag, tmp_path):
     text = open(md, encoding="utf-8").read()
     assert "| SYNTH |" in text and "GO" in text
     assert clean["rule"]["min_r2_test"] == 0.5
+
+
+def test_longest_rest_end_and_exploratory_flag(with_drag):
+    import numpy as np
+    t = np.arange(0, 60, 0.005)
+    v = np.zeros((len(t), 3))
+    v[t < 10, 0] = 0.5                  # carried
+    v[(t >= 10) & (t < 12), 0] = 0.0    # short rest
+    v[(t >= 12) & (t < 20), 0] = 0.4
+    v[t >= 35, 0] = 1.0                 # rest 20 .. 35 s, then flight
+    assert drag_fit.longest_rest_end(t, v) == pytest.approx(35.0, abs=0.01)
+    res = drag_fit.analyse(drag_fit.load(with_drag, after_rest=True))
+    assert res["decision"].startswith("n/a (EXPLORATORY")

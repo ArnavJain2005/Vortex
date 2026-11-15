@@ -69,7 +69,7 @@ def measure(a):
     rows, runs = a["rows"], a["runs"]
     tmp = tempfile.gettempdir()
     src = a["input"]
-    label = "real: " + os.path.basename(src) if src else None
+    label = "real: " + os.path.relpath(src, ROOT).replace(os.sep, "/") if src else None
     if not src:
         src = os.path.join(tmp, "vortex_synth_%d.csv" % rows)
         synth_euroc.write(src, rows=rows, seed=0)
