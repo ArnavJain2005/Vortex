@@ -13,8 +13,17 @@ they rarely know how wrong they are.
 usable trajectory while sensors fail, and attaches an error bound to every pose that holds up under
 those failures.
 
-1. **Data.** Real phone recordings with ground truth (the ADVIO dataset: iPhone IMU, ARKit pose,
-   ground-truth trajectory).
+Our sensor platform is a **Samsung Galaxy S24**: its accelerometer, gyroscope, magnetometer and
+barometer stand in for the sensors of an XR headset. Phone recordings have no motion-capture ground
+truth, so accuracy benchmarks use a public phone dataset that has one, and the S24 is used for our own
+checkpoint walks and the live demo.
+
+1. **Data.**
+   - **ADVIO** (public): real phone recordings with a ground-truth trajectory (iPhone IMU, ARKit pose).
+     Every accuracy number comes from here.
+   - **Our S24 recordings** (Sensor Logger app): IMU, magnetometer and barometer, with checkpoints
+     marked on the floor and tagged in the app. Scored on error at the checkpoints and on returning to
+     the start.
 2. **Estimate.** An error-state Kalman filter: the IMU drives prediction, the device's visual tracking
    pose corrects it. Each sensor gets a live health score; measurements that disagree with the
    prediction are down-weighted or rejected.
@@ -30,11 +39,13 @@ those failures.
 | Part | State |
 |---|---|
 | ADVIO loader, synthetic data generator | Done, tested on synthetic files in ADVIO's layout. **Not yet run on real ADVIO files.** |
+| S24 loader (Sensor Logger export), `check --phone`, checkpoints | Done, tested on synthetic files in Sensor Logger's layout. **No real S24 recording yet.** |
 | Baselines: dead reckoning, freeze-on-loss | Done, tested |
 | Metrics: ATE, RPE, final error, drift per metre, time to 1 m | Done, tested |
 | Error-state Kalman filter | Not started |
 | Fault injector | Not started (only fixed blackout windows for now) |
 | Trust weighting, error bound, visualizer | Not started |
+| Live S24 stream for the demo | Not started (planned: SensorServer app over Wi-Fi) |
 
 No accuracy figures for real data are claimed until they are measured. Synthetic numbers describe the
 code, not real devices.
@@ -45,7 +56,7 @@ Python 3.10+.
 
 ```
 pip install -e .[dev]
-pytest                                            # 18 tests
+pytest                                            # 24 tests
 python -m vortex check --synthetic
 python -m vortex baselines --synthetic            # writes results/synthetic-s0/
 ```
@@ -57,6 +68,13 @@ python -m vortex check --advio data/advio --seq 1
 python -m vortex baselines --advio data/advio --seq 1 --blackout 60 5
 ```
 
+With an S24 recording exported from Sensor Logger into `data/phone/walk-01/` (see
+[`Docs/DATA.md`](Docs/DATA.md#our-own-recordings-samsung-galaxy-s24)):
+
+```
+python -m vortex check --phone data/phone/walk-01 --checkpoints data/phone/checkpoints.csv
+```
+
 `baselines` writes, per sequence: `baselines.json` (all metrics), `baselines.png` (top view and error
 over time), and TUM-format trajectories that [evo](https://github.com/MichaelGrupp/evo) can read for an
 independent cross-check (`evo_ape tum ground_truth.tum freeze_on_loss.tum -a`).
@@ -66,6 +84,7 @@ independent cross-check (`evo_ape tum ground_truth.tum freeze_on_loss.tum -a`).
 ```
 vortex/            Python package
   data/advio.py    ADVIO loader (formats, units, biases, extrinsics documented in the file)
+  data/phone.py    Samsung S24 recordings exported by Sensor Logger (Android conventions documented)
   data/synthetic.py  synthetic walking sequence with exact ground truth
   baselines.py     dead reckoning, freeze-on-loss, accelerometer-sign check
   metrics.py       alignment, ATE, RPE, drift
@@ -79,7 +98,8 @@ legacy/            the earlier ESP32 sensor-station code and docs, kept for refe
 ## Third-party data and code
 
 See [`THIRD_PARTY.md`](THIRD_PARTY.md). In short: ADVIO data is CC BY-NC 4.0 and is not committed to
-this repo; no third-party code is copied in.
+this repo; the S24 is recorded with the Sensor Logger app, used as a tool; no third-party code is
+copied in.
 
 ## Team
 

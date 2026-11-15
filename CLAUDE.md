@@ -8,8 +8,11 @@ A strong, honest, reproducible submission for the **Samsung PRISM XR Hackathon C
 "Path Finder: Trajectory Estimation Under Sensor Degradation"**. Deadline **22 Nov 2026**; the team
 works full time from 20 Nov.
 
-Since 15 Nov 2026 Vortex is a **Python pipeline on recorded phone data** (ADVIO). The ESP32 station is
-gone; its code is in `legacy/` for reference only. Pitch: trustworthy confidence, i.e. a trajectory that
+Since 15 Nov 2026 Vortex is a **Python pipeline on recorded phone data**. The sensor platform is
+Arnav's **Samsung Galaxy S24** (accelerometer, gyroscope, magnetometer, barometer), recorded with the
+Sensor Logger app (`vortex/data/phone.py`) and later streamed live for the demo. The S24 has no
+ground-truth trajectory, so accuracy numbers come from the ADVIO dataset; S24 walks are scored at
+taped floor checkpoints. The ESP32 station is gone; its code is in `legacy/` for reference only. Pitch: trustworthy confidence, i.e. a trajectory that
 survives sensor faults plus an error bound shown to hold under them.
 
 Team: Arnav Jain (lead), Arya M, Nandhitha Chowdary Surapaneni. Arnav works on Windows. Wants direct,
@@ -44,10 +47,12 @@ concise answers; say plainly what was not verified.
 
 ```
 pip install -e .[dev]
-pytest                                        # 15 Nov 2026: 18 passed (Linux, Python 3.13)
+pytest                                        # 15 Nov 2026: 24 passed (Linux, Python 3.13)
 python -m vortex check --synthetic
 python -m vortex baselines --synthetic
 python -m vortex check --advio data/advio --seq 1          # not yet run on real data
+python -m vortex check --phone data/phone/walk-01 --checkpoints data/phone/checkpoints.csv  # no real S24 file yet
 ```
 
-The sandbox cannot download ADVIO (Zenodo is blocked); Arnav downloads it (see `Docs/DATA.md`).
+The sandbox cannot download ADVIO (Zenodo is blocked) or reach the phone; Arnav downloads ADVIO and
+records the S24 (see `Docs/DATA.md`).

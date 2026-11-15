@@ -44,3 +44,51 @@ are removed by default.
   undegraded ARKit stream and reuses it for every degraded run, so alignment cannot hide a fault.
 - The dead-reckoning baseline is given ground-truth initial state and a gravity vector estimated with
   ground-truth orientation. It is a best case for inertial-only tracking.
+
+## Our own recordings (Samsung Galaxy S24)
+
+The S24 is recorded with **Sensor Logger** (Android, `com.kelvin.sensorapp`, free tier is enough).
+Format reference: https://github.com/tszheichoi/awesome-sensor-logger. The S24 has an accelerometer,
+gyroscope, magnetometer and barometer. Sensor Logger's published sampling table lists S24 models
+(SM-S921B) at about 125 Hz accelerometer and 500 Hz gyroscope; `vortex check` reports what your phone
+actually achieved.
+
+### App settings (once)
+
+1. Install Sensor Logger from the Play Store.
+2. Enable: **Accelerometer** (it also writes TotalAcceleration.csv, which we use), **Gyroscope**,
+   **Magnetometer**, **Barometer**, **Annotation**. Disable location, camera and audio.
+3. Settings: sampling rate at the fastest option; export format **Zipped CSV**.
+
+### Walk protocol
+
+Phone recordings have no ground-truth trajectory, so the reference is a set of marked floor points.
+
+1. Mark 4 to 6 points on the floor with tape (a corridor or a room is fine). Measure their positions
+   with a tape measure in metres, taking the start mark as (0, 0, 0) and the first straight leg as +x.
+   Write them to `data/phone/checkpoints.csv`:
+
+   ```
+   name,x,y,z
+   start,0,0,0
+   door,6.0,0,0
+   corner,6.0,4.5,0
+   ```
+
+2. Hold the phone upright in front of you, as if looking through it. Start recording, stand on
+   `start` and keep still for **3 seconds** (this is used to estimate the gyro bias and gravity).
+3. At each mark, stop for a second and add an annotation whose text is exactly the checkpoint name.
+4. Walk back to `start`, annotate `start` again, keep still for 3 seconds, stop recording.
+5. Export as Zipped CSV and unzip into `data/phone/<walk-name>/`, e.g. `data/phone/walk-01/`.
+6. Check it:
+
+   ```
+   python -m vortex check --phone data/phone/walk-01 --checkpoints data/phone/checkpoints.csv
+   ```
+
+   Expected: raw gyro and accelerometer rates, magnetometer and barometer sample counts, `|accel|`
+   median near 9.8, a still period at the start with a small gyro bias (around 0.01 rad/s or less), all
+   checkpoints matched, and `OK: recording looks usable.`
+
+Record at least three walks: one clean, and two where you deliberately cause trouble (fast turns,
+shaking the phone, covering it). These become our real-world fault examples.
