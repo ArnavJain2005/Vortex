@@ -8,12 +8,23 @@ A strong, honest, reproducible submission for the **Samsung PRISM XR Hackathon C
 "Path Finder: Trajectory Estimation Under Sensor Degradation"**. Deadline **22 Nov 2026**; the team
 works full time from 20 Nov.
 
-Since 15 Nov 2026 Vortex is a **Python pipeline on recorded phone data**. The sensor platform is
-Arnav's **Samsung Galaxy S24** (accelerometer, gyroscope, magnetometer, barometer), recorded with the
-Sensor Logger app (`vortex/data/phone.py`) and later streamed live for the demo. The S24 has no
-ground-truth trajectory, so accuracy numbers come from the ADVIO dataset; S24 walks are scored at
-taped floor checkpoints. The ESP32 station is gone; its code is in `legacy/` for reference only. Pitch: trustworthy confidence, i.e. a trajectory that
-survives sensor faults plus an error bound shown to hold under them.
+**The official task (organisers' slides):** estimate a 6-DoF trajectory from a **degraded IMU only**
+(EuRoC MAV and TUM-VI, EuRoC `imu0/data.csv` format, gravity alignment unknown). Output
+`estimated_trajectory.txt`: `timestamp tx ty tz qx qy qz qw`, seconds, exactly one pose per input IMU
+row. Survive rising noise, bias drift and 2 s dropouts; dead-reckon 5 s after the IMU fails. Budget:
+peak RAM <= 8 MB, <= 20 ms compute per second of IMU, single thread, offline. Scoring: efficiency 40,
+trajectory 60 (waypoints 30, blind 5 s 20, dropouts 10), via evo against hidden ground truth.
+
+**Our approach: velocity witnesses.** No pretrained network. The IMU's own physics gives drift-free
+hints about velocity (V1 stillness, V2 flight envelope, V3 rotor drag, V4 turn physics, V5 walking
+rhythm, V6 tilt-acceleration link, V7 rotor vibration as an experiment). They are calibrated in the
+healthy opening seconds, and a jamming meter sets the trust of each. No witness is load-bearing: V1 + V2
+alone must bound drift; every other witness is behind a switch and stays on only if `score.py` shows a
+gain on sequences we did not tune on. Full list and plan: `Docs/TRACK3_PLAN.md`.
+
+The S24 loader and live stations (`vortex/data/phone.py`, `vortex/stations.py`) and the ADVIO loader
+are from the earlier direction: keep them working as jury-demo material, do not extend them. The old
+ESP32 station code was deleted on 15 Nov 2026 (it remains in git history before that date).
 
 Team: Arnav Jain (lead), Arya M, Nandhitha Chowdary Surapaneni. Arnav works on Windows. Wants direct,
 concise answers; say plainly what was not verified.
@@ -47,12 +58,14 @@ concise answers; say plainly what was not verified.
 
 ```
 pip install -e .[dev]
-pytest                                        # 15 Nov 2026: 24 passed (Linux, Python 3.13)
+pytest                                        # 15 Nov 2026: 32 passed (Linux, Python 3.13)
 python -m vortex check --synthetic
 python -m vortex baselines --synthetic
 python -m vortex check --advio data/advio --seq 1          # not yet run on real data
 python -m vortex check --phone data/phone/walk-01 --checkpoints data/phone/checkpoints.csv  # no real S24 file yet
+python -m vortex station --source synthetic --fast --seconds 3
+python -m vortex station --source phone       # needs the S24 pushing; not yet run with the real phone
 ```
 
-The sandbox cannot download ADVIO (Zenodo is blocked) or reach the phone; Arnav downloads ADVIO and
-records the S24 (see `Docs/DATA.md`).
+The sandbox cannot download EuRoC, TUM-VI or ADVIO (hosts blocked) or reach the phone; Arnav downloads
+the datasets on Windows (see `Docs/DATA.md`).

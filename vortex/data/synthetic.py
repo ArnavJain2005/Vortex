@@ -28,36 +28,56 @@ def make_sequence(
     accel_bias: tuple = (0.0, 0.0, 0.0),
     pose_pos_noise: float = 0.0,
     seed: int = 0,
+    still_s: float = 0.0,
+    ramp_s: float = 2.0,
 ) -> Sequence:
     """A person walking a slow figure-eight with head bob and gentle head turns.
 
     Noise values are per-sample standard deviations (rad/s, m/s^2, m). Defaults are noiseless.
+    still_s > 0 adds that many seconds at rest first, then eases into the walk over ramp_s seconds
+    (as in our phone walk protocol). With still_s = 0 everything is analytic; with still_s > 0 the
+    acceleration is differentiated numerically, accurate to about 1e-3 m/s^2 at 200 Hz.
     """
     rng = np.random.default_rng(seed)
     dt = 1.0 / imu_rate
     t = np.arange(0.0, duration + 0.5 * dt, dt)
-
-    # Position: figure-eight of radius ~3 m at ~0.7 m/s plus a 2 Hz, 2 cm vertical bob.
     w = 0.12
-    p = np.column_stack(
-        [3.0 * np.sin(w * t), 1.5 * np.sin(2 * w * t), 1.6 + 0.02 * np.sin(2 * np.pi * 2.0 * t)]
-    )
-    a = np.column_stack(
-        [
-            -3.0 * w**2 * np.sin(w * t),
-            -1.5 * (2 * w) ** 2 * np.sin(2 * w * t),
-            -0.02 * (2 * np.pi * 2.0) ** 2 * np.sin(2 * np.pi * 2.0 * t),
-        ]
-    )
 
-    # Body angular velocity: slow yaw sweep plus small pitch and roll oscillations.
-    omega = np.column_stack(
-        [
-            0.15 * np.cos(2 * np.pi * 0.3 * t),
-            0.10 * np.sin(2 * np.pi * 0.5 * t),
-            0.25 * np.sin(2 * np.pi * 0.05 * t),
-        ]
-    )
+    def walk_pos(tau: np.ndarray) -> np.ndarray:
+        # Figure-eight of radius ~3 m at ~0.7 m/s plus a 2 Hz, 2 cm vertical bob.
+        return np.column_stack(
+            [3.0 * np.sin(w * tau), 1.5 * np.sin(2 * w * tau), 1.6 + 0.02 * np.sin(2 * np.pi * 2.0 * tau)]
+        )
+
+    def walk_omega(tau: np.ndarray) -> np.ndarray:
+        # Body angular velocity: slow yaw sweep plus small pitch and roll oscillations.
+        return np.column_stack(
+            [
+                0.15 * np.cos(2 * np.pi * 0.3 * tau),
+                0.10 * np.sin(2 * np.pi * 0.5 * tau),
+                0.25 * np.sin(2 * np.pi * 0.05 * tau),
+            ]
+        )
+
+    if still_s <= 0:
+        p = walk_pos(t)
+        a = np.column_stack(
+            [
+                -3.0 * w**2 * np.sin(w * t),
+                -1.5 * (2 * w) ** 2 * np.sin(2 * w * t),
+                -0.02 * (2 * np.pi * 2.0) ** 2 * np.sin(2 * np.pi * 2.0 * t),
+            ]
+        )
+        omega = walk_omega(t)
+    else:
+        # Speed factor h rises smoothly 0 -> 1 after the still period; walk time tau = integral of h.
+        u = np.clip((t - still_s) / ramp_s, 0.0, 1.0)
+        h = u * u * u * (u * (6 * u - 15) + 10)  # smootherstep: zero 1st and 2nd derivative at the ends
+        tau = np.concatenate([[0.0], np.cumsum(0.5 * (h[1:] + h[:-1]) * dt)])
+        p = walk_pos(tau)
+        a = np.gradient(np.gradient(p, t, axis=0, edge_order=2), t, axis=0, edge_order=2)
+        a[t < still_s] = 0.0
+        omega = walk_omega(tau) * h[:, None]
     q = np.empty((len(t), 4))
     q[0] = [1.0, 0.0, 0.0, 0.0]
     for k in range(len(t) - 1):

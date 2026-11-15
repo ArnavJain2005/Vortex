@@ -1,6 +1,40 @@
 # Getting the data
 
-## ADVIO
+The scored Track 3 task uses **EuRoC MAV** and **TUM-VI**, both in EuRoC's ASL layout. Download on
+Windows (the sandbox cannot reach these hosts) and unzip under `data/` at the repo root; `/data/` is
+ignored by git, so nothing is committed.
+
+## EuRoC MAV (start here)
+
+Burri et al., *The EuRoC micro aerial vehicle datasets*, IJRR 2016. 11 indoor sequences flown on a
+multirotor, IMU at 200 Hz, ground truth from a laser tracker or motion capture.
+
+1. Go to https://projects.asl.ethz.ch/datasets/euroc-mav/ (files are now hosted on the ETH Research
+   Collection, DOI 10.3929/ethz-b-000690084).
+2. Download the **ASL Dataset Format** zips (not ROS bags). Order: `MH_01_easy`, then `MH_02_easy`,
+   `V1_01_easy`, `MH_03_medium`.
+3. Unzip so that you get:
+
+   ```
+   data/euroc/MH_01_easy/mav0/imu0/data.csv                         IMU: what main.py reads
+   data/euroc/MH_01_easy/mav0/state_groundtruth_estimate0/data.csv  ground truth: scoring only
+   ```
+
+Only `imu0/` and `state_groundtruth_estimate0/` are needed; the camera folders can be deleted locally to
+save space.
+
+## TUM-VI
+
+Schubert et al., *The TUM VI Benchmark for Evaluating Visual-Inertial Odometry*, IROS 2018. Hand-held
+rig, BMI160 IMU at 200 Hz, motion-capture ground truth for part of each sequence.
+
+1. Go to https://cvg.cit.tum.de/data/datasets/vi-dataset.
+2. Download the **Euroc / DSO 512x512** tar for `room1` (smallest useful sequence), e.g.
+   `dataset-room1_512_16.tar`.
+3. Extract to `data/tumvi/dataset-room1_512_16/mav0/`. You need `imu0/data.csv` and the motion-capture
+   ground truth under `mav0/` (folder name not yet checked by us; tell Claude what you see).
+
+## ADVIO (earlier direction, optional)
 
 Cortes, Solin, Rahtu, Kannala. *ADVIO: An Authentic Dataset for Visual-Inertial Odometry.* ECCV 2018.
 Repository: https://github.com/AaltoVision/ADVIO. Licence: **CC BY-NC 4.0** (attribution required,
@@ -92,3 +126,22 @@ Phone recordings have no ground-truth trajectory, so the reference is a set of m
 
 Record at least three walks: one clean, and two where you deliberately cause trouble (fast turns,
 shaking the phone, covering it). These become our real-world fault examples.
+
+### Live streaming (sensor station)
+
+Instead of exporting files, the S24 can stream to the computer while it records.
+
+1. Connect the phone and the computer to the same Wi-Fi. University and office networks often block
+   device-to-device traffic; a phone hotspot with the laptop joined to it works.
+2. On the computer: `python -m vortex station --source phone --save data/phone/live-01`.
+   It prints a URL such as `http://192.168.1.20:8000/data`. On Windows, allow Python through the
+   firewall when asked (private networks).
+3. In Sensor Logger: Settings > Data Streaming > **HTTP Push**, enable it, paste the URL, tap
+   **Tap to Test Pushing** (expect a 200 response). Enable the same sensors as above.
+4. Start a recording. The station prints `phone connected: device ...`, then one line per second with
+   the sample rate and current readings. Stop the recording and it prints `phone quiet`. Ctrl+C ends it
+   and saves the stream.
+5. `python -m vortex check --phone data/phone/live-01` validates the saved stream.
+
+`python -m vortex station` (no `--source`) waits 30 s for the phone and otherwise runs the synthetic
+station, so the rest of the pipeline can always run.
