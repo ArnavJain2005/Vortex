@@ -58,10 +58,12 @@ concise answers; say plainly what was not verified.
 
 ```
 pip install -e .[dev]
-pytest                                        # 15 Nov 2026: 32 passed (Linux, Python 3.13)
+pytest                                        # 16 Nov 2026: 86 passed (Windows, Python 3.14)
 python -m vortex check --synthetic
 python -S tools/measure_floor.py --runs 30 [--cbin floor_c.exe]   # 15 Nov 2026: Win 3.13/3.14, WSL2 3.12 (Linux needs /usr/bin/time)
 python tools/measure_floor.py --render                          # rebuilds Docs/FLOOR.md from Docs/floor/*.json
+python -m vortex.degrade data/euroc/MH_01_easy out/MH_01_s1 --seed 1   # 16 Nov 2026: run on synthetic only
+python -m vortex.check_output IMU.csv estimated_trajectory.txt         # stdlib only; exit 0 = pass
 python -m vortex baselines --synthetic
 python -m vortex check --advio data/advio --seq 1          # not yet run on real data
 python -m vortex check --phone data/phone/walk-01 --checkpoints data/phone/checkpoints.csv  # no real S24 file yet
