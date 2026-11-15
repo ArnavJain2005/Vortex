@@ -150,3 +150,109 @@ def test_gap_is_bridged_at_constant_velocity():
     out = sd.estimate(gap)
     assert len(out) == len(gap)
     assert max(abs(c) for c in out[-1][:3]) < 1e-9            # at rest, v = 0, so it stays put
+
+
+# ---------- step 6b: still-run self-calibration and backward pass ----------
+
+def _env(t, a0=8.0, a1=10.0, b0=20.0, b1=22.0):
+    """1 before a0, smooth down to 0 at a1, 0 until b0, smooth up to 1 at b1; and its derivative."""
+    def ss(u):
+        u = np.clip(u, 0, 1)
+        return u ** 3 * (u * (6 * u - 15) + 10), 30 * u ** 2 * (u - 1) ** 2
+    h1, d1 = ss((t - a0) / (a1 - a0))
+    h2, d2 = ss((t - b0) / (b1 - b0))
+    return 1 - h1 + h2, -d1 / (a1 - a0) + d2 / (b1 - b0)
+
+
+def _move_rest_move(seconds=32.0, rate=200, sub=20, bias=(0.0, 0.0, 0.0), gyro_noise=0.0, acc_noise=0.0,
+                    seed=0):
+    """SYNTHETIC: moving 0..8 s, easing to rest by 10 s, still 10..20 s, moving again from 22 s."""
+    rng = np.random.default_rng(seed)
+    dt = 1.0 / rate
+    n = int(seconds * rate) + 1
+    h = dt / sub
+    tf = np.arange((n - 1) * sub + 1) * h                     # fine grid
+    A, w = np.array([1.5, 1.0, 0.3]), np.array([0.4, 0.55, 0.9])
+    e, de = _env(tf)
+    V = A * w * np.sin(np.outer(tf, w))
+    dV = A * w ** 2 * np.cos(np.outer(tf, w))
+    v = e[:, None] * V
+    a = de[:, None] * V + e[:, None] * dV
+    p = np.concatenate([np.zeros((1, 3)), np.cumsum(0.5 * (v[1:] + v[:-1]) * h, axis=0)])
+    om = lambda s: np.column_stack([0.3 * np.sin(0.7 * s), 0.2 * np.cos(0.5 * s) - 0.2,  # noqa: E731
+                                    0.4 * np.sin(0.3 * s)]) * _env(s)[0][:, None]
+    dq = quat_from_rotvec(om(tf[:-1] + 0.5 * h) * h)
+    qf = np.empty((n, 4))
+    cur = np.array([1.0, 0, 0, 0])
+    qf[0] = cur
+    for k in range(n - 1):
+        for j in range(sub):
+            cur = quat_multiply(cur, dq[k * sub + j])
+        cur = quat_normalize(cur)
+        qf[k + 1] = cur
+    idx = np.arange(n) * sub
+    R = quat_to_matrix(qf)
+    f = np.einsum("nji,nj->ni", R, a[idx] + np.array([0, 0, G]))
+    gyro = om(tf[idx]) + np.asarray(bias) + gyro_noise * rng.standard_normal((n, 3))
+    f = f + acc_noise * rng.standard_normal((n, 3))
+    rows = [(T0 + k * DT_NS, tuple(float(x) for x in (*gyro[k], *f[k]))) for k in range(n)]
+    return rows, p[idx], qf
+
+
+def _in_our_frame(out, p_true, q_true, k):
+    """Express truth in the estimator's frame: same pose at row k (yaw and origin are arbitrary)."""
+    R_e = quat_to_matrix(np.array(out[k][3:]))
+    R_t = quat_to_matrix(q_true[k])
+    R_al = R_e @ R_t.T
+    p = (p_true - p_true[k]) @ R_al.T + np.array(out[k][:3])
+    return p, R_al
+
+
+def test_calibration_finds_the_rest_and_the_bias():
+    rows, _, _ = _move_rest_move(bias=(0.01, -0.02, 0.08), gyro_noise=0.002, acc_noise=0.02)
+    cal = sd.calibrate(rows)
+    assert cal.run_s is not None
+    # the eases (8..10 s, 20..22 s) are partly below the stillness thresholds, so the run is a bit longer
+    assert 8.5 <= cal.run_s[0] <= 10.25 and 19.75 <= cal.run_s[1] <= 22.0, cal.run_s
+    assert cal.init.still
+    assert np.allclose(cal.init.bg, (0.01, -0.02, 0.08), atol=3e-4)
+    assert cal.init.g == pytest.approx(G, abs=0.01)
+    mid = T0 + int(0.5 * (cal.run_s[0] + cal.run_s[1]) * 1e9)
+    assert rows[cal.anchor][0] >= mid and rows[cal.anchor - 1][0] < mid
+
+
+def test_backward_and_forward_track_truth_nearly_noiseless():
+    # tiny noise: an exactly constant (noiseless) rest would be rejected as a frozen sensor
+    rows, p, q = _move_rest_move(bias=(0.01, -0.02, 0.08), gyro_noise=1e-5, acc_noise=1e-4)
+    cal = sd.calibrate(rows)
+    out = sd.estimate(rows)
+    assert len(out) == len(rows)
+    pt, R_al = _in_our_frame(out, p, q, cal.anchor)
+    err = np.linalg.norm(np.array(out)[:, :3] - pt, axis=1)
+    assert err[:cal.anchor].max() < 0.02             # backward over half the rest + the hand-held start
+    assert err[cal.anchor:].max() < 0.02             # forward over half the rest + 10 s of motion
+    qe = np.array(out)[:, 3:]
+    from vortex.geometry import matrix_to_quat
+    qa = matrix_to_quat(R_al)
+    qt = quat_multiply(np.broadcast_to(qa, q.shape), q)
+    att = 2 * np.arccos(np.clip(np.abs(np.sum(qe * qt, axis=1)), -1, 1))
+    assert att.max() < 1e-4
+
+
+def test_no_still_run_falls_back_to_6a(moving):
+    rows, _, _ = moving
+    cal = sd.calibrate(rows)
+    assert cal.run_s is None and cal.anchor == 0
+    assert sd.estimate(rows) == sd.estimate(rows, init=sd.initialise(sd.init_window(rows)))
+
+
+def test_frozen_sensor_is_not_still():
+    rows = [(T0 + k * DT_NS, (0.01, 0.0, 0.0, 0.0, 0.0, G)) for k in range(2000)]   # bit-identical values
+    assert sd.calibrate(rows).run_s is None
+
+
+def test_pre_segment_cap_falls_back(monkeypatch):
+    rows, _, _ = _move_rest_move(seconds=24.0)
+    monkeypatch.setattr(sd, "PRE_MAX_ROWS", 100)
+    cal = sd.calibrate(rows)
+    assert cal.run_s is None and cal.anchor == 0
