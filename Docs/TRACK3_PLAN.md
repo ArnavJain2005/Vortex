@@ -17,9 +17,10 @@ bound that is shown to hold under them. Deadline **22 Nov 2026**; full-time work
 
 | # | Goal | Status | Exit criterion |
 |---|---|---|---|
-| 1 | Repo restructure, Python package, old code to `legacy/` | **Done (verified)** 15 Nov | `pytest` green |
+| 1 | Repo restructure, Python package; old ESP32/Unity station code deleted (in git history before 15 Nov) | **Done (verified)** 15 Nov | `pytest` green |
 | 2 | ADVIO loader + dead-reckoning and freeze-on-loss baselines + metrics | **Done (unverified on real data)** 15 Nov: 18 tests pass on synthetic data and synthetic files in ADVIO's layout | `vortex check` prints OK on a real sequence; baselines scored on 2 sequences |
 | 2b | S24 loader (Sensor Logger export), `check --phone`, checkpoint file and walk protocol | **Done (unverified on real data)** 15 Nov: 6 tests on synthetic files in Sensor Logger's layout | `vortex check --phone` prints OK on a real S24 walk |
+| 2c | Sensor stations: PhoneStation (live S24 via Sensor Logger HTTP push, connect/quiet detection) and SyntheticStation fallback; `vortex station` | **Done (unverified with the real phone)** 15 Nov: 8 tests incl. real HTTP pushes on localhost | `vortex station --source phone` shows the S24 connected at its real rate |
 | 3 | Error-state Kalman filter (IMU predict, ARKit pose update), unit-tested | Not started | Beats both baselines through a 5 s blackout on synthetic data |
 | 4 | Seeded fault injector: blackout, IMU noise burst, gyro bias, packet delay; 3 severities | Not started | Same seed gives identical runs |
 | 5 | Trust layer: per-sensor health, innovation gating, covariance inflation | Not started | Lower error than plain filter under faults |
@@ -39,12 +40,13 @@ steps 5 to 8, feature freeze at night. 22 Nov: step 9.
 | Q2 | Samsung rules on prior code, open data and IP | Arnav |
 | Q3 | Does `vortex check` print OK on ADVIO sequence 1, and what accel sign? | Arnav, after download |
 | Q4 | Does a real S24 walk pass `vortex check --phone` (rates, still period, checkpoints)? | Arnav, after recording |
+| Q5 | Does the S24 reach `vortex station` over HTTP push, and which sensor names does it send? | Arnav |
 
 ## Step 1-2 results (15 Nov 2026, branch `track3/python-pipeline`)
 
 | Item | Result | Where |
 |---|---|---|
-| `pytest` | 24 passed (18 pipeline + 6 phone) | Linux sandbox, Python 3.13, numpy 2.5 |
+| `pytest` | 32 passed (18 pipeline + 6 phone + 8 stations) | Linux sandbox, Python 3.13, numpy 2.5 |
 | Dead reckoning, noiseless synthetic, 20 s, exact gravity, 5 ms velocity window | final error 1.2 cm | same; shows the integrator is consistent |
 | `vortex baselines --synthetic` (phone-grade noise, 5 s blackout at 12 s) | freeze-on-loss ATE 0.40 m, max 1.6 m at the end of the outage; dead reckoning passes 1 m error at 4.9 s | same; synthetic, not a device claim |
 | ADVIO download from the sandbox | Blocked (Zenodo refused by the network allowlist) | Arnav downloads on Windows |

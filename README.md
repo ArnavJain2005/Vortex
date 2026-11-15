@@ -14,7 +14,9 @@ usable trajectory while sensors fail, and attaches an error bound to every pose 
 those failures.
 
 Our sensor platform is a **Samsung Galaxy S24**: its accelerometer, gyroscope, magnetometer and
-barometer stand in for the sensors of an XR headset. Phone recordings have no motion-capture ground
+barometer stand in for the sensors of an XR headset. A **sensor station** layer feeds the pipeline live:
+it waits for the phone to connect and streams its sensors, and falls back to a **synthetic station**
+(a simulated walk with exact ground truth) when no phone is connected. Phone recordings have no motion-capture ground
 truth, so accuracy benchmarks use a public phone dataset that has one, and the S24 is used for our own
 checkpoint walks and the live demo.
 
@@ -45,7 +47,7 @@ checkpoint walks and the live demo.
 | Error-state Kalman filter | Not started |
 | Fault injector | Not started (only fixed blackout windows for now) |
 | Trust weighting, error bound, visualizer | Not started |
-| Live S24 stream for the demo | Not started (planned: SensorServer app over Wi-Fi) |
+| Sensor stations: live S24 stream (Sensor Logger HTTP push) and synthetic stream, `vortex station` | Done, tested with simulated pushes over HTTP. **Not yet run with the real S24.** |
 
 No accuracy figures for real data are claimed until they are measured. Synthetic numbers describe the
 code, not real devices.
@@ -56,7 +58,7 @@ Python 3.10+.
 
 ```
 pip install -e .[dev]
-pytest                                            # 24 tests
+pytest                                            # 32 tests
 python -m vortex check --synthetic
 python -m vortex baselines --synthetic            # writes results/synthetic-s0/
 ```
@@ -67,6 +69,17 @@ With ADVIO downloaded into `data/advio/` (see [`Docs/DATA.md`](Docs/DATA.md)):
 python -m vortex check --advio data/advio --seq 1
 python -m vortex baselines --advio data/advio --seq 1 --blackout 60 5
 ```
+
+Live sensor station (phone if connected, otherwise synthetic):
+
+```
+python -m vortex station                          # waits 30 s for the S24, else synthetic
+python -m vortex station --source phone --save data/phone/live-01
+```
+
+It prints the URL to enter in Sensor Logger (Settings > Data Streaming > HTTP Push), announces when the
+phone connects or goes quiet, shows the live sample rate, and can save the stream in Sensor Logger's
+layout. Phone and computer must be on the same Wi-Fi.
 
 With an S24 recording exported from Sensor Logger into `data/phone/walk-01/` (see
 [`Docs/DATA.md`](Docs/DATA.md#our-own-recordings-samsung-galaxy-s24)):
@@ -85,6 +98,7 @@ independent cross-check (`evo_ape tum ground_truth.tum freeze_on_loss.tum -a`).
 vortex/            Python package
   data/advio.py    ADVIO loader (formats, units, biases, extrinsics documented in the file)
   data/phone.py    Samsung S24 recordings exported by Sensor Logger (Android conventions documented)
+  stations.py      live sensor stations: PhoneStation (S24 via HTTP push), SyntheticStation
   data/synthetic.py  synthetic walking sequence with exact ground truth
   baselines.py     dead reckoning, freeze-on-loss, accelerometer-sign check
   metrics.py       alignment, ATE, RPE, drift
@@ -92,7 +106,6 @@ vortex/            Python package
   cli.py           `python -m vortex ...`
 tests/             pytest suite
 Docs/              plan, data instructions
-legacy/            the earlier ESP32 sensor-station code and docs, kept for reference, not used
 ```
 
 ## Third-party data and code

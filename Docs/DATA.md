@@ -92,3 +92,22 @@ Phone recordings have no ground-truth trajectory, so the reference is a set of m
 
 Record at least three walks: one clean, and two where you deliberately cause trouble (fast turns,
 shaking the phone, covering it). These become our real-world fault examples.
+
+### Live streaming (sensor station)
+
+Instead of exporting files, the S24 can stream to the computer while it records.
+
+1. Connect the phone and the computer to the same Wi-Fi. University and office networks often block
+   device-to-device traffic; a phone hotspot with the laptop joined to it works.
+2. On the computer: `python -m vortex station --source phone --save data/phone/live-01`.
+   It prints a URL such as `http://192.168.1.20:8000/data`. On Windows, allow Python through the
+   firewall when asked (private networks).
+3. In Sensor Logger: Settings > Data Streaming > **HTTP Push**, enable it, paste the URL, tap
+   **Tap to Test Pushing** (expect a 200 response). Enable the same sensors as above.
+4. Start a recording. The station prints `phone connected: device ...`, then one line per second with
+   the sample rate and current readings. Stop the recording and it prints `phone quiet`. Ctrl+C ends it
+   and saves the stream.
+5. `python -m vortex check --phone data/phone/live-01` validates the saved stream.
+
+`python -m vortex station` (no `--source`) waits 30 s for the phone and otherwise runs the synthetic
+station, so the rest of the pipeline can always run.
