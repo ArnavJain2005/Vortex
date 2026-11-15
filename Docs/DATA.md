@@ -1,6 +1,40 @@
 # Getting the data
 
-## ADVIO
+The scored Track 3 task uses **EuRoC MAV** and **TUM-VI**, both in EuRoC's ASL layout. Download on
+Windows (the sandbox cannot reach these hosts) and unzip under `data/` at the repo root; `/data/` is
+ignored by git, so nothing is committed.
+
+## EuRoC MAV (start here)
+
+Burri et al., *The EuRoC micro aerial vehicle datasets*, IJRR 2016. 11 indoor sequences flown on a
+multirotor, IMU at 200 Hz, ground truth from a laser tracker or motion capture.
+
+1. Go to https://projects.asl.ethz.ch/datasets/euroc-mav/ (files are now hosted on the ETH Research
+   Collection, DOI 10.3929/ethz-b-000690084).
+2. Download the **ASL Dataset Format** zips (not ROS bags). Order: `MH_01_easy`, then `MH_02_easy`,
+   `V1_01_easy`, `MH_03_medium`.
+3. Unzip so that you get:
+
+   ```
+   data/euroc/MH_01_easy/mav0/imu0/data.csv                         IMU: what main.py reads
+   data/euroc/MH_01_easy/mav0/state_groundtruth_estimate0/data.csv  ground truth: scoring only
+   ```
+
+Only `imu0/` and `state_groundtruth_estimate0/` are needed; the camera folders can be deleted locally to
+save space.
+
+## TUM-VI
+
+Schubert et al., *The TUM VI Benchmark for Evaluating Visual-Inertial Odometry*, IROS 2018. Hand-held
+rig, BMI160 IMU at 200 Hz, motion-capture ground truth for part of each sequence.
+
+1. Go to https://cvg.cit.tum.de/data/datasets/vi-dataset.
+2. Download the **Euroc / DSO 512x512** tar for `room1` (smallest useful sequence), e.g.
+   `dataset-room1_512_16.tar`.
+3. Extract to `data/tumvi/dataset-room1_512_16/mav0/`. You need `imu0/data.csv` and the motion-capture
+   ground truth under `mav0/` (folder name not yet checked by us; tell Claude what you see).
+
+## ADVIO (earlier direction, optional)
 
 Cortes, Solin, Rahtu, Kannala. *ADVIO: An Authentic Dataset for Visual-Inertial Odometry.* ECCV 2018.
 Repository: https://github.com/AaltoVision/ADVIO. Licence: **CC BY-NC 4.0** (attribution required,

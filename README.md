@@ -3,7 +3,9 @@
 Samsung PRISM XR Hackathon Challenge 2026, **Track 3: Path Finder, trajectory estimation under sensor
 degradation**. Team: Arnav Jain (lead), Arya M, Nandhitha Chowdary Surapaneni.
 
-> **Learn the aircraft while the sensor is healthy, then trust physics when it isn't.**
+> **Vortex never bets on one source of velocity. It gathers independent velocity witnesses from the
+> IMU's own physics, learns them while the sensor is healthy, and lets a jamming meter decide how much to
+> trust each one.**
 
 ## The problem
 
@@ -16,28 +18,46 @@ one pose per IMU row, and keep predicting for 5 s after the IMU dies. Budget: at
 Integrating a degraded IMU drifts fast, and the usual fix, a neural network trained on other flights, is
 heavy, may not transfer to hidden sequences, and is hard to fit in 8 MB.
 
-## Our approach: a self-calibrating, physics-aided inertial navigator
+## Our approach: velocity witnesses
 
-Vortex uses no pretrained network. It treats the aircraft's own aerodynamics as a second sensor and
-calibrates it during the healthy opening seconds of each flight.
+A degraded IMU drifts because velocity is only ever integrated. Yet the IMU also carries drift-free
+hints about velocity. Each is weak or situational alone; weighted by trust, together they hold drift
+down. Vortex uses no pretrained network: everything is calibrated during the healthy opening seconds of
+each flight.
 
-| Idea | What it does |
+| Witness | What it says about velocity | Applies to | Status in plan |
+|---|---|---|---|
+| **V1 Stillness** | Velocity is about zero on the ground, hovering or paused | Both datasets | Core |
+| **V2 Flight envelope** | Speed and acceleration stay within the range learned in the healthy phase | Both datasets | Core |
+| **V3 Rotor drag** | On a multirotor the horizontal accelerometer axes mostly measure rotor drag, proportional to body-frame velocity; the drag constant is a filter state estimated from IMU data alone ([Leishman et al.](https://typeset.io/pdf/quadrotors-and-accelerometers-state-estimation-with-an-4x1kjlx4ju.pdf), [Martin & Sarras](https://www.arxiv.org/pdf/1510.03249)). Recent learned inertial-odometry methods leave this term out | Multirotor (EuRoC) | Switchable, after an offline go/no-go test |
+| **V4 Turn physics** | In a steady turn, speed is about sideways acceleration divided by turn rate | Steady turns | Switchable |
+| **V5 Walking rhythm** | Step frequency and bounce give walking speed | Hand-held (TUM-VI) | Switchable |
+| **V6 Tilt and acceleration** | A multirotor speeds up as it tilts and slows as it levels | Multirotor | Feeds the blind 5 s forecaster |
+| **V7 Rotor vibration** | Vibration pattern may track rotor speed | Multirotor | Experiment only |
+
+Around the witnesses:
+
+| Component | What it does |
 |---|---|
-| **Rotor drag as a speedometer** (W1) | On a multirotor, the accelerometer's horizontal axes mostly measure rotor drag, which is proportional to body-frame velocity. So the accelerometer measures velocity directly, without integration drift. The drag constant is a filter state estimated from IMU data alone ([Leishman et al.](https://typeset.io/pdf/quadrotors-and-accelerometers-state-estimation-with-an-4x1kjlx4ju.pdf), [Martin & Sarras](https://www.arxiv.org/pdf/1510.03249)). Recent learned inertial-odometry methods leave this term out. |
-| **Healthy-phase self-calibration** (W2) | Learns biases, noise floor and drag constant while the IMU is still clean, then relies on them as jamming rises. |
-| **Jamming meter** (W3) | Estimates noise level and bias drift every second; the filter's trust follows it, and physically impossible samples are gated out. A fault changes trust, never silently anything else. |
-| **Platform detection** (W4) | Tells a multirotor (EuRoC) from a hand-held rig (TUM-VI) from the IMU spectrum, and switches the physics prior: drag model or walking gait. |
-| **Blind 5 s forecaster** (W5) | A tiny model of this flight's own motion, fitted online by recursive least squares, blended with drag deceleration, with a widening confidence cone. |
-| **Confidence per pose** (W6) | Position covariance for every row in `metadata.json`, and a reported coverage: how often the true position fell inside our 90% bound, per fault type. |
+| **Healthy-phase self-calibration** | Learns biases, noise floor, drag constant and flight envelope while the IMU is still clean. |
+| **Jamming meter** | Estimates noise level and bias drift every second and sets the trust of the IMU and of every witness; physically impossible samples are gated out. A fault changes trust, never silently anything else. |
+| **Platform detection** | Tells a multirotor (EuRoC) from a hand-held rig (TUM-VI) from the IMU spectrum and picks the matching witnesses. |
+| **Blind 5 s forecaster** | A tiny model of this flight's own motion, fitted online by recursive least squares, constrained by tilt, drag and the envelope, with a widening confidence cone. |
+| **Confidence per pose** | Position covariance for every row in `metadata.json`, and a reported coverage: how often the true position fell inside our 90% bound, per fault type. |
 
 Every row of the input still produces exactly one output pose: during dropouts the estimator coasts on
 the last trusted rates, and after failure the forecaster takes over.
 
-Each W feature sits behind a switch and stays on only if our scoring script shows a gain on sequences
-we did not tune on. The ablation table in the final results is generated by script.
+No witness is load-bearing: V1 and V2 alone must bound drift. Every other witness sits behind a switch
+and stays on only if our scoring script shows a gain on sequences we did not tune on. The ablation table
+in the final results is generated by script.
 
-**Honest limits.** The drag signal is small next to rotor vibration and has not yet been tested on
-EuRoC's IMU in this pipeline. It applies to multirotors only, hence the gait prior for hand-held data.
+**Honest limits.** No witness has been tested on EuRoC or TUM-VI yet. Drag is small next to rotor
+vibration, turn physics only holds in steady turns, and rotor vibration may be unusable at a 200 Hz IMU.
+
+**Beyond the competition.** On a real aircraft the same trust layer takes witnesses that jamming cannot
+touch: pitot tube (airspeed), barometer (climb rate), optical flow, motor RPM. The scored run uses only
+`imu0/data.csv`; these belong to the deployment story and the S24 demo (the phone's barometer).
 
 ## Status (15 Nov 2026)
 
@@ -47,7 +67,7 @@ EuRoC's IMU in this pipeline. It applies to multirotors only, hence the gait pri
 | Synthetic IMU generator, still-period detection, dead-reckoning baselines | Done, tested |
 | Sensor stations: live Galaxy S24 stream (Sensor Logger HTTP push), synthetic stream | Done, tested with simulated pushes. **Not yet run with the real S24.** |
 | EuRoC/TUM-VI loader, degradation script, `main.py`, output checker | Not started |
-| Error-state filter, W1 to W6 | Not started |
+| Error-state filter, velocity witnesses V1 to V7, self-calibration, jamming meter, forecaster | Not started |
 | Benchmark (peak RAM, ms per second of IMU), scoring split by fault window | Not started |
 | Submission bundle, Dockerfile | Not started |
 
