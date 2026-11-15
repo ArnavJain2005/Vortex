@@ -141,6 +141,13 @@ def load_ground_truth(seq: str | Path) -> Trajectory:
             break
     else:
         raise FileNotFoundError("no ground truth (%s) under %s" % (", ".join(GT_FOLDERS), mav0))
+    tr = read_ground_truth_csv(gt)
+    tr.name = Path(seq).name
+    return tr
+
+
+def read_ground_truth_csv(gt: str | Path) -> Trajectory:
+    """SCORING ONLY. EuRoC/TUM-VI ground-truth csv: t [ns], p(3), q(w, x, y, z), extra columns ignored."""
     t_ns, rows = [], []
     with open(gt, "r", encoding="ascii", errors="replace") as f:
         for line in f:
@@ -151,5 +158,5 @@ def load_ground_truth(seq: str | Path) -> Trajectory:
             rows.append([float(x) for x in fields[1:8]])
     a = np.array(rows, dtype=float)
     t = np.array(t_ns, dtype=np.int64) / 1e9
-    return Trajectory(t=t, p=a[:, 0:3], q=quat_normalize(a[:, 3:7]), name=Path(seq).name,
+    return Trajectory(t=t, p=a[:, 0:3], q=quat_normalize(a[:, 3:7]), name=Path(gt).parent.name,
                       meta={"source": str(gt), "t0_ns": int(t_ns[0])})

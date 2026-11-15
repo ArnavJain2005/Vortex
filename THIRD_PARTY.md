@@ -6,7 +6,7 @@
 | ADVIO calibration values (IMU biases, camera-IMU rotation) | Constants in `vortex/data/advio.py`, with source noted | Published with the dataset | Numeric constants only |
 | ADVIO scripts (`my_utils.py`, `sync-data.py`) | Read to learn the CSV formats; no code reused | GPL-2.0 or later | No |
 | [Sensor Logger](https://github.com/tszheichoi/awesome-sensor-logger) app (Kelvin Tsz Hei Choi) | Records our Samsung S24 sensors to CSV, and pushes them live over HTTP to `vortex station` | Proprietary app, free tier; we only read its exported files and its documented push JSON | No |
-| [evo](https://github.com/MichaelGrupp/evo) | Optional independent cross-check of our metrics on exported TUM files | GPL-3.0 | No. Not a dependency; install separately if wanted |
+| [evo](https://github.com/MichaelGrupp/evo) | Independent cross-check of `vortex/scoring.py` (`tools/crosscheck_evo.py`, results in `Docs/EVO_CROSSCHECK.md`); our scorer re-implements the published definitions, no evo code copied | GPL-3.0 | No. Not a dependency; pip-installed in a separate venv only to run the cross-check |
 | numpy, pandas, matplotlib, pytest | Runtime and test dependencies | BSD / PSF-style | No (installed by pip) |
 
 Our own code is MIT-licensed (see `LICENSE`). Anything that would bring GPL code into the repo needs a
