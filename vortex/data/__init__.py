@@ -1,3 +1,3 @@
-from . import advio, synthetic
+from . import advio, phone, synthetic
 
-__all__ = ["advio", "synthetic"]
+__all__ = ["advio", "phone", "synthetic"]

@@ -3,6 +3,7 @@
     python -m vortex check --advio data/advio --seq 1
     python -m vortex baselines --advio data/advio --seq 1 [--blackout 60 5] [--out results]
     python -m vortex baselines --synthetic [--seed 0]
+    python -m vortex check --phone data/phone/walk-01 [--checkpoints data/phone/checkpoints.csv]
 """
 
 from __future__ import annotations
@@ -15,7 +16,7 @@ from pathlib import Path
 import numpy as np
 
 from . import baselines, metrics
-from .data import advio, synthetic
+from .data import advio, phone, synthetic
 from .trajectory_io import write_tum
 from .types import Sequence
 
@@ -28,6 +29,7 @@ def main(argv: list[str] | None = None) -> int:
         g = p.add_mutually_exclusive_group(required=True)
         g.add_argument("--advio", type=Path, help="folder holding advio-NN/ sequence folders")
         g.add_argument("--synthetic", action="store_true", help="use the built-in synthetic sequence")
+        g.add_argument("--phone", type=Path, help="unzipped Sensor Logger recording from the phone (S24)")
         p.add_argument("--seq", type=int, default=1, help="ADVIO sequence number (default 1)")
         p.add_argument("--pose-source", choices=["arkit", "arcore"], default="arkit")
         p.add_argument("--accel-sign", type=float, default=advio.ACCEL_SIGN, help="ADVIO accelerometer sign")
@@ -35,6 +37,7 @@ def main(argv: list[str] | None = None) -> int:
 
     c = sub.add_parser("check", help="validate a sequence and test the accelerometer sign")
     add_source(c)
+    c.add_argument("--checkpoints", type=Path, help="phone only: CSV of name,x,y,z floor checkpoints")
 
     b = sub.add_parser("baselines", help="score the naive baselines")
     add_source(b)
@@ -51,6 +54,10 @@ def main(argv: list[str] | None = None) -> int:
     b.add_argument("--no-plot", action="store_true")
 
     args = ap.parse_args(argv)
+    if args.phone is not None:
+        if args.cmd != "check":
+            ap.error("phone recordings have no ground-truth trajectory, so only 'check' works on them for now")
+        return _check_phone(phone.load_sensor_logger(args.phone), args.checkpoints)
     seq = _load(args)
     if args.cmd == "check":
         return _check(seq)
@@ -90,6 +97,44 @@ def _check(seq: Sequence) -> int:
     else:
         print("              WARNING: negated accelerometer fits better. Re-run with --accel-sign "
               f"{-seq.meta.get('accel_sign', 1.0):g} and report this.")
+    return 0
+
+
+def _check_phone(rec: "phone.PhoneRecording", checkpoints_path: Path | None) -> int:
+    imu, m = rec.imu, rec.meta
+    print(f"recording     {rec.name}")
+    print(f"device        {m.get('device name', m.get('deviceName', 'unknown'))}  platform {m.get('platform', '?')}")
+    raw = m["raw_rate_hz"]
+    print(f"imu           {len(imu.t)} samples over {imu.t[-1] - imu.t[0]:.1f} s, resampled to {m['resample_hz']:g} Hz "
+          f"(raw gyro ~{raw['gyro']:.0f} Hz, accel ~{raw['accel']:.0f} Hz, from {m['accel_source']})")
+    for label, s in [("magnetometer", rec.magnetometer), ("barometer", rec.barometer)]:
+        if s is None:
+            print(f"{label:13s} not recorded")
+        else:
+            print(f"{label:13s} {len(s.t)} samples  ~{_rate(s.t):.1f} Hz  columns {s.columns}")
+    acc_norm = np.linalg.norm(imu.accel, axis=1)
+    print(f"|accel|       median {np.median(acc_norm):.3f} m/s^2 (expect about 9.8)")
+    spans = phone.still_windows(imu)
+    if spans:
+        s0, s1 = spans[0]
+        sel = (imu.t >= s0) & (imu.t <= s1)
+        bias = imu.gyro[sel].mean(axis=0)
+        f_mean = imu.accel[sel].mean(axis=0)
+        print(f"still         {len(spans)} still period(s); first {s0:.1f}-{s1:.1f} s")
+        print(f"              gyro bias there {np.round(bias, 4)} rad/s; gravity reads {np.linalg.norm(f_mean):.3f} m/s^2")
+    else:
+        print("still         WARNING: no still period found. Hold the phone still for 3 s at the start and end.")
+    print(f"annotations   {len(rec.annotations)}" + (": " + ", ".join(f"{a.text}@{a.t:.1f}s" for a in rec.annotations[:10])
+                                                    if rec.annotations else ""))
+    if checkpoints_path is not None:
+        cps = phone.read_checkpoints(checkpoints_path)
+        texts = {a.text for a in rec.annotations}
+        missing = sorted(set(cps) - texts)
+        unknown = sorted(texts - set(cps))
+        print(f"checkpoints   {len(cps)} defined; matched {len(set(cps) & texts)}; "
+              f"never annotated {missing or 'none'}; annotations with no checkpoint {unknown or 'none'}")
+    ok = 9.3 < np.median(acc_norm) < 10.3 and bool(spans)
+    print("              OK: recording looks usable." if ok else "              WARNING: see the lines above.")
     return 0
 
 
