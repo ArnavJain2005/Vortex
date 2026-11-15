@@ -28,7 +28,7 @@ meter sets the trust of each:
 |---|---|---|
 | V1 Stillness (zero-velocity updates) | Both datasets | Core |
 | V2 Flight envelope learned in the healthy phase | Both datasets | Core |
-| V3 Rotor drag (horizontal specific force proportional to body velocity) | Multirotor (EuRoC) | Switchable, after offline go/no-go |
+| V3 Rotor drag (horizontal specific force proportional to body velocity) | Multirotor (EuRoC) | **Off: NO-GO** on MH_01 (16 Nov, pre-registered rule). Exploratory: k about 0.2 /s in flight on all five MH sequences; revisit only with a new rule fixed in advance |
 | V4 Turn physics (speed = lateral accel / turn rate, steady turns) | Steady turns | Switchable |
 | V5 Walking rhythm | Hand-held (TUM-VI) | Switchable |
 | V6 Tilt and acceleration link | Multirotor | Feeds the blind 5 s forecaster |
@@ -65,7 +65,7 @@ organisers, see Q1). Full-time work starts **20 Nov**.
 | Q3 | Are waypoint positions or times given as input? | Arnav |
 | Q4 | Is 8 MB peak RAM measured for the whole process or the algorithm only? Is `main.cpp` accepted? **Now urgent:** a bare `python -S -c pass` already peaks at 8.4 MB RSS (WSL2 Linux, 3.12) and 9.5 to 9.7 MB (Windows 3.13/3.14), so CPython cannot meet 8 MB whole-process RSS; a C++ parse + write floor peaks at 4.3 MB (Windows). See `Docs/FLOOR.md`. Step 6a: compiling the larger `main.py` source adds about 1.1 MB peak RSS (11.8 vs 10.7 MB compile-only, Win 3.14); a 3-line stub importing a cached `.pyc` peaks at 10.3 MB, but a `.pyc` only works on the matching Python version (decide in step 9) | Arnav |
 | Q5 | Demo video length: 2 to 3, 3, or 5 minutes? | Arnav |
-| Q6 | Is the rotor-drag signal visible in EuRoC's IMU (offline fit on clean MH_01)? | Arnav + Claude, before 20 Nov |
+| Q6 | Is the rotor-drag signal visible in EuRoC's IMU (offline fit on clean MH_01)? **Answered 16 Nov: NO-GO under the pre-registered rule** (whole sequence; the hand-carried start breaks it). Exploratory in-flight fit: visible, k 0.14 to 0.25 /s. See `Docs/DRAG.md` | Arnav + Claude, before 20 Nov |
 
 ## Results so far (15 Nov 2026, branch `track3/python-pipeline`)
 
@@ -120,11 +120,34 @@ Which alignment the organisers use with evo is still unknown; `score.py` reports
 
 | Item | Result | Where |
 |---|---|---|
-| `pytest` | 131 passed (116 earlier + 8 strapdown + 7 equivalence; the 4 drag-tool tests live on the step-5 branch) | Windows, Python 3.14.7 |
+| `pytest` | 131 passed (116 earlier + 8 strapdown + 7 equivalence); 136 with the step 5 branch merged in (+5 drag tool) | Windows, Python 3.14.7 |
 | `main.py` vs reference, every row | max difference exactly 0 (position and quaternion) on the messy file, 36,000 random rows, degraded files and physical motion | Windows 3.14 |
 | Noiseless SYNTHETIC motion, 30 s, true initial attitude | position error 6.3 mm, attitude error 4.2e-6 rad | reference |
 | `python -S main.py`, whole process (36,000 rows) | 5.07 us/row (Linux 3.12), 5.67 (Win 3.13), 7.05 (Win 3.14); before: 2.12, 3.24, 2.93. In-process loop 3.5 to 5.4 us/row. The machine also measured about 20 % slower on the unchanged parse stage this run | i7-14650HX |
 | Peak RSS, whole process | 10.14 MB (Linux), 11.29 (Win 3.13), 11.66 (Win 3.14); before: 8.96, 10.19, 10.57. Cause: compiling the bigger source (see Q4), not the run | same |
 | tracemalloc peak | 159 to 283 KB | same |
 
-No result on EuRoC or TUM-VI exists yet.
+## First real data: EuRoC Machine Hall (16 Nov 2026, branch `track3/step5-mh01`)
+
+Downloaded by Arnav from the ETH Research Collection (`machine_hall.zip`, 12.7 GB, all five MH sequences with bags). Only `imu0` and `state_groundtruth_estimate0` were extracted to `data/euroc/MH_0x_*/mav0/` (git-ignored). Rows: MH_01 36,820 IMU and 36,382 ground truth; MH_02 30,400 and 29,993; MH_03 27,008 and 26,302; MH_04 20,320 and 19,753; MH_05 22,721 and 22,212.
+
+| Item | Result | Where |
+|---|---|---|
+| Drag go/no-go on MH_01, pre-registered rule (`tools/drag_fit.py`, rule committed in a1a8f65 before the data) | **NO-GO**: first-half k = -0.09 (y), -0.11 (z); held-out R^2 -0.71, -0.66. V3 stays off | `Docs/DRAG.md`, `Docs/drag/MH_01_easy.svg` |
+| Same rule on MH_02 to MH_05 (extra evidence) | NO-GO on all four; body y passes on MH_03 only | same |
+| Why: ground truth shows MH sequences start **hand-carried** (MH_01: 0.8 m/s at t = 0), then a ground rest (MH_01: about 20 to 44 s), then flight. Carried motion has no rotor drag | Rest ends at 43.6, 37.7, 17.0, 18.9, 19.5 s (MH_01 to 05) | `--after-rest` output |
+| EXPLORATORY (post hoc): fit only after the longest ground rest | k = 0.18 to 0.25 /s (y), 0.14 to 0.24 /s (z) on all five; in-flight R^2 0.69 to 0.96 (y), 0.38 to 0.61 (z); raw unsmoothed R^2 at most 0.15, so drag needs about 1 s of averaging | `Docs/DRAG.md` rows `*_after_rest` |
+| Body z sits at about -3.3 m/s^2 in flight: the IMU x axis is about 20 deg off the thrust axis, so thrust changes leak into z | A future V3 should use axes perpendicular to the measured thrust direction | `Docs/drag/MH_05_difficult_after_rest.svg` |
+| **Consequence for initialisation**: the "first second is still" assumption of step 6a does not hold on EuRoC MH | Init must find stillness anywhere in the healthy phase, or work while moving (step 6b) | ground truth |
+
+## Step 6a on real MH_01 (16 Nov 2026, branch `track3/step6-integrator`)
+
+| Item | Result | Where |
+|---|---|---|
+| `main.py` on MH_01 + `vortex/check_output.py` | PASS: 36,820 rows in, 36,820 out; 0.39 s wall | Windows, Python 3.14 |
+| `benchmark.py --input` MH_01 | 6.36 us/row, 1.27 ms per IMU-s (an earlier run: 5.30, 1.06), peak RSS 11.66 MB, tracemalloc 283 KB, gate PASS | `Docs/BUDGET.md` row `windows-py314-mh01` |
+| Init on MH_01's first second | Not still (accel std up to 1.3 m/s^2): falls back to gyro bias 0, g = 9.81 | as designed; see the hand-carried start above |
+| `score.py` on that output (pure dead reckoning, uncorrected gyro bias of 0.079 rad/s about z) | ATE se3 51,304 m, final 118 km; sim3 4.2 m. Expected without bias estimation or witnesses; this is the floor step 6b and 7 must beat | scratch run, not committed |
+| `tools/integrator_check.py` MH_01, start 25 s (ground rest) | OWN INIT from that rest window: gyro bias (-0.0034, 0.0210, 0.0797) vs ground truth (-0.0032, 0.0213, 0.0785) rad/s; end error 0.25 m after 10 s, 6.6 m after 30 s, 121 m after 60 s (yaw + origin fitted). ORACLE (ground-truth attitude and biases): 2.1, 51, 293 m | Windows 3.14 |
+| Same, MH_02, start 28 s | own gyro bias within 1.5e-3 rad/s of ground truth; 0.18 m after 5 s, 1.1 m after 10 s | same |
+| Conclusion | Frames, signs and time base are right on real data (a frame error would give about 500 m in 10 s). Drift over a minute comes from the uncorrected accelerometer bias (0.137 m/s^2 on y) and is what the witnesses must bound | |

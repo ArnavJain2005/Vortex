@@ -1,135 +1,109 @@
-# Vortex
+<div align="center">
 
-Samsung PRISM XR Hackathon Challenge 2026, **Track 3: Path Finder, trajectory estimation under sensor
-degradation**. Team: Arnav Jain (lead), Arya M, Nandhitha Chowdary Surapaneni.
+<img src="assets/vortex-title.gif" alt="Vortex — Path Finder. An animated IMU trajectory passes through a degraded segment and continues into five seconds of blind prediction." width="100%">
 
-> **Vortex never bets on one source of velocity. It gathers independent velocity witnesses from the
-> IMU's own physics, learns them while the sensor is healthy, and lets a jamming meter decide how much to
-> trust each one.**
+<br>
 
-## The problem
+<a href="https://research.samsung.com/"><img src="assets/samsung-research-card.svg" alt="Samsung Research (R&amp;D)" width="220"></a>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+<a href="https://www.samsungprism.com/"><img src="assets/samsung-prism.png" alt="Samsung PRISM" width="125"></a>
 
-An aircraft flies through waypoints in a GPS-denied area. Jamming makes its IMU steadily worse: rising
-noise, drifting bias, 2-second dropouts, then total failure. From the degraded IMU alone (EuRoC MAV and
-TUM-VI data, EuRoC `imu0/data.csv` format, gravity alignment unknown) we must output the 6-DoF trajectory,
-one pose per IMU row, and keep predicting for 5 s after the IMU dies. Budget: at most 8 MB peak RAM and
-20 ms of compute per second of IMU, on a single thread, offline.
+<p><strong>Samsung PRISM XR Hackathon Challenge 2026 · Track 3: Path Finder</strong></p>
+<p>IMU-only, 6-DoF trajectory estimation under sensor degradation.</p>
 
-Integrating a degraded IMU drifts fast, and the usual fix, a neural network trained on other flights, is
-heavy, may not transfer to hidden sequences, and is hard to fit in 8 MB.
+[The challenge](#the-challenge) · [Solution design](#solution-design) · [Evidence](#what-is-verified) · [Run Vortex](#run-vortex) · [Technical notes](#technical-notes)
 
-## Our approach: velocity witnesses
+</div>
 
-A degraded IMU drifts because velocity is only ever integrated. Yet the IMU also carries drift-free
-hints about velocity. Each is weak or situational alone; weighted by trust, together they hold drift
-down. Vortex uses no pretrained network: everything is calibrated during the healthy opening seconds of
-each flight.
+---
 
-| Witness | What it says about velocity | Applies to | Status in plan |
-|---|---|---|---|
-| **V1 Stillness** | Velocity is about zero on the ground, hovering or paused | Both datasets | Core |
-| **V2 Flight envelope** | Speed and acceleration stay within the range learned in the healthy phase | Both datasets | Core |
-| **V3 Rotor drag** | On a multirotor the horizontal accelerometer axes mostly measure rotor drag, proportional to body-frame velocity; the drag constant is a filter state estimated from IMU data alone ([Leishman et al.](https://typeset.io/pdf/quadrotors-and-accelerometers-state-estimation-with-an-4x1kjlx4ju.pdf), [Martin & Sarras](https://www.arxiv.org/pdf/1510.03249)). Recent learned inertial-odometry methods leave this term out | Multirotor (EuRoC) | Switchable, after an offline go/no-go test |
-| **V4 Turn physics** | In a steady turn, speed is about sideways acceleration divided by turn rate | Steady turns | Switchable |
-| **V5 Walking rhythm** | Step frequency and bounce give walking speed | Hand-held (TUM-VI) | Switchable |
-| **V6 Tilt and acceleration** | A multirotor speeds up as it tilts and slows as it levels | Multirotor | Feeds the blind 5 s forecaster |
-| **V7 Rotor vibration** | Vibration pattern may track rotor speed | Multirotor | Experiment only |
+## The challenge
 
-Around the witnesses:
+An aircraft must navigate without GPS or cameras while its IMU becomes less reliable: noise and bias grow, readings disappear for up to two seconds, and the sensor eventually fails. The task is to reconstruct a **6-DoF pose for every input IMU row**, including the five seconds after failure, from a EuRoC-format `imu0/data.csv` alone. The evaluator uses EuRoC MAV and TUM-VI sequences with hidden ground truth.
 
-| Component | What it does |
+| Input and output | Operating limits | Evaluation |
+|---|---|---|
+| Gyroscope + accelerometer → `timestamp tx ty tz qx qy qz qw`; one pose per input row, same order | Offline, one thread; **8 MB peak RAM** and **20 ms compute per second of IMU** | 60 points for trajectory (waypoints 30, blind prediction 20, dropouts 10); 40 for efficiency |
+
+Plain inertial integration compounds small biases into large position errors. Vortex's proposed answer is to extract several **velocity witnesses** from the same IMU, learn each witness on the healthy opening of a flight, and lower its trust when the sensor degrades. The scored path uses no camera, GPS, barometer, ground truth, or pretrained model.
+
+## Solution design
+
+> **One sensor, several physical clues.** A witness is a conditional hint about velocity, not a replacement for the IMU. The proposed filter fuses useful hints with fault-aware weights and preserves a pose for every row.
+
+```mermaid
+flowchart TD
+    A["Degraded IMU CSV"] --> B["Row-preserving input + fault detection"]
+    B --> C["Initialisation + healthy-phase calibration"]
+    C --> D["IMU integration + adaptive trust"]
+    D --> E["Velocity witnesses: stillness, envelope, optional physics cues"]
+    E --> F["Dropout bridging + blind 5 s forecast"]
+    F --> G["6-DoF poses + output validation"]
+```
+
+**This is the target estimator, not the current behavior of `main.py`.** The working entry point currently parses each row and writes an identity pose. The filter, witness fusion, and blind forecaster are the next implementation stages; no EuRoC or TUM-VI accuracy is claimed.
+
+| Planned witness | Physical cue | Role |
+|---|---|---|
+| Stillness + flight envelope | Zero-velocity periods and a speed range learned on this flight | Core drift limits |
+| Rotor drag + turn physics | Body-frame drag on a multirotor; lateral acceleration during steady turns | Switchable after held-out validation |
+| Walking rhythm + tilt response | Gait on hand-held sequences; tilt/acceleration link on a multirotor | Platform-specific experiments and forecasting |
+
+The proposed jamming meter adjusts trust as noise and bias rise. Additional cues stay behind switches unless an ablation improves held-out accuracy **and** fits the compute budget. See the [full design and acceptance plan](Docs/TRACK3_PLAN.md).
+
+## What is verified
+
+| In the repository today | Evidence |
 |---|---|
-| **Healthy-phase self-calibration** | Learns biases, noise floor, drag constant and flight envelope while the IMU is still clean. |
-| **Jamming meter** | Estimates noise level and bias drift every second and sets the trust of the IMU and of every witness; physically impossible samples are gated out. A fault changes trust, never silently anything else. |
-| **Platform detection** | Tells a multirotor (EuRoC) from a hand-held rig (TUM-VI) from the IMU spectrum and picks the matching witnesses. |
-| **Blind 5 s forecaster** | A tiny model of this flight's own motion, fitted online by recursive least squares, constrained by tilt, drag and the envelope, with a widening confidence cone. |
-| **Confidence per pose** | Position covariance for every row in `metadata.json`, and a reported coverage: how often the true position fell inside our 90% bound, per fault type. |
+| Standalone, standard-library `main.py` with exact nanosecond-to-second timestamp text conversion and one output pose per data row | Synthetic row, malformed-field, BOM, duplicate, and fault cases; [output contract and checker](vortex/check_output.py) |
+| Seeded noise, bias, dropout, and terminal-failure injection | [Degradation tool](vortex/degrade.py) with recorded fault windows |
+| ATE/RPE scoring, alignment modes, and separate healthy, degraded, dropout, and blind windows | [Scorer](vortex/scoring.py) cross-checked against independently installed evo on **synthetic** trajectories; worst reported difference **4.2 × 10⁻⁷ m** ([ledger](Docs/EVO_CROSSCHECK.md)) |
+| Single-process timing and memory measurement across Linux and Windows | [Generated budget ledger](Docs/BUDGET.md), with input, machine, Python version, and commit recorded |
+| Optional Galaxy S24 HTTP push and a synthetic station | Simulated pushes tested; a real S24 session has **not** been verified |
 
-Every row of the input still produces exactly one output pose: during dropouts the estimator coasts on
-the last trusted rates, and after failure the forecaster takes over.
+**Recorded baseline, not an estimator score.** The current identity-pose skeleton passed the output checker on a synthetic 36,000-row (180 s) EuRoC-format file. Measured on an Intel i7-14650HX with `python -S main.py`:
 
-No witness is load-bearing: V1 and V2 alone must bound drift. Every other witness sits behind a switch
-and stays on only if our scoring script shows a gain on sequences we did not tune on. The ablation table
-in the final results is generated by script.
+| Environment | Wall time per IMU-second | Peak process RSS | What this means |
+|---|---:|---:|---|
+| WSL2 Linux, Python 3.12 | 0.42 ms | 8.96 MB | I/O and formatting baseline only |
+| Windows, Python 3.13 / 3.14 | 0.65 / 0.59 ms | 10.19 / 10.57 MB | Same synthetic baseline |
 
-**Honest limits.** No witness has been tested on EuRoC or TUM-VI yet. Drag is small next to rotor
-vibration, turn physics only holds in steady turns, and rotor vibration may be unusable at a 200 Hz IMU.
+The README does **not** claim the 8 MB whole-process limit is met: CPython alone exceeded it on these machines. Whether the evaluator counts whole-process RSS or algorithm memory is still open. The latest recorded suite is **116 passing tests on Windows/Python 3.14**; [the plan](Docs/TRACK3_PLAN.md) states which inputs were synthetic and which real-data checks remain.
 
-**Beyond the competition.** On a real aircraft the same trust layer takes witnesses that jamming cannot
-touch: pitot tube (airspeed), barometer (climb rate), optical flow, motor RPM. The scored run uses only
-`imu0/data.csv`; these belong to the deployment story and the S24 demo (the phone's barometer).
+## Run Vortex
 
-## Status (15 Nov 2026)
+Python 3.10+; the submission entry point itself uses only the standard library. Analysis and test tools use the dependencies in `pyproject.toml`.
 
-| Part | State |
-|---|---|
-| Quaternion maths, data types, ATE/RPE metrics with alignment, TUM writer | Done, tested |
-| Synthetic IMU generator, still-period detection, dead-reckoning baselines | Done, tested |
-| Sensor stations: live Galaxy S24 stream (Sensor Logger HTTP push), synthetic stream | Done, tested with simulated pushes. **Not yet run with the real S24.** |
-| EuRoC/TUM-VI loader, degradation script, `main.py`, output checker | Not started |
-| Error-state filter, velocity witnesses V1 to V7, self-calibration, jamming meter, forecaster | Not started |
-| Benchmark (peak RAM, ms per second of IMU), scoring split by fault window | Not started |
-| Submission bundle, Dockerfile | Not started |
+```bash
+python -m pip install -e '.[dev]'
+pytest
 
-32 tests pass (Linux, Python 3.13). **No result on EuRoC or TUM-VI has been measured yet.** No accuracy,
-memory or runtime figure is claimed until a script in this repo produces it. Synthetic numbers describe
-the code, not real data.
-
-## Quick start
-
-Python 3.10+.
-
-```
-pip install -e .[dev]
-pytest                                            # 32 tests
-python -m vortex check --synthetic
-python -m vortex baselines --synthetic            # writes results/synthetic-s0/
+# Create an I/O test file (synthetic format, not a physical flight).
+python tools/synth_euroc.py imu.csv --rows 36000 --seed 0
+python -S main.py imu.csv estimated_trajectory.txt
+python -m vortex.check_output imu.csv estimated_trajectory.txt
 ```
 
-Planned submission entry point (not built yet):
+The checker should print `PASS: 36000 input rows, 36000 output rows`. **The generated poses are currently identities**, so this command tests the input/output contract, not navigation accuracy.
 
-```
-python main.py path/to/imu0/data.csv estimated_trajectory.txt
-```
+For a real sequence, place downloaded data under the ignored `data/` directory ([dataset setup](Docs/DATA.md)). To exercise fault injection and scoring:
 
-Output: `timestamp tx ty tz qx qy qz qw`, timestamps in seconds, space-separated, one line per input IMU
-row.
-
-## Demo: live jamming dial on a Galaxy S24
-
-For the jury round, the same estimator runs on a Samsung Galaxy S24's IMU streamed live over Wi-Fi. A
-slider raises noise, bias and dropouts while the trajectory and its confidence cone update, then the IMU
-is cut and the blind 5 s cone grows. The phone is hand-held, so the demo shows the jamming meter, the
-gait prior and blind prediction, not the drag model.
-
-```
-python -m vortex station                          # waits 30 s for the S24, else synthetic
-python -m vortex station --source phone --save data/phone/live-01
+```bash
+python -m vortex.degrade data/euroc/MH_01_easy out/MH_01_s1 --seed 1
+python -S main.py out/MH_01_s1/mav0/imu0/data.csv out/MH_01_s1/estimated_trajectory.txt
+python -m vortex.check_output out/MH_01_s1/mav0/imu0/data.csv out/MH_01_s1/estimated_trajectory.txt
+python score.py --gt data/euroc/MH_01_easy --est out/MH_01_s1/estimated_trajectory.txt --events out/MH_01_s1/degrade.json
 ```
 
-It prints the URL to enter in Sensor Logger (Settings > Data Streaming > HTTP Push). Phone and computer
-must be on the same Wi-Fi. The jamming dial itself is not built yet.
+This second path requires the locally downloaded EuRoC sequence and has **not yet been run on real EuRoC data** in the project record.
 
-## Repository layout
+## Technical notes
 
-```
-vortex/              Python package
-  geometry.py        quaternions (Hamilton, w x y z, body-to-world)
-  types.py           ImuData, Trajectory, Sequence
-  metrics.py         alignment, ATE, RPE, drift
-  trajectory_io.py   TUM read/write
-  baselines.py       dead reckoning, freeze-on-loss
-  stations.py        live sensor stations: S24 via HTTP push, synthetic
-  data/synthetic.py  synthetic sequences with exact ground truth
-  data/phone.py      S24 recordings exported by Sensor Logger
-  data/advio.py      ADVIO loader (earlier direction, kept for reference)
-  cli.py             `python -m vortex ...`
-tests/               pytest suite
-Docs/                plan, data instructions
-```
+- [Track 3 plan](Docs/TRACK3_PLAN.md) — current stage, target estimator, open questions, and verification status.
+- [Budget ledger](Docs/BUDGET.md) and [efficiency floor](Docs/FLOOR.md) — generated timing and memory results, including the interpreter-only cost.
+- [Scorer cross-check](Docs/EVO_CROSSCHECK.md) — numerical comparisons with evo on synthetic trajectories.
+- [Data instructions](Docs/DATA.md) and [third-party notices](THIRD_PARTY.md) — datasets stay outside the repository.
 
-## Third-party data and code
+**Team:** Arnav Jain (lead), Arya M, Nandhitha Chowdary Surapaneni. This is a team submission to the Samsung PRISM XR Hackathon Challenge 2026. Samsung Research and Samsung PRISM marks identify the challenge context; Vortex is the team's project.
 
-See [`THIRD_PARTY.md`](THIRD_PARTY.md). EuRoC, TUM-VI and ADVIO data are not committed to this repo.
-[evo](https://github.com/MichaelGrupp/evo) (GPL-3) is used only as an installed tool for cross-checking
-metrics; none of its code is copied in.
+<sub>Project code: [MIT](LICENSE). Brand marks are Samsung's; [Research mark](https://cdn.codeground.org/nsr/images/layout/logo-sr.png) and [PRISM mark](https://www.samsungprism.com/assets/images/prism_logo.png) are reproduced from their official sites.</sub>

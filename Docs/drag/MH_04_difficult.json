@@ -1,0 +1,72 @@
+{
+ "axes": {
+  "y": {
+   "c_first_half": -0.22003125367342208,
+   "c_full": -0.13715199773175535,
+   "checks": {
+    "k_positive": true,
+    "k_stable": false,
+    "r2_test_ok": true
+   },
+   "f_std": 0.3073360369619324,
+   "k_diff_velocity": 0.22019341396408226,
+   "k_first_half": 0.13757984480527932,
+   "k_full": 0.22040946983231116,
+   "k_raw": 0.2181251642803535,
+   "k_rel_change": 0.6863922990107355,
+   "k_second_half": 0.2320135907787152,
+   "pass": false,
+   "r2_diff_velocity": 0.4285393666991876,
+   "r2_first_half": 0.09671838815111011,
+   "r2_full": 0.42864642159996735,
+   "r2_raw": 0.09760271847209623,
+   "r2_second_half_refit": 0.9632891083927106,
+   "r2_test": 0.8037069870686125,
+   "r2_test_same_offset": 0.30266616230992527,
+   "v_std": 0.9129202450684012
+  },
+  "z": {
+   "c_first_half": -3.5274742841366,
+   "c_full": -3.4351873616266917,
+   "checks": {
+    "k_positive": true,
+    "k_stable": false,
+    "r2_test_ok": false
+   },
+   "f_std": 0.2859006040852042,
+   "k_diff_velocity": 0.1688573987435934,
+   "k_first_half": 0.04955947791302058,
+   "k_full": 0.1686310575888295,
+   "k_raw": 0.16465675103630736,
+   "k_rel_change": 2.7697322187958004,
+   "k_second_half": 0.18682596063541254,
+   "pass": false,
+   "r2_diff_velocity": 0.10361555625764107,
+   "r2_first_half": 0.004105050647897013,
+   "r2_full": 0.10231651303007183,
+   "r2_raw": 0.013800380719409033,
+   "r2_second_half_refit": 0.42696824308331616,
+   "r2_test": 0.19647927819140243,
+   "r2_test_same_offset": -0.7177105325077329,
+   "v_std": 0.542313448877058
+  }
+ },
+ "bias_removed": true,
+ "date": "2026-11-16",
+ "decision": "NO-GO",
+ "imu_rate_hz": 200.00000001931298,
+ "overlap_s": 98.75999999046326,
+ "rows_imu": 20320,
+ "rows_used": 19753,
+ "rows_valid": 20320,
+ "rule": {
+  "max_k_rel_change": 0.3,
+  "min_r2_test": 0.5,
+  "smooth_s": 1.0
+ },
+ "sequence": "MH_04_difficult",
+ "smooth_rows": 200,
+ "smooth_s": 1.0,
+ "thrust_axis": "x",
+ "velocity_source": "ground-truth velocity columns"
+}
