@@ -157,3 +157,33 @@ def test_memory_gate_bounded_and_flat(tmp_path):
     p_long = _traced_peak(long_, tmp_path / "o2.txt")
     assert p_long < 4 * 2**20, p_long
     assert p_long - p_short < 64 * 1024, (p_short, p_long)
+
+
+def _late_rest_file(path, before=11_000, rest=1_000, after=24_000, seed=7):
+    """SYNTHETIC: tumbling motion, then a 5 s rest just before the 60 s horizon, then motion."""
+    import random
+    rng = random.Random(seed)
+    t = synth_euroc.T0_NS
+    with open(path, "w", newline="\n") as f:
+        f.write(euroc.HEADER + "\n")
+        for i in range(before + rest + after):
+            r = rng.random
+            if before <= i < before + rest:
+                v = (0.002 + 0.001 * (r() - 0.5), -0.001 + 0.001 * (r() - 0.5), 0.003 + 0.001 * (r() - 0.5),
+                     0.01 * (r() - 0.5), 0.01 * (r() - 0.5), 9.81 + 0.01 * (r() - 0.5))
+            else:
+                ph = (i % 400) / 200.0 - 1.0
+                v = (0.3 * ph + 0.05 * (r() - 0.5), -0.2 * ph, 0.1 * ph, 9.3 + 0.8 * ph, -0.4 + 0.5 * ph,
+                     -2.4 + 0.3 * (r() - 0.5))
+            f.write("%d,%s\n" % (t, ",".join(repr(x) for x in v)))
+            t += synth_euroc.DT_NS
+    return path
+
+
+def test_memory_gate_with_backward_pass(tmp_path):
+    """Worst realistic case: ~11,000 stored rows for the backward pass; tracemalloc peak < 4 MB."""
+    src = _late_rest_file(tmp_path / "late.csv")
+    peak = _traced_peak(src, tmp_path / "o.txt")
+    assert main.LAST["calibrated"] and main.LAST["pre_rows"] > 10_000
+    assert peak < 4 * 2**20, peak
+    assert check_output.check(src, tmp_path / "o.txt")["ok"]

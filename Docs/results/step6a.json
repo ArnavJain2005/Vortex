@@ -1,0 +1,64 @@
+{
+ "commit": "a4f25e3",
+ "date": "2026-11-16",
+ "main": "main_6a.py",
+ "python": "3.14.7",
+ "results": [
+  {
+   "ate_se3_rmse": 51303.92184627228,
+   "ate_sim3_rmse": 4.2363010627555795,
+   "contract": "PASS",
+   "final_se3": 118423.20880660844,
+   "rows": 36820,
+   "rpe200_rmse": 1132.918129973014,
+   "sequence": "MH_01_easy",
+   "sim3_scale": 1.5210147979190728e-05,
+   "wall_s": 0.1935044999991078
+  },
+  {
+   "ate_se3_rmse": 34197.59692540434,
+   "ate_sim3_rmse": 4.403480786864141,
+   "contract": "PASS",
+   "final_se3": 79084.88773139923,
+   "rows": 30400,
+   "rpe200_rmse": 919.5086412511663,
+   "sequence": "MH_02_easy",
+   "sim3_scale": 4.3320464554429015e-05,
+   "wall_s": 0.19745379999949364
+  },
+  {
+   "ate_se3_rmse": 18192.515937466058,
+   "ate_sim3_rmse": 3.556475573473378,
+   "contract": "PASS",
+   "final_se3": 39321.96607818923,
+   "rows": 27008,
+   "rpe200_rmse": 554.7252820604756,
+   "sequence": "MH_03_medium",
+   "sim3_scale": 2.2503071665878352e-05,
+   "wall_s": 0.16453329999785637
+  },
+  {
+   "ate_se3_rmse": 17687.406009792914,
+   "ate_sim3_rmse": 6.800080809609258,
+   "contract": "PASS",
+   "final_se3": 38897.810229464216,
+   "rows": 20320,
+   "rpe200_rmse": 687.3035253486742,
+   "sequence": "MH_04_difficult",
+   "sim3_scale": 3.059315386286077e-05,
+   "wall_s": 0.13721439999790164
+  },
+  {
+   "ate_se3_rmse": 593.565062173316,
+   "ate_sim3_rmse": 6.861387173619321,
+   "contract": "PASS",
+   "final_se3": 1561.2921508542229,
+   "rows": 22721,
+   "rpe200_rmse": 25.0350650019921,
+   "sequence": "MH_05_difficult",
+   "sim3_scale": 0.0008222769050209338,
+   "wall_s": 0.15367300000070827
+  }
+ ],
+ "tag": "step6a"
+}

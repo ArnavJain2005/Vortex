@@ -47,7 +47,7 @@ STAGES = [
     ("parse + init + strapdown integrator", {"write": False}),
     ("parse + init + strapdown integrator + write (full main.py)", {}),
 ]
-PASSES = ["forward (single pass; no smoother yet)"]
+PASSES = ["calibration scan + backward pre-anchor pass + forward pass (no smoother yet)"]
 
 
 def load_main():
@@ -103,8 +103,11 @@ def measure(a):
     tracemalloc.stop()
     print("  tracemalloc peak %.1f KB" % res["tracemalloc_peak_kb"])
 
-    res["stored_bytes_per_block"] = 0
-    res["stored_bytes_worst_case"] = 0
+    main.run(src, dst)
+    res["stored_rows"] = main.LAST.get("pre_rows", 0)            # rows kept for the backward pass
+    res["stored_bytes_per_block"] = 64                            # per stored row: 8 B time + 7 doubles
+    res["stored_bytes_this_run"] = 64 * res["stored_rows"]
+    res["stored_bytes_worst_case"] = 64 * main.PRE_MAX_ROWS
 
     procs = []
     for label_p, cmd in [("python -S main.py", [sys.executable, "-S", os.path.join(ROOT, "main.py"), src, dst]),
@@ -183,9 +186,12 @@ def render():
             L.append("| %s | %s | %s |" % (tag, s["pass"], _f(s["us_per_row"])))
     L += ["", "## Witnesses", "", "None implemented yet.", "",
           "## Stored state for offline passes", "",
-          "| Run | Bytes per stored block | Worst-case total bytes |", "|---|---|---|"]
+          "| Run | Bytes per stored row | Stored this run | Worst-case total bytes |", "|---|---|---|---|"]
     for tag, d in data:
-        L.append("| %s | %d | %d |" % (tag, d["stored_bytes_per_block"], d["stored_bytes_worst_case"]))
+        L.append("| %s | %d | %s | %d |" % (tag, d["stored_bytes_per_block"],
+                                            "-" if "stored_bytes_this_run" not in d else
+                                            "%d (%d rows)" % (d["stored_bytes_this_run"], d["stored_rows"]),
+                                            d["stored_bytes_worst_case"]))
     L += ["", "## With and without `-S`", "",
           "| Run | Command | us per row | Wall ms per IMU-s | Peak RSS MB |", "|---|---|---|---|---|"]
     for tag, d in data:

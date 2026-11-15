@@ -20,7 +20,7 @@ sys.path.insert(0, str(ROOT / "tools"))
 sys.path.insert(0, str(ROOT / "tests"))
 import synth_euroc  # noqa: E402
 from test_main import MESSY  # noqa: E402
-from test_strapdown import _moving, _static_rows  # noqa: E402
+from test_strapdown import _move_rest_move, _moving, _static_rows  # noqa: E402
 
 FULL = b"%s.%s %.17g %.17g %.17g %.17g %.17g %.17g %.17g\n"
 
@@ -60,7 +60,9 @@ def _write_rows(path, rows):
 
 def test_parameters_identical():
     for name in ("INIT_S", "INIT_MAX_ROWS", "STILL_GYRO_STD", "STILL_ACC_STD", "G_DEFAULT", "MAX_DT",
-                 "MAX_JUMP_S", "MAX_SUMSQ"):
+                 "MAX_JUMP_S", "MAX_SUMSQ", "CAL_HORIZON_S", "BLOCK_S", "BLOCK_MIN_ROWS", "MIN_STILL_S",
+                 "STUCK_STD", "ACC_NORM_MIN", "ACC_NORM_MAX", "STEADY_GYRO", "STEADY_ACC", "TRIM_S",
+                 "PRE_MAX_ROWS"):
         assert getattr(main, name) == getattr(sd, name), name
 
 
@@ -94,6 +96,31 @@ def test_physical_motion_with_still_start(tmp_path, monkeypatch):
     src = _write_rows(tmp_path / "imu.csv", allrows)
     dp, dq = _compare(src, tmp_path, monkeypatch)
     assert dp < 1e-9                                         # same arithmetic order: rounding only
+
+
+def test_move_rest_move_backward_pass(tmp_path, monkeypatch):
+    rows, _, _ = _move_rest_move(bias=(0.01, -0.02, 0.08), gyro_noise=0.002, acc_noise=0.02, seed=3)
+    # sprinkle the messy cases into the stored (pre-anchor) part and after it
+    nan = float("nan")
+    rows = list(rows)
+    rows.insert(300, (None, rows[300][1]))
+    rows.insert(500, (rows[499][0], rows[499][1]))                       # duplicate
+    rows.insert(700, (rows[699][0] + 2_500_000, (nan,) * 6))              # NaN row
+    rows.insert(900, (rows[899][0] - 10**9, rows[899][1]))                # out of order
+    rows = rows[:1200] + [(t + 300_000_000, v) for t, v in rows[1200:]]  # 0.3 s gap
+    src = _write_rows(tmp_path / "imu.csv", rows)
+    assert sd.calibrate(sd.rows_from_raw(euroc.read_imu_csv(src))).run_s is not None
+    dp, dq = _compare(src, tmp_path, monkeypatch)
+    assert dp < 1e-9 and main.LAST["calibrated"] and main.LAST["pre_rows"] > 1000
+
+
+def test_pre_segment_cap_fallback(tmp_path, monkeypatch):
+    rows, _, _ = _move_rest_move(seconds=24.0, gyro_noise=1e-3, acc_noise=1e-2)
+    src = _write_rows(tmp_path / "imu.csv", rows)
+    monkeypatch.setattr(sd, "PRE_MAX_ROWS", 100)
+    monkeypatch.setattr(main, "PRE_MAX_ROWS", 100)
+    _compare(src, tmp_path, monkeypatch)
+    assert not main.LAST["calibrated"] and main.LAST["pre_rows"] == 0
 
 
 def test_header_only(tmp_path, monkeypatch):
