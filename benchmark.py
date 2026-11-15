@@ -42,8 +42,10 @@ BUDGET_RSS_MB, TARGET_TRACE_MB = 8.0, 4.0
 
 # Stage switches passed to main.run, cumulative. Each new filter stage or witness adds a row here.
 STAGES = [
-    ("parse (read, split, 6 floats, timestamp)", {"write": False}),
-    ("parse + write (identity poses)", {}),
+    ("parse (read, split, 6 floats, timestamp)", {"write": False, "integrate": False}),
+    ("parse + write (identity poses)", {"integrate": False}),
+    ("parse + init + strapdown integrator", {"write": False}),
+    ("parse + init + strapdown integrator + write (full main.py)", {}),
 ]
 PASSES = ["forward (single pass; no smoother yet)"]
 
