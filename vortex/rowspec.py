@@ -26,8 +26,15 @@ def seconds_text(field) -> str | None:
     return s[:-9] + "." + s[-9:]
 
 
+BOM = b"\xef\xbb\xbf"
+
+
 def is_data_line(line) -> bool:
+    """Bytes or str. A UTF-8 byte-order mark at the start of a line is ignored."""
     s = line.strip()
     if isinstance(s, (bytes, bytearray)):
+        if s[:3] == BOM:
+            s = s[3:].strip()
         return bool(s) and s[:1] != b"#"
+    s = s.lstrip("\ufeff").strip()
     return bool(s) and not s.startswith("#")

@@ -26,7 +26,7 @@ from pathlib import Path
 import numpy as np
 
 from ..geometry import quat_normalize
-from ..rowspec import is_data_line, seconds_text  # noqa: F401  (re-exported)
+from ..rowspec import BOM, is_data_line, seconds_text  # noqa: F401  (re-exported)
 from ..types import ImuData, Trajectory
 
 HEADER = ("#timestamp [ns],w_RS_S_x [rad s^-1],w_RS_S_y [rad s^-1],w_RS_S_z [rad s^-1],"
@@ -82,11 +82,11 @@ def read_imu_csv(path: str | Path) -> RawImu:
     header = None
     with open(path, "rb") as f:
         for bline in f:
-            line = bline.decode("ascii", "replace")
-            if not is_data_line(line):
-                if header is None and line.strip().startswith("#"):
-                    header = line.strip()
+            if not is_data_line(bline):
+                if header is None and bline.strip().lstrip(BOM).startswith(b"#"):
+                    header = bline.strip().lstrip(BOM).decode("ascii", "replace")
                 continue
+            line = bline.decode("ascii", "replace")
             fields = line.strip().split(",")
             ts = fields[0].strip()
             t_text.append(ts)

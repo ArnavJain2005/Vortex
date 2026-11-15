@@ -44,6 +44,9 @@ def test_seconds_text_bytes_input():
     ("\n", False),
     ("   \r\n", False),
     ("", False),
+    ("\ufeff#timestamp...\n", False),
+    (b"\xef\xbb\xbf#timestamp...\r\n", False),
+    (b"1,2,3,4,5,6,7\r\n", True),
 ])
 def test_is_data_line(line, is_row):
     assert euroc.is_data_line(line) is is_row
