@@ -28,7 +28,7 @@ meter sets the trust of each:
 |---|---|---|
 | V1 Stillness (zero-velocity updates) | Both datasets | Core |
 | V2 Flight envelope learned in the healthy phase | Both datasets | Core |
-| V3 Rotor drag (horizontal specific force proportional to body velocity) | Multirotor (EuRoC) | Switchable, after offline go/no-go |
+| V3 Rotor drag (horizontal specific force proportional to body velocity) | Multirotor (EuRoC) | **Off: NO-GO** on MH_01 (16 Nov, pre-registered rule). Exploratory: k about 0.2 /s in flight on all five MH sequences; revisit only with a new rule fixed in advance |
 | V4 Turn physics (speed = lateral accel / turn rate, steady turns) | Steady turns | Switchable |
 | V5 Walking rhythm | Hand-held (TUM-VI) | Switchable |
 | V6 Tilt and acceleration link | Multirotor | Feeds the blind 5 s forecaster |
@@ -65,7 +65,7 @@ organisers, see Q1). Full-time work starts **20 Nov**.
 | Q3 | Are waypoint positions or times given as input? | Arnav |
 | Q4 | Is 8 MB peak RAM measured for the whole process or the algorithm only? Is `main.cpp` accepted? **Now urgent:** a bare `python -S -c pass` already peaks at 8.4 MB RSS (WSL2 Linux, 3.12) and 9.5 to 9.7 MB (Windows 3.13/3.14), so CPython cannot meet 8 MB whole-process RSS; a C++ parse + write floor peaks at 4.3 MB (Windows). See `Docs/FLOOR.md` | Arnav |
 | Q5 | Demo video length: 2 to 3, 3, or 5 minutes? | Arnav |
-| Q6 | Is the rotor-drag signal visible in EuRoC's IMU (offline fit on clean MH_01)? | Arnav + Claude, before 20 Nov |
+| Q6 | Is the rotor-drag signal visible in EuRoC's IMU (offline fit on clean MH_01)? **Answered 16 Nov: NO-GO under the pre-registered rule** (whole sequence; the hand-carried start breaks it). Exploratory in-flight fit: visible, k 0.14 to 0.25 /s. See `Docs/DRAG.md` | Arnav + Claude, before 20 Nov |
 
 ## Results so far (15 Nov 2026, branch `track3/python-pipeline`)
 
@@ -116,4 +116,15 @@ organisers, see Q1). Full-time work starts **20 Nov**.
 
 Which alignment the organisers use with evo is still unknown; `score.py` reports ATE under all four.
 
-No result on EuRoC or TUM-VI exists yet.
+## First real data: EuRoC Machine Hall (16 Nov 2026, branch `track3/step5-mh01`)
+
+Downloaded by Arnav from the ETH Research Collection (`machine_hall.zip`, 12.7 GB, all five MH sequences with bags). Only `imu0` and `state_groundtruth_estimate0` were extracted to `data/euroc/MH_0x_*/mav0/` (git-ignored). Rows: MH_01 36,820 IMU and 36,382 ground truth; MH_02 30,400 and 29,993; MH_03 27,008 and 26,302; MH_04 20,320 and 19,753; MH_05 22,721 and 22,212.
+
+| Item | Result | Where |
+|---|---|---|
+| Drag go/no-go on MH_01, pre-registered rule (`tools/drag_fit.py`, rule committed in a1a8f65 before the data) | **NO-GO**: first-half k = -0.09 (y), -0.11 (z); held-out R^2 -0.71, -0.66. V3 stays off | `Docs/DRAG.md`, `Docs/drag/MH_01_easy.svg` |
+| Same rule on MH_02 to MH_05 (extra evidence) | NO-GO on all four; body y passes on MH_03 only | same |
+| Why: ground truth shows MH sequences start **hand-carried** (MH_01: 0.8 m/s at t = 0), then a ground rest (MH_01: about 20 to 44 s), then flight. Carried motion has no rotor drag | Rest ends at 43.6, 37.7, 17.0, 18.9, 19.5 s (MH_01 to 05) | `--after-rest` output |
+| EXPLORATORY (post hoc): fit only after the longest ground rest | k = 0.18 to 0.25 /s (y), 0.14 to 0.24 /s (z) on all five; in-flight R^2 0.69 to 0.96 (y), 0.38 to 0.61 (z); raw unsmoothed R^2 at most 0.15, so drag needs about 1 s of averaging | `Docs/DRAG.md` rows `*_after_rest` |
+| Body z sits at about -3.3 m/s^2 in flight: the IMU x axis is about 20 deg off the thrust axis, so thrust changes leak into z | A future V3 should use axes perpendicular to the measured thrust direction | `Docs/drag/MH_05_difficult_after_rest.svg` |
+| **Consequence for initialisation**: the "first second is still" assumption of step 6a does not hold on EuRoC MH | Init must find stillness anywhere in the healthy phase, or work while moving (step 6b) | ground truth |
