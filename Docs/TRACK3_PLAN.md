@@ -47,15 +47,21 @@ organisers, see Q1). Full-time work starts **20 Nov**.
 | 1 | Repo restructure, Python package; old ESP32/Unity code deleted (in git history before 15 Nov) | **Done (verified)** 15 Nov | `pytest` green |
 | 2 | Shared pieces: quaternion maths, data types, metrics (ATE/RPE, alignment), TUM writer, synthetic data, still-period detection, dead-reckoning baseline | **Done (verified on synthetic data)** 15 Nov: 32 tests | Reused by steps 3 to 9 |
 | 2c | Live sensor stations: S24 via Sensor Logger HTTP push, synthetic fallback | **Done (unverified with the real phone)** 15 Nov | Demo material only |
-| 3 | EuRoC/TUM-VI `imu0/data.csv` loader keeping every row; output checker; `main.py` skeleton (one pose per row) | Not started | `main.py` on MH_01 passes the checker |
+| 3 | Python reference: EuRoC/TUM-VI `imu0/data.csv` loader keeping every row; output checker; `main.py` skeleton (one pose per row) | Not started | `main.py` on MH_01 passes the checker |
+| 3b | C core skeleton `main.cpp` (C-style C++, standard library only): streams the CSV, writes identity poses byte-identical to `main.py` | Not started | Equivalence test passes; benchmarked |
 | 4 | Seeded degradation script: rising noise, bias drift, 2 s dropouts, failure + 5 s | Not started | Same seed gives identical files |
-| 5 | `benchmark.py` (tracemalloc and process RSS, ms per s of IMU) and `score.py` (ATE/RPE split by dropout and blind windows, coverage) | Not started | Both run on MH_01 |
-| 6 | Filter core: initialisation and self-calibration (W2), front end and jamming meter (W3), dropout bridging | Not started | Beats dead reckoning on degraded MH_01 |
-| 7 | Velocity witnesses (W1): V1, V2 core; V3 after go/no-go; V4, V5 switchable; platform detection (W4) | Not started | Ablation table, each witness on and off, on held-out sequences |
-| 8 | Blind 5 s forecaster (W5) and per-row confidence (W6) | Not started | Blind error below constant velocity; coverage table |
-| 9 | Efficiency pass (C core if whole-process RAM counts); submission bundle, Dockerfile, deck, video | Not started | Valid `team_name.zip` by 21 Nov 6 PM; submitted 3 h before cutoff |
+| 5 | `benchmark.py` (process RSS and tracemalloc, ms per s of IMU, Python and C) and `score.py` (evo-style ATE/RPE with and without alignment; waypoint proxies, dropout and blind windows; coverage) | Not started | Both run on MH_01 |
+| 6 | Filter core: initialisation and self-calibration (W2), jamming meter and failure detection (W3), dropout handling | Not started | Beats dead reckoning on degraded MH_01 |
+| 6b | **Two-pass offline smoothing**: forward snapshots (store capped from the row count), backward pass, fusion; behind a switch pending Q7 | Not started | Gain over forward-only filter on held-out sequences |
+| 7 | Velocity witnesses (W1): V1, V2 core; V3 after go/no-go; V4, V5 switchable; V7 experiment; platform detection (W4) | Not started | Ablation table, each witness on and off, on held-out sequences |
+| 8 | Self-testing forecaster for the blind 5 s (W5) and per-row confidence (W6) | Not started | Blind error below constant velocity; coverage table |
+| 9 | Port the frozen algorithm to `main.cpp`; equivalence test; Python v0.1 kept as fallback; submission bundle, Dockerfile, deck, video | Not started | Valid `team_name.zip` by 21 Nov 6 PM; submitted 3 h before cutoff |
 
-## Open questions (Q1 to Q5 are in the email drafted for prism@samsung.com on 15 Nov)
+**Scoring strategy (15 Nov):** C core from day one for the 40 efficiency points; two-pass smoothing for
+waypoints (30) and dropouts (10); exact failure detection and a self-testing forecaster for the blind 5 s
+(20). A valid Python submission exists by 20 Nov night as fallback. Details: the team PRD doc.
+
+## Open questions (Q1 to Q5, Q7, Q8 go in the email to prism@samsung.com)
 
 | Q | Question | Owner |
 |---|---|---|
@@ -65,6 +71,8 @@ organisers, see Q1). Full-time work starts **20 Nov**.
 | Q4 | Is 8 MB peak RAM measured for the whole process or the algorithm only? Is `main.cpp` accepted? | Arnav |
 | Q5 | Demo video length: 2 to 3, 3, or 5 minutes? | Arnav |
 | Q6 | Is the rotor-drag signal visible in EuRoC's IMU (offline fit on clean MH_01)? | Arnav + Claude, before 20 Nov |
+| Q7 | May the solution read the whole file before writing (offline, non-causal smoothing)? | Arnav (email) |
+| Q8 | Does the evo evaluation align our trajectory to ground truth before scoring (SE(3) or Sim(3))? | Arnav (email) |
 
 ## Results so far (15 Nov 2026, branch `track3/python-pipeline`)
 
