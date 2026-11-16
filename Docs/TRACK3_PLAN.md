@@ -452,3 +452,43 @@ a tuning sequence; on MH_03..05 the change is within +-0.6 %.
 Not checked: TUM-VI (no data); whether the organisers score attitude (only the position is held); the
 calibration fallback on degraded MH_02 ("Found" above) is not fixed.
 
+
+## Step 6e: calibration when the noise starts before the still run (16 Nov 2026, branch `track3/step6e-calib`)
+
+**Problem** (found in step 6d). The still test uses fixed per-bin std thresholds (STILL_GYRO_STD 0.02
+rad/s, STILL_ACC_STD 0.1 m/s^2). MH_02's only still run is short (26.5..29.75 s); with the added noise
+starting at 10 s its bins exceed the accelerometer threshold, no run is found and calibration falls back
+to the first second (19 of 20 degraded tuning copies): gyro bias and tilt are then not calibrated.
+
+**Switch** `CAL_NOISE_ON` (`vortex/core/strapdown.py`, mirrored in `main.py`). Only when the strict test
+finds no run of MIN_STILL_S: the calibration horizon is scanned again for each bin's second
+differences x[k] - 2 x[k-1] + x[k-2] (variance 6 sigma^2 for white noise; smooth motion nearly cancels).
+The still test is repeated with each channel's white-noise variance removed before the same std
+thresholds, and the steady test's tolerances are widened by 3 standard deviations of the difference of
+two bin means under that noise. Stuck and |f| tests are unchanged. No new tuned constant. When the strict
+test finds a run nothing changes, so clean MH_01..05 output cannot change; `main.py` pays for the second
+scan only in the fallback case. Risk: rotor vibration is not white (its second differences are larger),
+so a steady hover could pass the denoised test; it is used only where the alternative is the first-second
+fallback.
+
+**Tuning (MH_01/02 only;** scratch study, reference estimator, 20 degraded copies per sequence, seeds
+100..119, alignment from the clean run, ground truth for scoring only):
+
+| | Off | On |
+|---|---|---|
+| MH_02 fallbacks | 19 / 20 | 0 / 20 |
+| MH_02 mean APE (max) m | 6.250 (8.527) | 4.570 (5.969) |
+| MH_01 mean APE m (strict test always finds a run) | 4.236 | 4.236 |
+| Clean MH_01 / MH_02 APE m | 3.911 / 3.846 | identical |
+
+Every MH_02 copy that fell back improved; the run found was the true rest (ground-truth 90th-percentile
+speed 0.003..0.004 m/s). A first version without the widened steady test found the same runs on MH_02
+but broke a synthetic noisy rest into 1 s pieces (test), so the widening was added before any held-out run.
+
+**Decision rule, committed before the held-out copies exist.** Held-out: MH_03..05 x seeds 13..15
+(default levels) and x seeds 16..18 with `--healthy-s 2` (noise from 2 s, so it covers their early still
+runs too), 18 copies, scored with `main.py`. `CAL_NOISE_ON` ships on only if (a) clean MH_01..05 output is
+byte-identical, (b) mean APE over the 18 copies is not worse, and (c) no single copy's APE is worse by
+more than 10 %. Reported as well: how many copies fell back with it off, and the ground-truth speed in
+the runs it chose (diagnostic only).
+

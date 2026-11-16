@@ -73,6 +73,7 @@ STEADY_GYRO = 0.005        # rad/s, bin-to-bin change of mean gyro inside a run 
 STEADY_ACC = 0.05          # m/s^2, bin-to-bin change of mean specific force (~17x)
 TRIM_S = 0.5               # s cut from each end of a long still run before averaging
 PRE_MAX_ROWS = 15000       # rows stored for the backward pass (memory cap: 64 bytes per row in main.py)
+CAL_NOISE_ON = False       # step 6e: if no strict still run, retry with the white noise removed (see calibrate)
 # 6b thresholds measured afterwards on clean MH_01..05 (0.25 s bins, longest still run in 60 s):
 # in-run gyro std max 0.003..0.017 rad/s, accel std max 0.061..0.094 m/s^2.
 MAX_SUMSQ = 1e8            # a row whose six values' sum of squares reaches this is invalid (values of
@@ -218,13 +219,86 @@ def bins_steady(na, sa, nb_, sb):
     return True
 
 
-def calibrate(rows) -> Calib:
-    t0, n, s, ss = still_bins(rows)
+def noise_bins(rows, t0):
+    """Per bin over the calibration horizon: (count, per-channel sums of squared second differences
+    x[k] - 2 x[k-1] + x[k-2]) of consecutive accepted rows of the same bin (step 6e). Accepted = the
+    rows still_bins counts; any other row, a step outside (0, MAX_DT] or a new bin restarts the history."""
+    nb = int(CAL_HORIZON_S / BLOCK_S)
+    bns = int(BLOCK_S * 1e9)
+    nd = [0] * nb
+    d2 = [[0.0] * 6 for _ in range(nb)]
+    if t0 is None:
+        return nd, d2
+    t_end = t0 + nb * bns
+    h1 = h2 = None
+    jl = tl = -1
+    for t, vals in rows:
+        if t is None or not is_valid(vals) or t < t0:
+            h1 = h2 = None
+            continue
+        if t >= t_end:
+            break
+        j = (t - t0) // bns
+        if h1 is not None and (j != jl or not 0 < t - tl <= MAX_DT * 1e9):
+            h1 = h2 = None
+        if h2 is not None:
+            nd[j] += 1
+            dj = d2[j]
+            for i in range(6):
+                d = vals[i] - 2.0 * h1[i] + h2[i]
+                dj[i] += d * d
+        h2, h1, jl, tl = h1, vals, j, t
+    return nd, d2
+
+
+def bin_is_still_denoised(n, s, ss, nd, d2):
+    """bin_is_still with each channel's white-noise variance (second-difference variance / 6) removed
+    before the std thresholds (step 6e). The stuck and |f| tests are unchanged."""
+    if n < BLOCK_MIN_ROWS or nd < BLOCK_MIN_ROWS - 2:
+        return False
+    ex = [0.0] * 6
+    raw = 0.0
+    for i in range(6):
+        m = s[i] / n
+        var = ss[i] / n - m * m
+        if var > raw:
+            raw = var
+        var -= d2[i] / nd / 6.0
+        ex[i] = math.sqrt(var) if var > 0.0 else 0.0
+    if max(ex[0], ex[1], ex[2]) >= STILL_GYRO_STD or max(ex[3], ex[4], ex[5]) >= STILL_ACC_STD:
+        return False
+    if raw <= STUCK_STD * STUCK_STD:
+        return False
+    fx, fy, fz = s[3] / n, s[4] / n, s[5] / n
+    fn = math.sqrt(fx * fx + fy * fy + fz * fz)
+    return ACC_NORM_MIN <= fn <= ACC_NORM_MAX
+
+
+def white_var(nd, d2):
+    """Per-channel white-noise variance of one bin from its second differences (variance 6 sigma^2)."""
+    return [d2[i] / nd / 6.0 for i in range(6)] if nd else [0.0] * 6
+
+
+def bins_steady_denoised(na, sa, wa, nb_, sb, wb):
+    """bins_steady with each tolerance widened by 3 standard deviations of the difference of the two
+    bin means under white noise of variance wa, wb (step 6e)."""
+    for i in range(6):
+        tol = (STEADY_GYRO if i < 3 else STEADY_ACC) + 3.0 * math.sqrt(wa[i] / na + wb[i] / nb_)
+        d = sa[i] / na - sb[i] / nb_
+        if d >= tol or d <= -tol:
+            return False
+    return True
+
+
+def _best_run(n, s, still, w=None):
+    """Longest run of still, pairwise steady bins (earliest on ties): (first bin, length). w: per-bin
+    white-noise variances (step 6e) for bins_steady_denoised, else bins_steady."""
     best_j, best_len, j0 = 0, 0, -1
     nb = len(n)
     for j in range(nb + 1):
-        st = j < nb and bin_is_still(n[j], s[j], ss[j])
-        if st and j0 >= 0 and not bins_steady(n[j - 1], s[j - 1], n[j], s[j]):
+        st = j < nb and still[j]
+        if st and j0 >= 0 and not (bins_steady(n[j - 1], s[j - 1], n[j], s[j]) if w is None else
+                                   bins_steady_denoised(n[j - 1], s[j - 1], w[j - 1], n[j], s[j], w[j])):
             if j - j0 > best_len:                       # close the run before this bin, start anew
                 best_j, best_len = j0, j - j0
             j0 = j
@@ -234,6 +308,16 @@ def calibrate(rows) -> Calib:
             if j - j0 > best_len:
                 best_j, best_len = j0, j - j0
             j0 = -1
+    return best_j, best_len
+
+
+def calibrate(rows) -> Calib:
+    t0, n, s, ss = still_bins(rows)
+    best_j, best_len = _best_run(n, s, [bin_is_still(n[j], s[j], ss[j]) for j in range(len(n))])
+    if CAL_NOISE_ON and t0 is not None and best_len * BLOCK_S < MIN_STILL_S:
+        nd, d2 = noise_bins(rows, t0)
+        best_j, best_len = _best_run(n, s, [bin_is_still_denoised(n[j], s[j], ss[j], nd[j], d2[j])
+                                            for j in range(len(n))], [white_var(nd[j], d2[j]) for j in range(len(n))])
     first_valid = next((i for i, (t, v) in enumerate(rows) if t is not None and is_valid(v)), len(rows))
     if t0 is None or best_len * BLOCK_S < MIN_STILL_S:
         return Calib(initialise(init_window(rows)), first_valid, None)

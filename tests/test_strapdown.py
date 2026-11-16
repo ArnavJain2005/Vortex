@@ -256,3 +256,34 @@ def test_pre_segment_cap_falls_back(monkeypatch):
     monkeypatch.setattr(sd, "PRE_MAX_ROWS", 100)
     cal = sd.calibrate(rows)
     assert cal.run_s is None and cal.anchor == 0
+
+
+# ---------------------------------------------------------------- step 6e: denoised calibration fallback
+
+def test_denoised_calibration_finds_a_noisy_rest(monkeypatch):
+    bias = (0.01, -0.02, 0.08)
+    rows, _, _ = _move_rest_move(bias=bias, gyro_noise=0.03, acc_noise=0.15, seed=4)   # above both std thresholds
+    monkeypatch.setattr(sd, "CAL_NOISE_ON", False)
+    assert sd.calibrate(rows).run_s is None
+    monkeypatch.setattr(sd, "CAL_NOISE_ON", True)
+    c = sd.calibrate(rows)
+    assert c.run_s is not None and 9.5 <= c.run_s[0] and c.run_s[1] <= 20.5      # inside the true rest
+    assert max(abs(c.init.bg[i] - bias[i]) for i in range(3)) < 2e-3
+
+
+def test_denoised_calibration_needs_the_strict_test_to_fail(monkeypatch):
+    rows, _, _ = _move_rest_move(bias=(0.01, -0.02, 0.08), gyro_noise=0.002, acc_noise=0.02, seed=3)
+    monkeypatch.setattr(sd, "CAL_NOISE_ON", False)
+    off = sd.calibrate(rows)
+    monkeypatch.setattr(sd, "CAL_NOISE_ON", True)
+    assert sd.calibrate(rows) == off and off.run_s is not None
+
+
+def test_denoised_calibration_does_not_call_noisy_motion_still(monkeypatch):
+    rows, _, _ = _moving(seconds=30.0)
+    rng = np.random.default_rng(5)
+    noisy = [(t, tuple(np.array(v) + np.r_[0.03 * rng.standard_normal(3), 0.15 * rng.standard_normal(3)]))
+             for t, v in rows]
+    monkeypatch.setattr(sd, "CAL_NOISE_ON", True)
+    c = sd.calibrate(noisy)
+    assert c.run_s is None or c.run_s[0] < 1.0      # only the analytic start (velocity 0) may look still
