@@ -1,40 +1,69 @@
 # Vortex: trajectory from a degraded IMU (Samsung PRISM XR Hackathon 2026, Track 3)
 
-## Run
+Two entry points with the same output. The C core is the one that fits the 8 MB peak-RAM limit.
+
+## C core (recommended): `src/main.cpp`
 
 ```
-python -S main.py <imu0/data.csv> <estimated_trajectory.txt>
+g++ -O2 -std=c++17 -ffp-contract=off -o vortex src/main.cpp      # Windows MinGW: add -static
+./vortex <imu0/data.csv> <estimated_trajectory.txt>
 ```
+
+C-style C++, standard library only, single thread, offline, deterministic, static buffers (no heap
+allocation of its own). Measured on our laptop (Intel i7-14650HX), EuRoC MH_01 (36,820 rows, 184 s):
+
+| | Peak RSS | Time per IMU row |
+|---|---|---|
+| Linux (Ubuntu 24.04, g++ 13.3) | 2.7 MB | 4.1 us (input on a slow WSL mount) |
+| Windows 11 (MinGW g++ 13.2, `-static`) | 4.8 MB | 1.4 us |
+
+Peak RSS does not grow with the flight length (2.4 MB on Linux for a 15-minute file).
+
+## Python: `src/main.py`
+
+```
+python -S src/main.py <imu0/data.csv> <estimated_trajectory.txt>
+```
+
+Pure Python 3, standard library only (`sys`, `math`, `array`). Tested with CPython 3.12, 3.13 and
+3.14. `main.py` is a stub that imports `src/pathfinder.py`, so Python loads the shipped bytecode
+(`src/__pycache__`) instead of compiling the estimator, which would add about 4 MB of peak RSS. The
+CPython interpreter alone already peaks above 8 MB (8.4 to 9.7 MB before any work), so this entry
+point peaks at about 10 to 12 MB.
+
+**Same output.** On Linux the two entry points give bit-identical poses on all our test inputs (clean
+EuRoC MH_01 to MH_05 and 60 degraded copies). On Windows they give identical output files; the full
+precision poses differ by at most 6e-13 m, from the two C maths libraries.
+
+## Input and output
 
 - Input: EuRoC `imu0/data.csv` format (`timestamp [ns], w_x, w_y, w_z [rad/s], a_x, a_y, a_z [m/s^2]`).
-  Header and comment lines start with `#`; blank lines are skipped.
-- Output: one line `timestamp tx ty tz qx qy qz qw` per input data row, same order, timestamp in seconds.
-- Pure Python 3, standard library only (`sys`, `math`, `array`), single thread, offline, deterministic.
-  Tested with CPython 3.12, 3.13 and 3.14. Nothing to install.
+  Header and comment lines start with `#`; blank lines are skipped. Bad, missing or NaN values are
+  allowed: every data row still gets a pose.
+- Output: one line `timestamp tx ty tz qx qy qz qw` per input data row, same order, timestamp in
+  seconds (the input nanoseconds with the decimal point moved, so it is exact).
 - Exit code 0 on success, 2 on wrong arguments, 1 if a file cannot be read or written.
 
-With Docker (same program, Python 3.12):
+## Docker
 
 ```
 docker build -t vortex .
 docker run --rm -v "<folder with the csv>:/data" vortex /data/data.csv /data/estimated_trajectory.txt
 ```
 
+The image builds the C core and runs it; the Python entry point is in the image too (see the
+Dockerfile).
+
 ## Files
 
 | File | What it is |
 |---|---|
-| `main.py` | Entry point. A stub that imports `pathfinder.py` and runs it. |
-| `pathfinder.py` | The estimator. `python -S pathfinder.py IN OUT` gives the same output. |
-| `__pycache__/pathfinder.cpython-3XX.pyc` | Compiled bytecode of `pathfinder.py` for the listed Python versions. |
-| `Dockerfile` | Container with the same program. |
-| `MANIFEST.txt` | sha256 of every file and the source commit. |
-
-**Why a stub.** Python compiles a script named on the command line every time it runs, and compiling
-the estimator raises peak memory by about 4.8 MB. A module that is imported is loaded from its
-bytecode in `__pycache__` instead, which costs about 0.2 MB. The bytecode files are hash-checked
-against `pathfinder.py`, so they stay valid after unzipping; on a Python version without a matching
-file, Python compiles `pathfinder.py` as usual. The output is identical either way.
+| `estimated_trajectory.txt` | Our output for the evaluation input. |
+| `metadata.json` | Runtime, peak memory and machine of that run. |
+| `src/main.cpp` | C core. |
+| `src/main.py`, `src/pathfinder.py` | Python entry point (stub) and estimator. |
+| `src/__pycache__/` | Bytecode of `pathfinder.py` for CPython 3.12, 3.13, 3.14 (hash-checked, so valid after unzipping). |
+| `Dockerfile`, `LICENSE`, `MANIFEST.txt` | Container, licence, sha256 of every file. |
 
 ## Method (short)
 
