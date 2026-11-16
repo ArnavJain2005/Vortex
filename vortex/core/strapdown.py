@@ -1,5 +1,5 @@
 """Reference estimator, steps 6a and 6b: initialisation, self-calibration on a still run, and
-strapdown integration. Plain Python floats, no numpy, so main.py (the optimised twin) can match it
+strapdown integration. Plain Python floats, no numpy, so pathfinder.py (the optimised twin) can match it
 to rounding.
 
 Conventions: quaternion (w, x, y, z), Hamilton, body-to-world. World frame: z up, gravity
@@ -72,7 +72,7 @@ ACC_NORM_MAX = 10.8
 STEADY_GYRO = 0.005        # rad/s, bin-to-bin change of mean gyro inside a run (~20x bin-mean noise)
 STEADY_ACC = 0.05          # m/s^2, bin-to-bin change of mean specific force (~17x)
 TRIM_S = 0.5               # s cut from each end of a long still run before averaging
-PRE_MAX_ROWS = 15000       # rows stored for the backward pass (memory cap: 64 bytes per row in main.py)
+PRE_MAX_ROWS = 15000       # rows stored for the backward pass (memory cap: 64 bytes per row in pathfinder.py)
 CAL_NOISE_ON = True        # step 6e (rule passed 16 Nov): if no strict still run, retry with the white noise removed (see calibrate)
 # 6b thresholds measured afterwards on clean MH_01..05 (0.25 s bins, longest still run in 60 s):
 # in-run gyro std max 0.003..0.017 rad/s, accel std max 0.061..0.094 m/s^2.
