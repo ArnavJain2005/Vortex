@@ -82,7 +82,7 @@ V2P_ON = True
 JAM_TAU = 2.0                # s, smoothing of the measured noise density
 GAP_H_TICKS = 8              # ticks (2 s, the slides' dropout length): horizon of the learned motion
 GAP_TAU = 20.0               # s, smoothing of the learned motion statistics
-JAM_ON = True
+JAM_ON = False               # rule v2 (16 Nov): fails with GAP_ON on; see Docs/TRACK3_PLAN.md step 6c
 GAP_ON = True
 N = 15
 

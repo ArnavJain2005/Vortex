@@ -9,6 +9,7 @@ Clean (undegraded) IMU input. APE = absolute position error after Umeyama alignm
 | floor-still | 4.31 / 0.499 | 4.65 / 0.537 | 3.58 / 1.188 | 6.82 / 1.129 | 6.88 / 1.034 | 5.25 | 0.878 |
 | step6a | 51303.92 / 1132.918 | 34197.60 / 919.509 | 18192.52 / 554.725 | 17687.41 / 687.304 | 593.57 / 25.035 | 24395.00 | 663.898 |
 | step6b | 1288.50 / 40.053 | 941.41 / 33.634 | 676.70 / 25.476 | 248.88 / 13.122 | 508.41 / 21.554 | 732.78 | 26.768 |
+| step6c-clean-both | 4.06 / 0.507 | 5.97 / 0.966 | 3.51 / 1.031 | 6.60 / 1.178 | 6.74 / 1.025 | 5.37 | 0.941 |
 | step7a-v1-only | 1234.09 / 38.353 | 1054.49 / 37.560 | 724.62 / 27.683 | 297.33 / 15.490 | 274.86 / 12.221 | 717.08 | 26.261 |
 | step7a-v1-v2speed | 4.02 / 0.512 | 6.02 / 0.931 | 3.43 / 1.149 | 6.47 / 1.160 | 6.56 / 1.043 | 5.30 | 0.959 |
 | step7a-v1-v2volume | 3.86 / 0.539 | 5.98 / 1.019 | 3.78 / 0.974 | 6.35 / 1.285 | 6.39 / 1.084 | 5.27 | 0.980 |
@@ -34,6 +35,11 @@ Clean (undegraded) IMU input. APE = absolute position error after Umeyama alignm
 | step6b | main.py | 6862f9d | 2026-11-16 | MH_03_medium | PASS | 676.70 | 1846.31 | 3.56 | 0.00053 | 25.476 | 0.21 |
 | step6b | main.py | 6862f9d | 2026-11-16 | MH_04_difficult | PASS | 248.88 | 710.06 | 6.81 | 0.00135 | 13.122 | 0.18 |
 | step6b | main.py | 6862f9d | 2026-11-16 | MH_05_difficult | PASS | 508.41 | 1342.03 | 6.86 | 0.00103 | 21.554 | 0.20 |
+| step6c-clean-both | main.py | f8dfe4f | 2026-11-16 | MH_01_easy | PASS | 4.06 | 5.79 | 4.06 | 1.05 | 0.507 | 0.56 |
+| step6c-clean-both | main.py | f8dfe4f | 2026-11-16 | MH_02_easy | PASS | 5.97 | 7.64 | 4.29 | 0.302 | 0.966 | 0.57 |
+| step6c-clean-both | main.py | f8dfe4f | 2026-11-16 | MH_03_medium | PASS | 3.51 | 4.12 | 3.48 | 0.639 | 1.031 | 0.66 |
+| step6c-clean-both | main.py | f8dfe4f | 2026-11-16 | MH_04_difficult | PASS | 6.60 | 4.01 | 6.56 | 1.63 | 1.178 | 0.39 |
+| step6c-clean-both | main.py | f8dfe4f | 2026-11-16 | MH_05_difficult | PASS | 6.74 | 4.70 | 6.70 | 1.83 | 1.025 | 0.49 |
 | step7a-v1-only | main.py V2P_ON=False V2_ON=False | 290c894 | 2026-11-16 | MH_01_easy | PASS | 1234.09 | 3727.33 | 4.25 | 0.000569 | 38.353 | 0.37 |
 | step7a-v1-only | main.py V2P_ON=False V2_ON=False | 290c894 | 2026-11-16 | MH_02_easy | PASS | 1054.49 | 3057.07 | 4.60 | 0.000599 | 37.560 | 0.28 |
 | step7a-v1-only | main.py V2P_ON=False V2_ON=False | 290c894 | 2026-11-16 | MH_03_medium | PASS | 724.62 | 1999.12 | 3.56 | 0.000489 | 27.683 | 0.24 |
@@ -59,3 +65,121 @@ Clean (undegraded) IMU input. APE = absolute position error after Umeyama alignm
 | step7a-v2-no-v1 | main.py V1_ON=False | 290c894 | 2026-11-16 | MH_03_medium | PASS | 3.51 | 4.03 | 3.47 | 0.62 | 0.992 | 0.28 |
 | step7a-v2-no-v1 | main.py V1_ON=False | 290c894 | 2026-11-16 | MH_04_difficult | PASS | 6.28 | 4.03 | 6.17 | 1.66 | 1.185 | 0.22 |
 | step7a-v2-no-v1 | main.py V1_ON=False | 290c894 | 2026-11-16 | MH_05_difficult | PASS | 6.51 | 4.96 | 6.36 | 2.17 | 1.016 | 0.24 |
+
+# Degraded input
+
+Copies made by `python -m vortex.degrade <clean sequence> data/degraded/<sequence>_s<seed> --seed <seed>` with the default (placeholder) levels: rising white noise, bias random walk, three 2 s NaN dropouts, total failure (NaN) at 85 % of the sequence, cut 5 s later. The organisers' script is unknown (Q2). APE uses the SE3 alignment fitted once on the same main's CLEAN run (align given), so it cannot absorb a fault. Growth = how far the position error vector moves across the window (start to end).
+
+## Degraded runs: means over every copy (seeded `vortex.degrade`, placeholder levels)
+
+| Tag | Copies | APE m | RPE 1 s m | Dropout growth m | Blind 5 s growth m | Blind RMSE m |
+|---|---|---|---|---|---|---|
+| step6c-deg-both | 15 | 6.178 | 1.021 | 2.267 | 7.812 | 7.538 |
+| step6c-deg-gap | 15 | 6.342 | 1.069 | 2.643 | 10.287 | 8.915 |
+| step6c-deg-jam | 15 | 6.938 | 1.081 | 2.389 | 10.448 | 10.563 |
+| step6c-deg-off | 15 | 7.768 | 1.209 | 2.880 | 15.600 | 14.791 |
+| step6c-rep-both | 9 | 6.479 | 1.165 | 2.789 | 6.788 | 5.513 |
+| step6c-rep-gap | 9 | 6.687 | 1.170 | 3.195 | 6.771 | 7.404 |
+| step6c-rep-jam | 9 | 7.399 | 1.173 | 3.338 | 6.146 | 7.863 |
+| step6c-rep-off | 9 | 8.481 | 1.212 | 3.907 | 8.597 | 12.496 |
+
+## Every degraded run
+
+| Tag | Main (settings) | Commit | Date | Copy | Contract | APE m | RPE 1 s m | Dropout growth m | Blind 5 s growth m | Blind RMSE m | Wall s |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| step6c-deg-both | main.py | f8dfe4f | 2026-11-16 | MH_01_easy_s1 | PASS | 4.181 | 0.599 | 1.696 | 2.431 | 6.086 | 0.61 |
+| step6c-deg-both | main.py | f8dfe4f | 2026-11-16 | MH_01_easy_s2 | PASS | 6.157 | 0.831 | 1.870 | 3.455 | 4.281 | 0.66 |
+| step6c-deg-both | main.py | f8dfe4f | 2026-11-16 | MH_01_easy_s3 | PASS | 6.116 | 0.749 | 2.290 | 1.957 | 4.955 | 0.62 |
+| step6c-deg-both | main.py | f8dfe4f | 2026-11-16 | MH_02_easy_s1 | PASS | 5.482 | 0.574 | 0.940 | 10.157 | 3.503 | 0.52 |
+| step6c-deg-both | main.py | f8dfe4f | 2026-11-16 | MH_02_easy_s2 | PASS | 5.598 | 0.548 | 1.105 | 2.324 | 5.008 | 0.51 |
+| step6c-deg-both | main.py | f8dfe4f | 2026-11-16 | MH_02_easy_s3 | PASS | 5.183 | 0.575 | 1.006 | 8.464 | 3.400 | 0.59 |
+| step6c-deg-both | main.py | f8dfe4f | 2026-11-16 | MH_03_medium_s1 | PASS | 5.254 | 1.439 | 3.056 | 16.101 | 16.336 | 0.40 |
+| step6c-deg-both | main.py | f8dfe4f | 2026-11-16 | MH_03_medium_s2 | PASS | 7.644 | 1.721 | 2.339 | 26.885 | 28.634 | 0.36 |
+| step6c-deg-both | main.py | f8dfe4f | 2026-11-16 | MH_03_medium_s3 | PASS | 3.911 | 1.234 | 3.508 | 6.557 | 4.414 | 0.32 |
+| step6c-deg-both | main.py | f8dfe4f | 2026-11-16 | MH_04_difficult_s1 | PASS | 6.738 | 1.301 | 2.897 | 3.692 | 4.692 | 0.31 |
+| step6c-deg-both | main.py | f8dfe4f | 2026-11-16 | MH_04_difficult_s2 | PASS | 7.067 | 1.186 | 3.201 | 8.518 | 8.002 | 0.29 |
+| step6c-deg-both | main.py | f8dfe4f | 2026-11-16 | MH_04_difficult_s3 | PASS | 7.596 | 1.257 | 2.494 | 6.416 | 4.766 | 0.29 |
+| step6c-deg-both | main.py | f8dfe4f | 2026-11-16 | MH_05_difficult_s1 | PASS | 6.969 | 1.071 | 2.950 | 7.357 | 4.073 | 0.35 |
+| step6c-deg-both | main.py | f8dfe4f | 2026-11-16 | MH_05_difficult_s2 | PASS | 7.538 | 1.147 | 3.598 | 5.621 | 6.193 | 0.30 |
+| step6c-deg-both | main.py | f8dfe4f | 2026-11-16 | MH_05_difficult_s3 | PASS | 7.232 | 1.088 | 1.055 | 7.245 | 8.729 | 0.35 |
+| step6c-deg-gap | main.py JAM_ON=False | f8dfe4f | 2026-11-16 | MH_01_easy_s1 | PASS | 4.012 | 0.619 | 2.219 | 2.667 | 6.024 | 0.63 |
+| step6c-deg-gap | main.py JAM_ON=False | f8dfe4f | 2026-11-16 | MH_01_easy_s2 | PASS | 6.412 | 0.839 | 2.147 | 3.634 | 4.253 | 0.74 |
+| step6c-deg-gap | main.py JAM_ON=False | f8dfe4f | 2026-11-16 | MH_01_easy_s3 | PASS | 6.361 | 0.766 | 2.443 | 2.013 | 5.712 | 0.54 |
+| step6c-deg-gap | main.py JAM_ON=False | f8dfe4f | 2026-11-16 | MH_02_easy_s1 | PASS | 5.587 | 0.605 | 0.895 | 11.886 | 4.801 | 0.53 |
+| step6c-deg-gap | main.py JAM_ON=False | f8dfe4f | 2026-11-16 | MH_02_easy_s2 | PASS | 5.792 | 0.572 | 1.168 | 1.711 | 5.638 | 0.55 |
+| step6c-deg-gap | main.py JAM_ON=False | f8dfe4f | 2026-11-16 | MH_02_easy_s3 | PASS | 5.306 | 0.616 | 1.039 | 11.097 | 4.846 | 0.59 |
+| step6c-deg-gap | main.py JAM_ON=False | f8dfe4f | 2026-11-16 | MH_03_medium_s1 | PASS | 5.497 | 1.646 | 5.342 | 29.714 | 18.693 | 0.49 |
+| step6c-deg-gap | main.py JAM_ON=False | f8dfe4f | 2026-11-16 | MH_03_medium_s2 | PASS | 7.946 | 1.950 | 4.583 | 40.141 | 30.112 | 0.35 |
+| step6c-deg-gap | main.py JAM_ON=False | f8dfe4f | 2026-11-16 | MH_03_medium_s3 | PASS | 4.575 | 1.262 | 3.267 | 8.416 | 10.773 | 0.40 |
+| step6c-deg-gap | main.py JAM_ON=False | f8dfe4f | 2026-11-16 | MH_04_difficult_s1 | PASS | 6.648 | 1.329 | 3.201 | 4.237 | 3.959 | 0.34 |
+| step6c-deg-gap | main.py JAM_ON=False | f8dfe4f | 2026-11-16 | MH_04_difficult_s2 | PASS | 7.177 | 1.192 | 3.216 | 7.765 | 8.878 | 0.27 |
+| step6c-deg-gap | main.py JAM_ON=False | f8dfe4f | 2026-11-16 | MH_04_difficult_s3 | PASS | 7.950 | 1.249 | 2.517 | 9.464 | 7.815 | 0.35 |
+| step6c-deg-gap | main.py JAM_ON=False | f8dfe4f | 2026-11-16 | MH_05_difficult_s1 | PASS | 6.902 | 1.105 | 2.874 | 7.523 | 4.348 | 0.32 |
+| step6c-deg-gap | main.py JAM_ON=False | f8dfe4f | 2026-11-16 | MH_05_difficult_s2 | PASS | 7.633 | 1.173 | 3.570 | 5.440 | 6.800 | 0.30 |
+| step6c-deg-gap | main.py JAM_ON=False | f8dfe4f | 2026-11-16 | MH_05_difficult_s3 | PASS | 7.339 | 1.109 | 1.162 | 8.598 | 11.066 | 0.31 |
+| step6c-deg-jam | main.py GAP_ON=False | f8dfe4f | 2026-11-16 | MH_01_easy_s1 | PASS | 4.156 | 0.595 | 1.698 | 2.564 | 6.492 | 0.58 |
+| step6c-deg-jam | main.py GAP_ON=False | f8dfe4f | 2026-11-16 | MH_01_easy_s2 | PASS | 6.529 | 0.855 | 2.268 | 5.364 | 4.643 | 0.62 |
+| step6c-deg-jam | main.py GAP_ON=False | f8dfe4f | 2026-11-16 | MH_01_easy_s3 | PASS | 6.411 | 0.744 | 2.501 | 1.525 | 5.188 | 0.60 |
+| step6c-deg-jam | main.py GAP_ON=False | f8dfe4f | 2026-11-16 | MH_02_easy_s1 | PASS | 6.146 | 0.579 | 1.369 | 8.959 | 2.975 | 0.63 |
+| step6c-deg-jam | main.py GAP_ON=False | f8dfe4f | 2026-11-16 | MH_02_easy_s2 | PASS | 5.186 | 0.566 | 0.946 | 2.721 | 3.523 | 0.57 |
+| step6c-deg-jam | main.py GAP_ON=False | f8dfe4f | 2026-11-16 | MH_02_easy_s3 | PASS | 6.709 | 0.592 | 1.697 | 8.436 | 5.327 | 0.65 |
+| step6c-deg-jam | main.py GAP_ON=False | f8dfe4f | 2026-11-16 | MH_03_medium_s1 | PASS | 7.473 | 1.753 | 2.914 | 30.000 | 29.471 | 0.53 |
+| step6c-deg-jam | main.py GAP_ON=False | f8dfe4f | 2026-11-16 | MH_03_medium_s2 | PASS | 11.584 | 2.195 | 2.349 | 44.018 | 44.393 | 0.40 |
+| step6c-deg-jam | main.py GAP_ON=False | f8dfe4f | 2026-11-16 | MH_03_medium_s3 | PASS | 4.821 | 1.258 | 3.909 | 12.744 | 7.999 | 0.38 |
+| step6c-deg-jam | main.py GAP_ON=False | f8dfe4f | 2026-11-16 | MH_04_difficult_s1 | PASS | 6.684 | 1.271 | 2.901 | 5.971 | 6.518 | 0.30 |
+| step6c-deg-jam | main.py GAP_ON=False | f8dfe4f | 2026-11-16 | MH_04_difficult_s2 | PASS | 7.289 | 1.202 | 3.123 | 10.458 | 8.622 | 0.35 |
+| step6c-deg-jam | main.py GAP_ON=False | f8dfe4f | 2026-11-16 | MH_04_difficult_s3 | PASS | 8.353 | 1.238 | 2.599 | 5.905 | 3.862 | 0.34 |
+| step6c-deg-jam | main.py GAP_ON=False | f8dfe4f | 2026-11-16 | MH_05_difficult_s1 | PASS | 6.910 | 1.041 | 2.759 | 4.986 | 5.448 | 0.33 |
+| step6c-deg-jam | main.py GAP_ON=False | f8dfe4f | 2026-11-16 | MH_05_difficult_s2 | PASS | 7.981 | 1.206 | 3.759 | 3.889 | 10.369 | 0.29 |
+| step6c-deg-jam | main.py GAP_ON=False | f8dfe4f | 2026-11-16 | MH_05_difficult_s3 | PASS | 7.838 | 1.127 | 1.049 | 9.176 | 13.620 | 0.32 |
+| step6c-deg-off | main.py GAP_ON=False JAM_ON=False | f8dfe4f | 2026-11-16 | MH_01_easy_s1 | PASS | 3.942 | 0.610 | 2.230 | 2.842 | 6.671 | 0.65 |
+| step6c-deg-off | main.py GAP_ON=False JAM_ON=False | f8dfe4f | 2026-11-16 | MH_01_easy_s2 | PASS | 7.268 | 0.891 | 2.765 | 7.062 | 6.399 | 0.72 |
+| step6c-deg-off | main.py GAP_ON=False JAM_ON=False | f8dfe4f | 2026-11-16 | MH_01_easy_s3 | PASS | 6.989 | 0.770 | 2.859 | 2.166 | 6.129 | 0.56 |
+| step6c-deg-off | main.py GAP_ON=False JAM_ON=False | f8dfe4f | 2026-11-16 | MH_02_easy_s1 | PASS | 6.246 | 0.613 | 1.343 | 10.593 | 4.015 | 0.57 |
+| step6c-deg-off | main.py GAP_ON=False JAM_ON=False | f8dfe4f | 2026-11-16 | MH_02_easy_s2 | PASS | 5.363 | 0.584 | 0.990 | 2.139 | 3.158 | 0.57 |
+| step6c-deg-off | main.py GAP_ON=False JAM_ON=False | f8dfe4f | 2026-11-16 | MH_02_easy_s3 | PASS | 6.895 | 0.636 | 1.767 | 11.165 | 6.089 | 0.55 |
+| step6c-deg-off | main.py GAP_ON=False JAM_ON=False | f8dfe4f | 2026-11-16 | MH_03_medium_s1 | PASS | 8.832 | 2.258 | 5.035 | 51.360 | 37.419 | 0.48 |
+| step6c-deg-off | main.py GAP_ON=False JAM_ON=False | f8dfe4f | 2026-11-16 | MH_03_medium_s2 | PASS | 13.789 | 2.758 | 4.861 | 65.864 | 51.072 | 0.39 |
+| step6c-deg-off | main.py GAP_ON=False JAM_ON=False | f8dfe4f | 2026-11-16 | MH_03_medium_s3 | PASS | 8.131 | 1.607 | 4.087 | 24.199 | 28.014 | 0.39 |
+| step6c-deg-off | main.py GAP_ON=False JAM_ON=False | f8dfe4f | 2026-11-16 | MH_04_difficult_s1 | PASS | 6.741 | 1.281 | 3.326 | 9.644 | 8.983 | 0.31 |
+| step6c-deg-off | main.py GAP_ON=False JAM_ON=False | f8dfe4f | 2026-11-16 | MH_04_difficult_s2 | PASS | 8.152 | 1.268 | 3.124 | 11.381 | 11.688 | 0.30 |
+| step6c-deg-off | main.py GAP_ON=False JAM_ON=False | f8dfe4f | 2026-11-16 | MH_04_difficult_s3 | PASS | 9.672 | 1.185 | 2.696 | 8.912 | 8.442 | 0.36 |
+| step6c-deg-off | main.py GAP_ON=False JAM_ON=False | f8dfe4f | 2026-11-16 | MH_05_difficult_s1 | PASS | 6.510 | 1.081 | 2.479 | 5.929 | 5.728 | 0.29 |
+| step6c-deg-off | main.py GAP_ON=False JAM_ON=False | f8dfe4f | 2026-11-16 | MH_05_difficult_s2 | PASS | 8.922 | 1.328 | 4.473 | 4.893 | 15.388 | 0.33 |
+| step6c-deg-off | main.py GAP_ON=False JAM_ON=False | f8dfe4f | 2026-11-16 | MH_05_difficult_s3 | PASS | 9.067 | 1.268 | 1.159 | 15.855 | 22.663 | 0.34 |
+| step6c-rep-both | main.py | f8dfe4f | 2026-11-16 | MH_03_medium_s4 | PASS | 4.143 | 1.223 | 2.905 | 7.883 | 4.484 | 0.54 |
+| step6c-rep-both | main.py | f8dfe4f | 2026-11-16 | MH_03_medium_s5 | PASS | 4.187 | 1.169 | 1.772 | 9.296 | 6.610 | 0.44 |
+| step6c-rep-both | main.py | f8dfe4f | 2026-11-16 | MH_03_medium_s6 | PASS | 4.115 | 1.207 | 3.970 | 3.057 | 6.919 | 0.52 |
+| step6c-rep-both | main.py | f8dfe4f | 2026-11-16 | MH_04_difficult_s4 | PASS | 7.462 | 1.204 | 3.001 | 8.070 | 6.854 | 0.38 |
+| step6c-rep-both | main.py | f8dfe4f | 2026-11-16 | MH_04_difficult_s5 | PASS | 7.063 | 1.213 | 1.652 | 7.324 | 4.270 | 0.45 |
+| step6c-rep-both | main.py | f8dfe4f | 2026-11-16 | MH_04_difficult_s6 | PASS | 9.480 | 1.283 | 4.548 | 8.676 | 5.823 | 0.37 |
+| step6c-rep-both | main.py | f8dfe4f | 2026-11-16 | MH_05_difficult_s4 | PASS | 7.526 | 1.089 | 2.773 | 6.084 | 3.458 | 0.44 |
+| step6c-rep-both | main.py | f8dfe4f | 2026-11-16 | MH_05_difficult_s5 | PASS | 7.006 | 1.035 | 1.385 | 5.659 | 5.680 | 0.45 |
+| step6c-rep-both | main.py | f8dfe4f | 2026-11-16 | MH_05_difficult_s6 | PASS | 7.330 | 1.060 | 3.091 | 5.045 | 5.515 | 0.46 |
+| step6c-rep-gap | main.py JAM_ON=False | f8dfe4f | 2026-11-16 | MH_03_medium_s4 | PASS | 4.489 | 1.239 | 3.777 | 3.684 | 8.786 | 0.53 |
+| step6c-rep-gap | main.py JAM_ON=False | f8dfe4f | 2026-11-16 | MH_03_medium_s5 | PASS | 4.879 | 1.169 | 4.857 | 6.202 | 9.767 | 0.41 |
+| step6c-rep-gap | main.py JAM_ON=False | f8dfe4f | 2026-11-16 | MH_03_medium_s6 | PASS | 4.395 | 1.212 | 3.171 | 7.514 | 7.225 | 0.48 |
+| step6c-rep-gap | main.py JAM_ON=False | f8dfe4f | 2026-11-16 | MH_04_difficult_s4 | PASS | 7.549 | 1.208 | 3.251 | 9.629 | 9.773 | 0.42 |
+| step6c-rep-gap | main.py JAM_ON=False | f8dfe4f | 2026-11-16 | MH_04_difficult_s5 | PASS | 7.090 | 1.225 | 1.748 | 6.802 | 5.723 | 0.43 |
+| step6c-rep-gap | main.py JAM_ON=False | f8dfe4f | 2026-11-16 | MH_04_difficult_s6 | PASS | 10.041 | 1.270 | 4.708 | 11.497 | 8.931 | 0.39 |
+| step6c-rep-gap | main.py JAM_ON=False | f8dfe4f | 2026-11-16 | MH_05_difficult_s4 | PASS | 7.688 | 1.085 | 2.777 | 5.778 | 3.653 | 0.41 |
+| step6c-rep-gap | main.py JAM_ON=False | f8dfe4f | 2026-11-16 | MH_05_difficult_s5 | PASS | 6.860 | 1.040 | 1.331 | 5.297 | 6.380 | 0.48 |
+| step6c-rep-gap | main.py JAM_ON=False | f8dfe4f | 2026-11-16 | MH_05_difficult_s6 | PASS | 7.192 | 1.078 | 3.135 | 4.534 | 6.399 | 0.47 |
+| step6c-rep-jam | main.py GAP_ON=False | f8dfe4f | 2026-11-16 | MH_03_medium_s4 | PASS | 5.367 | 1.234 | 4.049 | 6.257 | 6.833 | 0.48 |
+| step6c-rep-jam | main.py GAP_ON=False | f8dfe4f | 2026-11-16 | MH_03_medium_s5 | PASS | 6.427 | 1.150 | 3.024 | 8.590 | 11.746 | 0.40 |
+| step6c-rep-jam | main.py GAP_ON=False | f8dfe4f | 2026-11-16 | MH_03_medium_s6 | PASS | 5.080 | 1.168 | 4.477 | 1.592 | 11.397 | 0.54 |
+| step6c-rep-jam | main.py GAP_ON=False | f8dfe4f | 2026-11-16 | MH_04_difficult_s4 | PASS | 7.711 | 1.232 | 3.306 | 8.233 | 8.818 | 0.38 |
+| step6c-rep-jam | main.py GAP_ON=False | f8dfe4f | 2026-11-16 | MH_04_difficult_s5 | PASS | 6.979 | 1.210 | 1.927 | 8.281 | 4.639 | 0.45 |
+| step6c-rep-jam | main.py GAP_ON=False | f8dfe4f | 2026-11-16 | MH_04_difficult_s6 | PASS | 12.728 | 1.302 | 5.745 | 6.842 | 11.460 | 0.41 |
+| step6c-rep-jam | main.py GAP_ON=False | f8dfe4f | 2026-11-16 | MH_05_difficult_s4 | PASS | 7.777 | 1.156 | 2.744 | 5.256 | 4.541 | 0.42 |
+| step6c-rep-jam | main.py GAP_ON=False | f8dfe4f | 2026-11-16 | MH_05_difficult_s5 | PASS | 6.977 | 1.024 | 1.420 | 6.303 | 5.706 | 0.46 |
+| step6c-rep-jam | main.py GAP_ON=False | f8dfe4f | 2026-11-16 | MH_05_difficult_s6 | PASS | 7.546 | 1.084 | 3.347 | 3.958 | 5.631 | 0.39 |
+| step6c-rep-off | main.py GAP_ON=False JAM_ON=False | f8dfe4f | 2026-11-16 | MH_03_medium_s4 | PASS | 7.034 | 1.268 | 5.437 | 2.891 | 14.671 | 0.41 |
+| step6c-rep-off | main.py GAP_ON=False JAM_ON=False | f8dfe4f | 2026-11-16 | MH_03_medium_s5 | PASS | 9.296 | 1.252 | 5.926 | 4.339 | 16.922 | 0.42 |
+| step6c-rep-off | main.py GAP_ON=False JAM_ON=False | f8dfe4f | 2026-11-16 | MH_03_medium_s6 | PASS | 6.421 | 1.254 | 3.556 | 13.381 | 14.531 | 0.55 |
+| step6c-rep-off | main.py GAP_ON=False JAM_ON=False | f8dfe4f | 2026-11-16 | MH_04_difficult_s4 | PASS | 8.676 | 1.284 | 3.812 | 16.558 | 17.578 | 0.40 |
+| step6c-rep-off | main.py GAP_ON=False JAM_ON=False | f8dfe4f | 2026-11-16 | MH_04_difficult_s5 | PASS | 7.001 | 1.227 | 2.229 | 12.283 | 7.738 | 0.42 |
+| step6c-rep-off | main.py GAP_ON=False JAM_ON=False | f8dfe4f | 2026-11-16 | MH_04_difficult_s6 | PASS | 15.425 | 1.242 | 6.175 | 11.396 | 19.579 | 0.43 |
+| step6c-rep-off | main.py GAP_ON=False JAM_ON=False | f8dfe4f | 2026-11-16 | MH_05_difficult_s4 | PASS | 8.017 | 1.214 | 2.780 | 5.458 | 6.115 | 0.45 |
+| step6c-rep-off | main.py GAP_ON=False JAM_ON=False | f8dfe4f | 2026-11-16 | MH_05_difficult_s5 | PASS | 6.709 | 1.023 | 1.419 | 7.317 | 6.447 | 0.46 |
+| step6c-rep-off | main.py GAP_ON=False JAM_ON=False | f8dfe4f | 2026-11-16 | MH_05_difficult_s6 | PASS | 7.749 | 1.143 | 3.831 | 3.754 | 8.881 | 0.49 |

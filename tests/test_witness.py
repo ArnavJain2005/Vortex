@@ -251,7 +251,7 @@ def test_noise_meter_below_datasheet_changes_nothing(second_rest):
 def test_noise_meter_reads_the_added_white_noise():
     rows, _, _ = _profile(40.0, [(8, 10, -1), (24, 26, +1)], gyro_noise=0.03, acc_noise=0.4, seed=5)
     log = []
-    wx.estimate(rows, log=log)
+    wx.estimate(rows, log=log, jam=True)
     dt = DT_NS * 1e-9
     jg = np.median([L["jg"] for L in log[40:]])
     ja = np.median([L["ja"] for L in log[40:]])

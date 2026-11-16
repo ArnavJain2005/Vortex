@@ -77,7 +77,7 @@ V2P_ON = True
 JAM_TAU = 2.0
 GAP_H_TICKS = 8
 GAP_TAU = 20.0
-JAM_ON = True
+JAM_ON = False
 GAP_ON = True
 N = 15
 
