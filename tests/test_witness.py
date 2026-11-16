@@ -383,3 +383,24 @@ def test_denoised_zupt_fires_in_a_noisy_rest_after_the_run_length():
 def test_denoised_zupt_off_changes_nothing(second_rest):
     rows, _, _ = second_rest
     assert wx.estimate(rows, zden=False) == wx.estimate(rows)
+
+
+# ---------------------------------------------------------------- step 8b: per-row sigma (W6)
+
+def test_row_sigma_grows_with_time_and_gaps():
+    cov = (1.0, 0.1, 0.04)
+    assert wx.row_sigma(cov, 0.0, 0.0, -1.0, [0.0] * 3) == pytest.approx(1.0)
+    assert wx.row_sigma(cov, 0.5, 0.0, -1.0, [0.0] * 3) == pytest.approx(math.sqrt(1.0 + 0.1 + 0.01))
+    h = wx.GAP_H_TICKS * wx.TICK_S
+    want = 1.0 + 0.6 * (2.0 / h) ** 2 * 4.0 * 0.25
+    assert wx.row_sigma(cov, 0.0, 2.0, 0.01, [0.2, 0.2, 0.2]) == pytest.approx(math.sqrt(want))
+    assert wx.row_sigma(cov, 0.0, 2.0, -1.0, [0.2, 0.2, 0.2]) == pytest.approx(1.0)   # no motion learned yet
+
+
+def test_row_sigma_is_reporting_only(second_rest):
+    rows, _, _ = second_rest
+    sig = []
+    assert wx.estimate(rows, sig=sig) == wx.estimate(rows)
+    anchor = sd.calibrate(rows).anchor
+    assert len(sig) == len(rows) and all(math.isnan(x) for x in sig[:anchor])
+    assert all(x >= 0.0 and math.isfinite(x) for x in sig[anchor:])
