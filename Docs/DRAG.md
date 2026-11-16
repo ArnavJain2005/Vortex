@@ -47,5 +47,11 @@ Airborne part only (after the longest ground-truth rest), ground-truth accel bia
 | MH_04_difficult | tuning set (exploratory) | 2026-11-16 | 80 | b | 0.1874 | 0.760 | 0.764 | pass | pass |
 | MH_05_difficult | tuning set (exploratory) | 2026-11-16 | 92 | a | 0.2182 | 0.955 | 0.962 | pass | pass |
 | MH_05_difficult | tuning set (exploratory) | 2026-11-16 | 92 | b | 0.1768 | 0.880 | 0.896 | pass | pass |
+| V1_01_easy | DECISION | 2026-11-17 | 144 | a | 0.2238 | 0.542 | 0.548 | pass | fail |
+| V1_01_easy | DECISION | 2026-11-17 | 144 | b | 0.0834 | -0.049 | 0.052 | fail (k_close, r2_fixed_ok) | fail |
+| V1_02_medium | DECISION | 2026-11-17 | 84 | a | 0.2011 | 0.668 | 0.668 | pass | pass |
+| V1_02_medium | DECISION | 2026-11-17 | 84 | b | 0.1751 | 0.784 | 0.800 | pass | pass |
+| V1_03_difficult | DECISION | 2026-11-17 | 100 | a | 0.1941 | 0.630 | 0.630 | pass | fail |
+| V1_03_difficult | DECISION | 2026-11-17 | 100 | b | 0.1377 | 0.432 | 0.543 | fail (k_close, r2_fixed_ok) | fail |
 
-**Stage A decision: INCOMPLETE (needs V1_01_easy, V1_02_medium, V1_03_difficult)**
+**Stage A decision: NO-GO**
