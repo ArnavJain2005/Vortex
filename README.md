@@ -41,7 +41,7 @@ flowchart TD
     E --> F
 ```
 
-`main.py` uses only the Python standard library. It finds the longest usable still run in the first 60 seconds to estimate tilt, gravity magnitude, and gyro bias; when the strict test fails, a noise-tolerant second pass tries to recover a rest before falling back to first-second initialization. Before the anchor it holds position and integrates attitude backward. After the anchor it streams trapezoidal inertial integration through a 15-state error-state Kalman filter. Every input data row receives a pose. The [readable reference filter](vortex/core/witness.py) and optimized entry point agree exactly on recorded synthetic and real MH cases.
+`main.py` is the small submission launcher; it imports the standard-library estimator in [`pathfinder.py`](pathfinder.py). The estimator finds the longest usable still run in the first 60 seconds to estimate tilt, gravity magnitude, and gyro bias; when the strict test fails, a noise-tolerant second pass tries to recover a rest before falling back to first-second initialization. Before the anchor it holds position and integrates attitude backward. After the anchor it streams trapezoidal inertial integration through a 15-state error-state Kalman filter. Every input data row receives a pose. The [readable reference filter](vortex/core/witness.py) and optimized implementation agree exactly on recorded synthetic and real MH cases.
 
 The forward filter uses **V1 stillness** (zero-velocity and gyro-bias updates) and **V2 flight envelope** (speed and running-position-volume constraints). Dropouts add covariance; invalid, zero, and exactly stuck sensor rows coast with velocity decaying toward zero on a 0.5 s time constant. V2's values were chosen on MH_01/02; learning them from each healthy flight is still pending. The noise meter exists but is switched off after its validation rule failed. See the [implementation plan](Docs/TRACK3_PLAN.md).
 
@@ -72,15 +72,18 @@ Current per-sequence APE: **MH_01 3.91 m · MH_02 3.85 m · MH_03 3.53 m · MH_0
 | Other check | Recorded outcome |
 |---|---|
 | Output and equivalence | All five MH runs pass the row contract; optimized `main.py` matches the reference on those sequences and synthetic cases ([tests](tests/test_core_equivalence.py)) |
-| Latest automated suite | **190 passing tests**, Windows/Python 3.14 ([plan](Docs/TRACK3_PLAN.md)) |
-| Real MH_01 efficiency | **1.94 ms per IMU-second**, 9.70 µs/row, **15.95 MB peak process RSS** on Windows/Python 3.14 ([budget ledger](Docs/BUDGET.md)) |
+| Latest automated suite | **194 passing tests**, Windows/Python 3.14 ([plan](Docs/TRACK3_PLAN.md)) |
+| Real MH_01 efficiency | **1.89 ms per IMU-second**, 9.46 µs/row, **11.80 MB peak process RSS** with cached bytecode on Windows/Python 3.14 ([budget ledger](Docs/BUDGET.md)) |
+| Submission packaging | Same output bytes on all **65** clean and degraded MH inputs; bundle verified on Python 3.12/3.13/3.14 and Docker image checked on those inputs ([bundle guide](bundle/README.md)) |
 | Synthetic scoring cross-check | Worst reported difference **4.2 × 10⁻⁷ m** from independently installed evo ([ledger](Docs/EVO_CROSSCHECK.md)) |
 
-Compute is within the 20 ms/IMU-second limit on the measured laptop. The **8 MB whole-process RAM limit is not met**; even bare CPython exceeds it there, and the evaluator's accounting definition is unresolved. The organiser's fault levels and evaluator are unknown; a plausible-noise or slowly freezing failure can evade the current dead-sensor detector. TUM-VI accuracy, real Galaxy S24 operation, and per-row confidence remain unverified or unimplemented as noted above.
+The launcher loads matching, hash-checked bytecode shipped in the bundle, reducing measured MH_01 peak RSS by **3.5–3.8 MB** versus compiling the estimator from source across the tested Python versions. Without matching bytecode, Python compiles the source and this saving disappears; output stays identical. Compute is within the 20 ms/IMU-second limit on the measured laptop. The **8 MB whole-process RAM limit is still not met**; even bare CPython exceeds it there, and the evaluator's accounting definition is unresolved. The organiser's fault levels and evaluator are unknown; a plausible-noise or slowly freezing failure can evade the current dead-sensor detector. TUM-VI accuracy and real Galaxy S24 operation remain unverified.
+
+**Confidence study:** a per-row position sigma exists in the reference analysis, but it did not rank error on the MH_01/02 tuning set (Spearman correlation **−0.07** over 344,494 scored rows). It is not in the submission entry point, and no calibrated per-row confidence is claimed ([coverage ledger](Docs/COVERAGE.md)).
 
 ## Run Vortex
 
-Python 3.10+; the submission entry point itself uses only the standard library. Analysis and test tools use `pyproject.toml` dependencies.
+Python 3.10+; `main.py` and `pathfinder.py` use only the standard library. Analysis and test tools use `pyproject.toml` dependencies.
 
 ```bash
 python -m pip install -e '.[dev]'
@@ -93,6 +96,8 @@ python -m vortex.check_output imu.csv estimated_trajectory.txt
 ```
 
 The checker should report `PASS: 36000 input rows, 36000 output rows`. The synthetic file exercises parsing and output; it does not establish navigation accuracy.
+
+For the submission artifact, [stage and verify the bundle](bundle/README.md) with `tools/make_bundle.py`. Run its `stage` step once under each Python version whose cached bytecode you want to include (tested: 3.12, 3.13, 3.14); `python tools/make_bundle.py zip --name NAME` creates `dist/NAME.zip`, and `python tools/make_bundle.py verify dist/NAME.zip` checks it. The bundle also includes a [Dockerfile](bundle/Dockerfile). A plain source checkout runs without staged bytecode, but has higher peak RSS.
 
 For a local EuRoC sequence, put `MH_01_easy` under the ignored `data/euroc/` directory ([data setup](Docs/DATA.md)). The data is not committed:
 
@@ -124,11 +129,13 @@ The evaluator checks row coverage and fits alignment once on the clean run so a 
 - [Track 3 plan](Docs/TRACK3_PLAN.md) — current stage, real-sequence diagnostics, design, and acceptance criteria.
 - [Generated results](Docs/RESULTS.md) — clean and seeded degraded EuRoC metrics, stationary floor, and ablations.
 - [Blind-window study](Docs/BLIND.md) — dead-sensor detection and five-second forecast comparisons.
+- [Confidence coverage](Docs/COVERAGE.md) — why the experimental per-row sigma is not reported as calibrated confidence.
+- [Submission bundle](bundle/README.md) — launcher, bytecode, manifest, Docker, and verification.
 - [Budget ledger](Docs/BUDGET.md) and [efficiency floor](Docs/FLOOR.md) — synthetic and real timing, memory, and interpreter cost.
 - [Rotor-drag study](Docs/DRAG.md) — pre-registered NO-GO result and explicitly labeled exploratory fits.
 - [Scorer cross-check](Docs/EVO_CROSSCHECK.md) — evo comparison on synthetic trajectories.
 - [Data instructions](Docs/DATA.md) and [third-party notices](THIRD_PARTY.md) — datasets stay outside the repository.
 
-**Team:** Arnav Jain (lead), Arya M, Nandhitha Chowdary Surapaneni. This is a team submission to the Samsung PRISM XR Hackathon Challenge 2026. Samsung Research and Samsung PRISM marks identify the challenge context; Vortex is the team's project.
+**Current solo entrant:** Arnav Jain. Vortex is a submission to the Samsung PRISM XR Hackathon Challenge 2026. Samsung Research and Samsung PRISM marks identify the challenge context.
 
 <sub>Project code: [MIT](LICENSE). Brand marks are Samsung's; [Research mark](https://cdn.codeground.org/nsr/images/layout/logo-sr.png) and [PRISM mark](https://www.samsungprism.com/assets/images/prism_logo.png) are reproduced from their official sites.</sub>
