@@ -672,3 +672,28 @@ degraded copies, input mounted read-only): every output's sha256 equals the pre-
 Peak RSS inside the container was not measured (the WSL2 3.12 numbers above are the same Python
 version on Linux).
 
+
+## Step 9b: C core under 8 MB (16 Nov 2026, branch `track3/step9b-ccore`)
+
+**Why.** Q4 got no answer, so we assume the strict reading: 8 MB of whole-process peak RSS. CPython
+cannot meet it (bare interpreter 8.4 to 9.7 MB, `Docs/FLOOR.md`). The PRD (slide 17) allows `main.py`
+or `main.cpp`, and fixes the rules for a C core: C-style C++, standard library only, no heap allocation
+after start-up, double precision, `-O2`, no `-ffast-math`, equivalence-tested against the Python. The
+C++ parse + write floor is 4.3 MB (Windows).
+
+**Change.** `main.cpp`: a line-by-line port of `pathfinder.py` with the shipped switch settings (the
+switches that are off are not ported; a test checks that the Python settings match what the port
+implements). Same passes, same row rules, same arithmetic order. `main.py` stays as the Python
+submission and the fallback.
+
+**Rule (written before the port).** `main.cpp` becomes the recommended entry point only if all hold:
+1. On clean MH_01..05 and every `data/degraded` copy, the full-precision outputs of `main.cpp` and
+   `pathfinder.py` agree within the equivalence criterion (position < 1e-6 m, quaternion < 1e-7 on
+   every row), and every output passes `vortex.check_output`; the messy-input and degraded synthetic
+   cases of `tests/test_main.py` give identical submission-format bytes.
+2. Peak RSS <= 8 MB on Windows and on Linux, on MH_01, on the degraded MH_01_s1 copy and on a 15 min
+   SYNTHETIC file (memory must not grow with length).
+3. Process time per row not above `python -S main.py`'s on the same machine.
+Known, accepted differences (inputs EuRoC/TUM-VI never contain): timestamps above 9.2e18 ns are copied
+to the output but not integrated; lines longer than 64 KB are cut at 64 KB.
+
