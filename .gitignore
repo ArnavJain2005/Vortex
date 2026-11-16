@@ -20,3 +20,4 @@ Thumbs.db
 
 # Submission bundle (tools/make_bundle.py)
 /dist/
+/build/

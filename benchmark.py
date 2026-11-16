@@ -13,9 +13,12 @@ Results go to Docs/budget/<tag>.json; --render rebuilds Docs/BUDGET.md from all 
 
 Usage:
   python -S benchmark.py [--rows 36000] [--runs 9] [--input FILE] [--tag NAME] [--commit SHA] [--gate]
+                         [--cbin PATH]    # also the C core (main.cpp built to PATH): process, RSS, output
   python benchmark.py --render
 --gate exits 1 if the design targets are missed: process <= 50 us per row with -S,
-tracemalloc <= 4 MB, output passes the checker. Timing gates are flaky: run on a quiet machine.
+tracemalloc <= 4 MB, output passes the checker; with --cbin also: C core peak RSS <= 8 MB (the
+organisers' limit), its process <= 50 us per row, its output identical to main.py's.
+Timing gates are flaky: run on a quiet machine.
 """
 import importlib.util
 import json
@@ -133,6 +136,23 @@ def measure(a):
               % (label_p, s["us_per_row"], s["wall_ms_per_imu_s"], s["peak_rss_mb_median"]))
     res["process"] = procs
 
+    if a.get("cbin"):
+        pdst = dst                                   # the runs above left main.py's output there
+        cdst = dst + ".c"
+        s = measure_floor.summarise(measure_floor.repeat([a["cbin"], src, cdst], runs))
+        s["case"] = "C core (main.cpp)"
+        s["wall_ms_per_imu_s"] = s["wall_ms_median"] / imu_s
+        s["cpu_ms_per_imu_s"] = s["cpu_ms_median"] / imu_s
+        s["us_per_row"] = s["wall_ms_median"] * 1e3 / n
+        with open(pdst, "rb") as f1, open(cdst, "rb") as f2:
+            s["output_identical_to_main_py"] = f1.read() == f2.read()
+        c = check_output.check(src, cdst)
+        s["output_check"] = "PASS" if c["ok"] else "FAIL: " + "; ".join(c["errors"][:3])
+        res["ccore"] = s
+        print("  %-18s %6.2f us/row  %5.2f ms/imu-s  rss %5.2f MB  identical to main.py: %s  check: %s"
+              % ("C core", s["us_per_row"], s["wall_ms_per_imu_s"], s["peak_rss_mb_median"],
+                 s["output_identical_to_main_py"], s["output_check"]))
+
     chk = check_output.check(src, dst)
     res["output_check"] = "PASS" if chk["ok"] else "FAIL: " + "; ".join(chk["errors"][:3])
     print("  output check:", res["output_check"])
@@ -148,6 +168,14 @@ def gate(res):
         fails.append("tracemalloc %.0f KB > %.0f MB" % (res["tracemalloc_peak_kb"], TARGET_TRACE_MB))
     if res["output_check"] != "PASS":
         fails.append("output check failed")
+    c = res.get("ccore")
+    if c:
+        if c["peak_rss_mb_median"] > BUDGET_RSS_MB:
+            fails.append("C core RSS %.2f MB > %.0f MB" % (c["peak_rss_mb_median"], BUDGET_RSS_MB))
+        if c["us_per_row"] > TARGET_US_ROW:
+            fails.append("C core %.2f us/row > %.0f" % (c["us_per_row"], TARGET_US_ROW))
+        if not c["output_identical_to_main_py"] or c["output_check"] != "PASS":
+            fails.append("C core output differs from main.py or fails the checker")
     return fails
 
 
@@ -188,6 +216,20 @@ def render():
             _f(BUDGET_MS_PER_S - p["wall_ms_per_imu_s"], 1), _f(p["peak_rss_mb_median"]),
             _f(p["peak_private_mb_median"]), _f(d["tracemalloc_peak_kb"], 1),
             _f(TARGET_TRACE_MB * 1024 - d["tracemalloc_peak_kb"], 0), d["output_check"]))
+    L += ["", "## Summary: the C core (`main.cpp`) against the budget", "",
+          "Runs measured with `--cbin`. Its output is compared byte for byte with `python -S main.py`'s.", "",
+          "| Run | us per row | Wall ms per IMU-s | CPU ms per IMU-s | Peak RSS MB | Left of 8 MB "
+          "| Peak private MB | Same bytes as main.py | Output |",
+          "|---|---|---|---|---|---|---|---|---|"]
+    for tag, d in data:
+        c = d.get("ccore")
+        if not c:
+            continue
+        L.append("| %s | %s | %s | %s | %s | %s | %s | %s | %s |" % (
+            tag, _f(c["us_per_row"]), _f(c["wall_ms_per_imu_s"]), _f(c["cpu_ms_per_imu_s"]),
+            _f(c["peak_rss_mb_median"]), _f(BUDGET_RSS_MB - c["peak_rss_mb_median"]),
+            _f(c["peak_private_mb_median"]), "yes" if c["output_identical_to_main_py"] else "NO",
+            c["output_check"]))
     L += ["", "## Stages (in-process, cumulative, median us per row)", "",
           "| Run | Stage | us per row | min |", "|---|---|---|---|"]
     for tag, d in data:
@@ -224,7 +266,8 @@ def main(argv):
         return 0
     get = lambda k, d: argv[argv.index(k) + 1] if k in argv else d  # noqa: E731
     a = {"rows": int(get("--rows", 36000)), "runs": int(get("--runs", 9)), "input": get("--input", None),
-         "commit": get("--commit", None)}
+         "commit": get("--commit", None),
+         "cbin": os.path.abspath(get("--cbin", None)) if "--cbin" in argv else None}
     print("benchmark: Python %s" % platform.python_version())
     res = measure(a)
     os.makedirs(OUT_DIR, exist_ok=True)

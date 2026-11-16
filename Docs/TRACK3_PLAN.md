@@ -54,7 +54,7 @@ organisers, see Q1). Full-time work starts **20 Nov**.
 | 6 | Filter core: initialisation and self-calibration (W2), front end and jamming meter (W3), dropout bridging | 6a init + strapdown integrator: **Done (verified on SYNTHETIC data and MH_01)** 16 Nov. 6b self-calibration on the longest still run in the first 60 s + backward pass before it: **Done (verified on SYNTHETIC data and MH_01..05)** 16 Nov; reference and `main.py` bit-identical. 6c dropout covariance (`GAP_ON`, **on**) and noise meter (`JAM_ON`, **off** by rule v2): **Done (verified on SYNTHETIC data and seeded degraded MH copies)** 16 Nov; reference and `main.py` bit-identical. Degraded held-out mean APE 8.48 -> 6.69 m (seeds 4..6); clean unchanged. 6d rows before the anchor hold its position (`PRE_HOLD`, **on** by a pre-registered no-harm rule): **Done (verified on SYNTHETIC data and MH_01..05 clean and degraded)** 16 Nov; clean mean APE 5.29 -> 4.84 m (MH_02 5.98 -> 3.85, a tuning sequence). 6e denoised still test when the strict one finds no run (`CAL_NOISE_ON`, **on** by a pre-registered rule): **Done (verified on SYNTHETIC data and MH_01..05 clean and degraded)** 16 Nov; degraded MH_02 fallbacks 19/20 -> 0/20 (tuning), clean unchanged. Failure detection: step 8a | Beats dead reckoning on degraded MH_01 |
 | 7 | Velocity witnesses (W1): V1, V2 core; V3 after go/no-go; V4, V5 switchable; platform detection (W4) | 7a error-state filter + V1 + V2: **Done (verified on SYNTHETIC data and MH_01..05)** 16 Nov; reference and `main.py` bit-identical. Result: drift bounded (APE 249..1,288 m -> 3.5..6.6 m) but **not better than a never-moving trajectory** (mean APE 5.29 vs 5.25 m). V3: rule v2 pre-registered 16 Nov (commit c1b594c), waiting for Vicon Room 1. 7b denoised V1 (`ZUPT_DEN_ON`): built in the reference, **off** (pre-registered rule failed on held-out MH_03..05: APE +0.2 %, needed -2 %) 16 Nov; not in `main.py`. V4, V5, W4: Not started | Ablation table, each witness on and off, on held-out sequences |
 | 8 | Blind 5 s forecaster (W5), dead-sensor detection, per-row confidence (W6) | 8a dead-sensor detection (`DEAD_ON`, **on**) and velocity-decay forecaster (`FC_ON`, **on**, FC_TAU 0.5 s chosen on MH_01/02): **Done (verified on SYNTHETIC data and seeded degraded MH copies)** 16 Nov; both pass the pre-registered rule on held-out MH_03..05; reference and `main.py` bit-identical. Held-out blind growth -49.5 % (study A); zero failures 27.0 -> 4.4 m. 8b W6 per-row sigma from the filter covariance: built in the reference (`witness.row_sigma`, `tools/coverage.py`, `Docs/COVERAGE.md`) 16 Nov; **not informative** on MH_01/02 (rank correlation with the error -0.07), so no confidence is claimed; not in `main.py` | Blind error below constant velocity; coverage table |
-| 9 | Efficiency pass (C core if whole-process RAM counts); submission bundle, Dockerfile, deck, video | 9a `main.py` is a stub importing `pathfinder.py`, and the bundle ships its bytecode: **Done (verified on MH_01..05 clean and degraded, Win 3.13/3.14, WSL2 3.12)** 16 Nov; outputs byte-identical, peak RSS -3.5 to -3.8 MB (MH_01: 11.95 MB Win 3.14, 10.27 MB Linux 3.12), still above 8 MB. Bundle builder `tools/make_bundle.py`, README, Dockerfile: zip verified on all three Pythons; Docker image built and its output identical on all 65 inputs. C core: waits for Q4. Deck, video: Not started | Valid `team_name.zip` by 21 Nov 6 PM; submitted 3 h before cutoff |
+| 9 | Efficiency pass (C core if whole-process RAM counts); submission bundle, Dockerfile, deck, video | 9a `main.py` is a stub importing `pathfinder.py`, and the bundle ships its bytecode: **Done (verified on MH_01..05 clean and degraded, Win 3.13/3.14, WSL2 3.12)** 16 Nov; outputs byte-identical, peak RSS -3.5 to -3.8 MB (MH_01: 11.95 MB Win 3.14, 10.27 MB Linux 3.12), still above 8 MB. Bundle builder `tools/make_bundle.py`, README, Dockerfile: zip verified on all three Pythons; Docker image built and its output identical on all 65 inputs. 9b C core `main.cpp` (Q4 unanswered, so the strict reading is assumed): **Done (verified on MH_01..05 clean and degraded, Windows and WSL2 Linux)** 16 Nov; peak RSS 2.7 MB Linux / 4.8 MB Windows on MH_01, bit-identical to `pathfinder.py` on Linux; bundle in the PRD layout. C-core Dockerfile not built yet. Deck, video: Not started | Valid `team_name.zip` by 21 Nov 6 PM; submitted 3 h before cutoff |
 
 ## Open questions (Q1 to Q5 are in the email drafted for prism@samsung.com on 15 Nov)
 
@@ -63,7 +63,7 @@ organisers, see Q1). Full-time work starts **20 Nov**.
 | Q1 | Final deadline: 18 Nov or 22 Nov; Google Form link | Arnav |
 | Q2 | Track 3 student package: degradation script, sample data, evaluator | Arnav |
 | Q3 | Are waypoint positions or times given as input? | Arnav |
-| Q4 | Is 8 MB peak RAM measured for the whole process or the algorithm only? Is `main.cpp` accepted? **Now urgent:** a bare `python -S -c pass` already peaks at 8.4 MB RSS (WSL2 Linux, 3.12) and 9.5 to 9.7 MB (Windows 3.13/3.14), so CPython cannot meet 8 MB whole-process RSS; a C++ parse + write floor peaks at 4.3 MB (Windows). See `Docs/FLOOR.md`. Step 6a: compiling the larger `main.py` source adds about 1.1 MB peak RSS (11.8 vs 10.7 MB compile-only, Win 3.14); a 3-line stub importing a cached `.pyc` peaks at 10.3 MB, but a `.pyc` only works on the matching Python version (decide in step 9). Step 6b: compile-only is now 13.07 MB vs a bare 9.80 MB (+3.3 MB, Win 3.14); the run itself from a cached `.pyc` peaks at 11.92 MB on MH_01. Splitting the source into separately compiled modules may also lower the compile peak (not measured). Step 7a: compile-only 14.91 MB vs 13.15 MB for 6b and 9.80 MB bare (Win 3.14); the MH_01 run from a cached `.pyc` peaks at 12.05 MB (6b: 11.92), from source at 15.43 MB. The filter itself costs about 0.1 MB; compiling costs about 3.4 MB. Step 9a: `main.py` is now a stub and the bundle ships the estimator's bytecode; MH_01 peaks at 11.95 MB (Win 3.14), 11.83 MB (Win 3.13), 10.27 MB (WSL2 3.12), against a 9.3 to 10.7 MB floor for the interpreter with `math` and `array` | Arnav |
+| Q4 | Is 8 MB peak RAM measured for the whole process or the algorithm only? Is `main.cpp` accepted? **Now urgent:** a bare `python -S -c pass` already peaks at 8.4 MB RSS (WSL2 Linux, 3.12) and 9.5 to 9.7 MB (Windows 3.13/3.14), so CPython cannot meet 8 MB whole-process RSS; a C++ parse + write floor peaks at 4.3 MB (Windows). See `Docs/FLOOR.md`. Step 6a: compiling the larger `main.py` source adds about 1.1 MB peak RSS (11.8 vs 10.7 MB compile-only, Win 3.14); a 3-line stub importing a cached `.pyc` peaks at 10.3 MB, but a `.pyc` only works on the matching Python version (decide in step 9). Step 6b: compile-only is now 13.07 MB vs a bare 9.80 MB (+3.3 MB, Win 3.14); the run itself from a cached `.pyc` peaks at 11.92 MB on MH_01. Splitting the source into separately compiled modules may also lower the compile peak (not measured). Step 7a: compile-only 14.91 MB vs 13.15 MB for 6b and 9.80 MB bare (Win 3.14); the MH_01 run from a cached `.pyc` peaks at 12.05 MB (6b: 11.92), from source at 15.43 MB. The filter itself costs about 0.1 MB; compiling costs about 3.4 MB. Step 9a: `main.py` is now a stub and the bundle ships the estimator's bytecode; MH_01 peaks at 11.95 MB (Win 3.14), 11.83 MB (Win 3.13), 10.27 MB (WSL2 3.12), against a 9.3 to 10.7 MB floor for the interpreter with `math` and `array`. **No answer by 16 Nov: we assume whole-process RSS.** Step 9b: the C core `main.cpp` (allowed by slide 17) peaks at 2.7 MB (Linux) / 4.8 MB (Windows) on MH_01 with the same output | Arnav |
 | Q5 | Demo video length: 2 to 3, 3, or 5 minutes? | Arnav |
 | Q6 | Is the rotor-drag signal visible in EuRoC's IMU (offline fit on clean MH_01)? **Answered 16 Nov: NO-GO under the pre-registered rule** (whole sequence; the hand-carried start breaks it). Exploratory in-flight fit: visible, k 0.14 to 0.25 /s. See `Docs/DRAG.md`. **Rule v2** pre-registered 16 Nov (commit c1b594c): decided on Vicon Room 1 | Arnav + Claude, before 20 Nov |
 
@@ -671,4 +671,74 @@ degraded copies, input mounted read-only): every output's sha256 equals the pre-
 `python -v` in the container shows `pathfinder` loaded from `/app/__pycache__/pathfinder.cpython-312.pyc`.
 Peak RSS inside the container was not measured (the WSL2 3.12 numbers above are the same Python
 version on Linux).
+
+
+## Step 9b: C core under 8 MB (16 Nov 2026, branch `track3/step9b-ccore`)
+
+**Why.** Q4 got no answer, so we assume the strict reading: 8 MB of whole-process peak RSS. CPython
+cannot meet it (bare interpreter 8.4 to 9.7 MB, `Docs/FLOOR.md`). The PRD (slide 17) allows `main.py`
+or `main.cpp`, and fixes the rules for a C core: C-style C++, standard library only, no heap allocation
+after start-up, double precision, `-O2`, no `-ffast-math`, equivalence-tested against the Python. The
+C++ parse + write floor is 4.3 MB (Windows).
+
+**Change.** `main.cpp`: a line-by-line port of `pathfinder.py` with the shipped switch settings (the
+switches that are off are not ported; a test checks that the Python settings match what the port
+implements). Same passes, same row rules, same arithmetic order. `main.py` stays as the Python
+submission and the fallback.
+
+**Rule (written before the port).** `main.cpp` becomes the recommended entry point only if all hold:
+1. On clean MH_01..05 and every `data/degraded` copy, the full-precision outputs of `main.cpp` and
+   `pathfinder.py` agree within the equivalence criterion (position < 1e-6 m, quaternion < 1e-7 on
+   every row), and every output passes `vortex.check_output`; the messy-input and degraded synthetic
+   cases of `tests/test_main.py` give identical submission-format bytes.
+2. Peak RSS <= 8 MB on Windows and on Linux, on MH_01, on the degraded MH_01_s1 copy and on a 15 min
+   SYNTHETIC file (memory must not grow with length).
+3. Process time per row not above `python -S main.py`'s on the same machine.
+Known, accepted differences (inputs EuRoC/TUM-VI never contain): timestamps above 9.2e18 ns are copied
+to the output but not integrated; lines longer than 64 KB are cut at 64 KB.
+
+**Outcome: all three hold; `main.cpp` is the recommended entry point** (commit ba79c15).
+1. Equivalence, full precision, all 65 inputs (clean MH_01..05 + 60 degraded copies):
+   - Linux (WSL2 Ubuntu 24.04, g++ 13.3, Python 3.12.3): **bit-identical**, max difference 0.
+   - Windows (MinGW g++ 13.2 UCRT `-static`, Python 3.14.7): max 6.1e-13 m position, 1.2e-14
+     quaternion (the two C maths libraries differ in the last bit of sin/cos); output files
+     byte-identical on all 65.
+   - `tests/test_ccore.py` (18 tests, Windows): every synthetic scenario of the equivalence tests,
+     identical submission bytes; the number routines against Python's own `float()` and `%`-formatting
+     on 30,074 fields and 30,018 doubles (0 mismatches, also on Linux).
+2. Peak RSS, median of 9 runs:
+
+| Input | Linux C core | Linux `python -S main.py` | Windows C core | Windows `python -S main.py` |
+|---|---|---|---|---|
+| MH_01 | **2.71 MB** | 10.26 MB | **4.75 MB** | 11.88 MB |
+| degraded MH_01_s1 | **2.74 MB** | 10.26 MB | **4.75 MB** | 11.92 MB |
+| SYNTHETIC 15 min (180,000 rows) | **2.38 MB** | 10.07 MB | **4.44 MB** | 11.46 MB |
+
+3. Time: 1.1 to 1.6 us per row on Windows (Python 8.3 to 11.0), 1.1 to 5.1 on Linux reading from
+   the slow `/mnt/c` mount (Python 7.2 to 13.9).
+
+`benchmark.py --runs 15 --gate --cbin` at ba79c15 (gate now also requires the C core within 8 MB, within
+50 us per row and byte-identical to `python -S main.py`): PASS on all six (`Docs/BUDGET.md`):
+
+| Run | C core us/row | C core peak RSS | Same bytes as main.py | `python -S main.py` peak RSS |
+|---|---|---|---|---|
+| Win 3.14, synthetic | 1.66 | 4.44 MB | yes | 11.46 MB |
+| Win 3.13, synthetic | 1.55 | 4.45 MB | yes | 11.07 MB |
+| WSL2 3.12, synthetic | 1.21 | 2.38 MB | yes | 10.07 MB |
+| Win 3.14, MH_01 | 1.28 | 4.75 MB | yes | 11.80 MB |
+| Win 3.14, degraded MH_01_s1 | 1.32 | 4.75 MB | yes | 12.00 MB |
+| WSL2 3.12, MH_01 (input on `/mnt/c`) | 3.98 | 2.70 MB | yes | 10.23 MB |
+
+**What it took.** The first port ran at about 10 us per row on Windows: the Windows C library's
+`strtod` and `printf` cost about 5 and 4 us per row. `main.cpp` now parses and formats numbers itself
+with 128-bit integer arithmetic, rounding correctly (to nearest, ties to even, on the exact value) as
+Python does, and hands anything outside that range back to the C library. Without a 128-bit integer
+type (MSVC) it always uses the C library.
+
+**Bundle (PRD layout).** `tools/make_bundle.py`: `stage` (per Python), `eval IMU.csv --cbin PATH`
+(writes `estimated_trajectory.txt` and `metadata.json`: runtime, peak RSS, machine), `zip`, `verify`
+(also builds `src/main.cpp` with g++ and requires the same bytes). Verified on Win 3.14, Win 3.13 and
+WSL2 3.12. The evaluation files in it are MH_01 placeholders until the organisers' input exists.
+Dockerfiles (repository root and `bundle/`) build the C core in a g++ stage and run it; not built
+yet (needs the Debian g++ packages downloaded inside the build).
 
