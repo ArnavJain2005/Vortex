@@ -761,23 +761,24 @@ def run(src, dst, write=True, integrate=True):
                             bs0 += gx; bs1 += gy; bs2 += gz; bs3 += ax; bs4 += ay; bs5 += az
                             bq0 += gx * gx; bq1 += gy * gy; bq2 += gz * gz
                             bq3 += ax * ax; bq4 += ay * ay; bq5 += az * az
-                            if dt <= max_dt and has_prev:
+                            if jam:
                                 # ---- noise meter: second differences of the raw values ----
-                                if hn >= 2:
-                                    d0 = gx - 2.0 * hgx + kgx
-                                    d1 = gy - 2.0 * hgy + kgy
-                                    d2 = gz - 2.0 * hgz + kgz
-                                    dg += d0 * d0 + d1 * d1 + d2 * d2
-                                    d0 = ax - 2.0 * hax + kax
-                                    d1 = ay - 2.0 * hay + kay
-                                    d2 = az - 2.0 * haz + kaz
-                                    da += d0 * d0 + d1 * d1 + d2 * d2
-                                    nd += 1
-                                kgx = hgx; kgy = hgy; kgz = hgz; kax = hax; kay = hay; kaz = haz
-                                hn += 1
-                            else:
-                                hn = 1
-                            hgx = gx; hgy = gy; hgz = gz; hax = ax; hay = ay; haz = az
+                                if dt <= max_dt and has_prev:
+                                    if hn >= 2:
+                                        d0 = gx - 2.0 * hgx + kgx
+                                        d1 = gy - 2.0 * hgy + kgy
+                                        d2 = gz - 2.0 * hgz + kgz
+                                        dg += d0 * d0 + d1 * d1 + d2 * d2
+                                        d0 = ax - 2.0 * hax + kax
+                                        d1 = ay - 2.0 * hay + kay
+                                        d2 = az - 2.0 * haz + kaz
+                                        da += d0 * d0 + d1 * d1 + d2 * d2
+                                        nd += 1
+                                    kgx = hgx; kgy = hgy; kgz = hgz; kax = hax; kay = hay; kaz = haz
+                                    hn += 1
+                                else:
+                                    hn = 1
+                                hgx = gx; hgy = gy; hgz = gz; hax = ax; hay = ay; haz = az
                             ax = ax - bax; ay = ay - bay; az = az - baz
                             if dt <= max_dt and has_prev:
                                 # ---- strapdown step (trapezoid), as strapdown._step ----
