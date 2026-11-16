@@ -54,7 +54,7 @@ organisers, see Q1). Full-time work starts **20 Nov**.
 | 6 | Filter core: initialisation and self-calibration (W2), front end and jamming meter (W3), dropout bridging | 6a init + strapdown integrator: **Done (verified on SYNTHETIC data and MH_01)** 16 Nov. 6b self-calibration on the longest still run in the first 60 s + backward pass before it: **Done (verified on SYNTHETIC data and MH_01..05)** 16 Nov; reference and `main.py` bit-identical. 6c dropout covariance (`GAP_ON`, **on**) and noise meter (`JAM_ON`, **off** by rule v2): **Done (verified on SYNTHETIC data and seeded degraded MH copies)** 16 Nov; reference and `main.py` bit-identical. Degraded held-out mean APE 8.48 -> 6.69 m (seeds 4..6); clean unchanged. 6d rows before the anchor hold its position (`PRE_HOLD`, **on** by a pre-registered no-harm rule): **Done (verified on SYNTHETIC data and MH_01..05 clean and degraded)** 16 Nov; clean mean APE 5.29 -> 4.84 m (MH_02 5.98 -> 3.85, a tuning sequence). 6e denoised still test when the strict one finds no run (`CAL_NOISE_ON`, **on** by a pre-registered rule): **Done (verified on SYNTHETIC data and MH_01..05 clean and degraded)** 16 Nov; degraded MH_02 fallbacks 19/20 -> 0/20 (tuning), clean unchanged. Failure detection: step 8a | Beats dead reckoning on degraded MH_01 |
 | 7 | Velocity witnesses (W1): V1, V2 core; V3 after go/no-go; V4, V5 switchable; platform detection (W4) | 7a error-state filter + V1 + V2: **Done (verified on SYNTHETIC data and MH_01..05)** 16 Nov; reference and `main.py` bit-identical. Result: drift bounded (APE 249..1,288 m -> 3.5..6.6 m) but **not better than a never-moving trajectory** (mean APE 5.29 vs 5.25 m). V3: rule v2 pre-registered 16 Nov (commit c1b594c), waiting for Vicon Room 1. 7b denoised V1 (`ZUPT_DEN_ON`): built in the reference, **off** (pre-registered rule failed on held-out MH_03..05: APE +0.2 %, needed -2 %) 16 Nov; not in `main.py`. V4, V5, W4: Not started | Ablation table, each witness on and off, on held-out sequences |
 | 8 | Blind 5 s forecaster (W5), dead-sensor detection, per-row confidence (W6) | 8a dead-sensor detection (`DEAD_ON`, **on**) and velocity-decay forecaster (`FC_ON`, **on**, FC_TAU 0.5 s chosen on MH_01/02): **Done (verified on SYNTHETIC data and seeded degraded MH copies)** 16 Nov; both pass the pre-registered rule on held-out MH_03..05; reference and `main.py` bit-identical. Held-out blind growth -49.5 % (study A); zero failures 27.0 -> 4.4 m. 8b W6 per-row sigma from the filter covariance: built in the reference (`witness.row_sigma`, `tools/coverage.py`, `Docs/COVERAGE.md`) 16 Nov; **not informative** on MH_01/02 (rank correlation with the error -0.07), so no confidence is claimed; not in `main.py` | Blind error below constant velocity; coverage table |
-| 9 | Efficiency pass (C core if whole-process RAM counts); submission bundle, Dockerfile, deck, video | 9a `main.py` is a stub importing `pathfinder.py`, and the bundle ships its bytecode: **Done (verified on MH_01..05 clean and degraded, Win 3.13/3.14, WSL2 3.12)** 16 Nov; outputs byte-identical, peak RSS -3.5 to -3.8 MB (MH_01: 11.95 MB Win 3.14, 10.27 MB Linux 3.12), still above 8 MB. Bundle builder `tools/make_bundle.py`, README, Dockerfile: zip verified on all three Pythons; Docker image built and its output identical on all 65 inputs. 9b C core `main.cpp` (Q4 unanswered, so the strict reading is assumed): **Done (verified on MH_01..05 clean and degraded, Windows and WSL2 Linux)** 16 Nov; peak RSS 2.7 MB Linux / 4.8 MB Windows on MH_01, bit-identical to `pathfinder.py` on Linux; bundle in the PRD layout. C-core Dockerfile not built yet. Deck, video: Not started | Valid `team_name.zip` by 21 Nov 6 PM; submitted 3 h before cutoff |
+| 9 | Efficiency pass (C core if whole-process RAM counts); submission bundle, Dockerfile, deck, video | 9a `main.py` is a stub importing `pathfinder.py`, and the bundle ships its bytecode: **Done (verified on MH_01..05 clean and degraded, Win 3.13/3.14, WSL2 3.12)** 16 Nov; outputs byte-identical, peak RSS -3.5 to -3.8 MB (MH_01: 11.95 MB Win 3.14, 10.27 MB Linux 3.12), still above 8 MB. Bundle builder `tools/make_bundle.py`, README, Dockerfile: zip verified on all three Pythons; Docker image built and its output identical on all 65 inputs. 9b C core `main.cpp` (Q4 unanswered, so the strict reading is assumed): **Done (verified on MH_01..05 clean and degraded, Windows and WSL2 Linux)** 16 Nov; peak RSS 2.7 MB Linux / 4.8 MB Windows on MH_01, bit-identical to `pathfinder.py` on Linux; bundle in the PRD layout. Both C-core Docker images built (Debian g++ 12.2) and their output identical on all 65 inputs; 2.7 MB peak RSS in the container. Deck, video: Not started | Valid `team_name.zip` by 21 Nov 6 PM; submitted 3 h before cutoff |
 
 ## Open questions (Q1 to Q5 are in the email drafted for prism@samsung.com on 15 Nov)
 
@@ -739,6 +739,23 @@ type (MSVC) it always uses the C library.
 (writes `estimated_trajectory.txt` and `metadata.json`: runtime, peak RSS, machine), `zip`, `verify`
 (also builds `src/main.cpp` with g++ and requires the same bytes). Verified on Win 3.14, Win 3.13 and
 WSL2 3.12. The evaluation files in it are MH_01 placeholders until the organisers' input exists.
-Dockerfiles (repository root and `bundle/`) build the C core in a g++ stage and run it; not built
-yet (needs the Debian g++ packages downloaded inside the build).
+Dockerfiles (repository root and `bundle/`) build the C core in a g++ stage and run it.
+
+**Docker check (16 Nov 2026, Docker Desktop 29.6.2).** Both images built: the repository `Dockerfile`
+(with a new allowlist `.dockerignore`; without it the build context was the whole folder, including
+the 12 GB `MH_01.zip` and `data/`) and `Dockerfile` from the extracted `dist/vortex.zip`. The build stage
+installs Debian bookworm's g++ **12.2.0** (we tested with 13.2 and 13.3 before). On all 65 inputs (clean
+MH_01..05 + 60 degraded copies, input mounted read-only) every output's sha256 equals the step 9a
+baseline, exit code 0, for the C core in both images and for `python -S /app/main.py` (CPython 3.12.7)
+in the zip image. Peak RSS inside the container (child `ru_maxrss` read by a small static fork/`wait4`
+helper, as GNU time does; a Python wrapper is unusable because the child is charged the parent's
+memory; helper on `/bin/true`: 1.18 MB), median of 9 runs:
+
+| Input | C core | `python -S main.py` |
+|---|---|---|
+| MH_01 | 2.69 MB (2.63 to 2.79) | 10.52 MB |
+| degraded MH_01_s1 | 2.70 MB (2.63 to 2.85) | 10.53 MB |
+
+Times in the container are not budget numbers: the input is read through Docker Desktop's Windows bind
+mount.
 

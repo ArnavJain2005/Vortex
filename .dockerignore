@@ -1,0 +1,5 @@
+# Send only what the Dockerfile copies (keeps data/, datasets and zips out of the build context).
+*
+!main.cpp
+!main.py
+!pathfinder.py
