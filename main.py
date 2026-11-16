@@ -3,18 +3,20 @@
     python -S main.py <imu0/data.csv> <estimated_trajectory.txt>
 
 Pure Python, standard library only, single thread, offline, deterministic. Standalone: it never
-imports the `vortex` package. The readable reference implementation is vortex/core/strapdown.py;
-tests/test_core_equivalence.py keeps the two in lockstep (same rules, same arithmetic order).
+imports the `vortex` package. The readable reference implementation is vortex/core/witness.py (on
+top of vortex/core/strapdown.py); tests/test_core_equivalence.py keeps the two in lockstep (same
+rules, same arithmetic order).
 
 Output: one line `timestamp tx ty tz qx qy qz qw` per input data row, same order. A data row is any
 line that is not blank and does not start with '#' (vortex/rowspec.py states the same rule). The
 timestamp is the input ns value with the decimal point moved 9 digits left, done on the text, so it
 is exact. A row whose timestamp is not an integer repeats the previous row's timestamp.
 
-STATUS (step 6b): self-calibration on the longest still run in the first 60 s (gyro bias, g, tilt),
-backward integration from mid-run over the rows before it, strapdown integration (trapezoid) after
-it; fallback to the step 6a first-second initialisation. No witnesses yet, so position drifts like
-dead reckoning. Rules: vortex/core/strapdown.py. Performance: Docs/BUDGET.md.
+STATUS (step 7a): self-calibration on the longest still run in the first 60 s (gyro bias, g, tilt),
+backward integration from mid-run over the rows before it (dead reckoning, no witnesses), then a
+forward error-state Kalman filter (15 states, one covariance step per 0.25 s tick) with the
+witnesses V1 stillness (ZUPT + gyro bias) and V2 flight envelope (speed and volume); fallback to the
+step 6a first-second initialisation. Rules: vortex/core/witness.py. Performance: Docs/BUDGET.md.
 
 Passes: (1) calibration scan of the first 60 s; (2) rows before the anchor are stored (64 bytes per
 row, at most PRE_MAX_ROWS) and integrated backward; (3) one streaming forward pass writes every row.
@@ -49,8 +51,32 @@ STEADY_GYRO = 0.005
 STEADY_ACC = 0.05
 TRIM_S = 0.5
 PRE_MAX_ROWS = 15000
+# step 7a filter and witnesses: identical to vortex/core/witness.py (a test checks), sources noted there
+TICK_S = BLOCK_S
+GYRO_NOISE = 1.7e-3
+ACC_NOISE = 2.0e-2
+GYRO_WALK = 1.9e-4
+ACC_WALK = 3.0e-3
+P0_VEL = 0.01
+P0_TILT = 0.02
+P0_YAW = 0.0
+P0_BG = 2e-3
+P0_BA = 0.2
+P0_TILT_FALLBACK = 0.1
+P0_BG_FALLBACK = 0.02
+ZUPT_SIGMA = 0.02
+ZARU_SIGMA_MIN = 5e-4
+V2_SIGMA_H = 2.0
+V2_SIGMA_V = 0.3
+V2P_SIGMA_H = 5.0
+V2P_SIGMA_V = 2.0
+V2P_TAU = 10.0
+V1_ON = True
+V2_ON = True
+V2P_ON = True
+N = 15
 
-LAST = {"pre_rows": 0, "calibrated": False}   # filled by run(), for benchmark.py only
+LAST = {"pre_rows": 0, "calibrated": False, "zupt_ticks": 0, "ba": (0.0, 0.0, 0.0)}  # for tests/benchmarks
 
 
 def _slow_fields(p):
@@ -334,11 +360,11 @@ def _pre_segment(src, t_anchor, init):
 
 
 def _initialise(win):
-    """(qw, qx, qy, qz, bgx, bgy, bgz, g) from the init window (see vortex/core/strapdown.py)."""
+    """(qw, qx, qy, qz, bgx, bgy, bgz, g, still) from the init window (see vortex/core/strapdown.py)."""
     sqrt = math.sqrt
     n = len(win)
     if n == 0:
-        return 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, G_DEFAULT
+        return 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, G_DEFAULT, False
     mean = [0.0] * 6
     for v in win:
         for i in range(6):
@@ -355,7 +381,7 @@ def _initialise(win):
     fx, fy, fz = mean[3], mean[4], mean[5]
     fn = sqrt(fx * fx + fy * fy + fz * fz)
     if fn < 1.0:
-        return 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, G_DEFAULT
+        return 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, G_DEFAULT, False
     ux, uy, uz = fx / fn, fy / fn, fz / fn
     if 1.0 + uz < 1e-9:
         qw, qx, qy, qz = 0.0, 1.0, 0.0, 0.0
@@ -364,8 +390,125 @@ def _initialise(win):
         k = 1.0 / sqrt(w * w + x * x + y * y)
         qw, qx, qy, qz = w * k, x * k, y * k, 0.0
     if still:
-        return qw, qx, qy, qz, mean[0], mean[1], mean[2], fn
-    return qw, qx, qy, qz, 0.0, 0.0, 0.0, G_DEFAULT
+        return qw, qx, qy, qz, mean[0], mean[1], mean[2], fn, True
+    return qw, qx, qy, qz, 0.0, 0.0, 0.0, G_DEFAULT, False
+
+
+# ---- step 7a filter. Same arithmetic as vortex/core/witness.py and strapdown.py (bin_is_still,
+# bins_steady, exp_step, qmul_normalised); called once per 0.25 s tick, never per row. ----
+
+def _rot_matrix(qw, qx, qy, qz):
+    w, x, y, z = qw, qx, qy, qz
+    return (1.0 - 2.0 * (y * y + z * z), 2.0 * (x * y - w * z), 2.0 * (x * z + w * y),
+            2.0 * (x * y + w * z), 1.0 - 2.0 * (x * x + z * z), 2.0 * (y * z - w * x),
+            2.0 * (x * z - w * y), 2.0 * (y * z + w * x), 1.0 - 2.0 * (x * x + y * y))
+
+
+def _kf_init(still):
+    tilt = P0_TILT if still else P0_TILT_FALLBACK
+    bg = P0_BG if still else P0_BG_FALLBACK
+    sig = (0.0, 0.0, 0.0, P0_VEL, P0_VEL, P0_VEL, tilt, tilt, P0_YAW, bg, bg, bg, P0_BA, P0_BA, P0_BA)
+    P = [0.0] * (N * N)
+    for i in range(N):
+        P[i * N + i] = sig[i] * sig[i]
+    return P
+
+
+def _kf_propagate(P, r, fx, fy, fz, T):
+    A = [(0, 3, T), (1, 4, T), (2, 5, T),
+         (3, 7, T * fz), (3, 8, -T * fy), (4, 6, -T * fz), (4, 8, T * fx), (5, 6, T * fy), (5, 7, -T * fx)]
+    for i in range(3):
+        for j in range(3):
+            a = -T * r[3 * i + j]
+            A.append((3 + i, 12 + j, a))
+            A.append((6 + i, 9 + j, a))
+    M = P[:]
+    for i, j, a in A:
+        oi, oj = i * N, j * N
+        for c in range(N):
+            M[oi + c] += a * P[oj + c]
+    Pn = M[:]
+    for i, j, a in A:
+        for rr in range(0, N * N, N):
+            Pn[rr + i] += a * M[rr + j]
+    qv = ACC_NOISE * ACC_NOISE * T
+    qt = GYRO_NOISE * GYRO_NOISE * T
+    qg = GYRO_WALK * GYRO_WALK * T
+    qa = ACC_WALK * ACC_WALK * T
+    for k in range(3):
+        Pn[(3 + k) * (N + 1)] += qv
+        Pn[(6 + k) * (N + 1)] += qt
+        Pn[(9 + k) * (N + 1)] += qg
+        Pn[(12 + k) * (N + 1)] += qa
+    P[:] = Pn
+
+
+def _kf_update(P, dx, k, z, var):
+    S = P[k * N + k] + var
+    if not S > 0.0:
+        return
+    inn = z - dx[k]
+    row = P[k * N:(k + 1) * N]
+    for i in range(N):
+        Ki = P[i * N + k] / S
+        if Ki != 0.0:
+            dx[i] += Ki * inn
+            oi = i * N
+            for j in range(N):
+                P[oi + j] -= Ki * row[j]
+
+
+def _bin_still(n, s, ss):
+    if n < BLOCK_MIN_ROWS:
+        return False
+    sd = [0.0] * 6
+    for i in range(6):
+        m = s[i] / n
+        var = ss[i] / n - m * m
+        sd[i] = math.sqrt(var) if var > 0.0 else 0.0
+    if max(sd[0], sd[1], sd[2]) >= STILL_GYRO_STD or max(sd[3], sd[4], sd[5]) >= STILL_ACC_STD:
+        return False
+    if max(sd) <= STUCK_STD:
+        return False
+    fx, fy, fz = s[3] / n, s[4] / n, s[5] / n
+    fn = math.sqrt(fx * fx + fy * fy + fz * fz)
+    return ACC_NORM_MIN <= fn <= ACC_NORM_MAX
+
+
+def _bins_steady(na, sa, nb_, sb):
+    for i in range(6):
+        tol = STEADY_GYRO if i < 3 else STEADY_ACC
+        d = sa[i] / na - sb[i] / nb_
+        if d >= tol or d <= -tol:
+            return False
+    return True
+
+
+def _inject(qw, qx, qy, qz, px, py, pz, vx, vy, vz, bgx, bgy, bgz, bax, bay, baz, dx):
+    """witness.inject: Exp(dth) q (global error), p, v, biases += dx. Non-finite dx is discarded."""
+    chk = 0.0
+    for e in dx:
+        chk += e
+    if chk - chk != 0.0:
+        return qw, qx, qy, qz, px, py, pz, vx, vy, vz, bgx, bgy, bgz, bax, bay, baz
+    ex, ey, ez = dx[6], dx[7], dx[8]
+    th2 = (ex * ex + ey * ey + ez * ez) * 1.0 * 1.0
+    if th2 < 1e-8:
+        c = 1.0 - th2 / 8.0
+        k = 0.5 * 1.0 * (1.0 - th2 / 24.0)
+    else:
+        th = math.sqrt(th2)
+        c = math.cos(0.5 * th)
+        k = math.sin(0.5 * th) * 1.0 / th
+    kx, ky, kz = ex * k, ey * k, ez * k
+    nw = c * qw - kx * qx - ky * qy - kz * qz
+    nx = c * qx + kx * qw + ky * qz - kz * qy
+    ny = c * qy - kx * qz + ky * qw + kz * qx
+    nz = c * qz + kx * qy - ky * qx + kz * qw
+    inv = 1.0 / math.sqrt(nw * nw + nx * nx + ny * ny + nz * nz)
+    return (nw * inv, nx * inv, ny * inv, nz * inv, px + dx[0], py + dx[1], pz + dx[2],
+            vx + dx[3], vy + dx[4], vz + dx[5], bgx + dx[9], bgy + dx[10], bgz + dx[11],
+            bax + dx[12], bay + dx[13], baz + dx[14])
 
 
 def run(src, dst, write=True, integrate=True):
@@ -394,13 +537,32 @@ def run(src, dst, write=True, integrate=True):
                 pre = array("d")
         if cal is not None:
             qw, qx, qy, qz, bgx, bgy, bgz, g = cal[1:]
+            still0 = True
         else:                               # 6a: rows before the first valid row keep the initial pose
-            qw, qx, qy, qz, bgx, bgy, bgz, g = _initialise(_init_window(src))
+            qw, qx, qy, qz, bgx, bgy, bgz, g, still0 = _initialise(_init_window(src))
     else:
-        qw, qx, qy, qz, bgx, bgy, bgz, g = 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, G_DEFAULT
+        qw, qx, qy, qz, bgx, bgy, bgz, g, still0 = 1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, G_DEFAULT, False
     n_pre = len(pre) // 7
     LAST["pre_rows"] = n_pre
     LAST["calibrated"] = cal is not None
+    # ---- filter state (witness.estimate) ----
+    v1, v2, v2p = V1_ON, V2_ON, V2P_ON
+    kf_update = _kf_update
+    bax = bay = baz = 0.0
+    P = _kf_init(still0)
+    dx = [0.0] * N
+    tick_ns = int(TICK_S * 1e9)
+    tick_end = t_tick = 0
+    r0 = _rot_matrix(qw, qx, qy, qz)
+    fsx = fsy = fsz = 0.0
+    fn = 0
+    bn = 0
+    bs0 = bs1 = bs2 = bs3 = bs4 = bs5 = 0.0
+    bq0 = bq1 = bq2 = bq3 = bq4 = bq5 = 0.0
+    pn, ps, pss, pstill = 0, None, None, False
+    ccx = ccy = ccz = 0.0
+    zupt_ticks = 0
+    zs2, zm2 = ZUPT_SIGMA * ZUPT_SIGMA, ZARU_SIGMA_MIN * ZARU_SIGMA_MIN
     t = tl = 0
     have_t = False       # t_last set
     has_prev = False     # previous sample usable for the trapezoid
@@ -475,6 +637,63 @@ def run(src, dst, write=True, integrate=True):
                     if have_t:
                         dt = (t - tl) * 1e-9
                         if 0 < dt <= max_jump:
+                            if t >= tick_end:
+                                # ---- close the tick (every 0.25 s): propagate, witnesses, inject ----
+                                T = (tl - t_tick) * 1e-9
+                                r1 = _rot_matrix(qw, qx, qy, qz)
+                                if T > 0.0:
+                                    r = [0.5 * (r0[i] + r1[i]) for i in range(9)]
+                                    if fn:
+                                        _kf_propagate(P, r, fsx / fn, fsy / fn, fsz / fn, T)
+                                    else:
+                                        _kf_propagate(P, r, 0.0, 0.0, g, T)
+                                bs = [bs0, bs1, bs2, bs3, bs4, bs5]
+                                bss = [bq0, bq1, bq2, bq3, bq4, bq5]
+                                still = _bin_still(bn, bs, bss)
+                                zupt = (v1 and still and pstill and _bins_steady(pn, ps, bn, bs))
+                                if zupt:
+                                    zupt_ticks += 1
+                                    kf_update(P, dx, 3, -vx, zs2)
+                                    kf_update(P, dx, 4, -vy, zs2)
+                                    kf_update(P, dx, 5, -vz, zs2)
+                                    bgl = (bgx, bgy, bgz)
+                                    for i in range(3):
+                                        m = bs[i] / bn
+                                        var = (bss[i] / bn - m * m) / bn
+                                        if var < zm2:
+                                            var = zm2
+                                        kf_update(P, dx, 9 + i, m - bgl[i], var)
+                                elif v2:
+                                    kf_update(P, dx, 3, -vx, V2_SIGMA_H * V2_SIGMA_H)
+                                    kf_update(P, dx, 4, -vy, V2_SIGMA_H * V2_SIGMA_H)
+                                    kf_update(P, dx, 5, -vz, V2_SIGMA_V * V2_SIGMA_V)
+                                if v2p and not zupt and T > 0.0:
+                                    a = T / V2P_TAU if T < V2P_TAU else 1.0
+                                    ccx += (px - ccx) * a
+                                    ccy += (py - ccy) * a
+                                    ccz += (pz - ccz) * a
+                                    kf_update(P, dx, 0, ccx - px, V2P_SIGMA_H * V2P_SIGMA_H)
+                                    kf_update(P, dx, 1, ccy - py, V2P_SIGMA_H * V2P_SIGMA_H)
+                                    kf_update(P, dx, 2, ccz - pz, V2P_SIGMA_V * V2P_SIGMA_V)
+                                if zupt or v2 or v2p:
+                                    (qw, qx, qy, qz, px, py, pz, vx, vy, vz, bgx, bgy, bgz, bax, bay,
+                                     baz) = _inject(qw, qx, qy, qz, px, py, pz, vx, vy, vz, bgx, bgy, bgz,
+                                                    bax, bay, baz, dx)
+                                    dx = [0.0] * N
+                                tick_end += tick_ns * ((t - tick_end) // tick_ns + 1)
+                                t_tick = tl
+                                r0 = _rot_matrix(qw, qx, qy, qz)
+                                fsx = fsy = fsz = 0.0
+                                fn = 0
+                                pn, ps, pss, pstill = bn, bs, bss, still
+                                bn = 0
+                                bs0 = bs1 = bs2 = bs3 = bs4 = bs5 = 0.0
+                                bq0 = bq1 = bq2 = bq3 = bq4 = bq5 = 0.0
+                            bn += 1
+                            bs0 += gx; bs1 += gy; bs2 += gz; bs3 += ax; bs4 += ay; bs5 += az
+                            bq0 += gx * gx; bq1 += gy * gy; bq2 += gz * gz
+                            bq3 += ax * ax; bq4 += ay * ay; bq5 += az * az
+                            ax = ax - bax; ay = ay - bay; az = az - baz
                             if dt <= max_dt and has_prev:
                                 # ---- strapdown step (trapezoid), as strapdown._step ----
                                 cx = gx - bgx; cy = gy - bgy; cz = gz - bgz
@@ -515,6 +734,8 @@ def run(src, dst, write=True, integrate=True):
                                     vx = nvx; vy = nvy; vz = nvz
                                     pcx = cx; pcy = cy; pcz = cz
                                     pfx = fwx; pfy = fwy; pfz = fwz
+                                    fsx += fwx; fsy += fwy; fsz += fwz
+                                    fn += 1
                                 else:
                                     has_prev = False
                             else:
@@ -532,6 +753,13 @@ def run(src, dst, write=True, integrate=True):
                     else:
                         tl = t
                         have_t = True
+                        tick_end = t + tick_ns
+                        t_tick = t
+                        bn += 1
+                        bs0 += gx; bs1 += gy; bs2 += gz; bs3 += ax; bs4 += ay; bs5 += az
+                        bq0 += gx * gx; bq1 += gy * gy; bq2 += gz * gz
+                        bq3 += ax * ax; bq4 += ay * ay; bq5 += az * az
+                        ax = ax - bax; ay = ay - bay; az = az - baz
                         pcx = gx - bgx; pcy = gy - bgy; pcz = gz - bgz
                         ux = 2.0 * (qy * az - qz * ay)
                         uy = 2.0 * (qz * ax - qx * az)
@@ -555,6 +783,8 @@ def run(src, dst, write=True, integrate=True):
                     k = CHUNK
         if out:
             w(b"".join(out))
+    LAST["zupt_ticks"] = zupt_ticks
+    LAST["ba"] = (bax, bay, baz)
     return n
 
 

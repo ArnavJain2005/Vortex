@@ -2,15 +2,60 @@
 
 Clean (undegraded) IMU input. APE = absolute position error after Umeyama alignment of the whole trajectory (SE3, or Sim3 with scale). Final = position error of the last pose after SE3. RPE 1 s = relative translation error over 200 frames. Sim3 can shrink a badly drifting trajectory toward a point (see the scale column), so it flatters drift; SE3 is the honest number.
 
-| Tag | Commit | Date | Sequence | Contract | APE SE3 m | Final m | APE Sim3 m | Sim3 scale | RPE 1 s m | Wall s |
-|---|---|---|---|---|---|---|---|---|---|---|
-| step6a | a4f25e3 | 2026-11-16 | MH_01_easy | PASS | 51303.92 | 118423.21 | 4.24 | 1.52e-05 | 1132.918 | 0.19 |
-| step6a | a4f25e3 | 2026-11-16 | MH_02_easy | PASS | 34197.60 | 79084.89 | 4.40 | 4.33e-05 | 919.509 | 0.20 |
-| step6a | a4f25e3 | 2026-11-16 | MH_03_medium | PASS | 18192.52 | 39321.97 | 3.56 | 2.25e-05 | 554.725 | 0.16 |
-| step6a | a4f25e3 | 2026-11-16 | MH_04_difficult | PASS | 17687.41 | 38897.81 | 6.80 | 3.06e-05 | 687.304 | 0.14 |
-| step6a | a4f25e3 | 2026-11-16 | MH_05_difficult | PASS | 593.57 | 1561.29 | 6.86 | 0.000822 | 25.035 | 0.15 |
-| step6b | 6862f9d | 2026-11-16 | MH_01_easy | PASS | 1288.50 | 3893.04 | 4.25 | 0.000529 | 40.053 | 0.27 |
-| step6b | 6862f9d | 2026-11-16 | MH_02_easy | PASS | 941.41 | 2735.30 | 4.60 | 0.000658 | 33.634 | 0.22 |
-| step6b | 6862f9d | 2026-11-16 | MH_03_medium | PASS | 676.70 | 1846.31 | 3.56 | 0.00053 | 25.476 | 0.21 |
-| step6b | 6862f9d | 2026-11-16 | MH_04_difficult | PASS | 248.88 | 710.06 | 6.81 | 0.00135 | 13.122 | 0.18 |
-| step6b | 6862f9d | 2026-11-16 | MH_05_difficult | PASS | 508.41 | 1342.03 | 6.86 | 0.00103 | 21.554 | 0.20 |
+## Summary: APE SE3 m / RPE 1 s m
+
+| Tag | MH_01 | MH_02 | MH_03 | MH_04 | MH_05 | Mean APE | Mean RPE 1 s |
+|---|---|---|---|---|---|---|---|
+| floor-still | 4.31 / 0.499 | 4.65 / 0.537 | 3.58 / 1.188 | 6.82 / 1.129 | 6.88 / 1.034 | 5.25 | 0.878 |
+| step6a | 51303.92 / 1132.918 | 34197.60 / 919.509 | 18192.52 / 554.725 | 17687.41 / 687.304 | 593.57 / 25.035 | 24395.00 | 663.898 |
+| step6b | 1288.50 / 40.053 | 941.41 / 33.634 | 676.70 / 25.476 | 248.88 / 13.122 | 508.41 / 21.554 | 732.78 | 26.768 |
+| step7a-v1-only | 1234.09 / 38.353 | 1054.49 / 37.560 | 724.62 / 27.683 | 297.33 / 15.490 | 274.86 / 12.221 | 717.08 | 26.261 |
+| step7a-v1-v2speed | 4.02 / 0.512 | 6.02 / 0.931 | 3.43 / 1.149 | 6.47 / 1.160 | 6.56 / 1.043 | 5.30 | 0.959 |
+| step7a-v1-v2volume | 3.86 / 0.539 | 5.98 / 1.019 | 3.78 / 0.974 | 6.35 / 1.285 | 6.39 / 1.084 | 5.27 | 0.980 |
+| step7a-v1v2 | 3.99 / 0.506 | 5.97 / 0.973 | 3.53 / 0.983 | 6.41 / 1.193 | 6.55 / 1.023 | 5.29 | 0.936 |
+| step7a-v2-no-v1 | 4.02 / 0.505 | 6.00 / 0.973 | 3.51 / 0.992 | 6.28 / 1.185 | 6.51 / 1.016 | 5.27 | 0.934 |
+
+## Every run
+
+| Tag | Main (settings) | Commit | Date | Sequence | Contract | APE SE3 m | Final m | APE Sim3 m | Sim3 scale | RPE 1 s m | Wall s |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| floor-still | tools\baseline_still.py | 290c894 | 2026-11-16 | MH_01_easy | PASS | 4.31 | 5.25 | nan | nan | 0.499 | 0.13 |
+| floor-still | tools\baseline_still.py | 290c894 | 2026-11-16 | MH_02_easy | PASS | 4.65 | 5.62 | nan | nan | 0.537 | 0.14 |
+| floor-still | tools\baseline_still.py | 290c894 | 2026-11-16 | MH_03_medium | PASS | 3.58 | 3.14 | nan | nan | 1.188 | 0.13 |
+| floor-still | tools\baseline_still.py | 290c894 | 2026-11-16 | MH_04_difficult | PASS | 6.82 | 3.88 | nan | nan | 1.129 | 0.10 |
+| floor-still | tools\baseline_still.py | 290c894 | 2026-11-16 | MH_05_difficult | PASS | 6.88 | 4.24 | nan | nan | 1.034 | 0.09 |
+| step6a | main_6a.py | a4f25e3 | 2026-11-16 | MH_01_easy | PASS | 51303.92 | 118423.21 | 4.24 | 1.52e-05 | 1132.918 | 0.19 |
+| step6a | main_6a.py | a4f25e3 | 2026-11-16 | MH_02_easy | PASS | 34197.60 | 79084.89 | 4.40 | 4.33e-05 | 919.509 | 0.20 |
+| step6a | main_6a.py | a4f25e3 | 2026-11-16 | MH_03_medium | PASS | 18192.52 | 39321.97 | 3.56 | 2.25e-05 | 554.725 | 0.16 |
+| step6a | main_6a.py | a4f25e3 | 2026-11-16 | MH_04_difficult | PASS | 17687.41 | 38897.81 | 6.80 | 3.06e-05 | 687.304 | 0.14 |
+| step6a | main_6a.py | a4f25e3 | 2026-11-16 | MH_05_difficult | PASS | 593.57 | 1561.29 | 6.86 | 0.000822 | 25.035 | 0.15 |
+| step6b | main.py | 6862f9d | 2026-11-16 | MH_01_easy | PASS | 1288.50 | 3893.04 | 4.25 | 0.000529 | 40.053 | 0.27 |
+| step6b | main.py | 6862f9d | 2026-11-16 | MH_02_easy | PASS | 941.41 | 2735.30 | 4.60 | 0.000658 | 33.634 | 0.22 |
+| step6b | main.py | 6862f9d | 2026-11-16 | MH_03_medium | PASS | 676.70 | 1846.31 | 3.56 | 0.00053 | 25.476 | 0.21 |
+| step6b | main.py | 6862f9d | 2026-11-16 | MH_04_difficult | PASS | 248.88 | 710.06 | 6.81 | 0.00135 | 13.122 | 0.18 |
+| step6b | main.py | 6862f9d | 2026-11-16 | MH_05_difficult | PASS | 508.41 | 1342.03 | 6.86 | 0.00103 | 21.554 | 0.20 |
+| step7a-v1-only | main.py V2P_ON=False V2_ON=False | 290c894 | 2026-11-16 | MH_01_easy | PASS | 1234.09 | 3727.33 | 4.25 | 0.000569 | 38.353 | 0.37 |
+| step7a-v1-only | main.py V2P_ON=False V2_ON=False | 290c894 | 2026-11-16 | MH_02_easy | PASS | 1054.49 | 3057.07 | 4.60 | 0.000599 | 37.560 | 0.28 |
+| step7a-v1-only | main.py V2P_ON=False V2_ON=False | 290c894 | 2026-11-16 | MH_03_medium | PASS | 724.62 | 1999.12 | 3.56 | 0.000489 | 27.683 | 0.24 |
+| step7a-v1-only | main.py V2P_ON=False V2_ON=False | 290c894 | 2026-11-16 | MH_04_difficult | PASS | 297.33 | 841.76 | 6.82 | 0.000894 | 15.490 | 0.21 |
+| step7a-v1-only | main.py V2P_ON=False V2_ON=False | 290c894 | 2026-11-16 | MH_05_difficult | PASS | 274.86 | 749.58 | 6.85 | 0.00217 | 12.221 | 0.20 |
+| step7a-v1-v2speed | main.py V2P_ON=False | 290c894 | 2026-11-16 | MH_01_easy | PASS | 4.02 | 5.63 | 4.01 | 1.3 | 0.512 | 0.33 |
+| step7a-v1-v2speed | main.py V2P_ON=False | 290c894 | 2026-11-16 | MH_02_easy | PASS | 6.02 | 7.41 | 4.34 | 0.284 | 0.931 | 0.28 |
+| step7a-v1-v2speed | main.py V2P_ON=False | 290c894 | 2026-11-16 | MH_03_medium | PASS | 3.43 | 3.63 | 3.42 | 1.15 | 1.149 | 0.26 |
+| step7a-v1-v2speed | main.py V2P_ON=False | 290c894 | 2026-11-16 | MH_04_difficult | PASS | 6.47 | 3.90 | 6.11 | 3.35 | 1.160 | 0.24 |
+| step7a-v1-v2speed | main.py V2P_ON=False | 290c894 | 2026-11-16 | MH_05_difficult | PASS | 6.56 | 4.86 | 6.44 | 2.02 | 1.043 | 0.23 |
+| step7a-v1-v2volume | main.py V2_ON=False | 290c894 | 2026-11-16 | MH_01_easy | PASS | 3.86 | 6.73 | 3.85 | 0.872 | 0.539 | 0.31 |
+| step7a-v1-v2volume | main.py V2_ON=False | 290c894 | 2026-11-16 | MH_02_easy | PASS | 5.98 | 6.94 | 4.20 | 0.318 | 1.019 | 0.28 |
+| step7a-v1-v2volume | main.py V2_ON=False | 290c894 | 2026-11-16 | MH_03_medium | PASS | 3.78 | 5.46 | 3.44 | 0.387 | 0.974 | 0.26 |
+| step7a-v1-v2volume | main.py V2_ON=False | 290c894 | 2026-11-16 | MH_04_difficult | PASS | 6.35 | 4.28 | 6.35 | 0.998 | 1.285 | 0.21 |
+| step7a-v1-v2volume | main.py V2_ON=False | 290c894 | 2026-11-16 | MH_05_difficult | PASS | 6.39 | 4.77 | 6.38 | 1.2 | 1.084 | 0.23 |
+| step7a-v1v2 | main.py | 290c894 | 2026-11-16 | MH_01_easy | PASS | 3.99 | 5.96 | 3.98 | 1.08 | 0.506 | 0.37 |
+| step7a-v1v2 | main.py | 290c894 | 2026-11-16 | MH_02_easy | PASS | 5.97 | 7.56 | 4.28 | 0.303 | 0.973 | 0.30 |
+| step7a-v1v2 | main.py | 290c894 | 2026-11-16 | MH_03_medium | PASS | 3.53 | 4.12 | 3.47 | 0.584 | 0.983 | 0.28 |
+| step7a-v1v2 | main.py | 290c894 | 2026-11-16 | MH_04_difficult | PASS | 6.41 | 3.76 | 6.35 | 1.55 | 1.193 | 0.23 |
+| step7a-v1v2 | main.py | 290c894 | 2026-11-16 | MH_05_difficult | PASS | 6.55 | 4.73 | 6.40 | 2.18 | 1.023 | 0.25 |
+| step7a-v2-no-v1 | main.py V1_ON=False | 290c894 | 2026-11-16 | MH_01_easy | PASS | 4.02 | 5.96 | 4.02 | 1.03 | 0.505 | 0.38 |
+| step7a-v2-no-v1 | main.py V1_ON=False | 290c894 | 2026-11-16 | MH_02_easy | PASS | 6.00 | 7.62 | 4.31 | 0.293 | 0.973 | 0.31 |
+| step7a-v2-no-v1 | main.py V1_ON=False | 290c894 | 2026-11-16 | MH_03_medium | PASS | 3.51 | 4.03 | 3.47 | 0.62 | 0.992 | 0.28 |
+| step7a-v2-no-v1 | main.py V1_ON=False | 290c894 | 2026-11-16 | MH_04_difficult | PASS | 6.28 | 4.03 | 6.17 | 1.66 | 1.185 | 0.22 |
+| step7a-v2-no-v1 | main.py V1_ON=False | 290c894 | 2026-11-16 | MH_05_difficult | PASS | 6.51 | 4.96 | 6.36 | 2.17 | 1.016 | 0.24 |

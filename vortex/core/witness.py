@@ -1,0 +1,258 @@
+"""Reference estimator, step 7a: error-state Kalman filter with the core velocity witnesses
+V1 (stillness) and V2 (flight envelope). Plain Python floats, no numpy; main.py copies the filter
+functions verbatim so the two stay bit-identical.
+
+Built on step 6b (vortex/core/strapdown.py): same self-calibration, same backward pass before the
+anchor, same per-row strapdown rules, except that the accelerometer bias estimate is subtracted from
+the specific force. With both witnesses off nothing is ever corrected, the bias estimate stays zero
+and the output equals strapdown.estimate exactly.
+
+Filter (forward only, from the anchor). Error state, 15 values:
+  dp (0..2), dv (3..5) world frame; dth (6..8) world-frame attitude error, q_true = Exp(dth) q;
+  dbg (9..11) gyro bias, dba (12..14) accelerometer bias, body frame.
+Continuous model: dp' = dv; dv' = -[f_w]x dth - R dba; dth' = -R dbg; biases random walks; white
+gyro and accel noise. The covariance is propagated once per tick (TICK_S, the 6b stillness bin) with
+Phi = I + A T, using the mean world specific force over the tick and the mean of R at the tick's two
+ends. Measurements are direct (one state each), applied as scalar updates at the end of a tick, then
+injected into the nominal state and the error reset to zero.
+
+Ticks are TICK_S time bins counted from the anchor's timestamp. A tick closes when an accepted valid
+row (first row, or 0 < dt <= MAX_JUMP_S) arrives at or after the bin's end, before that row is
+integrated. Accepted valid rows feed the bin's raw statistics (count, sums, sums of squares).
+
+V1 stillness: the bin is still by the 6b test (strapdown.bin_is_still) and so is the previous bin,
+and the two are steady (strapdown.bins_steady). Then v = 0 (ZUPT, ZUPT_SIGMA per axis) and gyro bias =
+the bin's mean gyro (ZARU, sigma = the bin-mean standard error, at least ZARU_SIGMA_MIN).
+V2 flight envelope, on every tick where V1 did not fire; two parts, each behind its own switch:
+  speed (V2_ON): each world velocity axis is pulled toward 0, sigma V2_SIGMA_H (x, y), V2_SIGMA_V (z):
+    an indoor flight or walk has zero-mean velocity of a typical size;
+  volume (V2P_ON): position is pulled toward a running centre c (c += (p - c) T / V2P_TAU), sigma
+    V2P_SIGMA_H, V2P_SIGMA_V: it stays in a room-sized volume. Assumes a bounded volume (true for
+    EuRoC and the TUM-VI room sequences; wrong for long corridor or outdoor walks).
+Envelope values are FIXED, chosen on clean MH_01/02 only (rule: lowest mean of APE/floor + RPE1s/floor
+after the anchor, floor = a never-moving trajectory); MH_03..05 are held out. Learning them in the
+healthy phase comes with the jamming meter.
+"""
+
+from __future__ import annotations
+
+from . import strapdown as sd
+
+# Named parameters. Noise densities: EuRoC sensor.yaml (ADIS16448) with margins, see each line.
+TICK_S = sd.BLOCK_S          # s, filter tick = stillness bin
+GYRO_NOISE = 1.7e-3          # rad/s/sqrt(Hz): 10x sensor.yaml 1.6968e-4
+ACC_NOISE = 2.0e-2           # m/s^2/sqrt(Hz): 10x sensor.yaml 2.0e-3 (rotor vibration)
+GYRO_WALK = 1.9e-4           # rad/s^2/sqrt(Hz): 10x sensor.yaml 1.9393e-5
+ACC_WALK = 3.0e-3            # m/s^3/sqrt(Hz): 1x sensor.yaml 3.0e-3
+P0_VEL = 0.01                # m/s at the anchor (mid still run)
+P0_TILT = 0.02               # rad, roll and pitch after calibration (accel bias / g)
+P0_YAW = 0.0                 # yaw is defined as 0 at the anchor
+P0_BG = 2e-3                 # rad/s after calibration (MH_01..05: within 1.5e-3 of ground truth)
+P0_BA = 0.2                  # m/s^2, accelerometer bias before any witness
+P0_TILT_FALLBACK = 0.1       # rad, 6a fallback (first second may be moving)
+P0_BG_FALLBACK = 0.02        # rad/s, 6a fallback
+ZUPT_SIGMA = 0.02            # m/s
+ZARU_SIGMA_MIN = 5e-4        # rad/s
+# V2 envelope, chosen on clean MH_01/02 (16 Nov; grid V2_SIGMA_H 0.5/1/2, V2P_SIGMA_H 2/5/10,
+# V2P_TAU 10/30, ACC_WALK 3e-3/3e-2; the landscape is flat, 1.92 to 1.97 against 2.0 for standing still)
+V2_SIGMA_H = 2.0             # m/s, horizontal speed envelope
+V2_SIGMA_V = 0.3             # m/s, vertical (not tuned; MH ground-truth vertical speed rms 0.18..0.28)
+V2P_SIGMA_H = 5.0            # m, volume envelope around the running centre
+V2P_SIGMA_V = 2.0            # m (not tuned)
+V2P_TAU = 10.0               # s, time constant of the running centre (EMA of own position)
+V1_ON = True
+V2_ON = True
+V2P_ON = True
+N = 15
+
+
+def rot_matrix(q):
+    """Row-major body-to-world rotation matrix of q = (w, x, y, z)."""
+    w, x, y, z = q
+    return (1.0 - 2.0 * (y * y + z * z), 2.0 * (x * y - w * z), 2.0 * (x * z + w * y),
+            2.0 * (x * y + w * z), 1.0 - 2.0 * (x * x + z * z), 2.0 * (y * z - w * x),
+            2.0 * (x * z - w * y), 2.0 * (y * z + w * x), 1.0 - 2.0 * (x * x + y * y))
+
+
+def kf_init(still):
+    """Initial covariance, flat row-major N x N."""
+    tilt = P0_TILT if still else P0_TILT_FALLBACK
+    bg = P0_BG if still else P0_BG_FALLBACK
+    sig = (0.0, 0.0, 0.0, P0_VEL, P0_VEL, P0_VEL, tilt, tilt, P0_YAW, bg, bg, bg, P0_BA, P0_BA, P0_BA)
+    P = [0.0] * (N * N)
+    for i in range(N):
+        P[i * N + i] = sig[i] * sig[i]
+    return P
+
+
+def kf_propagate(P, r, fx, fy, fz, T):
+    """P <- Phi P Phi^T + Q for a tick of T seconds. r: row-major R (body to world), f: mean world
+    specific force. Phi = I + A; A's non-zero entries are listed as (row, col, value)."""
+    A = [(0, 3, T), (1, 4, T), (2, 5, T),
+         (3, 7, T * fz), (3, 8, -T * fy), (4, 6, -T * fz), (4, 8, T * fx), (5, 6, T * fy), (5, 7, -T * fx)]
+    for i in range(3):
+        for j in range(3):
+            a = -T * r[3 * i + j]
+            A.append((3 + i, 12 + j, a))
+            A.append((6 + i, 9 + j, a))
+    M = P[:]                                   # M = Phi P
+    for i, j, a in A:
+        oi, oj = i * N, j * N
+        for c in range(N):
+            M[oi + c] += a * P[oj + c]
+    Pn = M[:]                                  # Pn = M Phi^T
+    for i, j, a in A:
+        for rr in range(0, N * N, N):
+            Pn[rr + i] += a * M[rr + j]
+    qv = ACC_NOISE * ACC_NOISE * T
+    qt = GYRO_NOISE * GYRO_NOISE * T
+    qg = GYRO_WALK * GYRO_WALK * T
+    qa = ACC_WALK * ACC_WALK * T
+    for k in range(3):
+        Pn[(3 + k) * (N + 1)] += qv
+        Pn[(6 + k) * (N + 1)] += qt
+        Pn[(9 + k) * (N + 1)] += qg
+        Pn[(12 + k) * (N + 1)] += qa
+    P[:] = Pn
+
+
+def kf_update(P, dx, k, z, var):
+    """Scalar measurement of error-state element k: z = dx[k] + noise (variance var)."""
+    S = P[k * N + k] + var
+    if not S > 0.0:
+        return
+    inn = z - dx[k]
+    row = P[k * N:(k + 1) * N]
+    for i in range(N):
+        Ki = P[i * N + k] / S
+        if Ki != 0.0:
+            dx[i] += Ki * inn
+            oi = i * N
+            for j in range(N):
+                P[oi + j] -= Ki * row[j]
+
+
+def inject(q, p, v, bg, ba, dx):
+    """Apply the error estimate to the nominal state; returns (q, p, v, bg, ba). A non-finite
+    correction is discarded (never-NaN guarantee)."""
+    chk = 0.0
+    for e in dx:
+        chk += e
+    if chk - chk != 0.0:
+        return q, p, v, bg, ba
+    nq = sd.qmul_normalised(sd.exp_step(dx[6], dx[7], dx[8], 1.0), q)
+    return (nq,[p[0] + dx[0], p[1] + dx[1], p[2] + dx[2]], [v[0] + dx[3], v[1] + dx[4], v[2] + dx[5]],
+            (bg[0] + dx[9], bg[1] + dx[10], bg[2] + dx[11]), (ba[0] + dx[12], ba[1] + dx[13], ba[2] + dx[14]))
+
+
+def estimate(rows, v1=None, v2=None, v2p=None, log=None):
+    """rows: list of (t_ns or None, six floats). Returns one (px, py, pz, qw, qx, qy, qz) per row.
+    v1, v2: witness switches (default V1_ON, V2_ON). log: optional list, gets one dict per tick."""
+    v1 = V1_ON if v1 is None else v1
+    v2 = V2_ON if v2 is None else v2
+    v2p = V2P_ON if v2p is None else v2p
+    c = [0.0, 0.0, 0.0]                 # running centre of the volume envelope
+    cal = sd.calibrate(rows)
+    init, anchor = cal.init, cal.anchor
+    out = sd.backward(rows, anchor, init)
+    q = init.q
+    bg = init.bg
+    ba = (0.0, 0.0, 0.0)
+    g = init.g
+    p = [0.0, 0.0, 0.0]
+    v = [0.0, 0.0, 0.0]
+    P = kf_init(init.still)
+    dx = [0.0] * N
+    tick_ns = int(TICK_S * 1e9)
+    t_last = None
+    prev = None
+    tick_end = None
+    t_tick = None                       # timestamp of the state at the last tick close
+    r0 = rot_matrix(q)                  # R at the start of the tick
+    fs = [0.0, 0.0, 0.0]                # sum of world specific force over integrated steps
+    fn = 0
+    bn, bs, bss = 0, [0.0] * 6, [0.0] * 6
+    pn, ps, pss, pstill = 0, None, None, False
+    for t, vals in rows[anchor:]:
+        if t is not None:
+            if sd.is_valid(vals):
+                dt = None if t_last is None else (t - t_last) * 1e-9
+                if dt is None or 0 < dt <= sd.MAX_JUMP_S:
+                    if tick_end is None:
+                        tick_end = t + tick_ns
+                        t_tick = t
+                    elif t >= tick_end:
+                        # ---- close the tick: propagate, witnesses, inject ----
+                        T = (t_last - t_tick) * 1e-9
+                        r1 = rot_matrix(q)
+                        if T > 0.0:
+                            r = [0.5 * (r0[i] + r1[i]) for i in range(9)]
+                            if fn:
+                                kf_propagate(P, r, fs[0] / fn, fs[1] / fn, fs[2] / fn, T)
+                            else:
+                                kf_propagate(P, r, 0.0, 0.0, g, T)
+                        still = sd.bin_is_still(bn, bs, bss)
+                        zupt = (v1 and still and pstill and sd.bins_steady(pn, ps, bn, bs))
+                        if zupt:
+                            for k in range(3):
+                                kf_update(P, dx, 3 + k, -v[k], ZUPT_SIGMA * ZUPT_SIGMA)
+                            for k in range(3):
+                                m = bs[k] / bn
+                                var = (bss[k] / bn - m * m) / bn
+                                if var < ZARU_SIGMA_MIN * ZARU_SIGMA_MIN:
+                                    var = ZARU_SIGMA_MIN * ZARU_SIGMA_MIN
+                                kf_update(P, dx, 9 + k, m - bg[k], var)
+                        elif v2:
+                            kf_update(P, dx, 3, -v[0], V2_SIGMA_H * V2_SIGMA_H)
+                            kf_update(P, dx, 4, -v[1], V2_SIGMA_H * V2_SIGMA_H)
+                            kf_update(P, dx, 5, -v[2], V2_SIGMA_V * V2_SIGMA_V)
+                        if v2p and not zupt and T > 0.0:
+                            a = T / V2P_TAU if T < V2P_TAU else 1.0
+                            for k in range(3):
+                                c[k] += (p[k] - c[k]) * a
+                            kf_update(P, dx, 0, c[0] - p[0], V2P_SIGMA_H * V2P_SIGMA_H)
+                            kf_update(P, dx, 1, c[1] - p[1], V2P_SIGMA_H * V2P_SIGMA_H)
+                            kf_update(P, dx, 2, c[2] - p[2], V2P_SIGMA_V * V2P_SIGMA_V)
+                        if zupt or v2 or v2p:
+                            q, p, v, bg, ba = inject(q, p, v, bg, ba, dx)
+                            dx = [0.0] * N
+                        if log is not None:
+                            log.append({"t": t_last, "zupt": zupt, "ba": ba, "bg": bg, "v": tuple(v)})
+                        tick_end += tick_ns * ((t - tick_end) // tick_ns + 1)
+                        t_tick = t_last
+                        r0 = rot_matrix(q)
+                        fs = [0.0, 0.0, 0.0]
+                        fn = 0
+                        pn, ps, pss, pstill = bn, bs, bss, still
+                        bn, bs, bss = 0, [0.0] * 6, [0.0] * 6
+                    bn += 1
+                    for i in range(6):
+                        bs[i] += vals[i]
+                        bss[i] += vals[i] * vals[i]
+                    vc = (vals[0], vals[1], vals[2], vals[3] - ba[0], vals[4] - ba[1], vals[5] - ba[2])
+                    if dt is None:
+                        prev = sd._sample(q, vc, bg[0], bg[1], bg[2])
+                    elif dt <= sd.MAX_DT and prev is not None:
+                        q, p, v, prev = sd._step(q, p, v, prev, vc, bg[0], bg[1], bg[2], g, dt)
+                        if prev is not None:
+                            fs[0] += prev[3]
+                            fs[1] += prev[4]
+                            fs[2] += prev[5]
+                            fn += 1
+                    else:
+                        p = [p[0] + v[0] * dt, p[1] + v[1] * dt, p[2] + v[2] * dt]
+                        prev = sd._sample(q, vc, bg[0], bg[1], bg[2])
+                    t_last = t
+            elif t_last is not None:
+                dt = (t - t_last) * 1e-9
+                if 0 < dt <= sd.MAX_JUMP_S:
+                    p = [p[0] + v[0] * dt, p[1] + v[1] * dt, p[2] + v[2] * dt]
+                    t_last = t
+                    prev = None
+        out.append((p[0], p[1], p[2], q[0], q[1], q[2], q[3]))
+    return out
+
+
+def estimate_file(path):
+    from ..data import euroc
+    return estimate(sd.rows_from_raw(euroc.read_imu_csv(path)))
