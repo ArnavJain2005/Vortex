@@ -1,4 +1,5 @@
-"""main.py (optimised) and vortex/core/strapdown.py (reference) give the same poses.
+"""main.py (optimised) and vortex/core/witness.py (reference, on top of strapdown.py) give the same
+poses; with the witnesses switched off, main.py equals strapdown.py (step 6b).
 
 Criterion (from the plan): position difference < 1e-6 m and quaternion difference < 1e-7 on every
 row. main.py is run with a full-precision output format so rounding of the submission format
@@ -13,6 +14,7 @@ import pytest
 
 from vortex import degrade
 from vortex.core import strapdown as sd
+from vortex.core import witness as wx
 from vortex.data import euroc
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -21,6 +23,7 @@ sys.path.insert(0, str(ROOT / "tests"))
 import synth_euroc  # noqa: E402
 from test_main import MESSY  # noqa: E402
 from test_strapdown import _move_rest_move, _moving, _static_rows  # noqa: E402
+from test_witness import _profile  # noqa: E402
 
 FULL = b"%s.%s %.17g %.17g %.17g %.17g %.17g %.17g %.17g\n"
 
@@ -35,12 +38,12 @@ def _load_main():
 main = _load_main()
 
 
-def _compare(src, tmp_path, monkeypatch):
+def _compare(src, tmp_path, monkeypatch, reference=None):
     monkeypatch.setattr(main, "FMT", FULL)
     dst = tmp_path / "est.txt"
     n = main.run(str(src), str(dst))
     got = np.array([[float(x) for x in line.split()[1:]] for line in dst.read_text().splitlines()])
-    ref = np.array(sd.estimate_file(src))                 # (px, py, pz, qw, qx, qy, qz)
+    ref = np.array((reference or wx.estimate_file)(src))   # (px, py, pz, qw, qx, qy, qz)
     assert n == len(ref) == len(got)
     if n == 0:
         return 0.0, 0.0
@@ -64,6 +67,11 @@ def test_parameters_identical():
                  "STUCK_STD", "ACC_NORM_MIN", "ACC_NORM_MAX", "STEADY_GYRO", "STEADY_ACC", "TRIM_S",
                  "PRE_MAX_ROWS"):
         assert getattr(main, name) == getattr(sd, name), name
+    for name in ("TICK_S", "GYRO_NOISE", "ACC_NOISE", "GYRO_WALK", "ACC_WALK", "P0_VEL", "P0_TILT", "P0_YAW",
+                 "P0_BG", "P0_BA", "P0_TILT_FALLBACK", "P0_BG_FALLBACK", "ZUPT_SIGMA", "ZARU_SIGMA_MIN",
+                 "V2_SIGMA_H", "V2_SIGMA_V", "V2P_SIGMA_H", "V2P_SIGMA_V", "V2P_TAU", "V1_ON", "V2_ON",
+                 "V2P_ON", "N"):
+        assert getattr(main, name) == getattr(wx, name), name
 
 
 def test_messy_file(tmp_path, monkeypatch):
@@ -127,3 +135,26 @@ def test_header_only(tmp_path, monkeypatch):
     src = tmp_path / "imu.csv"
     src.write_text(euroc.HEADER + "\n")
     _compare(src, tmp_path, monkeypatch)
+
+
+@pytest.fixture(scope="module")
+def second_rest_rows():
+    rows, _, _ = _profile(46.0, [(8, 10, -1), (24, 26, +1), (34, 36, -1)], bias_step_s=25.0,
+                          gyro_step=(0.0, 0.0, 0.01), acc_step=(0.08, -0.06, 0.0))
+    return rows
+
+
+def test_witnesses_fire_and_match(tmp_path, monkeypatch, second_rest_rows):
+    src = _write_rows(tmp_path / "imu.csv", second_rest_rows)
+    dp, dq = _compare(src, tmp_path, monkeypatch)
+    assert dp < 1e-9                                         # same arithmetic order: rounding only
+    assert main.LAST["zupt_ticks"] > 30 and abs(main.LAST["ba"][0]) > 1e-3
+
+
+def test_witnesses_off_equals_step_6b(tmp_path, monkeypatch, second_rest_rows):
+    for name in ("V1_ON", "V2_ON", "V2P_ON"):
+        monkeypatch.setattr(main, name, False)
+    src = _write_rows(tmp_path / "imu.csv", second_rest_rows)
+    dp, dq = _compare(src, tmp_path, monkeypatch, reference=sd.estimate_file)
+    assert dp == 0.0 and dq == 0.0
+    assert main.LAST["zupt_ticks"] == 0 and main.LAST["ba"] == (0.0, 0.0, 0.0)

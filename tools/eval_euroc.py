@@ -7,6 +7,8 @@ Docs/results/<tag>.json; --render rebuilds Docs/RESULTS.md from all of them (nev
 
 Usage:
   python tools/eval_euroc.py --tag step6b [--main main.py] [--seqs MH_01_easy,MH_02_easy]
+                             [--set V2_ON=False --set V2P_TAU=20]   (ablations: module constants of
+                             the main script, set by a temporary wrapper; main.py itself is unchanged)
   python tools/eval_euroc.py --render
 Clean (undegraded) input only for now; degraded runs come with the jamming meter.
 """
@@ -24,6 +26,21 @@ from vortex import check_output, scoring  # noqa: E402
 
 DATA = os.path.join(ROOT, "data", "euroc")
 OUT_DIR = os.path.join(ROOT, "Docs", "results")
+
+
+def wrapper(main_path, sets, tmp):
+    """A temporary script that imports main_path, sets module constants, then runs it."""
+    lines = ["import sys, importlib.util",
+             "spec = importlib.util.spec_from_file_location('m', %r)" % main_path,
+             "m = importlib.util.module_from_spec(spec); spec.loader.exec_module(m)"]
+    for name, value in sets:
+        lines.append("assert hasattr(m, %r), 'no constant %s'" % (name, name))
+        lines.append("m.%s = %s" % (name, value))
+    lines.append("sys.exit(m.main(sys.argv))")
+    path = os.path.join(tmp, "wrapped_main.py")
+    with open(path, "w", encoding="utf-8") as f:
+        f.write("\n".join(lines) + "\n")
+    return path
 
 
 def evaluate(main_path, seq, tmp):
@@ -45,6 +62,29 @@ def evaluate(main_path, seq, tmp):
             "rpe200_rmse": r_se3["rpe"]["200"]["rmse"]}
 
 
+def pivot(runs):
+    """Summary: one row per tag, APE SE3 / RPE 1 s per sequence and the mean over sequences."""
+    seqs = sorted({r["sequence"] for run in runs for r in run["results"]})
+    L = ["## Summary: APE SE3 m / RPE 1 s m", "",
+         "| Tag | " + " | ".join(s[:5] for s in seqs) + " | Mean APE | Mean RPE 1 s |",
+         "|---|" + "---|" * (len(seqs) + 2)]
+    for run in runs:
+        by = {r["sequence"]: r for r in run["results"] if "error" not in r}
+        cells, a, b = [], [], []
+        for s in seqs:
+            if s in by:
+                cells.append("%.2f / %.3f" % (by[s]["ate_se3_rmse"], by[s]["rpe200_rmse"]))
+                a.append(by[s]["ate_se3_rmse"])
+                b.append(by[s]["rpe200_rmse"])
+            else:
+                cells.append("-")
+        full = len(a) == len(seqs)
+        L.append("| %s | %s | %s | %s |" % (run["tag"], " | ".join(cells),
+                                            "%.2f" % (sum(a) / len(a)) if full else "-",
+                                            "%.3f" % (sum(b) / len(b)) if full else "-"))
+    return L
+
+
 def render():
     files = sorted(glob.glob(os.path.join(OUT_DIR, "*.json")))
     runs = [json.load(open(p, encoding="utf-8")) for p in files]
@@ -53,16 +93,17 @@ def render():
          "trajectory (SE3, or Sim3 with scale). Final = position error of the last pose after SE3. "
          "RPE 1 s = relative translation error over 200 frames. Sim3 can shrink a badly drifting "
          "trajectory toward a point (see the scale column), so it flatters drift; SE3 is the honest number.",
-         "", "| Tag | Commit | Date | Sequence | Contract | APE SE3 m | Final m | APE Sim3 m | Sim3 scale | RPE 1 s m | Wall s |",
-         "|---|---|---|---|---|---|---|---|---|---|---|"]
+         ""] + pivot(runs) + ["", "## Every run", "", "| Tag | Main (settings) | Commit | Date | Sequence | Contract | APE SE3 m | Final m | APE Sim3 m | Sim3 scale | RPE 1 s m | Wall s |",
+         "|---|---|---|---|---|---|---|---|---|---|---|---|"]
     for run in runs:
+        how = run.get("main", "main.py") + "".join(" %s=%s" % kv for kv in sorted(run.get("set", {}).items()))
         for r in run["results"]:
             if "error" in r:
-                L.append("| %s | %s | %s | %s | ERROR | - | - | - | - | - | - |" % (
-                    run["tag"], run["commit"], run["date"], r["sequence"]))
+                L.append("| %s | %s | %s | %s | %s | ERROR | - | - | - | - | - | - |" % (
+                    run["tag"], how, run["commit"], run["date"], r["sequence"]))
                 continue
-            L.append("| %s | %s | %s | %s | %s | %.2f | %.2f | %.2f | %.3g | %.3f | %.2f |" % (
-                run["tag"], run["commit"], run["date"], r["sequence"], r["contract"], r["ate_se3_rmse"],
+            L.append("| %s | %s | %s | %s | %s | %s | %.2f | %.2f | %.2f | %.3g | %.3f | %.2f |" % (
+                run["tag"], how, run["commit"], run["date"], r["sequence"], r["contract"], r["ate_se3_rmse"],
                 r["final_se3"], r["ate_sim3_rmse"], r["sim3_scale"], r["rpe200_rmse"], r["wall_s"]))
     L.append("")
     path = os.path.join(ROOT, "Docs", "RESULTS.md")
@@ -82,14 +123,16 @@ def main(argv=None):
         print(__doc__)
         return 2
     main_path = os.path.abspath(get("--main", os.path.join(ROOT, "main.py")))
+    sets = [a.split("=", 1) for i, a in enumerate(argv) if i > 0 and argv[i - 1] == "--set"]
     seqs = get("--seqs", None)
     seqs = seqs.split(",") if seqs else sorted(os.listdir(DATA))
     commit = get("--commit", None) or subprocess.run(["git", "rev-parse", "--short", "HEAD"], cwd=ROOT,
                                                       capture_output=True, text=True).stdout.strip()
     tmp = tempfile.mkdtemp(prefix="vortex_eval_")
+    run_path = wrapper(main_path, sets, tmp) if sets else main_path
     results = []
     for s in seqs:
-        r = evaluate(main_path, s, tmp)
+        r = evaluate(run_path, s, tmp)
         results.append(r)
         if "error" in r:
             print("%-16s ERROR %s" % (s, r["error"]))
@@ -101,6 +144,7 @@ def main(argv=None):
     with open(os.path.join(OUT_DIR, tag + ".json"), "w", encoding="utf-8", newline="\n") as f:
         json.dump({"tag": tag, "commit": commit, "date": time.strftime("%Y-%m-%d"), "main": os.path.relpath(
             main_path, ROOT) if main_path.startswith(ROOT) else os.path.basename(main_path),
+            "set": {k: v for k, v in sets},
             "python": sys.version.split()[0], "results": results}, f, indent=1, sort_keys=True)
         f.write("\n")
     print("wrote", os.path.relpath(render(), ROOT))
