@@ -1,5 +1,5 @@
 """Reference estimator, steps 7a + 6c + 8a: error-state Kalman filter with the core velocity witnesses
-V1 (stillness) and V2 (flight envelope), a noise meter and dropout covariance. Plain Python floats, no numpy; main.py copies the filter
+V1 (stillness) and V2 (flight envelope), a noise meter and dropout covariance. Plain Python floats, no numpy; pathfinder.py copies the filter
 functions verbatim so the two stay bit-identical.
 
 Built on step 6b (vortex/core/strapdown.py): same self-calibration, same backward pass before the

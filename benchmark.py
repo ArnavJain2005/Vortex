@@ -1,9 +1,10 @@
-"""Budget ledger for main.py: generates Docs/BUDGET.md (never edit that file by hand). Stdlib only.
+"""Budget ledger for main.py (stub) and pathfinder.py (estimator): generates Docs/BUDGET.md (never edit that file by hand). Stdlib only.
 
 Measures, on one input:
-  - per-stage cost in us per row, in-process (main.run with stage switches; median of --runs);
-  - tracemalloc peak of main.run;
-  - whole process, `python -S main.py IN OUT` and `python main.py IN OUT`: wall and CPU ms per
+  - per-stage cost in us per row, in-process (pathfinder.run with stage switches; median of --runs);
+  - tracemalloc peak of pathfinder.run;
+  - whole process, `python -S main.py IN OUT` (bytecode cached), `python main.py IN OUT`, the same with
+    no cached bytecode, and `python -S pathfinder.py IN OUT` (source compiled each run): wall and CPU ms per
     IMU-second, us per row, peak RSS (Windows PeakWorkingSetSize, Linux GNU time %M), peak private
     bytes (Windows);
   - bytes stored for the offline passes (none yet);
@@ -20,6 +21,7 @@ import importlib.util
 import json
 import os
 import platform
+import py_compile
 import statistics
 import subprocess
 import sys
@@ -51,7 +53,7 @@ PASSES = ["calibration scan + backward pre-anchor pass + forward pass (no smooth
 
 
 def load_main():
-    spec = importlib.util.spec_from_file_location("vortex_main_bench", os.path.join(ROOT, "main.py"))
+    spec = importlib.util.spec_from_file_location("vortex_main_bench", os.path.join(ROOT, "pathfinder.py"))
     mod = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(mod)
     return mod
@@ -110,8 +112,17 @@ def measure(a):
     res["stored_bytes_worst_case"] = 64 * main.PRE_MAX_ROWS
 
     procs = []
-    for label_p, cmd in [("python -S main.py", [sys.executable, "-S", os.path.join(ROOT, "main.py"), src, dst]),
-                         ("python main.py", [sys.executable, os.path.join(ROOT, "main.py"), src, dst])]:
+    stub, core = os.path.join(ROOT, "main.py"), os.path.join(ROOT, "pathfinder.py")
+    # The bytecode the bundle ships (tools/make_bundle.py), written explicitly: a warm-up run would not
+    # write it when PYTHONDONTWRITEBYTECODE is set (it was in the Windows shell used for step 9a).
+    py_compile.compile(core, cfile=importlib.util.cache_from_source(core), doraise=True,
+                       invalidation_mode=py_compile.PycInvalidationMode.CHECKED_HASH)
+    cold = tempfile.mkdtemp(prefix="vortex_nocache_")                     # empty: nothing cached, -B: none written
+    for label_p, cmd in [("python -S main.py", [sys.executable, "-S", stub, src, dst]),
+                         ("python main.py", [sys.executable, stub, src, dst]),
+                         ("python -S main.py, no cached bytecode",
+                          [sys.executable, "-S", "-B", "-X", "pycache_prefix=" + cold, stub, src, dst]),
+                         ("python -S pathfinder.py", [sys.executable, "-S", core, src, dst])]:
         s = measure_floor.summarise(measure_floor.repeat(cmd, runs))
         s["case"] = label_p
         s["wall_ms_per_imu_s"] = s["wall_ms_median"] / imu_s
@@ -155,6 +166,8 @@ def render():
          "",
          "Peak RSS includes the CPython interpreter (8.4 MB on Linux, 9.5 MB on Windows before any work; "
          "see `Docs/FLOOR.md`). Whether the 8 MB limit means whole-process RSS is open question Q4.",
+         "`main.py` is a stub that imports `pathfinder.py`, so Python loads its cached bytecode instead of "
+         "compiling it (step 9a); the process table also shows a run with no cached bytecode.",
          "Timing varies about +-15% between reruns on the same laptop.", "",
          "## Runs", "",
          "| Run | Commit | Date | OS | CPU | Python | Input | Rows |",
@@ -192,7 +205,7 @@ def render():
                                             "-" if "stored_bytes_this_run" not in d else
                                             "%d (%d rows)" % (d["stored_bytes_this_run"], d["stored_rows"]),
                                             d["stored_bytes_worst_case"]))
-    L += ["", "## With and without `-S`", "",
+    L += ["", "## Process variants", "",
           "| Run | Command | us per row | Wall ms per IMU-s | Peak RSS MB |", "|---|---|---|---|---|"]
     for tag, d in data:
         for p in d["process"]:

@@ -1,8 +1,8 @@
-"""main.py (optimised) and vortex/core/witness.py (reference, on top of strapdown.py) give the same
-poses; with the witnesses switched off, main.py equals strapdown.py (step 6b).
+"""pathfinder.py (optimised; main.py is its stub) and vortex/core/witness.py (reference, on top of strapdown.py) give the same
+poses; with the witnesses switched off, pathfinder.py equals strapdown.py (step 6b).
 
 Criterion (from the plan): position difference < 1e-6 m and quaternion difference < 1e-7 on every
-row. main.py is run with a full-precision output format so rounding of the submission format
+row. pathfinder.py is run with a full-precision output format so rounding of the submission format
 (6 / 7 decimals) does not hide or cause differences. All inputs are SYNTHETIC."""
 
 import importlib.util
@@ -29,7 +29,7 @@ FULL = b"%s.%s %.17g %.17g %.17g %.17g %.17g %.17g %.17g\n"
 
 
 def _load_main():
-    spec = importlib.util.spec_from_file_location("vortex_main_equiv", ROOT / "main.py")
+    spec = importlib.util.spec_from_file_location("vortex_main_equiv", ROOT / "pathfinder.py")
     mod = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(mod)
     return mod

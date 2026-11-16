@@ -17,3 +17,6 @@ venv/
 Thumbs.db
 .vscode/
 .idea/
+
+# Submission bundle (tools/make_bundle.py)
+/dist/

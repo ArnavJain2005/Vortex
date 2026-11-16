@@ -34,7 +34,11 @@ OUT_DIR = os.path.join(ROOT, "Docs", "results")
 
 
 def wrapper(main_path, sets, tmp):
-    """A temporary script that imports main_path, sets module constants, then runs it."""
+    """A temporary script that imports main_path, sets module constants, then runs it. The constants of
+    main.py live in pathfinder.py next to it (main.py is a stub since step 9a), so that file is loaded."""
+    core = os.path.join(os.path.dirname(main_path), "pathfinder.py")
+    if os.path.basename(main_path) == "main.py" and os.path.exists(core):
+        main_path = core
     lines = ["import sys, importlib.util",
              "spec = importlib.util.spec_from_file_location('m', %r)" % main_path,
              "m = importlib.util.module_from_spec(spec); spec.loader.exec_module(m)"]
