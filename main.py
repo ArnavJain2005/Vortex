@@ -12,11 +12,12 @@ line that is not blank and does not start with '#' (vortex/rowspec.py states the
 timestamp is the input ns value with the decimal point moved 9 digits left, done on the text, so it
 is exact. A row whose timestamp is not an integer repeats the previous row's timestamp.
 
-STATUS (step 7a): self-calibration on the longest still run in the first 60 s (gyro bias, g, tilt),
+STATUS (steps 7a + 6c): self-calibration on the longest still run in the first 60 s (gyro bias, g, tilt),
 backward integration from mid-run over the rows before it (dead reckoning, no witnesses), then a
 forward error-state Kalman filter (15 states, one covariance step per 0.25 s tick) with the
-witnesses V1 stillness (ZUPT + gyro bias) and V2 flight envelope (speed and volume); fallback to the
-step 6a first-second initialisation. Rules: vortex/core/witness.py. Performance: Docs/BUDGET.md.
+witnesses V1 stillness (ZUPT + gyro bias) and V2 flight envelope (speed and volume); dropouts and
+gaps add covariance learned from the recent motion (GAP_ON); a noise meter (JAM_ON) is built but off;
+fallback to the step 6a first-second initialisation. Rules: vortex/core/witness.py. Performance: Docs/BUDGET.md.
 
 Passes: (1) calibration scan of the first 60 s; (2) rows before the anchor are stored (64 bytes per
 row, at most PRE_MAX_ROWS) and integrated backward; (3) one streaming forward pass writes every row.
@@ -74,9 +75,15 @@ V2P_TAU = 10.0
 V1_ON = True
 V2_ON = True
 V2P_ON = True
+JAM_TAU = 2.0
+GAP_H_TICKS = 8
+GAP_TAU = 20.0
+JAM_ON = False
+GAP_ON = True
 N = 15
 
-LAST = {"pre_rows": 0, "calibrated": False, "zupt_ticks": 0, "ba": (0.0, 0.0, 0.0)}  # for tests/benchmarks
+LAST = {"pre_rows": 0, "calibrated": False, "zupt_ticks": 0, "ba": (0.0, 0.0, 0.0), "jam": (-1.0, -1.0),
+        "tilt2": -1.0}  # for tests/benchmarks
 
 
 def _slow_fields(p):
@@ -414,7 +421,7 @@ def _kf_init(still):
     return P
 
 
-def _kf_propagate(P, r, fx, fy, fz, T):
+def _kf_propagate(P, r, fx, fy, fz, T, acc_d2=ACC_NOISE * ACC_NOISE, gyro_d2=GYRO_NOISE * GYRO_NOISE):
     A = [(0, 3, T), (1, 4, T), (2, 5, T),
          (3, 7, T * fz), (3, 8, -T * fy), (4, 6, -T * fz), (4, 8, T * fx), (5, 6, T * fy), (5, 7, -T * fx)]
     for i in range(3):
@@ -431,8 +438,8 @@ def _kf_propagate(P, r, fx, fy, fz, T):
     for i, j, a in A:
         for rr in range(0, N * N, N):
             Pn[rr + i] += a * M[rr + j]
-    qv = ACC_NOISE * ACC_NOISE * T
-    qt = GYRO_NOISE * GYRO_NOISE * T
+    qv = acc_d2 * T
+    qt = gyro_d2 * T
     qg = GYRO_WALK * GYRO_WALK * T
     qa = ACC_WALK * ACC_WALK * T
     for k in range(3):
@@ -441,6 +448,19 @@ def _kf_propagate(P, r, fx, fy, fz, T):
         Pn[(9 + k) * (N + 1)] += qg
         Pn[(12 + k) * (N + 1)] += qa
     P[:] = Pn
+
+
+def _gap_inflate(P, L, tilt2, dv2):
+    s = L / (GAP_H_TICKS * TICK_S)
+    s = s * s
+    P[6 * N + 6] += 0.5 * tilt2 * s
+    P[7 * N + 7] += 0.5 * tilt2 * s
+    for k in range(3):
+        a = dv2[k] * s
+        P[(3 + k) * (N + 1)] += a
+        P[k * (N + 1)] += a * L * L * 0.25
+        P[k * N + 3 + k] += a * L * 0.5
+        P[(3 + k) * N + k] += a * L * 0.5
 
 
 def _kf_update(P, dx, k, z, var):
@@ -561,6 +581,16 @@ def run(src, dst, write=True, integrate=True):
     bq0 = bq1 = bq2 = bq3 = bq4 = bq5 = 0.0
     pn, ps, pss, pstill = 0, None, None, False
     ccx = ccy = ccz = 0.0
+    jam, gap_on = JAM_ON, GAP_ON
+    hn = 0                                   # raw rows in the meter's history (0, 1, 2+)
+    hgx = hgy = hgz = hax = hay = haz = 0.0  # last raw row
+    kgx = kgy = kgz = kax = kay = kaz = 0.0  # the one before
+    nd = 0
+    dg = da = fdt = gap = 0.0
+    jg = ja = -1.0
+    ring = []
+    tilt2 = -1.0
+    dv2 = [0.0, 0.0, 0.0]
     zupt_ticks = 0
     zs2, zm2 = ZUPT_SIGMA * ZUPT_SIGMA, ZARU_SIGMA_MIN * ZARU_SIGMA_MIN
     t = tl = 0
@@ -643,10 +673,27 @@ def run(src, dst, write=True, integrate=True):
                                 r1 = _rot_matrix(qw, qx, qy, qz)
                                 if T > 0.0:
                                     r = [0.5 * (r0[i] + r1[i]) for i in range(9)]
+                                    if gap_on and gap > 0.0 and tilt2 >= 0.0:
+                                        _gap_inflate(P, gap, tilt2, dv2)
+                                    ad2 = ACC_NOISE * ACC_NOISE
+                                    gd2 = GYRO_NOISE * GYRO_NOISE
+                                    if jam:
+                                        if nd >= BLOCK_MIN_ROWS and fn:
+                                            ds = fdt / fn / (18.0 * nd)
+                                            if jg < 0.0:
+                                                jg, ja = dg * ds, da * ds
+                                            else:
+                                                b = T / JAM_TAU if T < JAM_TAU else 1.0
+                                                jg += (dg * ds - jg) * b
+                                                ja += (da * ds - ja) * b
+                                        if jg > gd2:
+                                            gd2 = jg
+                                        if ja > ad2:
+                                            ad2 = ja
                                     if fn:
-                                        _kf_propagate(P, r, fsx / fn, fsy / fn, fsz / fn, T)
+                                        _kf_propagate(P, r, fsx / fn, fsy / fn, fsz / fn, T, ad2, gd2)
                                     else:
-                                        _kf_propagate(P, r, 0.0, 0.0, g, T)
+                                        _kf_propagate(P, r, 0.0, 0.0, g, T, ad2, gd2)
                                 bs = [bs0, bs1, bs2, bs3, bs4, bs5]
                                 bss = [bq0, bq1, bq2, bq3, bq4, bq5]
                                 still = _bin_still(bn, bs, bss)
@@ -680,11 +727,33 @@ def run(src, dst, write=True, integrate=True):
                                      baz) = _inject(qw, qx, qy, qz, px, py, pz, vx, vy, vz, bgx, bgy, bgz,
                                                     bax, bay, baz, dx)
                                     dx = [0.0] * N
+                                r0 = _rot_matrix(qw, qx, qy, qz)
+                                if gap_on:
+                                    if len(ring) == GAP_H_TICKS:
+                                        oz, ov = ring.pop(0)
+                                        e0 = r0[6] - oz[0]
+                                        e1 = r0[7] - oz[1]
+                                        e2 = r0[8] - oz[2]
+                                        e2 = e0 * e0 + e1 * e1 + e2 * e2
+                                        d0 = vx - ov[0]
+                                        d1 = vy - ov[1]
+                                        d2 = vz - ov[2]
+                                        if tilt2 < 0.0:
+                                            tilt2 = e2
+                                            dv2 = [d0 * d0, d1 * d1, d2 * d2]
+                                        else:
+                                            b = TICK_S / GAP_TAU
+                                            tilt2 += (e2 - tilt2) * b
+                                            dv2[0] += (d0 * d0 - dv2[0]) * b
+                                            dv2[1] += (d1 * d1 - dv2[1]) * b
+                                            dv2[2] += (d2 * d2 - dv2[2]) * b
+                                    ring.append(((r0[6], r0[7], r0[8]), (vx, vy, vz)))
                                 tick_end += tick_ns * ((t - tick_end) // tick_ns + 1)
                                 t_tick = tl
-                                r0 = _rot_matrix(qw, qx, qy, qz)
                                 fsx = fsy = fsz = 0.0
                                 fn = 0
+                                nd = 0
+                                dg = da = fdt = gap = 0.0
                                 pn, ps, pss, pstill = bn, bs, bss, still
                                 bn = 0
                                 bs0 = bs1 = bs2 = bs3 = bs4 = bs5 = 0.0
@@ -693,6 +762,24 @@ def run(src, dst, write=True, integrate=True):
                             bs0 += gx; bs1 += gy; bs2 += gz; bs3 += ax; bs4 += ay; bs5 += az
                             bq0 += gx * gx; bq1 += gy * gy; bq2 += gz * gz
                             bq3 += ax * ax; bq4 += ay * ay; bq5 += az * az
+                            if jam:
+                                # ---- noise meter: second differences of the raw values ----
+                                if dt <= max_dt and has_prev:
+                                    if hn >= 2:
+                                        d0 = gx - 2.0 * hgx + kgx
+                                        d1 = gy - 2.0 * hgy + kgy
+                                        d2 = gz - 2.0 * hgz + kgz
+                                        dg += d0 * d0 + d1 * d1 + d2 * d2
+                                        d0 = ax - 2.0 * hax + kax
+                                        d1 = ay - 2.0 * hay + kay
+                                        d2 = az - 2.0 * haz + kaz
+                                        da += d0 * d0 + d1 * d1 + d2 * d2
+                                        nd += 1
+                                    kgx = hgx; kgy = hgy; kgz = hgz; kax = hax; kay = hay; kaz = haz
+                                    hn += 1
+                                else:
+                                    hn = 1
+                                hgx = gx; hgy = gy; hgz = gz; hax = ax; hay = ay; haz = az
                             ax = ax - bax; ay = ay - bay; az = az - baz
                             if dt <= max_dt and has_prev:
                                 # ---- strapdown step (trapezoid), as strapdown._step ----
@@ -736,11 +823,13 @@ def run(src, dst, write=True, integrate=True):
                                     pfx = fwx; pfy = fwy; pfz = fwz
                                     fsx += fwx; fsy += fwy; fsz += fwz
                                     fn += 1
+                                    fdt += dt
                                 else:
                                     has_prev = False
                             else:
                                 # gap or no previous sample: constant velocity, then take this sample
                                 px = px + vx * dt; py = py + vy * dt; pz = pz + vz * dt
+                                gap += dt
                                 pcx = gx - bgx; pcy = gy - bgy; pcz = gz - bgz
                                 ux = 2.0 * (qy * az - qz * ay)
                                 uy = 2.0 * (qz * ax - qx * az)
@@ -759,6 +848,8 @@ def run(src, dst, write=True, integrate=True):
                         bs0 += gx; bs1 += gy; bs2 += gz; bs3 += ax; bs4 += ay; bs5 += az
                         bq0 += gx * gx; bq1 += gy * gy; bq2 += gz * gz
                         bq3 += ax * ax; bq4 += ay * ay; bq5 += az * az
+                        hn = 1
+                        hgx = gx; hgy = gy; hgz = gz; hax = ax; hay = ay; haz = az
                         ax = ax - bax; ay = ay - bay; az = az - baz
                         pcx = gx - bgx; pcy = gy - bgy; pcz = gz - bgz
                         ux = 2.0 * (qy * az - qz * ay)
@@ -774,6 +865,8 @@ def run(src, dst, write=True, integrate=True):
                         px = px + vx * dt; py = py + vy * dt; pz = pz + vz * dt
                         tl = t
                         has_prev = False
+                        gap += dt
+                        hn = 0
             if write:
                 ap(fmt % (sec, frac, px, py, pz, qx, qy, qz, qw))
                 k -= 1
@@ -785,6 +878,8 @@ def run(src, dst, write=True, integrate=True):
             w(b"".join(out))
     LAST["zupt_ticks"] = zupt_ticks
     LAST["ba"] = (bax, bay, baz)
+    LAST["jam"] = (jg, ja)
+    LAST["tilt2"] = tilt2
     return n
 
 

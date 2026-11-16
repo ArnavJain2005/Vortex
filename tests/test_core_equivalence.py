@@ -70,7 +70,7 @@ def test_parameters_identical():
     for name in ("TICK_S", "GYRO_NOISE", "ACC_NOISE", "GYRO_WALK", "ACC_WALK", "P0_VEL", "P0_TILT", "P0_YAW",
                  "P0_BG", "P0_BA", "P0_TILT_FALLBACK", "P0_BG_FALLBACK", "ZUPT_SIGMA", "ZARU_SIGMA_MIN",
                  "V2_SIGMA_H", "V2_SIGMA_V", "V2P_SIGMA_H", "V2P_SIGMA_V", "V2P_TAU", "V1_ON", "V2_ON",
-                 "V2P_ON", "N"):
+                 "V2P_ON", "JAM_TAU", "GAP_H_TICKS", "GAP_TAU", "JAM_ON", "GAP_ON", "N"):
         assert getattr(main, name) == getattr(wx, name), name
 
 
@@ -158,3 +158,29 @@ def test_witnesses_off_equals_step_6b(tmp_path, monkeypatch, second_rest_rows):
     dp, dq = _compare(src, tmp_path, monkeypatch, reference=sd.estimate_file)
     assert dp == 0.0 and dq == 0.0
     assert main.LAST["zupt_ticks"] == 0 and main.LAST["ba"] == (0.0, 0.0, 0.0)
+
+
+@pytest.fixture(scope="module")
+def noisy_gappy_rows():
+    """SYNTHETIC: noise above the filter's datasheet densities (the meter acts), a 2 s NaN dropout
+    and a 2 s hole with no rows (the dropout covariance acts)."""
+    rows, _, _ = _profile(40.0, [(8, 10, -1), (22, 24, +1)], gyro_noise=0.03, acc_noise=0.4, seed=6)
+    nan = float("nan")
+    rows = list(rows)
+    rows[6000:6400] = [(t, (nan,) * 6) for t, _ in rows[6000:6400]]
+    return rows[:7000] + rows[7400:]
+
+
+@pytest.mark.parametrize("jam, gap", [(True, True), (True, False), (False, True), (False, False)])
+def test_meter_and_gap_match(tmp_path, monkeypatch, noisy_gappy_rows, jam, gap):
+    for mod in (main, wx):
+        monkeypatch.setattr(mod, "JAM_ON", jam)
+        monkeypatch.setattr(mod, "GAP_ON", gap)
+    src = _write_rows(tmp_path / "imu.csv", noisy_gappy_rows)
+    dp, dq = _compare(src, tmp_path, monkeypatch)
+    assert dp < 1e-9                                         # same arithmetic order: rounding only
+    if jam:
+        assert main.LAST["jam"][0] > main.GYRO_NOISE ** 2 and main.LAST["jam"][1] > main.ACC_NOISE ** 2
+    else:
+        assert main.LAST["jam"] == (-1.0, -1.0)
+    assert (main.LAST["tilt2"] > 0.0) == gap

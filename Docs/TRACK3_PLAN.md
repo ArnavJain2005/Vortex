@@ -51,7 +51,7 @@ organisers, see Q1). Full-time work starts **20 Nov**.
 | 3 | EuRoC/TUM-VI `imu0/data.csv` loader keeping every row; output checker; `main.py` skeleton (one pose per row) | Loader (`vortex/data/euroc.py`), row rules (`vortex/rowspec.py`) and checker (`vortex/check_output.py`): **Done (verified on synthetic files)** 16 Nov. `main.py` skeleton (final I/O path, identity poses): **Done (verified on synthetic files)** 16 Nov; not yet run on MH_01 | `main.py` on MH_01 passes the checker |
 | 4 | Seeded degradation script: rising noise, bias drift, 2 s dropouts, failure + 5 s | **Done (verified on synthetic files)** 16 Nov: `vortex/degrade.py`; NaN or missing dropout rows, NaN/zero/stuck failure, optional duplicate and swapped rows; levels are placeholders until Q2 | Same seed gives identical files (checked) |
 | 5 | `benchmark.py` (tracemalloc and process RSS, ms per s of IMU) and `score.py` (ATE/RPE split by dropout and blind windows, coverage) | `benchmark.py` + `Docs/BUDGET.md` + tracemalloc pytest gate: **Done (verified on synthetic input)** 16 Nov. `score.py` (`vortex/scoring.py`): evo-style ATE/RPE, alignments none/origin/se3/sim3/given, phase split, waypoint proxies: **Done (verified against evo on synthetic data)** 16 Nov; not yet run on MH_01 | Both run on MH_01 |
-| 6 | Filter core: initialisation and self-calibration (W2), front end and jamming meter (W3), dropout bridging | 6a init + strapdown integrator: **Done (verified on SYNTHETIC data and MH_01)** 16 Nov. 6b self-calibration on the longest still run in the first 60 s + backward pass before it: **Done (verified on SYNTHETIC data and MH_01..05)** 16 Nov; reference and `main.py` bit-identical. Jamming meter, dropout bridging: Not started (after V1 + V2, per the work order) | Beats dead reckoning on degraded MH_01 |
+| 6 | Filter core: initialisation and self-calibration (W2), front end and jamming meter (W3), dropout bridging | 6a init + strapdown integrator: **Done (verified on SYNTHETIC data and MH_01)** 16 Nov. 6b self-calibration on the longest still run in the first 60 s + backward pass before it: **Done (verified on SYNTHETIC data and MH_01..05)** 16 Nov; reference and `main.py` bit-identical. 6c dropout covariance (`GAP_ON`, **on**) and noise meter (`JAM_ON`, **off** by rule v2): **Done (verified on SYNTHETIC data and seeded degraded MH copies)** 16 Nov; reference and `main.py` bit-identical. Degraded held-out mean APE 8.48 -> 6.69 m (seeds 4..6); clean unchanged. Failure detection: with the forecaster (step 8) | Beats dead reckoning on degraded MH_01 |
 | 7 | Velocity witnesses (W1): V1, V2 core; V3 after go/no-go; V4, V5 switchable; platform detection (W4) | 7a error-state filter + V1 + V2: **Done (verified on SYNTHETIC data and MH_01..05)** 16 Nov; reference and `main.py` bit-identical. Result: drift bounded (APE 249..1,288 m -> 3.5..6.6 m) but **not better than a never-moving trajectory** (mean APE 5.29 vs 5.25 m). V3: rule v2 pre-registered 16 Nov (commit c1b594c), waiting for Vicon Room 1. V4, V5, W4: Not started | Ablation table, each witness on and off, on held-out sequences |
 | 8 | Blind 5 s forecaster (W5) and per-row confidence (W6) | Not started | Blind error below constant velocity; coverage table |
 | 9 | Efficiency pass (C core if whole-process RAM counts); submission bundle, Dockerfile, deck, video | Not started | Valid `team_name.zip` by 21 Nov 6 PM; submitted 3 h before cutoff |
@@ -196,3 +196,73 @@ Rule v1 failed on MH because every MH sequence starts hand-carried (no rotor dra
 | Stage A decision (Vicon Room 1) | **Not run: data not downloaded** | needs Arnav |
 | `pytest` | 161 passed (155 + 6 rule v2) | Windows, Python 3.14.7 |
 
+
+## Step 6c: noise meter and dropout covariance (16 Nov 2026, branch `track3/step6c-jamming`)
+
+Degraded copies: `python -m vortex.degrade data/euroc/<seq> data/degraded/<seq>_s<seed> --seed <seed>`,
+seeds 1..3, default (placeholder) levels, MH_01..05: 15 copies (git-ignored). Scoring:
+`python tools/eval_euroc.py --tag NAME --degraded` (alignment fitted once on the same main's clean run).
+
+**Decision rule, committed before any on/off comparison.** Two switches, `JAM_ON` (noise meter sets the
+filter's white-noise densities) and `GAP_ON` (dropout covariance). Their constants (JAM_TAU 2 s,
+GAP_H_TICKS 8, GAP_TAU 20 s) are placeholders and are NOT tuned. A switch stays on only if, on the
+held-out copies MH_03..05 x seeds 1..3: (a) mean APE (given alignment) is not worse than with it off,
+(b) its target improves by at least 5 %: GAP_ON mean dropout growth, JAM_ON mean APE; and (c) on clean
+MH_01..05 the mean APE and mean RPE 1 s are each within +5 % of step 7a. Each switch is judged with the
+other one on and off; both readings are reported. MH_01/02 copies are reported but do not decide.
+Caveat: the dropout-covariance idea came from diagnosing the step 7a baseline on MH_03_medium_s1 (a
+held-out copy: velocity ran away to 10 m/s after the third dropout); no constant was set from it.
+
+**Rule v1 outcome** (16 Nov; reference filter via a scratch runner, step 7a reproduced exactly with both
+switches off; held-out = MH_03..05 x seeds 1..3, means):
+
+| Reading | APE m | Dropout growth m | Blind 5 s growth m |
+|---|---|---|---|
+| both off (= step 7a) | 8.869 | 3.471 | 22.004 |
+| JAM only | 7.659 | 2.818 | 14.127 |
+| GAP only | 6.852 | 3.303 | 13.478 |
+| both on | 6.661 | 2.789 | 9.821 |
+
+GAP_ON fails (b) in both readings: dropout growth -4.8 % (JAM off) and -1.0 % (JAM on), short of 5 %,
+although APE improves 23 % / 13 % and blind growth 39 % / 30 %. JAM_ON passes with GAP off (APE -13.6 %)
+and fails (b) with GAP on (-2.8 %); rule v1 did not say how to combine the readings. Clean MH_01..05:
+JAM_ON 5.375 m APE (+1.6 %), 0.941 m RPE 1 s (+0.5 %): passes (c); GAP_ON cannot change a run without
+gaps (tested). **Under rule v1 both switches stay off.**
+
+**Rule v2 (replication), committed before seeds 4..6 exist.** v1's target for GAP was the wrong one: the
+dropout covariance acts after the window (the witnesses pull the tilt back), while dropout growth is
+measured inside it. New copies MH_03..05 x seeds 4..6 (noise and dropout realisations never run), same
+constants, no tuning. Each switch is judged with the other on; if one fails, the other is re-judged with
+it off. A switch ships on only if on those 9 copies (a) mean APE is not worse, (b) mean APE or mean blind
+5 s growth improves by at least 5 %, and (c) the clean condition of v1 holds. Otherwise it ships off.
+This is a second look chosen after seeing v1: weaker evidence than a first pre-registered test.
+
+**Rule v2 outcome** (16 Nov, `main.py` at f8dfe4f with `--set`; MH_03..05 x seeds 4..6, 9 copies, means;
+`Docs/RESULTS.md` tags `step6c-rep-*`):
+
+| Reading | APE m | RPE 1 s m | Dropout growth m | Blind 5 s growth m |
+|---|---|---|---|---|
+| both off (= step 7a) | 8.481 | 1.212 | 3.907 | 8.597 |
+| JAM only | 7.399 | 1.173 | 3.338 | 6.146 |
+| GAP only | 6.687 | 1.170 | 3.195 | 6.771 |
+| both on | 6.479 | 1.165 | 2.789 | 6.788 |
+
+- GAP_ON with JAM on: APE -12.4 %: passes (blind growth +10.4 % in this reading).
+- JAM_ON with GAP on: APE -3.1 %, blind growth +0.3 %: **fails** (b).
+- GAP_ON re-judged with JAM off: APE -21.2 %, blind growth -21.2 %: **passes**.
+- **Shipped: GAP_ON = True, JAM_ON = False.** Clean MH_01..05 with the shipped settings (tag `step6c`)
+  is identical to step 7a (largest difference 0.0): no gaps in the clean files.
+- `main.py` reproduces the reference runs exactly on seeds 1..3 (all four readings, same means to 3
+  decimals as the scratch reference runner).
+
+| Item | Result | Where |
+|---|---|---|
+| Seeds 1..3, all 15 copies, shipped (GAP only) vs step 7a | MH_01/02: APE 6.12 -> 5.58 m, blind growth 6.00 -> 5.50 m; MH_03..05: APE 8.87 -> 6.85 m, blind growth 22.0 -> 13.5 m | `Docs/RESULTS.md` `step6c-deg-*` |
+| Why GAP helps | after a 2 s dropout the held attitude is typically 2..9 deg off in tilt (clean MH, IMU-only study); on MH_03_s1 step 7a's velocity then ran away to 10 m/s. The added covariance lets V2 pull tilt and velocity back | scratch study, not in the repo |
+| Noise meter reading on clean MH flight | rotor vibration dominates: about 0.04 rad/s and 1 m/s^2 per sample, above the placeholder added noise (0.05 rad/s, 0.5 m/s^2 at the end); the meter cannot tell them apart | same |
+| `pytest` | 170 passed (161 + 5 step 6c reference + 4 equivalence readings) | Windows, Python 3.14.7 |
+| Budget, `python -S main.py` (commit bd35767) | 8.38 us/row, 15.07 MB peak RSS, 289 KB tracemalloc (Win 3.14); 8.48, 14.50 MB (Win 3.13); 7.82, 13.05 MB (Linux 3.12); MH_01 8.21 us/row, 15.58 MB; degraded MH_01_s1 8.59 us/row, 15.62 MB. Step 7a: 8.90, 14.80; 8.53, 14.34; 7.52, 12.78; MH_01 8.69, 15.36. Gate PASS on all | `Docs/BUDGET.md` |
+
+Not checked: TUM-VI (no data); the organisers' degradation levels (Q2); "missing"-mode dropouts and
+stuck/zero failures on real data (synthetic tests only); the blind 5 s window still coasts at constant
+velocity (step 8).
