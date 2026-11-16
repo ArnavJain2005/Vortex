@@ -196,3 +196,19 @@ Rule v1 failed on MH because every MH sequence starts hand-carried (no rotor dra
 | Stage A decision (Vicon Room 1) | **Not run: data not downloaded** | needs Arnav |
 | `pytest` | 161 passed (155 + 6 rule v2) | Windows, Python 3.14.7 |
 
+
+## Step 6c: noise meter and dropout covariance (16 Nov 2026, branch `track3/step6c-jamming`)
+
+Degraded copies: `python -m vortex.degrade data/euroc/<seq> data/degraded/<seq>_s<seed> --seed <seed>`,
+seeds 1..3, default (placeholder) levels, MH_01..05: 15 copies (git-ignored). Scoring:
+`python tools/eval_euroc.py --tag NAME --degraded` (alignment fitted once on the same main's clean run).
+
+**Decision rule, committed before any on/off comparison.** Two switches, `JAM_ON` (noise meter sets the
+filter's white-noise densities) and `GAP_ON` (dropout covariance). Their constants (JAM_TAU 2 s,
+GAP_H_TICKS 8, GAP_TAU 20 s) are placeholders and are NOT tuned. A switch stays on only if, on the
+held-out copies MH_03..05 x seeds 1..3: (a) mean APE (given alignment) is not worse than with it off,
+(b) its target improves by at least 5 %: GAP_ON mean dropout growth, JAM_ON mean APE; and (c) on clean
+MH_01..05 the mean APE and mean RPE 1 s are each within +5 % of step 7a. Each switch is judged with the
+other one on and off; both readings are reported. MH_01/02 copies are reported but do not decide.
+Caveat: the dropout-covariance idea came from diagnosing the step 7a baseline on MH_03_medium_s1 (a
+held-out copy: velocity ran away to 10 m/s after the third dropout); no constant was set from it.
