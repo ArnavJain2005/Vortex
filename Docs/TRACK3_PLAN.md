@@ -963,3 +963,61 @@ a non-canonical file, one extra pass that writes the canonical copy to disk.
 Not checked: TUM-VI (not downloaded); what the organisers actually feed the script (Q9); the
 `degrade_imu.py` licence and whether to commit it (Arnav); timing on a quiet machine (rerun the
 benchmark); the cost of the conversion pass in isolation.
+## Step E: forward-backward smoother (17 Nov 2026, branch `track3/stepE-smoother`; time-boxed, one session)
+
+Started before Step C because C is blocked (no TUM-VI) and V3 was dropped (so Step D does not apply).
+
+**What was built** (`vortex/core/witness.py`, switch `SMOOTH_ON`, **off**; reference only, not in
+`pathfinder.py` or `main.cpp`). A fixed-interval Rauch-Tung-Striebel smoother at the 0.25 s filter tick:
+- at each tick close, the gain C = P+ Phi^T (P-)^-1 (Cholesky solve) and the correction injected at the
+  previous tick are stored as one block, in single precision: 4 x (225 + 15 + 15) + 8 = **1,028 bytes per
+  block**;
+- fixed cap `SMOOTH_MAX_BLOCKS` = 1024 blocks (**1,052,672 bytes worst case**, any file length): up to 256 s at
+  one tick per block; a full store merges adjacent blocks pairwise (exact composition of their affine maps),
+  so a 15 min file ends with blocks of 4 ticks (1 s) and memory never grows;
+- after the forward pass the backward recursion gives the smoothed error at every stored tick; each row
+  from the anchor on is corrected linearly in time between its two bracketing ticks (dropouts are
+  bracketed on both sides). Rows before the anchor and after the last tick (the blind window) are
+  unchanged: the file ends in sensor failure, so the last smoothed state is the filtered one.
+
+The byte counts above are computed from the layout, not measured: the smoother was not ported to
+`main.cpp`, so its RSS on the longest file was not measured.
+
+**Checks (SYNTHETIC, `tests/test_witness.py`, 5 new tests).** RTS gain equals dense numpy; default output
+unchanged; second-rest profile with V1 only: max error over the second motion 12.2 -> 0.8 m (all witnesses
+on: 2.7 -> 0.36 m), rows before the anchor and the last row unchanged; with a cap of 16 blocks the store
+never exceeds 16 and the output stays finite; block merge composes exactly (to single precision).
+
+**Tuning set, MH_01/02 only** (`python tools/smooth_eval.py --tag stepE-tune ...`,
+`python tools/smooth_grid.py`; `Docs/smooth/`):
+
+| Setting | Clean APE m | Clean RPE 1 s m | Degraded APE m (6 copies) | Dropout growth m |
+|---|---|---|---|---|
+| forward only (shipped) | **3.878** | 0.536 | **4.358** | **0.894** |
+| smoother, shipped envelope | 4.387 | 0.330 | 4.655 | 1.129 |
+| smoother, best of 12 envelope settings by clean APE (V2_H 2, V2P_H 2, tau 10) | 4.292 | 0.384 | 4.468 | 1.006 |
+| smoother, range over all 12 settings | 4.29..4.52 | 0.29..0.38 | 4.47..4.90 | 1.01..1.39 |
+
+Blind growth 2.447 -> 2.383 m (shipped envelope; the blind window itself is unchanged, the difference is
+where it starts from).
+
+**Why it fails.** The smoother is right where the model is right (synthetic), but on MH the filter has no
+in-flight velocity measurement: V2 is a zero-mean prior and V2P a pull toward its own running centre. The
+forward estimate is collapsed toward the room centre (position std 0.5..0.8 m against 2.3..3.3 m in ground
+truth, MH_01/02, analysis only) and jittery (path length 1.7x ground truth). Smoothing removes the jitter
+(path 0.7x, RPE 1 s -38 %) but the motion it restores does not have the true shape, so APE and dropout
+growth rise. Smoothing cannot add information the filter does not have.
+
+**Decision: SMOOTH_ON stays off, without a held-out run.** The user's rule needs held-out mean APE and
+dropout growth to improve; both get worse on the tuning set in every setting tried, so (as in step 8b) no
+held-out data was spent and no rule was registered. The switch and tests stay in the reference for a later
+attempt (for example once an in-flight witness exists). `pathfinder.py`, `main.py`, `main.cpp` and every
+shipped result are unchanged.
+
+| Item | Result | Where |
+|---|---|---|
+| `pytest` | 232 passed (227 + 5 smoother) | Windows, Python 3.14.7 |
+| Budget | not rerun: `pathfinder.py`, `main.py` and `main.cpp` unchanged (step A numbers stand) | `Docs/BUDGET.md` `stepA-*` |
+
+Not checked: RSS of a C port (not ported); TUM-VI (no data); whether the organisers allow non-causal
+processing (open).
