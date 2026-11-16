@@ -53,6 +53,10 @@ Dead sensor (DEAD_ON): a row whose gyro or accelerometer triple has repeated exa
 in a row (stuck), or whose accelerometer triple is exactly (0, 0, 0), is treated as an invalid row.
 Forecaster (FC_ON): while coasting without IMU data, velocity decays toward 0 with time constant FC_TAU
 (coast()); off = constant velocity. Applies to every gap, so to dropouts and to the blind window.
+
+Step 6d (PRE_HOLD): the rows before the anchor keep the anchor's position (0, 0, 0); their attitude still
+comes from the backward gyro integration. Backward dead reckoning without witnesses was worse than
+standing still on clean MH_01/02 and could reach hundreds of metres when a dropout fell before the anchor.
 """
 
 from __future__ import annotations
@@ -97,6 +101,8 @@ STUCK_ROWS = 5               # rows: a sensor triple repeating exactly this ofte
 DEAD_ON = True               # step 8a rule (16 Nov): passes on held-out MH_03..05; dead-sensor detection
 FC_TAU = 0.5                 # s, velocity decay while coasting: lowest mean blind growth on MH_01/02 (Docs/BLIND.md step8-tune)
 FC_ON = True                 # step 8a rule (16 Nov): passes; velocity decays toward 0 while coasting (off = constant velocity)
+# step 6d (decided by the pre-registered rule, Docs/TRACK3_PLAN.md step 6d)
+PRE_HOLD = True              # rule passed 16 Nov; rows before the anchor keep the anchor position (attitude still from the backward pass)
 N = 15
 
 
@@ -205,9 +211,10 @@ def coast(p, v, dt, tau):
     return [p[0] + v[0] * s, p[1] + v[1] * s, p[2] + v[2] * s], [v[0] * e, v[1] * e, v[2] * e]
 
 
-def estimate(rows, v1=None, v2=None, v2p=None, log=None, jam=None, gap_on=None, dead=None, fc=None):
+def estimate(rows, v1=None, v2=None, v2p=None, log=None, jam=None, gap_on=None, dead=None, fc=None,
+             pre_hold=None):
     """rows: list of (t_ns or None, six floats). Returns one (px, py, pz, qw, qx, qy, qz) per row.
-    v1, v2, v2p, jam, gap_on, dead, fc: switches (default the module's *_ON). log: optional list, gets
+    v1, v2, v2p, jam, gap_on, dead, fc, pre_hold: switches (default the module's *_ON). log: optional list, gets
     one dict per tick."""
     v1 = V1_ON if v1 is None else v1
     v2 = V2_ON if v2 is None else v2
@@ -220,6 +227,8 @@ def estimate(rows, v1=None, v2=None, v2p=None, log=None, jam=None, gap_on=None, 
     cal = sd.calibrate(rows)
     init, anchor = cal.init, cal.anchor
     out = sd.backward(rows, anchor, init)
+    if PRE_HOLD if pre_hold is None else pre_hold:
+        out = [(0.0, 0.0, 0.0) + o[3:] for o in out]
     q = init.q
     bg = init.bg
     ba = (0.0, 0.0, 0.0)

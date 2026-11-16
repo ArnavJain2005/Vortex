@@ -71,7 +71,7 @@ def test_parameters_identical():
                  "P0_BG", "P0_BA", "P0_TILT_FALLBACK", "P0_BG_FALLBACK", "ZUPT_SIGMA", "ZARU_SIGMA_MIN",
                  "V2_SIGMA_H", "V2_SIGMA_V", "V2P_SIGMA_H", "V2P_SIGMA_V", "V2P_TAU", "V1_ON", "V2_ON",
                  "V2P_ON", "JAM_TAU", "GAP_H_TICKS", "GAP_TAU", "JAM_ON", "GAP_ON", "STUCK_ROWS", "DEAD_ON", "FC_TAU",
-                 "FC_ON", "N"):
+                 "FC_ON", "PRE_HOLD", "N"):
         assert getattr(main, name) == getattr(wx, name), name
 
 
@@ -107,7 +107,10 @@ def test_physical_motion_with_still_start(tmp_path, monkeypatch):
     assert dp < 1e-9                                         # same arithmetic order: rounding only
 
 
-def test_move_rest_move_backward_pass(tmp_path, monkeypatch):
+@pytest.mark.parametrize("hold", [False, True])
+def test_move_rest_move_backward_pass(tmp_path, monkeypatch, hold):
+    for mod in (main, wx):
+        monkeypatch.setattr(mod, "PRE_HOLD", hold)
     rows, _, _ = _move_rest_move(bias=(0.01, -0.02, 0.08), gyro_noise=0.002, acc_noise=0.02, seed=3)
     # sprinkle the messy cases into the stored (pre-anchor) part and after it
     nan = float("nan")
@@ -121,6 +124,9 @@ def test_move_rest_move_backward_pass(tmp_path, monkeypatch):
     assert sd.calibrate(sd.rows_from_raw(euroc.read_imu_csv(src))).run_s is not None
     dp, dq = _compare(src, tmp_path, monkeypatch)
     assert dp < 1e-9 and main.LAST["calibrated"] and main.LAST["pre_rows"] > 1000
+    if hold:
+        first = (tmp_path / "est.txt").read_text().splitlines()[0].split()
+        assert [float(x) for x in first[1:4]] == [0.0, 0.0, 0.0]
 
 
 def test_pre_segment_cap_fallback(tmp_path, monkeypatch):
@@ -153,7 +159,7 @@ def test_witnesses_fire_and_match(tmp_path, monkeypatch, second_rest_rows):
 
 
 def test_witnesses_off_equals_step_6b(tmp_path, monkeypatch, second_rest_rows):
-    for name in ("V1_ON", "V2_ON", "V2P_ON"):
+    for name in ("V1_ON", "V2_ON", "V2P_ON", "PRE_HOLD"):
         monkeypatch.setattr(main, name, False)
     src = _write_rows(tmp_path / "imu.csv", second_rest_rows)
     dp, dq = _compare(src, tmp_path, monkeypatch, reference=sd.estimate_file)

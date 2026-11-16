@@ -68,7 +68,7 @@ def test_rot_matrix_matches_geometry():
 
 def test_witnesses_off_equals_step_6b():
     rows, _, _ = _move_rest_move(bias=(0.01, -0.02, 0.08), gyro_noise=0.002, acc_noise=0.02)
-    assert wx.estimate(rows, v1=False, v2=False, v2p=False) == sd.estimate(rows)
+    assert wx.estimate(rows, v1=False, v2=False, v2p=False, pre_hold=False) == sd.estimate(rows)
 
 
 # ---------- synthetic profile with a second rest and a bias step after calibration ----------
@@ -345,3 +345,16 @@ def test_forecaster_acts_only_while_coasting(second_rest):
     for k in range(3):
         d_on, d_off = on[-1][k] - on[i0 - 1][k], off[-1][k] - off[i0 - 1][k]
         assert d_on == pytest.approx(want * d_off, rel=1e-9, abs=1e-12)
+
+
+# ---------------------------------------------------------------- step 6d: hold before the anchor
+
+def test_pre_hold_keeps_the_anchor_position_and_backward_attitude():
+    rows, _, _ = _move_rest_move(bias=(0.01, -0.02, 0.08), gyro_noise=0.002, acc_noise=0.02, seed=3)
+    anchor = sd.calibrate(rows).anchor
+    assert anchor > 100
+    on, off = wx.estimate(rows, pre_hold=True), wx.estimate(rows, pre_hold=False)
+    assert on[anchor:] == off[anchor:]                       # nothing after the anchor changes
+    assert all(o[:3] == (0.0, 0.0, 0.0) for o in on[:anchor])
+    assert [o[3:] for o in on[:anchor]] == [o[3:] for o in off[:anchor]]
+    assert max(abs(c) for o in off[:anchor] for c in o[:3]) > 0.01   # the backward pass did move
