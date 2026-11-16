@@ -6,6 +6,21 @@ at the given fraction of the sequence, scored with the SE3 alignment of the clea
 "given"). Reference estimator (`vortex/core/witness.py`). Ground truth is used for scoring only.
 Blind growth = norm of the change of the error vector over the 5 s window.
 
+## step8-heldout
+
+Commit ce94cef, 2026-11-16. Sequences: MH_03_medium, MH_04_difficult, MH_05_difficult. Failure points: 0.5, 0.6, 0.7, 0.8, 0.9, 0.95. Seeds 200..205 (one per failure point).
+
+| Failure mode | Dead detection | Forecaster | Runs | Blind growth m | Blind RMSE m | APE m | Dropout growth m |
+|---|---|---|---|---|---|---|---|
+| nan | off | constant velocity | 18 | 8.638 | 8.391 | 6.526 | 2.656 |
+| nan | off | tau 0.5 s | 18 | 4.367 | 7.141 | 6.385 | 1.918 |
+| stuck | off | constant velocity | 18 | 9.356 | 7.927 | 6.512 | 2.656 |
+| stuck | on | constant velocity | 18 | 8.652 | 8.356 | 6.525 | 2.656 |
+| stuck | on | tau 0.5 s | 18 | 4.371 | 7.128 | 6.384 | 1.918 |
+| zero | off | constant velocity | 18 | 27.015 | 14.851 | 7.220 | 2.656 |
+| zero | on | constant velocity | 18 | 8.638 | 8.391 | 6.526 | 2.656 |
+| zero | on | tau 0.5 s | 18 | 4.367 | 7.141 | 6.385 | 1.918 |
+
 ## step8-tune
 
 Commit ceb2d1f, 2026-11-16. Sequences: MH_01_easy, MH_02_easy. Failure points: 0.5, 0.6, 0.7, 0.8, 0.9, 0.95. Seeds 100..105 (one per failure point).

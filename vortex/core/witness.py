@@ -92,11 +92,11 @@ GAP_H_TICKS = 8              # ticks (2 s, the slides' dropout length): horizon 
 GAP_TAU = 20.0               # s, smoothing of the learned motion statistics
 JAM_ON = False               # rule v2 (16 Nov): fails with GAP_ON on; see Docs/TRACK3_PLAN.md step 6c
 GAP_ON = True
-# step 8 (placeholders until the step 8 rule decides; see Docs/TRACK3_PLAN.md)
+# step 8a (decided by the pre-registered rule, Docs/TRACK3_PLAN.md step 8a)
 STUCK_ROWS = 5               # rows: a sensor triple repeating exactly this often in a row is dead (clean MH_01..05: longest run 2)
-DEAD_ON = False              # dead-sensor detection: stuck triples and all-zero accelerometer rows become invalid rows
+DEAD_ON = True               # step 8a rule (16 Nov): passes on held-out MH_03..05; dead-sensor detection
 FC_TAU = 0.5                 # s, velocity decay while coasting: lowest mean blind growth on MH_01/02 (Docs/BLIND.md step8-tune)
-FC_ON = False                # forecaster: velocity decays toward the envelope mean (0) while coasting; off = constant velocity
+FC_ON = True                 # step 8a rule (16 Nov): passes; velocity decays toward 0 while coasting (off = constant velocity)
 N = 15
 
 

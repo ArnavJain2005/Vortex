@@ -88,6 +88,9 @@ Copies made by `python -m vortex.degrade <clean sequence> data/degraded/<sequenc
 | step6c-rep-gap | 9 | 6.687 | 1.170 | 3.195 | 6.771 | 7.404 |
 | step6c-rep-jam | 9 | 7.399 | 1.173 | 3.338 | 6.146 | 7.863 |
 | step6c-rep-off | 9 | 8.481 | 1.212 | 3.907 | 8.597 | 12.496 |
+| step8-B-both | 9 | 6.761 | 1.146 | 2.060 | 5.228 | 3.389 |
+| step8-B-dead | 9 | 6.709 | 1.179 | 2.657 | 5.616 | 3.793 |
+| step8-B-off | 9 | 6.975 | 1.460 | 2.657 | 15.886 | 8.663 |
 
 ## Every degraded run
 
@@ -189,3 +192,30 @@ Copies made by `python -m vortex.degrade <clean sequence> data/degraded/<sequenc
 | step6c-rep-off | main.py GAP_ON=False JAM_ON=False | f8dfe4f | 2026-11-16 | MH_05_difficult_s4 | PASS | 8.017 | 1.214 | 2.780 | 5.458 | 6.115 | 0.45 |
 | step6c-rep-off | main.py GAP_ON=False JAM_ON=False | f8dfe4f | 2026-11-16 | MH_05_difficult_s5 | PASS | 6.709 | 1.023 | 1.419 | 7.317 | 6.447 | 0.46 |
 | step6c-rep-off | main.py GAP_ON=False JAM_ON=False | f8dfe4f | 2026-11-16 | MH_05_difficult_s6 | PASS | 7.749 | 1.143 | 3.831 | 3.754 | 8.881 | 0.49 |
+| step8-B-both | main.py DEAD_ON=True FC_ON=True | ce94cef | 2026-11-16 | MH_03_medium_s7 | PASS | 3.710 | 1.102 | 1.607 | 4.443 | 2.134 | 0.26 |
+| step8-B-both | main.py DEAD_ON=True FC_ON=True | ce94cef | 2026-11-16 | MH_03_medium_s8 | PASS | 6.159 | 1.151 | 2.286 | 3.879 | 5.576 | 0.24 |
+| step8-B-both | main.py DEAD_ON=True FC_ON=True | ce94cef | 2026-11-16 | MH_03_medium_s9 | PASS | 4.692 | 1.157 | 2.189 | 4.331 | 2.779 | 0.25 |
+| step8-B-both | main.py DEAD_ON=True FC_ON=True | ce94cef | 2026-11-16 | MH_04_difficult_s7 | PASS | 7.264 | 1.173 | 2.340 | 6.053 | 3.489 | 0.23 |
+| step8-B-both | main.py DEAD_ON=True FC_ON=True | ce94cef | 2026-11-16 | MH_04_difficult_s8 | PASS | 6.956 | 1.210 | 1.212 | 5.741 | 3.506 | 0.23 |
+| step8-B-both | main.py DEAD_ON=True FC_ON=True | ce94cef | 2026-11-16 | MH_04_difficult_s9 | PASS | 8.206 | 1.251 | 1.814 | 5.865 | 1.925 | 0.23 |
+| step8-B-both | main.py DEAD_ON=True FC_ON=True | ce94cef | 2026-11-16 | MH_05_difficult_s7 | PASS | 6.548 | 1.109 | 1.739 | 5.540 | 3.131 | 0.25 |
+| step8-B-both | main.py DEAD_ON=True FC_ON=True | ce94cef | 2026-11-16 | MH_05_difficult_s8 | PASS | 7.624 | 1.071 | 1.917 | 5.822 | 5.276 | 0.29 |
+| step8-B-both | main.py DEAD_ON=True FC_ON=True | ce94cef | 2026-11-16 | MH_05_difficult_s9 | PASS | 9.691 | 1.093 | 3.440 | 5.380 | 2.689 | 0.23 |
+| step8-B-dead | main.py DEAD_ON=True FC_ON=False | ce94cef | 2026-11-16 | MH_03_medium_s7 | PASS | 3.726 | 1.121 | 2.175 | 5.236 | 2.088 | 0.28 |
+| step8-B-dead | main.py DEAD_ON=True FC_ON=False | ce94cef | 2026-11-16 | MH_03_medium_s8 | PASS | 5.885 | 1.163 | 3.223 | 3.432 | 3.059 | 0.27 |
+| step8-B-dead | main.py DEAD_ON=True FC_ON=False | ce94cef | 2026-11-16 | MH_03_medium_s9 | PASS | 4.528 | 1.193 | 3.394 | 5.705 | 1.906 | 0.25 |
+| step8-B-dead | main.py DEAD_ON=True FC_ON=False | ce94cef | 2026-11-16 | MH_04_difficult_s7 | PASS | 7.347 | 1.182 | 2.866 | 7.409 | 4.971 | 0.22 |
+| step8-B-dead | main.py DEAD_ON=True FC_ON=False | ce94cef | 2026-11-16 | MH_04_difficult_s8 | PASS | 7.015 | 1.238 | 0.950 | 5.450 | 5.624 | 0.25 |
+| step8-B-dead | main.py DEAD_ON=True FC_ON=False | ce94cef | 2026-11-16 | MH_04_difficult_s9 | PASS | 8.164 | 1.274 | 2.145 | 4.739 | 2.591 | 0.23 |
+| step8-B-dead | main.py DEAD_ON=True FC_ON=False | ce94cef | 2026-11-16 | MH_05_difficult_s7 | PASS | 6.547 | 1.247 | 1.931 | 7.808 | 5.895 | 0.24 |
+| step8-B-dead | main.py DEAD_ON=True FC_ON=False | ce94cef | 2026-11-16 | MH_05_difficult_s8 | PASS | 7.604 | 1.103 | 2.248 | 8.086 | 5.524 | 0.22 |
+| step8-B-dead | main.py DEAD_ON=True FC_ON=False | ce94cef | 2026-11-16 | MH_05_difficult_s9 | PASS | 9.565 | 1.087 | 4.977 | 2.683 | 2.481 | 0.24 |
+| step8-B-off | main.py DEAD_ON=False FC_ON=False | ce94cef | 2026-11-16 | MH_03_medium_s7 | PASS | 3.726 | 1.121 | 2.175 | 5.236 | 2.088 | 0.29 |
+| step8-B-off | main.py DEAD_ON=False FC_ON=False | ce94cef | 2026-11-16 | MH_03_medium_s8 | PASS | 6.703 | 1.626 | 3.223 | 25.847 | 15.849 | 0.32 |
+| step8-B-off | main.py DEAD_ON=False FC_ON=False | ce94cef | 2026-11-16 | MH_03_medium_s9 | PASS | 4.621 | 1.295 | 3.394 | 10.136 | 4.871 | 0.30 |
+| step8-B-off | main.py DEAD_ON=False FC_ON=False | ce94cef | 2026-11-16 | MH_04_difficult_s7 | PASS | 7.347 | 1.182 | 2.866 | 7.409 | 4.971 | 0.23 |
+| step8-B-off | main.py DEAD_ON=False FC_ON=False | ce94cef | 2026-11-16 | MH_04_difficult_s8 | PASS | 7.458 | 1.604 | 0.950 | 26.937 | 12.103 | 0.23 |
+| step8-B-off | main.py DEAD_ON=False FC_ON=False | ce94cef | 2026-11-16 | MH_04_difficult_s9 | PASS | 8.201 | 1.368 | 2.145 | 9.874 | 4.185 | 0.23 |
+| step8-B-off | main.py DEAD_ON=False FC_ON=False | ce94cef | 2026-11-16 | MH_05_difficult_s7 | PASS | 6.547 | 1.247 | 1.931 | 7.808 | 5.895 | 0.27 |
+| step8-B-off | main.py DEAD_ON=False FC_ON=False | ce94cef | 2026-11-16 | MH_05_difficult_s8 | PASS | 8.063 | 1.611 | 2.248 | 21.698 | 13.194 | 0.25 |
+| step8-B-off | main.py DEAD_ON=False FC_ON=False | ce94cef | 2026-11-16 | MH_05_difficult_s9 | PASS | 10.108 | 2.086 | 4.977 | 28.031 | 14.807 | 0.23 |

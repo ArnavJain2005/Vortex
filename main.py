@@ -17,7 +17,7 @@ backward integration from mid-run over the rows before it (dead reckoning, no wi
 forward error-state Kalman filter (15 states, one covariance step per 0.25 s tick) with the
 witnesses V1 stillness (ZUPT + gyro bias) and V2 flight envelope (speed and volume); dropouts and
 gaps add covariance learned from the recent motion (GAP_ON); a noise meter (JAM_ON) is built but off;
-dead-sensor detection (DEAD_ON) and a velocity-decay forecaster for gaps (FC_ON) are built, decision pending;
+dead sensors (stuck or all-zero rows) are treated as missing (DEAD_ON) and velocity decays toward 0 in gaps (FC_ON);
 fallback to the step 6a first-second initialisation. Rules: vortex/core/witness.py. Performance: Docs/BUDGET.md.
 
 Passes: (1) calibration scan of the first 60 s; (2) rows before the anchor are stored (64 bytes per
@@ -82,9 +82,9 @@ GAP_TAU = 20.0
 JAM_ON = False
 GAP_ON = True
 STUCK_ROWS = 5
-DEAD_ON = False
+DEAD_ON = True
 FC_TAU = 0.5
-FC_ON = False
+FC_ON = True
 N = 15
 
 LAST = {"pre_rows": 0, "calibrated": False, "zupt_ticks": 0, "ba": (0.0, 0.0, 0.0), "jam": (-1.0, -1.0),
