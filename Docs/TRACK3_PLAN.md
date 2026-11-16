@@ -28,7 +28,7 @@ meter sets the trust of each:
 |---|---|---|
 | V1 Stillness (zero-velocity updates) | Both datasets | Core. **On** (step 7a, 16 Nov). On EuRoC MH it fires only during the starting ground rest (3 to 25 ticks), so it adds nothing in flight there; it matters for walking (TUM-VI) and landings |
 | V2 Flight envelope learned in the healthy phase | Both datasets | Core. **On** (step 7a, 16 Nov): speed envelope + volume envelope (running centre), fixed values chosen on MH_01/02; learning them in the healthy phase is still to do. Bounds drift from km to metres, but only to the level of a trajectory that never moves (see step 7a) |
-| V3 Rotor drag (horizontal specific force proportional to body velocity) | Multirotor (EuRoC) | **Off.** Rule v1: NO-GO on MH_01 (16 Nov; the hand-carried start). **Rule v2 pre-registered** 16 Nov (commit c1b594c, `tools/drag_fit.py`): airborne part only, thrust-perpendicular axes, fixed k = 0.20 /s. Decision on Vicon Room 1 (on disk since 17 Nov; stage A not yet run): stage A = signal on 2 of 3 sequences, stage B = V3 on only if mean APE and RPE 1 s improve >= 10 % over V1 + V2 there. MH_01..05 (tuning set) pass stage A with R^2 0.65..0.96 |
+| V3 Rotor drag (horizontal specific force proportional to body velocity) | Multirotor (EuRoC) | **Off.** Rule v1: NO-GO on MH_01 (16 Nov; the hand-carried start). **Rule v2 pre-registered** 16 Nov (commit c1b594c, `tools/drag_fit.py`): airborne part only, thrust-perpendicular axes, fixed k = 0.20 /s. Decision on Vicon Room 1: **stage A NO-GO (17 Nov; 1 of 3 sequences pass), so V3 is dropped**: stage A = signal on 2 of 3 sequences, stage B = V3 on only if mean APE and RPE 1 s improve >= 10 % over V1 + V2 there. MH_01..05 (tuning set) pass stage A with R^2 0.65..0.96 |
 | V4 Turn physics (speed = lateral accel / turn rate, steady turns) | Steady turns | Switchable |
 | V5 Walking rhythm | Hand-held (TUM-VI) | Switchable |
 | V6 Tilt and acceleration link | Multirotor | Feeds the blind 5 s forecaster |
@@ -65,7 +65,7 @@ organisers, see Q1). Full-time work starts **20 Nov**.
 | Q3 | Are waypoint positions or times given as input? | Arnav |
 | Q4 | Is 8 MB peak RAM measured for the whole process or the algorithm only? Is `main.cpp` accepted? **Now urgent:** a bare `python -S -c pass` already peaks at 8.4 MB RSS (WSL2 Linux, 3.12) and 9.5 to 9.7 MB (Windows 3.13/3.14), so CPython cannot meet 8 MB whole-process RSS; a C++ parse + write floor peaks at 4.3 MB (Windows). See `Docs/FLOOR.md`. Step 6a: compiling the larger `main.py` source adds about 1.1 MB peak RSS (11.8 vs 10.7 MB compile-only, Win 3.14); a 3-line stub importing a cached `.pyc` peaks at 10.3 MB, but a `.pyc` only works on the matching Python version (decide in step 9). Step 6b: compile-only is now 13.07 MB vs a bare 9.80 MB (+3.3 MB, Win 3.14); the run itself from a cached `.pyc` peaks at 11.92 MB on MH_01. Splitting the source into separately compiled modules may also lower the compile peak (not measured). Step 7a: compile-only 14.91 MB vs 13.15 MB for 6b and 9.80 MB bare (Win 3.14); the MH_01 run from a cached `.pyc` peaks at 12.05 MB (6b: 11.92), from source at 15.43 MB. The filter itself costs about 0.1 MB; compiling costs about 3.4 MB. Step 9a: `main.py` is now a stub and the bundle ships the estimator's bytecode; MH_01 peaks at 11.95 MB (Win 3.14), 11.83 MB (Win 3.13), 10.27 MB (WSL2 3.12), against a 9.3 to 10.7 MB floor for the interpreter with `math` and `array`. **No answer by 16 Nov: we assume whole-process RSS.** Step 9b: the C core `main.cpp` (allowed by slide 17) peaks at 2.7 MB (Linux) / 4.8 MB (Windows) on MH_01 with the same output | Arnav |
 | Q5 | Demo video length: 2 to 3, 3, or 5 minutes? | Arnav |
-| Q6 | Is the rotor-drag signal visible in EuRoC's IMU (offline fit on clean MH_01)? **Answered 16 Nov: NO-GO under the pre-registered rule** (whole sequence; the hand-carried start breaks it). Exploratory in-flight fit: visible, k 0.14 to 0.25 /s. See `Docs/DRAG.md`. **Rule v2** pre-registered 16 Nov (commit c1b594c): decided on Vicon Room 1 | Arnav + Claude, before 20 Nov |
+| Q6 | Is the rotor-drag signal visible in EuRoC's IMU (offline fit on clean MH_01)? **Answered 16 Nov: NO-GO under the pre-registered rule** (whole sequence; the hand-carried start breaks it). Exploratory in-flight fit: visible, k 0.14 to 0.25 /s. See `Docs/DRAG.md`. **Rule v2** pre-registered 16 Nov (commit c1b594c): **NO-GO on Vicon Room 1, 17 Nov** (only V1_02 passes; second axis fails on V1_01 and V1_03). Closed | Arnav + Claude, before 20 Nov |
 
 ## Results so far (15 Nov 2026, branch `track3/python-pipeline`)
 
@@ -806,3 +806,26 @@ Not checked: TUM-VI (not downloaded), so the loader check, long-file memory on T
 hand-held baseline are open; the Linux C core equivalence on the V1 inputs (only the benchmark's two
 Linux runs compared bytes); peak RSS on a TUM-VI-length file (the 15 min synthetic check of step 9b
 stands).
+
+
+## Step B: rotor drag (V3), stage A of rule v2 (17 Nov 2026, branch `track3/stepB-drag`)
+
+Run once, as pre-registered (rule commit c1b594c; `tools/drag_fit.py` and its imports unchanged since):
+`python tools/drag_fit.py --rule v2 data/euroc/V1_01_easy data/euroc/V1_02_medium data/euroc/V1_03_difficult`.
+Each axis passes if R^2 with the fixed k = 0.20 /s is >= 0.5 and the free k is within 30 % of 0.20.
+
+| Sequence | Airborne s | Axis a: k free / R^2 fixed k | Axis b: k free / R^2 fixed k | Sequence |
+|---|---|---|---|---|
+| V1_01_easy | 144 | 0.224 / 0.542 pass | 0.083 / -0.049 **fail** | fail |
+| V1_02_medium | 84 | 0.201 / 0.668 pass | 0.175 / 0.784 pass | pass |
+| V1_03_difficult | 100 | 0.194 / 0.630 pass | 0.138 / 0.432 **fail** | fail |
+
+**Stage A: NO-GO** (1 of 3 sequences pass; the rule needs 2). Under the rule V3 is dropped: it is not
+built, so B.2..B.5 (filter V3, tuning, stage B, no-harm check, ablation) are not run. Axis a (the
+in-plane axis) holds on all three, with k 0.19 to 0.22 /s; axis b (the second thrust-perpendicular
+axis) does not carry the fixed-k relation on V1_01 or V1_03. Nothing was explored or tuned after the
+run; any rule v3 would need held-out data never seen (Vicon Room 2 is reserved as the final test set).
+Per-sequence fits and plots: `Docs/DRAG.md`, `Docs/drag/v2_V1_0*.{json,svg}`.
+
+No estimator, `main.py` or `main.cpp` change: output and budget are those of step A (`Docs/BUDGET.md`
+`stepA-*`).
