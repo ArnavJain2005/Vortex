@@ -68,7 +68,7 @@ def test_rot_matrix_matches_geometry():
 
 def test_witnesses_off_equals_step_6b():
     rows, _, _ = _move_rest_move(bias=(0.01, -0.02, 0.08), gyro_noise=0.002, acc_noise=0.02)
-    assert wx.estimate(rows, v1=False, v2=False, v2p=False) == sd.estimate(rows)
+    assert wx.estimate(rows, v1=False, v2=False, v2p=False, pre_hold=False) == sd.estimate(rows)
 
 
 # ---------- synthetic profile with a second rest and a bias step after calibration ----------

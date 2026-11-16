@@ -1,0 +1,46 @@
+{
+ "commit": "c2b76cc",
+ "date": "2026-11-16",
+ "degraded": false,
+ "main": "main.py",
+ "python": "3.14.7",
+ "results": [
+  {
+   "ate_se3_rmse": 3.5301358683106288,
+   "ate_sim3_rmse": 3.4751563753694756,
+   "contract": "PASS",
+   "final_se3": 4.150664180889971,
+   "rows": 27008,
+   "rpe200_rmse": 0.9828044357601669,
+   "sequence": "MH_03_medium",
+   "sim3_scale": 0.5808137434284664,
+   "wall_s": 0.3905682999975397
+  },
+  {
+   "ate_se3_rmse": 6.378140190992444,
+   "ate_sim3_rmse": 6.273606918785277,
+   "contract": "PASS",
+   "final_se3": 3.6581919505859974,
+   "rows": 20320,
+   "rpe200_rmse": 1.193145584264798,
+   "sequence": "MH_04_difficult",
+   "sim3_scale": 1.7522558577420688,
+   "wall_s": 0.3559220000024652
+  },
+  {
+   "ate_se3_rmse": 6.5464053539748495,
+   "ate_sim3_rmse": 6.403861350947405,
+   "contract": "PASS",
+   "final_se3": 4.7323049629420835,
+   "rows": 22721,
+   "rpe200_rmse": 1.023173557716861,
+   "sequence": "MH_05_difficult",
+   "sim3_scale": 2.178522728444767,
+   "wall_s": 0.3341973999995389
+  }
+ ],
+ "set": {
+  "PRE_HOLD": "True"
+ },
+ "tag": "step6d-H-clean-on"
+}

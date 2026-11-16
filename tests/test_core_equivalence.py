@@ -159,7 +159,7 @@ def test_witnesses_fire_and_match(tmp_path, monkeypatch, second_rest_rows):
 
 
 def test_witnesses_off_equals_step_6b(tmp_path, monkeypatch, second_rest_rows):
-    for name in ("V1_ON", "V2_ON", "V2P_ON"):
+    for name in ("V1_ON", "V2_ON", "V2P_ON", "PRE_HOLD"):
         monkeypatch.setattr(main, name, False)
     src = _write_rows(tmp_path / "imu.csv", second_rest_rows)
     dp, dq = _compare(src, tmp_path, monkeypatch, reference=sd.estimate_file)

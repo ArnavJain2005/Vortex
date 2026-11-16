@@ -102,7 +102,7 @@ DEAD_ON = True               # step 8a rule (16 Nov): passes on held-out MH_03..
 FC_TAU = 0.5                 # s, velocity decay while coasting: lowest mean blind growth on MH_01/02 (Docs/BLIND.md step8-tune)
 FC_ON = True                 # step 8a rule (16 Nov): passes; velocity decays toward 0 while coasting (off = constant velocity)
 # step 6d (decided by the pre-registered rule, Docs/TRACK3_PLAN.md step 6d)
-PRE_HOLD = False             # rows before the anchor keep the anchor position (attitude still from the backward pass)
+PRE_HOLD = True              # rule passed 16 Nov; rows before the anchor keep the anchor position (attitude still from the backward pass)
 N = 15
 
 

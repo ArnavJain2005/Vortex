@@ -11,6 +11,8 @@ Clean (undegraded) IMU input. APE = absolute position error after Umeyama alignm
 | step6b | 1288.50 / 40.053 | 941.41 / 33.634 | 676.70 / 25.476 | 248.88 / 13.122 | 508.41 / 21.554 | 732.78 | 26.768 |
 | step6c-clean-both | 4.06 / 0.507 | 5.97 / 0.966 | 3.51 / 1.031 | 6.60 / 1.178 | 6.74 / 1.025 | 5.37 | 0.941 |
 | step6c | 3.99 / 0.506 | 5.97 / 0.973 | 3.53 / 0.983 | 6.41 / 1.193 | 6.55 / 1.023 | 5.29 | 0.936 |
+| step6d-H-clean-off | - | - | 3.53 / 0.983 | 6.41 / 1.193 | 6.55 / 1.023 | - | - |
+| step6d-H-clean-on | - | - | 3.53 / 0.983 | 6.38 / 1.193 | 6.55 / 1.023 | - | - |
 | step7a-v1-only | 1234.09 / 38.353 | 1054.49 / 37.560 | 724.62 / 27.683 | 297.33 / 15.490 | 274.86 / 12.221 | 717.08 | 26.261 |
 | step7a-v1-v2speed | 4.02 / 0.512 | 6.02 / 0.931 | 3.43 / 1.149 | 6.47 / 1.160 | 6.56 / 1.043 | 5.30 | 0.959 |
 | step7a-v1-v2volume | 3.86 / 0.539 | 5.98 / 1.019 | 3.78 / 0.974 | 6.35 / 1.285 | 6.39 / 1.084 | 5.27 | 0.980 |
@@ -47,6 +49,12 @@ Clean (undegraded) IMU input. APE = absolute position error after Umeyama alignm
 | step6c | main.py | bd35767 | 2026-11-16 | MH_03_medium | PASS | 3.53 | 4.12 | 3.47 | 0.584 | 0.983 | 0.25 |
 | step6c | main.py | bd35767 | 2026-11-16 | MH_04_difficult | PASS | 6.41 | 3.76 | 6.35 | 1.55 | 1.193 | 0.22 |
 | step6c | main.py | bd35767 | 2026-11-16 | MH_05_difficult | PASS | 6.55 | 4.73 | 6.40 | 2.18 | 1.023 | 0.23 |
+| step6d-H-clean-off | main.py PRE_HOLD=False | c2b76cc | 2026-11-16 | MH_03_medium | PASS | 3.53 | 4.12 | 3.47 | 0.584 | 0.983 | 0.38 |
+| step6d-H-clean-off | main.py PRE_HOLD=False | c2b76cc | 2026-11-16 | MH_04_difficult | PASS | 6.41 | 3.76 | 6.35 | 1.55 | 1.193 | 0.27 |
+| step6d-H-clean-off | main.py PRE_HOLD=False | c2b76cc | 2026-11-16 | MH_05_difficult | PASS | 6.55 | 4.73 | 6.40 | 2.18 | 1.023 | 0.31 |
+| step6d-H-clean-on | main.py PRE_HOLD=True | c2b76cc | 2026-11-16 | MH_03_medium | PASS | 3.53 | 4.15 | 3.48 | 0.581 | 0.983 | 0.39 |
+| step6d-H-clean-on | main.py PRE_HOLD=True | c2b76cc | 2026-11-16 | MH_04_difficult | PASS | 6.38 | 3.66 | 6.27 | 1.75 | 1.193 | 0.36 |
+| step6d-H-clean-on | main.py PRE_HOLD=True | c2b76cc | 2026-11-16 | MH_05_difficult | PASS | 6.55 | 4.73 | 6.40 | 2.18 | 1.023 | 0.33 |
 | step7a-v1-only | main.py V2P_ON=False V2_ON=False | 290c894 | 2026-11-16 | MH_01_easy | PASS | 1234.09 | 3727.33 | 4.25 | 0.000569 | 38.353 | 0.37 |
 | step7a-v1-only | main.py V2P_ON=False V2_ON=False | 290c894 | 2026-11-16 | MH_02_easy | PASS | 1054.49 | 3057.07 | 4.60 | 0.000599 | 37.560 | 0.28 |
 | step7a-v1-only | main.py V2P_ON=False V2_ON=False | 290c894 | 2026-11-16 | MH_03_medium | PASS | 724.62 | 1999.12 | 3.56 | 0.000489 | 27.683 | 0.24 |
@@ -94,6 +102,8 @@ Copies made by `python -m vortex.degrade <clean sequence> data/degraded/<sequenc
 | step6c-rep-gap | 9 | 6.687 | 1.170 | 3.195 | 6.771 | 7.404 |
 | step6c-rep-jam | 9 | 7.399 | 1.173 | 3.338 | 6.146 | 7.863 |
 | step6c-rep-off | 9 | 8.481 | 1.212 | 3.907 | 8.597 | 12.496 |
+| step6d-H-off | 9 | 6.292 | 1.135 | 1.931 | 5.107 | 5.110 |
+| step6d-H-on | 9 | 6.280 | 1.134 | 1.929 | 5.110 | 5.104 |
 | step8-B-both | 9 | 6.761 | 1.146 | 2.060 | 5.228 | 3.389 |
 | step8-B-dead | 9 | 6.709 | 1.179 | 2.657 | 5.616 | 3.793 |
 | step8-B-off | 9 | 6.975 | 1.460 | 2.657 | 15.886 | 8.663 |
@@ -199,6 +209,24 @@ Copies made by `python -m vortex.degrade <clean sequence> data/degraded/<sequenc
 | step6c-rep-off | main.py GAP_ON=False JAM_ON=False | f8dfe4f | 2026-11-16 | MH_05_difficult_s4 | PASS | 8.017 | 1.214 | 2.780 | 5.458 | 6.115 | 0.45 |
 | step6c-rep-off | main.py GAP_ON=False JAM_ON=False | f8dfe4f | 2026-11-16 | MH_05_difficult_s5 | PASS | 6.709 | 1.023 | 1.419 | 7.317 | 6.447 | 0.46 |
 | step6c-rep-off | main.py GAP_ON=False JAM_ON=False | f8dfe4f | 2026-11-16 | MH_05_difficult_s6 | PASS | 7.749 | 1.143 | 3.831 | 3.754 | 8.881 | 0.49 |
+| step6d-H-off | main.py PRE_HOLD=False | c2b76cc | 2026-11-16 | MH_03_medium_s10 | PASS | 4.208 | 1.143 | 0.909 | 4.227 | 2.848 | 0.33 |
+| step6d-H-off | main.py PRE_HOLD=False | c2b76cc | 2026-11-16 | MH_03_medium_s11 | PASS | 4.159 | 1.126 | 1.379 | 3.788 | 5.629 | 0.31 |
+| step6d-H-off | main.py PRE_HOLD=False | c2b76cc | 2026-11-16 | MH_03_medium_s12 | PASS | 4.776 | 1.072 | 1.288 | 3.859 | 7.146 | 0.35 |
+| step6d-H-off | main.py PRE_HOLD=False | c2b76cc | 2026-11-16 | MH_04_difficult_s10 | PASS | 6.856 | 1.219 | 1.305 | 6.022 | 4.921 | 0.26 |
+| step6d-H-off | main.py PRE_HOLD=False | c2b76cc | 2026-11-16 | MH_04_difficult_s11 | PASS | 7.735 | 1.196 | 3.183 | 5.817 | 5.379 | 0.27 |
+| step6d-H-off | main.py PRE_HOLD=False | c2b76cc | 2026-11-16 | MH_04_difficult_s12 | PASS | 6.932 | 1.240 | 1.967 | 6.227 | 3.901 | 0.27 |
+| step6d-H-off | main.py PRE_HOLD=False | c2b76cc | 2026-11-16 | MH_05_difficult_s10 | PASS | 7.077 | 1.035 | 2.598 | 5.724 | 5.018 | 0.28 |
+| step6d-H-off | main.py PRE_HOLD=False | c2b76cc | 2026-11-16 | MH_05_difficult_s11 | PASS | 7.245 | 1.094 | 2.077 | 5.413 | 6.202 | 0.30 |
+| step6d-H-off | main.py PRE_HOLD=False | c2b76cc | 2026-11-16 | MH_05_difficult_s12 | PASS | 7.644 | 1.090 | 2.672 | 4.882 | 4.950 | 0.30 |
+| step6d-H-on | main.py PRE_HOLD=True | c2b76cc | 2026-11-16 | MH_03_medium_s10 | PASS | 4.249 | 1.141 | 0.912 | 4.253 | 3.253 | 0.30 |
+| step6d-H-on | main.py PRE_HOLD=True | c2b76cc | 2026-11-16 | MH_03_medium_s11 | PASS | 4.103 | 1.126 | 1.379 | 3.825 | 5.282 | 0.28 |
+| step6d-H-on | main.py PRE_HOLD=True | c2b76cc | 2026-11-16 | MH_03_medium_s12 | PASS | 4.768 | 1.072 | 1.284 | 3.870 | 7.182 | 0.32 |
+| step6d-H-on | main.py PRE_HOLD=True | c2b76cc | 2026-11-16 | MH_04_difficult_s10 | PASS | 6.823 | 1.216 | 1.303 | 6.006 | 4.964 | 0.25 |
+| step6d-H-on | main.py PRE_HOLD=True | c2b76cc | 2026-11-16 | MH_04_difficult_s11 | PASS | 7.689 | 1.193 | 3.151 | 5.818 | 5.188 | 0.25 |
+| step6d-H-on | main.py PRE_HOLD=True | c2b76cc | 2026-11-16 | MH_04_difficult_s12 | PASS | 6.920 | 1.235 | 1.981 | 6.200 | 3.895 | 0.25 |
+| step6d-H-on | main.py PRE_HOLD=True | c2b76cc | 2026-11-16 | MH_05_difficult_s10 | PASS | 7.077 | 1.035 | 2.598 | 5.724 | 5.018 | 0.28 |
+| step6d-H-on | main.py PRE_HOLD=True | c2b76cc | 2026-11-16 | MH_05_difficult_s11 | PASS | 7.245 | 1.094 | 2.077 | 5.413 | 6.202 | 0.26 |
+| step6d-H-on | main.py PRE_HOLD=True | c2b76cc | 2026-11-16 | MH_05_difficult_s12 | PASS | 7.644 | 1.090 | 2.672 | 4.882 | 4.950 | 0.26 |
 | step8-B-both | main.py DEAD_ON=True FC_ON=True | ce94cef | 2026-11-16 | MH_03_medium_s7 | PASS | 3.710 | 1.102 | 1.607 | 4.443 | 2.134 | 0.26 |
 | step8-B-both | main.py DEAD_ON=True FC_ON=True | ce94cef | 2026-11-16 | MH_03_medium_s8 | PASS | 6.159 | 1.151 | 2.286 | 3.879 | 5.576 | 0.24 |
 | step8-B-both | main.py DEAD_ON=True FC_ON=True | ce94cef | 2026-11-16 | MH_03_medium_s9 | PASS | 4.692 | 1.157 | 2.189 | 4.331 | 2.779 | 0.25 |
