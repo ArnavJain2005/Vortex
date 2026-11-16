@@ -4,23 +4,40 @@ Clean (undegraded) IMU input. APE = absolute position error after Umeyama alignm
 
 ## Summary: APE SE3 m / RPE 1 s m
 
-| Tag | MH_01 | MH_02 | MH_03 | MH_04 | MH_05 | Mean APE | Mean RPE 1 s |
-|---|---|---|---|---|---|---|---|
-| floor-still | 4.31 / 0.499 | 4.65 / 0.537 | 3.58 / 1.188 | 6.82 / 1.129 | 6.88 / 1.034 | 5.25 | 0.878 |
-| step6a | 51303.92 / 1132.918 | 34197.60 / 919.509 | 18192.52 / 554.725 | 17687.41 / 687.304 | 593.57 / 25.035 | 24395.00 | 663.898 |
-| step6b | 1288.50 / 40.053 | 941.41 / 33.634 | 676.70 / 25.476 | 248.88 / 13.122 | 508.41 / 21.554 | 732.78 | 26.768 |
-| step6c-clean-both | 4.06 / 0.507 | 5.97 / 0.966 | 3.51 / 1.031 | 6.60 / 1.178 | 6.74 / 1.025 | 5.37 | 0.941 |
-| step6c | 3.99 / 0.506 | 5.97 / 0.973 | 3.53 / 0.983 | 6.41 / 1.193 | 6.55 / 1.023 | 5.29 | 0.936 |
-| step6d-H-clean-off | - | - | 3.53 / 0.983 | 6.41 / 1.193 | 6.55 / 1.023 | - | - |
-| step6d-H-clean-on | - | - | 3.53 / 0.983 | 6.38 / 1.193 | 6.55 / 1.023 | - | - |
-| step6d | 3.91 / 0.480 | 3.85 / 0.591 | 3.53 / 0.983 | 6.38 / 1.193 | 6.55 / 1.023 | 4.84 | 0.854 |
-| step6e | 3.91 / 0.480 | 3.85 / 0.591 | 3.53 / 0.983 | 6.38 / 1.193 | 6.55 / 1.023 | 4.84 | 0.854 |
-| step7a-v1-only | 1234.09 / 38.353 | 1054.49 / 37.560 | 724.62 / 27.683 | 297.33 / 15.490 | 274.86 / 12.221 | 717.08 | 26.261 |
-| step7a-v1-v2speed | 4.02 / 0.512 | 6.02 / 0.931 | 3.43 / 1.149 | 6.47 / 1.160 | 6.56 / 1.043 | 5.30 | 0.959 |
-| step7a-v1-v2volume | 3.86 / 0.539 | 5.98 / 1.019 | 3.78 / 0.974 | 6.35 / 1.285 | 6.39 / 1.084 | 5.27 | 0.980 |
-| step7a-v1v2 | 3.99 / 0.506 | 5.97 / 0.973 | 3.53 / 0.983 | 6.41 / 1.193 | 6.55 / 1.023 | 5.29 | 0.936 |
-| step7a-v2-no-v1 | 4.02 / 0.505 | 6.00 / 0.973 | 3.51 / 0.992 | 6.28 / 1.185 | 6.51 / 1.016 | 5.27 | 0.934 |
-| step8 | 3.99 / 0.506 | 5.97 / 0.973 | 3.53 / 0.983 | 6.41 / 1.193 | 6.55 / 1.023 | 5.29 | 0.936 |
+| Tag | MH_01 | MH_02 | MH_03 | MH_04 | MH_05 | V1_01 | V1_02 | V1_03 | Mean APE | Mean RPE 1 s |
+|---|---|---|---|---|---|---|---|---|---|---|
+| floor-still | 4.31 / 0.499 | 4.65 / 0.537 | 3.58 / 1.188 | 6.82 / 1.129 | 6.88 / 1.034 | - | - | - | - | - |
+| step6a | 51303.92 / 1132.918 | 34197.60 / 919.509 | 18192.52 / 554.725 | 17687.41 / 687.304 | 593.57 / 25.035 | - | - | - | - | - |
+| step6b | 1288.50 / 40.053 | 941.41 / 33.634 | 676.70 / 25.476 | 248.88 / 13.122 | 508.41 / 21.554 | - | - | - | - | - |
+| step6c-clean-both | 4.06 / 0.507 | 5.97 / 0.966 | 3.51 / 1.031 | 6.60 / 1.178 | 6.74 / 1.025 | - | - | - | - | - |
+| step6c | 3.99 / 0.506 | 5.97 / 0.973 | 3.53 / 0.983 | 6.41 / 1.193 | 6.55 / 1.023 | - | - | - | - | - |
+| step6d-H-clean-off | - | - | 3.53 / 0.983 | 6.41 / 1.193 | 6.55 / 1.023 | - | - | - | - | - |
+| step6d-H-clean-on | - | - | 3.53 / 0.983 | 6.38 / 1.193 | 6.55 / 1.023 | - | - | - | - | - |
+| step6d | 3.91 / 0.480 | 3.85 / 0.591 | 3.53 / 0.983 | 6.38 / 1.193 | 6.55 / 1.023 | - | - | - | - | - |
+| step6e | 3.91 / 0.480 | 3.85 / 0.591 | 3.53 / 0.983 | 6.38 / 1.193 | 6.55 / 1.023 | - | - | - | - | - |
+| step7a-v1-only | 1234.09 / 38.353 | 1054.49 / 37.560 | 724.62 / 27.683 | 297.33 / 15.490 | 274.86 / 12.221 | - | - | - | - | - |
+| step7a-v1-v2speed | 4.02 / 0.512 | 6.02 / 0.931 | 3.43 / 1.149 | 6.47 / 1.160 | 6.56 / 1.043 | - | - | - | - | - |
+| step7a-v1-v2volume | 3.86 / 0.539 | 5.98 / 1.019 | 3.78 / 0.974 | 6.35 / 1.285 | 6.39 / 1.084 | - | - | - | - | - |
+| step7a-v1v2 | 3.99 / 0.506 | 5.97 / 0.973 | 3.53 / 0.983 | 6.41 / 1.193 | 6.55 / 1.023 | - | - | - | - | - |
+| step7a-v2-no-v1 | 4.02 / 0.505 | 6.00 / 0.973 | 3.51 / 0.992 | 6.28 / 1.185 | 6.51 / 1.016 | - | - | - | - | - |
+| step8 | 3.99 / 0.506 | 5.97 / 0.973 | 3.53 / 0.983 | 6.41 / 1.193 | 6.55 / 1.023 | - | - | - | - | - |
+| stepA-v1-c | - | - | - | - | - | 1.77 / 0.409 | 1.77 / 0.669 | 1.55 / 0.469 | - | - |
+| stepA-v1-floor | - | - | - | - | - | 1.85 / 0.439 | 1.78 / 0.964 | 1.57 / 0.716 | - | - |
+| stepA-v1-py | - | - | - | - | - | 1.77 / 0.409 | 1.77 / 0.669 | 1.55 / 0.469 | - | - |
+
+## APE RMSE m under every alignment (runs from step A on)
+
+| Tag | Sequence | none | origin | SE3 | Sim3 | RPE 1 s m |
+|---|---|---|---|---|---|---|
+| stepA-v1-c | V1_01_easy | 2.82 | 2.38 | 1.77 | 1.77 | 0.409 |
+| stepA-v1-c | V1_02_medium | 3.55 | 2.95 | 1.77 | 1.71 | 0.669 |
+| stepA-v1-c | V1_03_difficult | 2.93 | 2.28 | 1.55 | 1.51 | 0.469 |
+| stepA-v1-floor | V1_01_easy | 2.38 | 2.70 | 1.85 | nan | 0.439 |
+| stepA-v1-floor | V1_02_medium | 2.60 | 2.16 | 1.78 | nan | 0.964 |
+| stepA-v1-floor | V1_03_difficult | 2.50 | 2.21 | 1.57 | nan | 0.716 |
+| stepA-v1-py | V1_01_easy | 2.82 | 2.38 | 1.77 | 1.77 | 0.409 |
+| stepA-v1-py | V1_02_medium | 3.55 | 2.95 | 1.77 | 1.71 | 0.669 |
+| stepA-v1-py | V1_03_difficult | 2.93 | 2.28 | 1.55 | 1.51 | 0.469 |
 
 ## Every run
 
@@ -97,6 +114,15 @@ Clean (undegraded) IMU input. APE = absolute position error after Umeyama alignm
 | step8 | main.py | 02e2e5d | 2026-11-16 | MH_03_medium | PASS | 3.53 | 4.12 | 3.47 | 0.584 | 0.983 | 0.34 |
 | step8 | main.py | 02e2e5d | 2026-11-16 | MH_04_difficult | PASS | 6.41 | 3.76 | 6.35 | 1.55 | 1.193 | 0.24 |
 | step8 | main.py | 02e2e5d | 2026-11-16 | MH_05_difficult | PASS | 6.55 | 4.73 | 6.40 | 2.18 | 1.023 | 0.31 |
+| stepA-v1-c | build\vortex.exe | ea4258c | 2026-11-17 | V1_01_easy | PASS | 1.77 | 1.92 | 1.77 | 0.847 | 0.409 | 0.12 |
+| stepA-v1-c | build\vortex.exe | ea4258c | 2026-11-17 | V1_02_medium | PASS | 1.77 | 1.69 | 1.71 | 0.508 | 0.669 | 0.04 |
+| stepA-v1-c | build\vortex.exe | ea4258c | 2026-11-17 | V1_03_difficult | PASS | 1.55 | 1.62 | 1.51 | 0.571 | 0.469 | 0.04 |
+| stepA-v1-floor | tools\baseline_still.py | ea4258c | 2026-11-17 | V1_01_easy | PASS | 1.85 | 1.73 | nan | nan | 0.439 | 0.12 |
+| stepA-v1-floor | tools\baseline_still.py | ea4258c | 2026-11-17 | V1_02_medium | PASS | 1.78 | 1.23 | nan | nan | 0.964 | 0.09 |
+| stepA-v1-floor | tools\baseline_still.py | ea4258c | 2026-11-17 | V1_03_difficult | PASS | 1.57 | 1.34 | nan | nan | 0.716 | 0.10 |
+| stepA-v1-py | main.py | ea4258c | 2026-11-17 | V1_01_easy | PASS | 1.77 | 1.92 | 1.77 | 0.847 | 0.409 | 0.38 |
+| stepA-v1-py | main.py | ea4258c | 2026-11-17 | V1_02_medium | PASS | 1.77 | 1.69 | 1.71 | 0.508 | 0.669 | 0.27 |
+| stepA-v1-py | main.py | ea4258c | 2026-11-17 | V1_03_difficult | PASS | 1.55 | 1.62 | 1.51 | 0.571 | 0.469 | 0.29 |
 
 # Degraded input
 
@@ -124,6 +150,9 @@ Copies made by `python -m vortex.degrade <clean sequence> data/degraded/<sequenc
 | step8-B-dead | 9 | 6.709 | 1.179 | 2.657 | 5.616 | 3.793 |
 | step8-B-off | 9 | 6.975 | 1.460 | 2.657 | 15.886 | 8.663 |
 | step8-deg | 33 | 6.346 | 1.058 | 1.999 | 4.916 | 4.951 |
+| stepA-v1-deg-c | 18 | 3.042 | 0.638 | 1.124 | 1.369 | 4.094 |
+| stepA-v1-deg-floor | 18 | 1.759 | 0.717 | 1.090 | 1.203 | 1.327 |
+| stepA-v1-deg-py | 18 | 3.042 | 0.638 | 1.124 | 1.369 | 4.094 |
 
 ## Every degraded run
 
@@ -441,3 +470,57 @@ Copies made by `python -m vortex.degrade <clean sequence> data/degraded/<sequenc
 | step8-deg | main.py | 02e2e5d | 2026-11-16 | MH_05_difficult_s7 | PASS | 6.548 | 1.109 | 1.739 | 5.540 | 3.131 | 0.21 |
 | step8-deg | main.py | 02e2e5d | 2026-11-16 | MH_05_difficult_s8 | PASS | 7.624 | 1.071 | 1.917 | 5.822 | 5.276 | 0.22 |
 | step8-deg | main.py | 02e2e5d | 2026-11-16 | MH_05_difficult_s9 | PASS | 9.691 | 1.093 | 3.440 | 5.380 | 2.689 | 0.24 |
+| stepA-v1-deg-c | build\vortex.exe | ea4258c | 2026-11-17 | V1_01_easy_s1 | PASS | 2.089 | 0.474 | 0.443 | 1.938 | 2.297 | 0.06 |
+| stepA-v1-deg-c | build\vortex.exe | ea4258c | 2026-11-17 | V1_01_easy_s2 | PASS | 2.378 | 0.422 | 0.532 | 1.543 | 2.685 | 0.05 |
+| stepA-v1-deg-c | build\vortex.exe | ea4258c | 2026-11-17 | V1_01_easy_s3 | PASS | 2.199 | 0.406 | 0.776 | 1.637 | 1.962 | 0.05 |
+| stepA-v1-deg-c | build\vortex.exe | ea4258c | 2026-11-17 | V1_01_easy_s7 | PASS | 2.241 | 0.431 | 0.922 | 1.608 | 3.565 | 0.05 |
+| stepA-v1-deg-c | build\vortex.exe | ea4258c | 2026-11-17 | V1_01_easy_s8 | PASS | 2.126 | 0.426 | 0.974 | 1.863 | 1.282 | 0.05 |
+| stepA-v1-deg-c | build\vortex.exe | ea4258c | 2026-11-17 | V1_01_easy_s9 | PASS | 2.816 | 0.463 | 0.633 | 1.832 | 3.725 | 0.05 |
+| stepA-v1-deg-c | build\vortex.exe | ea4258c | 2026-11-17 | V1_02_medium_s1 | PASS | 3.703 | 0.977 | 1.549 | 1.381 | 4.542 | 0.04 |
+| stepA-v1-deg-c | build\vortex.exe | ea4258c | 2026-11-17 | V1_02_medium_s2 | PASS | 3.110 | 0.844 | 1.757 | 1.456 | 2.839 | 0.04 |
+| stepA-v1-deg-c | build\vortex.exe | ea4258c | 2026-11-17 | V1_02_medium_s3 | PASS | 4.711 | 0.862 | 1.744 | 1.063 | 7.208 | 0.04 |
+| stepA-v1-deg-c | build\vortex.exe | ea4258c | 2026-11-17 | V1_02_medium_s7 | PASS | 2.069 | 0.835 | 1.487 | 1.594 | 2.424 | 0.04 |
+| stepA-v1-deg-c | build\vortex.exe | ea4258c | 2026-11-17 | V1_02_medium_s8 | PASS | 3.603 | 0.844 | 0.928 | 1.527 | 7.209 | 0.04 |
+| stepA-v1-deg-c | build\vortex.exe | ea4258c | 2026-11-17 | V1_02_medium_s9 | PASS | 2.252 | 0.816 | 1.354 | 1.937 | 1.593 | 0.04 |
+| stepA-v1-deg-c | build\vortex.exe | ea4258c | 2026-11-17 | V1_03_difficult_s1 | PASS | 1.964 | 0.564 | 0.994 | 0.876 | 3.398 | 0.04 |
+| stepA-v1-deg-c | build\vortex.exe | ea4258c | 2026-11-17 | V1_03_difficult_s2 | PASS | 2.486 | 0.589 | 1.444 | 0.720 | 2.944 | 0.04 |
+| stepA-v1-deg-c | build\vortex.exe | ea4258c | 2026-11-17 | V1_03_difficult_s3 | PASS | 3.678 | 0.603 | 0.728 | 0.720 | 5.952 | 0.06 |
+| stepA-v1-deg-c | build\vortex.exe | ea4258c | 2026-11-17 | V1_03_difficult_s7 | PASS | 2.715 | 0.650 | 1.409 | 1.178 | 2.358 | 0.04 |
+| stepA-v1-deg-c | build\vortex.exe | ea4258c | 2026-11-17 | V1_03_difficult_s8 | PASS | 3.849 | 0.633 | 1.502 | 0.824 | 5.691 | 0.04 |
+| stepA-v1-deg-c | build\vortex.exe | ea4258c | 2026-11-17 | V1_03_difficult_s9 | PASS | 6.766 | 0.644 | 1.064 | 0.954 | 12.019 | 0.05 |
+| stepA-v1-deg-floor | tools\baseline_still.py | ea4258c | 2026-11-17 | V1_01_easy_s1 | PASS | 1.847 | 0.442 | 0.582 | 1.741 | 1.217 | 0.09 |
+| stepA-v1-deg-floor | tools\baseline_still.py | ea4258c | 2026-11-17 | V1_01_easy_s2 | PASS | 1.847 | 0.442 | 0.547 | 1.741 | 1.217 | 0.10 |
+| stepA-v1-deg-floor | tools\baseline_still.py | ea4258c | 2026-11-17 | V1_01_easy_s3 | PASS | 1.847 | 0.442 | 0.745 | 1.741 | 1.217 | 0.09 |
+| stepA-v1-deg-floor | tools\baseline_still.py | ea4258c | 2026-11-17 | V1_01_easy_s7 | PASS | 1.847 | 0.442 | 0.741 | 1.741 | 1.217 | 0.09 |
+| stepA-v1-deg-floor | tools\baseline_still.py | ea4258c | 2026-11-17 | V1_01_easy_s8 | PASS | 1.847 | 0.442 | 0.962 | 1.741 | 1.217 | 0.10 |
+| stepA-v1-deg-floor | tools\baseline_still.py | ea4258c | 2026-11-17 | V1_01_easy_s9 | PASS | 1.847 | 0.442 | 0.657 | 1.741 | 1.217 | 0.11 |
+| stepA-v1-deg-floor | tools\baseline_still.py | ea4258c | 2026-11-17 | V1_02_medium_s1 | PASS | 1.834 | 0.991 | 1.599 | 1.594 | 1.837 | 0.08 |
+| stepA-v1-deg-floor | tools\baseline_still.py | ea4258c | 2026-11-17 | V1_02_medium_s2 | PASS | 1.834 | 0.991 | 1.555 | 1.594 | 1.837 | 0.08 |
+| stepA-v1-deg-floor | tools\baseline_still.py | ea4258c | 2026-11-17 | V1_02_medium_s3 | PASS | 1.834 | 0.991 | 1.951 | 1.594 | 1.837 | 0.08 |
+| stepA-v1-deg-floor | tools\baseline_still.py | ea4258c | 2026-11-17 | V1_02_medium_s7 | PASS | 1.834 | 0.991 | 1.277 | 1.594 | 1.837 | 0.07 |
+| stepA-v1-deg-floor | tools\baseline_still.py | ea4258c | 2026-11-17 | V1_02_medium_s8 | PASS | 1.834 | 0.991 | 1.182 | 1.594 | 1.837 | 0.08 |
+| stepA-v1-deg-floor | tools\baseline_still.py | ea4258c | 2026-11-17 | V1_02_medium_s9 | PASS | 1.834 | 0.991 | 1.247 | 1.594 | 1.837 | 0.07 |
+| stepA-v1-deg-floor | tools\baseline_still.py | ea4258c | 2026-11-17 | V1_03_difficult_s1 | PASS | 1.596 | 0.718 | 1.023 | 0.275 | 0.926 | 0.09 |
+| stepA-v1-deg-floor | tools\baseline_still.py | ea4258c | 2026-11-17 | V1_03_difficult_s2 | PASS | 1.596 | 0.718 | 1.128 | 0.275 | 0.926 | 0.08 |
+| stepA-v1-deg-floor | tools\baseline_still.py | ea4258c | 2026-11-17 | V1_03_difficult_s3 | PASS | 1.596 | 0.718 | 0.747 | 0.275 | 0.926 | 0.09 |
+| stepA-v1-deg-floor | tools\baseline_still.py | ea4258c | 2026-11-17 | V1_03_difficult_s7 | PASS | 1.596 | 0.718 | 1.466 | 0.275 | 0.926 | 0.09 |
+| stepA-v1-deg-floor | tools\baseline_still.py | ea4258c | 2026-11-17 | V1_03_difficult_s8 | PASS | 1.596 | 0.718 | 1.618 | 0.275 | 0.926 | 0.08 |
+| stepA-v1-deg-floor | tools\baseline_still.py | ea4258c | 2026-11-17 | V1_03_difficult_s9 | PASS | 1.596 | 0.718 | 0.587 | 0.275 | 0.926 | 0.08 |
+| stepA-v1-deg-py | main.py | ea4258c | 2026-11-17 | V1_01_easy_s1 | PASS | 2.089 | 0.474 | 0.443 | 1.938 | 2.297 | 0.31 |
+| stepA-v1-deg-py | main.py | ea4258c | 2026-11-17 | V1_01_easy_s2 | PASS | 2.378 | 0.422 | 0.532 | 1.543 | 2.685 | 0.31 |
+| stepA-v1-deg-py | main.py | ea4258c | 2026-11-17 | V1_01_easy_s3 | PASS | 2.199 | 0.406 | 0.776 | 1.637 | 1.962 | 0.34 |
+| stepA-v1-deg-py | main.py | ea4258c | 2026-11-17 | V1_01_easy_s7 | PASS | 2.241 | 0.431 | 0.922 | 1.608 | 3.565 | 0.30 |
+| stepA-v1-deg-py | main.py | ea4258c | 2026-11-17 | V1_01_easy_s8 | PASS | 2.126 | 0.426 | 0.974 | 1.863 | 1.282 | 0.30 |
+| stepA-v1-deg-py | main.py | ea4258c | 2026-11-17 | V1_01_easy_s9 | PASS | 2.816 | 0.463 | 0.633 | 1.832 | 3.725 | 0.32 |
+| stepA-v1-deg-py | main.py | ea4258c | 2026-11-17 | V1_02_medium_s1 | PASS | 3.703 | 0.977 | 1.549 | 1.381 | 4.542 | 0.29 |
+| stepA-v1-deg-py | main.py | ea4258c | 2026-11-17 | V1_02_medium_s2 | PASS | 3.110 | 0.844 | 1.757 | 1.456 | 2.839 | 0.23 |
+| stepA-v1-deg-py | main.py | ea4258c | 2026-11-17 | V1_02_medium_s3 | PASS | 4.711 | 0.862 | 1.744 | 1.063 | 7.208 | 0.24 |
+| stepA-v1-deg-py | main.py | ea4258c | 2026-11-17 | V1_02_medium_s7 | PASS | 2.069 | 0.835 | 1.487 | 1.594 | 2.424 | 0.21 |
+| stepA-v1-deg-py | main.py | ea4258c | 2026-11-17 | V1_02_medium_s8 | PASS | 3.603 | 0.844 | 0.928 | 1.527 | 7.209 | 0.24 |
+| stepA-v1-deg-py | main.py | ea4258c | 2026-11-17 | V1_02_medium_s9 | PASS | 2.252 | 0.816 | 1.354 | 1.937 | 1.593 | 0.23 |
+| stepA-v1-deg-py | main.py | ea4258c | 2026-11-17 | V1_03_difficult_s1 | PASS | 1.964 | 0.564 | 0.994 | 0.876 | 3.398 | 0.25 |
+| stepA-v1-deg-py | main.py | ea4258c | 2026-11-17 | V1_03_difficult_s2 | PASS | 2.486 | 0.589 | 1.444 | 0.720 | 2.944 | 0.24 |
+| stepA-v1-deg-py | main.py | ea4258c | 2026-11-17 | V1_03_difficult_s3 | PASS | 3.678 | 0.603 | 0.728 | 0.720 | 5.952 | 0.26 |
+| stepA-v1-deg-py | main.py | ea4258c | 2026-11-17 | V1_03_difficult_s7 | PASS | 2.715 | 0.650 | 1.409 | 1.178 | 2.358 | 0.26 |
+| stepA-v1-deg-py | main.py | ea4258c | 2026-11-17 | V1_03_difficult_s8 | PASS | 3.849 | 0.633 | 1.502 | 0.824 | 5.691 | 0.22 |
+| stepA-v1-deg-py | main.py | ea4258c | 2026-11-17 | V1_03_difficult_s9 | PASS | 6.766 | 0.644 | 1.064 | 0.954 | 12.019 | 0.23 |

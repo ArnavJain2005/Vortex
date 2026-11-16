@@ -58,7 +58,7 @@ concise answers; say plainly what was not verified.
 
 ```
 pip install -e .[dev]
-pytest                                        # 16 Nov 2026: 212 passed (Windows, Python 3.14; test_ccore.py needs g++ on PATH)
+pytest                                        # 17 Nov 2026: 227 passed (Windows, Python 3.14; test_ccore.py needs g++ on PATH)
 python -S main.py IMU.csv estimated_trajectory.txt                       # submission entry point: a stub importing pathfinder.py (the estimator, stdlib only)
 g++ -O2 -std=c++17 -ffp-contract=off -o build/vortex main.cpp           # C core (Windows MinGW: add -static); build/vortex IMU.csv OUT.txt
 python -S benchmark.py --runs 15 --gate --cbin build/vortex.exe          # also measures the C core (gate: RSS <= 8 MB, same bytes as main.py)
@@ -69,7 +69,8 @@ python -S benchmark.py --runs 15 --gate [--tag NAME --commit SHA]        # write
 python benchmark.py --render                                             # rebuilds Docs/BUDGET.md (never hand-edit)
 python score.py --gt data/euroc/MH_01_easy --est est.txt [--events deg/degrade.json] [--imu IMU.csv] [--align se3|given --given-from clean_est.txt]
 python tools/crosscheck_evo.py --evo-bin <venv>/Scripts                   # 16 Nov 2026: matches evo to 4.2e-7 m (synthetic)
-python tools/eval_euroc.py --tag NAME [--main main.py] [--set V2_ON=False]  # runs + scores every data/euroc sequence; Docs/RESULTS.md
+python tools/eval_euroc.py --tag NAME [--main main.py] [--set V2_ON=False]  # runs + scores every data/euroc sequence except V2_* (final test set: needs --seqs + --final); Docs/RESULTS.md
+python tools/eval_euroc.py --tag NAME --cbin build/vortex.exe [--degraded]   # same, with the C core
 python tools/eval_euroc.py --tag floor-still --main tools/baseline_still.py  # the never-moving floor (mean APE 5.25 m on MH)
 python -m vortex.degrade data/euroc/MH_03_medium data/degraded/MH_03_medium_s4 --seed 4  # degraded copies: <seq>_s<seed>
 python tools/eval_euroc.py --tag NAME --degraded [--seqs MH_03_medium_s4,...]  # every data/degraded copy; alignment from the clean run

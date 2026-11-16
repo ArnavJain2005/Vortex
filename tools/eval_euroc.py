@@ -14,7 +14,12 @@ Usage:
                              named <sequence>_s<seed>. Alignment is fitted ONCE on the same main's run
                              on the clean sequence (align "given"), so it cannot absorb a fault; errors
                              are split by phase from degrade.json)
+  python tools/eval_euroc.py --tag NAME --cbin build/vortex.exe [...]
+                             (run the C core binary instead of `python -S <main>`; --set is not allowed)
   python tools/eval_euroc.py --render
+
+Vicon Room 2 (V2_*) is the final test set: it is skipped when no --seqs are given, and naming it in
+--seqs is refused unless --final is passed too.
 """
 import glob
 import json
@@ -31,6 +36,32 @@ from vortex import check_output, scoring  # noqa: E402
 DATA = os.path.join(ROOT, "data", "euroc")
 DEGRADED = os.path.join(ROOT, "data", "degraded")
 OUT_DIR = os.path.join(ROOT, "Docs", "results")
+FINAL_PREFIX = "V2_"  # Vicon Room 2: final test set, never run without --final
+
+
+def is_final(name):
+    return name.startswith(FINAL_PREFIX)
+
+
+def select(names, requested, final):
+    """Sequences to run: the requested ones, or every folder except the final test set."""
+    if requested:
+        blocked = [n for n in requested if is_final(n)]
+        if blocked and not final:
+            raise SystemExit("refused: %s is the final test set; pass --final only when told to run the "
+                             "final table" % ",".join(blocked))
+        return list(requested)
+    return sorted(n for n in names if not is_final(n))
+
+
+def command(main_path, imu, est):
+    """`python -S main` or, when main_path is a C core binary (CBIN marker), the binary itself."""
+    if main_path.startswith(CBIN):
+        return [main_path[len(CBIN):], imu, est]
+    return [sys.executable, "-S", main_path, imu, est]
+
+
+CBIN = "cbin:"
 
 
 def wrapper(main_path, sets, tmp):
@@ -56,7 +87,7 @@ def evaluate(main_path, seq, tmp):
     imu = os.path.join(DATA, seq, "mav0", "imu0", "data.csv")
     est = os.path.join(tmp, seq + ".txt")
     t0 = time.perf_counter()
-    p = subprocess.run([sys.executable, "-S", main_path, imu, est], capture_output=True, text=True)
+    p = subprocess.run(command(main_path, imu, est), capture_output=True, text=True)
     wall = time.perf_counter() - t0
     if p.returncode != 0:
         return {"sequence": seq, "error": p.stderr[-400:]}
@@ -65,7 +96,9 @@ def evaluate(main_path, seq, tmp):
     e, _ = scoring.read_tum(est)
     r_se3 = scoring.score(ref, e, align="se3", rpe_deltas=(200,))
     r_sim3 = scoring.score(ref, e, align="sim3", rpe_deltas=(200,))
+    other = {m: scoring.score(ref, e, align=m, rpe_deltas=())["ape"]["rmse"] for m in ("none", "origin")}
     return {"sequence": seq, "rows": chk["input_rows"], "contract": "PASS" if chk["ok"] else "FAIL",
+            "ate_none_rmse": other["none"], "ate_origin_rmse": other["origin"],
             "wall_s": wall, "ate_se3_rmse": r_se3["ape"]["rmse"], "final_se3": r_se3["final_error"],
             "ate_sim3_rmse": r_sim3["ape"]["rmse"], "sim3_scale": r_sim3["alignment"]["scale"],
             "rpe200_rmse": r_se3["rpe"]["200"]["rmse"]}
@@ -73,7 +106,7 @@ def evaluate(main_path, seq, tmp):
 
 def run_main(main_path, imu, est):
     t0 = time.perf_counter()
-    p = subprocess.run([sys.executable, "-S", main_path, imu, est], capture_output=True, text=True)
+    p = subprocess.run(command(main_path, imu, est), capture_output=True, text=True)
     return p, time.perf_counter() - t0
 
 
@@ -151,6 +184,20 @@ def pivot(runs):
     return L
 
 
+def pivot_alignments(runs):
+    """APE RMSE under every alignment (none, origin, SE3, Sim3) for runs that recorded all four."""
+    L = ["## APE RMSE m under every alignment (runs from step A on)", "",
+         "| Tag | Sequence | none | origin | SE3 | Sim3 | RPE 1 s m |", "|---|---|---|---|---|---|---|"]
+    for run in runs:
+        for r in run["results"]:
+            if "error" in r or "ate_none_rmse" not in r:
+                continue
+            L.append("| %s | %s | %.2f | %.2f | %.2f | %.2f | %.3f |" % (
+                run["tag"], r["sequence"], r["ate_none_rmse"], r["ate_origin_rmse"], r["ate_se3_rmse"],
+                r["ate_sim3_rmse"], r["rpe200_rmse"]))
+    return L
+
+
 def render():
     files = sorted(glob.glob(os.path.join(OUT_DIR, "*.json")))
     every = [json.load(open(p, encoding="utf-8")) for p in files]
@@ -161,7 +208,7 @@ def render():
          "trajectory (SE3, or Sim3 with scale). Final = position error of the last pose after SE3. "
          "RPE 1 s = relative translation error over 200 frames. Sim3 can shrink a badly drifting "
          "trajectory toward a point (see the scale column), so it flatters drift; SE3 is the honest number.",
-         ""] + pivot(runs) + ["", "## Every run", "", "| Tag | Main (settings) | Commit | Date | Sequence | Contract | APE SE3 m | Final m | APE Sim3 m | Sim3 scale | RPE 1 s m | Wall s |",
+         ""] + pivot(runs) + [""] + pivot_alignments(runs) + ["", "## Every run", "", "| Tag | Main (settings) | Commit | Date | Sequence | Contract | APE SE3 m | Final m | APE Sim3 m | Sim3 scale | RPE 1 s m | Wall s |",
          "|---|---|---|---|---|---|---|---|---|---|---|---|"]
     for run in runs:
         how = run.get("main", "main.py") + "".join(" %s=%s" % kv for kv in sorted(run.get("set", {}).items()))
@@ -213,13 +260,20 @@ def main(argv=None):
         return 2
     main_path = os.path.abspath(get("--main", os.path.join(ROOT, "main.py")))
     sets = [a.split("=", 1) for i, a in enumerate(argv) if i > 0 and argv[i - 1] == "--set"]
+    cbin = os.path.abspath(get("--cbin", None)) if "--cbin" in argv else None
+    if cbin and sets:
+        print("--set cannot change the C core's constants")
+        return 2
     degraded = "--degraded" in argv
     seqs = get("--seqs", None)
-    seqs = seqs.split(",") if seqs else sorted(os.listdir(DEGRADED if degraded else DATA))
+    seqs = select(os.listdir(DEGRADED if degraded else DATA), seqs.split(",") if seqs else None,
+                  "--final" in argv)
     commit = get("--commit", None) or subprocess.run(["git", "rev-parse", "--short", "HEAD"], cwd=ROOT,
                                                       capture_output=True, text=True).stdout.strip()
     tmp = tempfile.mkdtemp(prefix="vortex_eval_")
-    run_path = wrapper(main_path, sets, tmp) if sets else main_path
+    run_path = CBIN + cbin if cbin else (wrapper(main_path, sets, tmp) if sets else main_path)
+    if cbin:
+        main_path = cbin
     results = []
     clean_cache = {}
     for s in seqs:
