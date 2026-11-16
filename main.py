@@ -12,13 +12,14 @@ line that is not blank and does not start with '#' (vortex/rowspec.py states the
 timestamp is the input ns value with the decimal point moved 9 digits left, done on the text, so it
 is exact. A row whose timestamp is not an integer repeats the previous row's timestamp.
 
-STATUS (steps 7a + 6c + 8a + 6d): self-calibration on the longest still run in the first 60 s (gyro bias, g, tilt),
+STATUS (steps 7a + 6c + 8a + 6d + 6e): self-calibration on the longest still run in the first 60 s (gyro bias, g, tilt),
 backward integration from mid-run over the rows before it (dead reckoning, no witnesses), then a
 forward error-state Kalman filter (15 states, one covariance step per 0.25 s tick) with the
 witnesses V1 stillness (ZUPT + gyro bias) and V2 flight envelope (speed and volume); dropouts and
 gaps add covariance learned from the recent motion (GAP_ON); a noise meter (JAM_ON) is built but off;
 dead sensors (stuck or all-zero rows) are treated as missing (DEAD_ON) and velocity decays toward 0 in gaps (FC_ON);
 rows before the anchor keep the anchor's position, attitude from the backward pass (PRE_HOLD);
+if no still run passes the strict test, calibration retries with the white noise removed (CAL_NOISE_ON);
 fallback to the step 6a first-second initialisation. Rules: vortex/core/witness.py. Performance: Docs/BUDGET.md.
 
 Passes: (1) calibration scan of the first 60 s; (2) rows before the anchor are stored (64 bytes per
@@ -54,6 +55,7 @@ STEADY_GYRO = 0.005
 STEADY_ACC = 0.05
 TRIM_S = 0.5
 PRE_MAX_ROWS = 15000
+CAL_NOISE_ON = True
 # step 7a filter and witnesses: identical to vortex/core/witness.py (a test checks), sources noted there
 TICK_S = BLOCK_S
 GYRO_NOISE = 1.7e-3
@@ -181,6 +183,101 @@ def _tilt(fx, fy, fz):
     return w * k, x * k, y * k, 0.0, fn
 
 
+def _best_run(n, s, still, w=None):
+    """Longest run of still, pairwise steady bins (strapdown._best_run); w: per-bin white-noise
+    variances (6 per bin) widen the steady tolerances (step 6e)."""
+    sqrt = math.sqrt
+    nb = len(n)
+    best_j, best_len, j0 = 0, 0, -1
+    for j in range(nb + 1):
+        st = j < nb and still[j]
+        steady = True
+        if st and j0 >= 0:
+            oa, ob = 6 * (j - 1), 6 * j
+            for i in range(6):
+                tol = STEADY_GYRO if i < 3 else STEADY_ACC
+                if w is not None:
+                    tol += 3.0 * sqrt(w[oa + i] / n[j - 1] + w[ob + i] / n[j])
+                d = s[oa + i] / n[j - 1] - s[ob + i] / n[j]
+                if d >= tol or d <= -tol:
+                    steady = False
+                    break
+        if st and j0 >= 0 and not steady:
+            if j - j0 > best_len:
+                best_j, best_len = j0, j - j0
+            j0 = j
+        elif st and j0 < 0:
+            j0 = j
+        if not st and j0 >= 0:
+            if j - j0 > best_len:
+                best_j, best_len = j0, j - j0
+            j0 = -1
+    return best_j, best_len
+
+
+def _still_denoised(src, t0, n, s, ss):
+    """Step 6e: a second scan of the calibration horizon (only when no strict still run exists) for the
+    per-bin second differences. Returns (still flags with the white-noise variance removed, per-bin
+    white-noise variances) (strapdown.noise_bins, bin_is_still_denoised, white_var)."""
+    sqrt = math.sqrt
+    nb = len(n)
+    bns = int(BLOCK_S * 1e9)
+    t_end = t0 + nb * bns
+    max_dt_ns = MAX_DT * 1e9
+    nd = [0] * nb
+    d2 = [0.0] * (6 * nb)
+    h1 = h2 = None
+    jl = tl = -1
+    with _open_rows(src) as f:
+        for line in f:
+            r = _parse(line)
+            if r is None:
+                continue
+            t, v = r
+            if t is None or not _valid(v) or t < t0:
+                h1 = h2 = None
+                continue
+            if t >= t_end:
+                break
+            j = (t - t0) // bns
+            if h1 is not None and (j != jl or not 0 < t - tl <= max_dt_ns):
+                h1 = h2 = None
+            if h2 is not None:
+                nd[j] += 1
+                o = 6 * j
+                for i in range(6):
+                    d = v[i] - 2.0 * h1[i] + h2[i]
+                    d2[o + i] += d * d
+            h2, h1, jl, tl = h1, v, j, t
+    w = [0.0] * (6 * nb)
+    for j in range(nb):
+        if nd[j]:
+            for i in range(6):
+                w[6 * j + i] = d2[6 * j + i] / nd[j] / 6.0
+    still = [False] * nb
+    for j in range(nb):
+        if n[j] < BLOCK_MIN_ROWS or nd[j] < BLOCK_MIN_ROWS - 2:
+            continue
+        o = 6 * j
+        ex = [0.0] * 6
+        raw = 0.0
+        for i in range(6):
+            m = s[o + i] / n[j]
+            var = ss[o + i] / n[j] - m * m
+            if var > raw:
+                raw = var
+            var -= d2[o + i] / nd[j] / 6.0
+            ex[i] = sqrt(var) if var > 0.0 else 0.0
+        if max(ex[0], ex[1], ex[2]) >= STILL_GYRO_STD or max(ex[3], ex[4], ex[5]) >= STILL_ACC_STD:
+            continue
+        if raw <= STUCK_STD * STUCK_STD:
+            continue
+        fx, fy, fz = s[o + 3] / n[j], s[o + 4] / n[j], s[o + 5] / n[j]
+        fn = sqrt(fx * fx + fy * fy + fz * fz)
+        still[j] = ACC_NORM_MIN <= fn <= ACC_NORM_MAX
+    return still, w
+
+
 def _calibrate(src):
     """Pass 1 (see vortex/core/strapdown.calibrate). Returns (t_anchor, qw, qx, qy, qz, bgx, bgy, bgz, g)
     or None when there is no usable still run."""
@@ -233,28 +330,9 @@ def _calibrate(src):
         fx, fy, fz = s[o + 3] / n[j], s[o + 4] / n[j], s[o + 5] / n[j]
         fn = sqrt(fx * fx + fy * fy + fz * fz)
         still[j] = ACC_NORM_MIN <= fn <= ACC_NORM_MAX
-    best_j, best_len, j0 = 0, 0, -1
-    for j in range(nb + 1):
-        st = j < nb and still[j]
-        steady = True
-        if st and j0 >= 0:
-            oa, ob = 6 * (j - 1), 6 * j
-            for i in range(6):
-                tol = STEADY_GYRO if i < 3 else STEADY_ACC
-                d = s[oa + i] / n[j - 1] - s[ob + i] / n[j]
-                if d >= tol or d <= -tol:
-                    steady = False
-                    break
-        if st and j0 >= 0 and not steady:
-            if j - j0 > best_len:
-                best_j, best_len = j0, j - j0
-            j0 = j
-        elif st and j0 < 0:
-            j0 = j
-        if not st and j0 >= 0:
-            if j - j0 > best_len:
-                best_j, best_len = j0, j - j0
-            j0 = -1
+    best_j, best_len = _best_run(n, s, still)
+    if CAL_NOISE_ON and best_len * BLOCK_S < MIN_STILL_S:
+        best_j, best_len = _best_run(n, s, *_still_denoised(src, t0, n, s, ss))
     if best_len * BLOCK_S < MIN_STILL_S:
         return None
     trim = int(TRIM_S / BLOCK_S)

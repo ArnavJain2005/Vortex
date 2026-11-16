@@ -65,7 +65,7 @@ def test_parameters_identical():
     for name in ("INIT_S", "INIT_MAX_ROWS", "STILL_GYRO_STD", "STILL_ACC_STD", "G_DEFAULT", "MAX_DT",
                  "MAX_JUMP_S", "MAX_SUMSQ", "CAL_HORIZON_S", "BLOCK_S", "BLOCK_MIN_ROWS", "MIN_STILL_S",
                  "STUCK_STD", "ACC_NORM_MIN", "ACC_NORM_MAX", "STEADY_GYRO", "STEADY_ACC", "TRIM_S",
-                 "PRE_MAX_ROWS"):
+                 "PRE_MAX_ROWS", "CAL_NOISE_ON"):
         assert getattr(main, name) == getattr(sd, name), name
     for name in ("TICK_S", "GYRO_NOISE", "ACC_NOISE", "GYRO_WALK", "ACC_WALK", "P0_VEL", "P0_TILT", "P0_YAW",
                  "P0_BG", "P0_BA", "P0_TILT_FALLBACK", "P0_BG_FALLBACK", "ZUPT_SIGMA", "ZARU_SIGMA_MIN",
@@ -222,3 +222,19 @@ def test_failing_rows_exercise_both_switches(failing_rows):
     base = wx.estimate(failing_rows, dead=False, fc=False)
     assert wx.estimate(failing_rows, dead=True, fc=False) != base
     assert wx.estimate(failing_rows, dead=False, fc=True) != base
+
+
+@pytest.mark.parametrize("on", [False, True])
+def test_denoised_calibration_match(tmp_path, monkeypatch, on):
+    """SYNTHETIC: a rest with noise above both still thresholds (the strict test finds no run), some
+    NaN rows and a duplicate inside the calibration horizon."""
+    for mod in (main, sd):
+        monkeypatch.setattr(mod, "CAL_NOISE_ON", on)
+    rows, _, _ = _move_rest_move(bias=(0.01, -0.02, 0.08), gyro_noise=0.03, acc_noise=0.15, seed=4)
+    rows = list(rows)
+    rows[2500:2510] = [(t, (float("nan"),) * 6) for t, _ in rows[2500:2510]]
+    rows.insert(3000, rows[2999])
+    src = _write_rows(tmp_path / "imu.csv", rows)
+    dp, dq = _compare(src, tmp_path, monkeypatch)
+    assert dp < 1e-9
+    assert main.LAST["calibrated"] == on

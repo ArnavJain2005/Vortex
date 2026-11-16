@@ -51,7 +51,7 @@ organisers, see Q1). Full-time work starts **20 Nov**.
 | 3 | EuRoC/TUM-VI `imu0/data.csv` loader keeping every row; output checker; `main.py` skeleton (one pose per row) | Loader (`vortex/data/euroc.py`), row rules (`vortex/rowspec.py`) and checker (`vortex/check_output.py`): **Done (verified on synthetic files)** 16 Nov. `main.py` skeleton (final I/O path, identity poses): **Done (verified on synthetic files)** 16 Nov; not yet run on MH_01 | `main.py` on MH_01 passes the checker |
 | 4 | Seeded degradation script: rising noise, bias drift, 2 s dropouts, failure + 5 s | **Done (verified on synthetic files)** 16 Nov: `vortex/degrade.py`; NaN or missing dropout rows, NaN/zero/stuck failure, optional duplicate and swapped rows; levels are placeholders until Q2 | Same seed gives identical files (checked) |
 | 5 | `benchmark.py` (tracemalloc and process RSS, ms per s of IMU) and `score.py` (ATE/RPE split by dropout and blind windows, coverage) | `benchmark.py` + `Docs/BUDGET.md` + tracemalloc pytest gate: **Done (verified on synthetic input)** 16 Nov. `score.py` (`vortex/scoring.py`): evo-style ATE/RPE, alignments none/origin/se3/sim3/given, phase split, waypoint proxies: **Done (verified against evo on synthetic data)** 16 Nov; not yet run on MH_01 | Both run on MH_01 |
-| 6 | Filter core: initialisation and self-calibration (W2), front end and jamming meter (W3), dropout bridging | 6a init + strapdown integrator: **Done (verified on SYNTHETIC data and MH_01)** 16 Nov. 6b self-calibration on the longest still run in the first 60 s + backward pass before it: **Done (verified on SYNTHETIC data and MH_01..05)** 16 Nov; reference and `main.py` bit-identical. 6c dropout covariance (`GAP_ON`, **on**) and noise meter (`JAM_ON`, **off** by rule v2): **Done (verified on SYNTHETIC data and seeded degraded MH copies)** 16 Nov; reference and `main.py` bit-identical. Degraded held-out mean APE 8.48 -> 6.69 m (seeds 4..6); clean unchanged. 6d rows before the anchor hold its position (`PRE_HOLD`, **on** by a pre-registered no-harm rule): **Done (verified on SYNTHETIC data and MH_01..05 clean and degraded)** 16 Nov; clean mean APE 5.29 -> 4.84 m (MH_02 5.98 -> 3.85, a tuning sequence). Failure detection: step 8a | Beats dead reckoning on degraded MH_01 |
+| 6 | Filter core: initialisation and self-calibration (W2), front end and jamming meter (W3), dropout bridging | 6a init + strapdown integrator: **Done (verified on SYNTHETIC data and MH_01)** 16 Nov. 6b self-calibration on the longest still run in the first 60 s + backward pass before it: **Done (verified on SYNTHETIC data and MH_01..05)** 16 Nov; reference and `main.py` bit-identical. 6c dropout covariance (`GAP_ON`, **on**) and noise meter (`JAM_ON`, **off** by rule v2): **Done (verified on SYNTHETIC data and seeded degraded MH copies)** 16 Nov; reference and `main.py` bit-identical. Degraded held-out mean APE 8.48 -> 6.69 m (seeds 4..6); clean unchanged. 6d rows before the anchor hold its position (`PRE_HOLD`, **on** by a pre-registered no-harm rule): **Done (verified on SYNTHETIC data and MH_01..05 clean and degraded)** 16 Nov; clean mean APE 5.29 -> 4.84 m (MH_02 5.98 -> 3.85, a tuning sequence). 6e denoised still test when the strict one finds no run (`CAL_NOISE_ON`, **on** by a pre-registered rule): **Done (verified on SYNTHETIC data and MH_01..05 clean and degraded)** 16 Nov; degraded MH_02 fallbacks 19/20 -> 0/20 (tuning), clean unchanged. Failure detection: step 8a | Beats dead reckoning on degraded MH_01 |
 | 7 | Velocity witnesses (W1): V1, V2 core; V3 after go/no-go; V4, V5 switchable; platform detection (W4) | 7a error-state filter + V1 + V2: **Done (verified on SYNTHETIC data and MH_01..05)** 16 Nov; reference and `main.py` bit-identical. Result: drift bounded (APE 249..1,288 m -> 3.5..6.6 m) but **not better than a never-moving trajectory** (mean APE 5.29 vs 5.25 m). V3: rule v2 pre-registered 16 Nov (commit c1b594c), waiting for Vicon Room 1. V4, V5, W4: Not started | Ablation table, each witness on and off, on held-out sequences |
 | 8 | Blind 5 s forecaster (W5), dead-sensor detection, per-row confidence (W6) | 8a dead-sensor detection (`DEAD_ON`, **on**) and velocity-decay forecaster (`FC_ON`, **on**, FC_TAU 0.5 s chosen on MH_01/02): **Done (verified on SYNTHETIC data and seeded degraded MH copies)** 16 Nov; both pass the pre-registered rule on held-out MH_03..05; reference and `main.py` bit-identical. Held-out blind growth -49.5 % (study A); zero failures 27.0 -> 4.4 m. W6: Not started | Blind error below constant velocity; coverage table |
 | 9 | Efficiency pass (C core if whole-process RAM counts); submission bundle, Dockerfile, deck, video | Not started | Valid `team_name.zip` by 21 Nov 6 PM; submitted 3 h before cutoff |
@@ -451,4 +451,71 @@ a tuning sequence; on MH_03..05 the change is within +-0.6 %.
 
 Not checked: TUM-VI (no data); whether the organisers score attitude (only the position is held); the
 calibration fallback on degraded MH_02 ("Found" above) is not fixed.
+
+
+## Step 6e: calibration when the noise starts before the still run (16 Nov 2026, branch `track3/step6e-calib`)
+
+**Problem** (found in step 6d). The still test uses fixed per-bin std thresholds (STILL_GYRO_STD 0.02
+rad/s, STILL_ACC_STD 0.1 m/s^2). MH_02's only still run is short (26.5..29.75 s); with the added noise
+starting at 10 s its bins exceed the accelerometer threshold, no run is found and calibration falls back
+to the first second (19 of 20 degraded tuning copies): gyro bias and tilt are then not calibrated.
+
+**Switch** `CAL_NOISE_ON` (`vortex/core/strapdown.py`, mirrored in `main.py`). Only when the strict test
+finds no run of MIN_STILL_S: the calibration horizon is scanned again for each bin's second
+differences x[k] - 2 x[k-1] + x[k-2] (variance 6 sigma^2 for white noise; smooth motion nearly cancels).
+The still test is repeated with each channel's white-noise variance removed before the same std
+thresholds, and the steady test's tolerances are widened by 3 standard deviations of the difference of
+two bin means under that noise. Stuck and |f| tests are unchanged. No new tuned constant. When the strict
+test finds a run nothing changes, so clean MH_01..05 output cannot change; `main.py` pays for the second
+scan only in the fallback case. Risk: rotor vibration is not white (its second differences are larger),
+so a steady hover could pass the denoised test; it is used only where the alternative is the first-second
+fallback.
+
+**Tuning (MH_01/02 only;** scratch study, reference estimator, 20 degraded copies per sequence, seeds
+100..119, alignment from the clean run, ground truth for scoring only):
+
+| | Off | On |
+|---|---|---|
+| MH_02 fallbacks | 19 / 20 | 0 / 20 |
+| MH_02 mean APE (max) m | 6.250 (8.527) | 4.570 (5.969) |
+| MH_01 mean APE m (strict test always finds a run) | 4.236 | 4.236 |
+| Clean MH_01 / MH_02 APE m | 3.911 / 3.846 | identical |
+
+Every MH_02 copy that fell back improved; the run found was the true rest (ground-truth 90th-percentile
+speed 0.003..0.004 m/s). A first version without the widened steady test found the same runs on MH_02
+but broke a synthetic noisy rest into 1 s pieces (test), so the widening was added before any held-out run.
+
+**Decision rule, committed before the held-out copies exist.** Held-out: MH_03..05 x seeds 13..15
+(default levels) and x seeds 16..18 with `--healthy-s 2` (noise from 2 s, so it covers their early still
+runs too), 18 copies, scored with `main.py`. `CAL_NOISE_ON` ships on only if (a) clean MH_01..05 output is
+byte-identical, (b) mean APE over the 18 copies is not worse, and (c) no single copy's APE is worse by
+more than 10 %. Reported as well: how many copies fell back with it off, and the ground-truth speed in
+the runs it chose (diagnostic only).
+
+**Outcome** (16 Nov; rule committed at f68ee61; `main.py` with `--set CAL_NOISE_ON=...`; tags
+`step6e-H-off`, `step6e-H-on`):
+
+| Held-out check | Result | Rule |
+|---|---|---|
+| (a) clean MH_01..05 output, on vs off | byte-identical | passes |
+| (b) 18 new copies, mean APE (given) | 6.3677 -> 6.3421 m | not worse: passes |
+| (c) worst single copy | +0.0 % (no copy worse) | <= +10 %: passes |
+| Copies that fell back with it off | 3: MH_03_s13, MH_03_s16, MH_04_s18 | diagnostic |
+| Recovered | MH_04_s18: run 12.5..14.5 s, ground-truth speed 0.003 m/s, APE 7.209 -> 6.749 m | diagnostic |
+| Not recovered | MH_03_s13, s16: a 2 s dropout covers MH_03's whole 2 s still run; falling back is right | diagnostic |
+
+**Shipped: CAL_NOISE_ON = True.** All 60 degraded copies with `main.py` (tag `step6e-deg`, contract PASS on
+all) against step 6d: only four runs change, all better: MH_02_s1 5.682 -> 3.982 m, s2 6.034 -> 4.221 m,
+s3 5.300 -> 4.083 m (tuning sequence; these copies also fell back before), MH_04_s18 7.209 -> 6.749 m.
+MH_01/02 mean APE 5.146 -> 4.358 m; MH_03..05 (54 copies) 6.438 -> 6.430 m. Clean (tag `step6e`):
+identical to step 6d (largest difference 0.0).
+
+| Item | Result | Where |
+|---|---|---|
+| `pytest` | 188 passed (183 + 3 reference + 2 equivalence readings) | Windows, Python 3.14.7 |
+| Budget, `python -S main.py` (commit f40d3ea) | 10.28 us/row, 15.44 MB peak RSS (Win 3.14); 10.42, 15.05 MB (Win 3.13); 9.44, 13.33 MB (Linux 3.12); MH_01 9.70, 15.95 MB; degraded MH_01_s1 9.23, 15.94 MB. The synthetic input has no still run, so it now pays for the second 60 s scan: about +1.2 us/row and +65 KB tracemalloc (Linux 8.20 -> 9.44, Win 3.13 9.14 -> 10.42). Peak RSS +0.2..0.3 MB on MH_01 even without the scan (larger source). Gate PASS on all | `Docs/BUDGET.md` |
+
+Not checked: TUM-VI (no data); a hover with rotor vibration passing the denoised test (no such case
+occurred: every recovered run was a true rest by ground truth); V1 stillness (ZUPT) in the filter still
+uses the strict test, so with heavy noise it fires less (matters for walking, TUM-VI).
 
