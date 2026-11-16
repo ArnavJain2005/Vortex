@@ -51,7 +51,7 @@ organisers, see Q1). Full-time work starts **20 Nov**.
 | 3 | EuRoC/TUM-VI `imu0/data.csv` loader keeping every row; output checker; `main.py` skeleton (one pose per row) | Loader (`vortex/data/euroc.py`), row rules (`vortex/rowspec.py`) and checker (`vortex/check_output.py`): **Done (verified on synthetic files)** 16 Nov. `main.py` skeleton (final I/O path, identity poses): **Done (verified on synthetic files)** 16 Nov; not yet run on MH_01 | `main.py` on MH_01 passes the checker |
 | 4 | Seeded degradation script: rising noise, bias drift, 2 s dropouts, failure + 5 s | **Done (verified on synthetic files)** 16 Nov: `vortex/degrade.py`; NaN or missing dropout rows, NaN/zero/stuck failure, optional duplicate and swapped rows; levels are placeholders until Q2 | Same seed gives identical files (checked) |
 | 5 | `benchmark.py` (tracemalloc and process RSS, ms per s of IMU) and `score.py` (ATE/RPE split by dropout and blind windows, coverage) | `benchmark.py` + `Docs/BUDGET.md` + tracemalloc pytest gate: **Done (verified on synthetic input)** 16 Nov. `score.py` (`vortex/scoring.py`): evo-style ATE/RPE, alignments none/origin/se3/sim3/given, phase split, waypoint proxies: **Done (verified against evo on synthetic data)** 16 Nov; not yet run on MH_01 | Both run on MH_01 |
-| 6 | Filter core: initialisation and self-calibration (W2), front end and jamming meter (W3), dropout bridging | 6a init + strapdown integrator: **Done (verified on SYNTHETIC data and MH_01)** 16 Nov. 6b self-calibration on the longest still run in the first 60 s + backward pass before it: **Done (verified on SYNTHETIC data and MH_01..05)** 16 Nov; reference and `main.py` bit-identical. 6c dropout covariance (`GAP_ON`, **on**) and noise meter (`JAM_ON`, **off** by rule v2): **Done (verified on SYNTHETIC data and seeded degraded MH copies)** 16 Nov; reference and `main.py` bit-identical. Degraded held-out mean APE 8.48 -> 6.69 m (seeds 4..6); clean unchanged. Failure detection: with the forecaster (step 8) | Beats dead reckoning on degraded MH_01 |
+| 6 | Filter core: initialisation and self-calibration (W2), front end and jamming meter (W3), dropout bridging | 6a init + strapdown integrator: **Done (verified on SYNTHETIC data and MH_01)** 16 Nov. 6b self-calibration on the longest still run in the first 60 s + backward pass before it: **Done (verified on SYNTHETIC data and MH_01..05)** 16 Nov; reference and `main.py` bit-identical. 6c dropout covariance (`GAP_ON`, **on**) and noise meter (`JAM_ON`, **off** by rule v2): **Done (verified on SYNTHETIC data and seeded degraded MH copies)** 16 Nov; reference and `main.py` bit-identical. Degraded held-out mean APE 8.48 -> 6.69 m (seeds 4..6); clean unchanged. 6d rows before the anchor hold its position (`PRE_HOLD`, **on** by a pre-registered no-harm rule): **Done (verified on SYNTHETIC data and MH_01..05 clean and degraded)** 16 Nov; clean mean APE 5.29 -> 4.84 m (MH_02 5.98 -> 3.85, a tuning sequence). Failure detection: step 8a | Beats dead reckoning on degraded MH_01 |
 | 7 | Velocity witnesses (W1): V1, V2 core; V3 after go/no-go; V4, V5 switchable; platform detection (W4) | 7a error-state filter + V1 + V2: **Done (verified on SYNTHETIC data and MH_01..05)** 16 Nov; reference and `main.py` bit-identical. Result: drift bounded (APE 249..1,288 m -> 3.5..6.6 m) but **not better than a never-moving trajectory** (mean APE 5.29 vs 5.25 m). V3: rule v2 pre-registered 16 Nov (commit c1b594c), waiting for Vicon Room 1. V4, V5, W4: Not started | Ablation table, each witness on and off, on held-out sequences |
 | 8 | Blind 5 s forecaster (W5), dead-sensor detection, per-row confidence (W6) | 8a dead-sensor detection (`DEAD_ON`, **on**) and velocity-decay forecaster (`FC_ON`, **on**, FC_TAU 0.5 s chosen on MH_01/02): **Done (verified on SYNTHETIC data and seeded degraded MH copies)** 16 Nov; both pass the pre-registered rule on held-out MH_03..05; reference and `main.py` bit-identical. Held-out blind growth -49.5 % (study A); zero failures 27.0 -> 4.4 m. W6: Not started | Blind error below constant velocity; coverage table |
 | 9 | Efficiency pass (C core if whole-process RAM counts); submission bundle, Dockerfile, deck, video | Not started | Valid `team_name.zip` by 21 Nov 6 PM; submitted 3 h before cutoff |
@@ -418,4 +418,37 @@ held-out test has little to act on; this is a no-harm test there, the gain is me
 **Found, not fixed.** When the added noise starts before the still run (healthy_s 10 s, MH_02 still run
 at about 20-36 s), the still test fails and calibration falls back to the first second: gyro bias and
 tilt are then not calibrated. The organisers' healthy length is unknown (Q2).
+
+**Outcome** (16 Nov; rule committed at c2b76cc, `main.py` with `--set PRE_HOLD=...`; `Docs/RESULTS.md`
+tags `step6d-H-*`):
+
+| Held-out check | Off | On | Rule |
+|---|---|---|---|
+| (a) clean MH_03..05 mean APE (SE3) m | 5.4958 | 5.4849 | not worse: passes |
+| (b) MH_03..05 x seeds 10..12 mean APE (given) m | 6.2924 | 6.2798 | not worse: passes |
+| (c) worst single held-out run | | +1.0 % (MH_03_s10) | <= +10 %: passes |
+
+**Shipped: PRE_HOLD = True.** As expected, the held-out effect is small (early anchors). Shipped
+settings against step 8a (`main.py`, tags `step6d` and `step6d-deg`, 42 copies, contract PASS on all):
+
+| Set | Step 8a | Step 6d |
+|---|---|---|
+| Clean MH_01 / MH_02 APE m | 3.986 / 5.975 | 3.911 / 3.846 |
+| Clean MH_01 / MH_02 RPE 1 s m | 0.506 / 0.973 | 0.480 / 0.591 |
+| Clean MH_03 / 04 / 05 APE m | 3.529 / 6.412 / 6.546 | 3.530 / 6.378 / 6.546 |
+| Clean MH_01..05 mean APE m (never-moving floor 5.25) | 5.290 | **4.842** |
+| Degraded MH_01/02 x seeds 1..3, mean APE (max) m | 5.507 (6.33) | 5.146 (6.03) |
+| Degraded MH_03..05 x seeds 1..9, mean APE (max) m | 6.532 (10.03) | 6.538 (10.05) |
+| Degraded MH_03..05 x seeds 10..12, mean APE m | 6.292 | 6.280 |
+
+The clean mean is below the never-moving floor for the first time, but almost all of the gain is MH_02,
+a tuning sequence; on MH_03..05 the change is within +-0.6 %.
+
+| Item | Result | Where |
+|---|---|---|
+| `pytest` | 183 passed (181 + 1 reference + 1 equivalence reading; the two step 6b identity tests now pass pre_hold off) | Windows, Python 3.14.7 |
+| Budget, `python -S main.py` (commit 0f61fda) | 10.23 us/row, 15.17 MB peak RSS (Win 3.14, rerun; first run 11.71); 9.14, 14.75 MB (Win 3.13); 8.20, 13.12 MB (Linux 3.12); MH_01 9.25, 15.68 MB; degraded MH_01_s1 9.23, 15.70 MB. The synthetic input has no rows before the anchor, so the change cannot act there: the spread is machine noise. Gate PASS on all | `Docs/BUDGET.md` |
+
+Not checked: TUM-VI (no data); whether the organisers score attitude (only the position is held); the
+calibration fallback on degraded MH_02 ("Found" above) is not fixed.
 
