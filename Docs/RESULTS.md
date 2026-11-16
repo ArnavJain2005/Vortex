@@ -111,6 +111,8 @@ Copies made by `python -m vortex.degrade <clean sequence> data/degraded/<sequenc
 | step6d-H-off | 9 | 6.292 | 1.135 | 1.931 | 5.107 | 5.110 |
 | step6d-H-on | 9 | 6.280 | 1.134 | 1.929 | 5.110 | 5.104 |
 | step6d-deg | 42 | 6.284 | 1.057 | 1.980 | 4.948 | 5.232 |
+| step6e-H-off | 18 | 6.368 | 1.146 | 1.805 | 5.287 | 4.505 |
+| step6e-H-on | 18 | 6.342 | 1.147 | 1.794 | 5.264 | 4.552 |
 | step8-B-both | 9 | 6.761 | 1.146 | 2.060 | 5.228 | 3.389 |
 | step8-B-dead | 9 | 6.709 | 1.179 | 2.657 | 5.616 | 3.793 |
 | step8-B-off | 9 | 6.975 | 1.460 | 2.657 | 15.886 | 8.663 |
@@ -276,6 +278,42 @@ Copies made by `python -m vortex.degrade <clean sequence> data/degraded/<sequenc
 | step6d-deg | main.py | 0f61fda | 2026-11-16 | MH_05_difficult_s7 | PASS | 6.548 | 1.109 | 1.739 | 5.540 | 3.131 | 0.28 |
 | step6d-deg | main.py | 0f61fda | 2026-11-16 | MH_05_difficult_s8 | PASS | 7.624 | 1.071 | 1.917 | 5.822 | 5.276 | 0.25 |
 | step6d-deg | main.py | 0f61fda | 2026-11-16 | MH_05_difficult_s9 | PASS | 9.691 | 1.093 | 3.440 | 5.380 | 2.689 | 0.28 |
+| step6e-H-off | main.py CAL_NOISE_ON=False | f68ee61 | 2026-11-16 | MH_03_medium_s13 | PASS | 5.130 | 1.173 | 1.770 | 4.601 | 7.236 | 0.35 |
+| step6e-H-off | main.py CAL_NOISE_ON=False | f68ee61 | 2026-11-16 | MH_03_medium_s14 | PASS | 4.070 | 1.077 | 1.232 | 3.866 | 4.697 | 0.28 |
+| step6e-H-off | main.py CAL_NOISE_ON=False | f68ee61 | 2026-11-16 | MH_03_medium_s15 | PASS | 4.318 | 1.108 | 1.456 | 3.980 | 4.906 | 0.29 |
+| step6e-H-off | main.py CAL_NOISE_ON=False | f68ee61 | 2026-11-16 | MH_03_medium_s16 | PASS | 4.482 | 1.166 | 1.735 | 4.696 | 4.442 | 0.26 |
+| step6e-H-off | main.py CAL_NOISE_ON=False | f68ee61 | 2026-11-16 | MH_03_medium_s17 | PASS | 5.674 | 1.128 | 2.013 | 3.370 | 4.668 | 0.27 |
+| step6e-H-off | main.py CAL_NOISE_ON=False | f68ee61 | 2026-11-16 | MH_03_medium_s18 | PASS | 3.739 | 1.087 | 1.559 | 4.050 | 3.682 | 0.26 |
+| step6e-H-off | main.py CAL_NOISE_ON=False | f68ee61 | 2026-11-16 | MH_04_difficult_s13 | PASS | 6.684 | 1.239 | 1.100 | 6.727 | 7.044 | 0.21 |
+| step6e-H-off | main.py CAL_NOISE_ON=False | f68ee61 | 2026-11-16 | MH_04_difficult_s14 | PASS | 6.856 | 1.247 | 1.455 | 6.396 | 3.972 | 0.27 |
+| step6e-H-off | main.py CAL_NOISE_ON=False | f68ee61 | 2026-11-16 | MH_04_difficult_s15 | PASS | 7.017 | 1.294 | 2.028 | 5.712 | 3.413 | 0.21 |
+| step6e-H-off | main.py CAL_NOISE_ON=False | f68ee61 | 2026-11-16 | MH_04_difficult_s16 | PASS | 6.607 | 1.200 | 1.337 | 6.144 | 4.549 | 0.22 |
+| step6e-H-off | main.py CAL_NOISE_ON=False | f68ee61 | 2026-11-16 | MH_04_difficult_s17 | PASS | 6.614 | 1.232 | 1.680 | 6.133 | 5.092 | 0.23 |
+| step6e-H-off | main.py CAL_NOISE_ON=False | f68ee61 | 2026-11-16 | MH_04_difficult_s18 | PASS | 7.209 | 1.217 | 1.727 | 6.515 | 2.872 | 0.25 |
+| step6e-H-off | main.py CAL_NOISE_ON=False | f68ee61 | 2026-11-16 | MH_05_difficult_s13 | PASS | 8.160 | 1.064 | 2.420 | 5.074 | 5.504 | 0.25 |
+| step6e-H-off | main.py CAL_NOISE_ON=False | f68ee61 | 2026-11-16 | MH_05_difficult_s14 | PASS | 7.459 | 1.074 | 2.888 | 5.527 | 3.288 | 0.24 |
+| step6e-H-off | main.py CAL_NOISE_ON=False | f68ee61 | 2026-11-16 | MH_05_difficult_s15 | PASS | 7.358 | 1.055 | 2.402 | 5.486 | 3.818 | 0.25 |
+| step6e-H-off | main.py CAL_NOISE_ON=False | f68ee61 | 2026-11-16 | MH_05_difficult_s16 | PASS | 7.172 | 1.035 | 3.124 | 5.551 | 2.956 | 0.28 |
+| step6e-H-off | main.py CAL_NOISE_ON=False | f68ee61 | 2026-11-16 | MH_05_difficult_s17 | PASS | 6.942 | 1.076 | 0.963 | 5.973 | 4.708 | 0.25 |
+| step6e-H-off | main.py CAL_NOISE_ON=False | f68ee61 | 2026-11-16 | MH_05_difficult_s18 | PASS | 9.127 | 1.160 | 1.594 | 5.360 | 4.252 | 0.28 |
+| step6e-H-on | main.py CAL_NOISE_ON=True | f68ee61 | 2026-11-16 | MH_03_medium_s13 | PASS | 5.130 | 1.173 | 1.770 | 4.601 | 7.236 | 0.30 |
+| step6e-H-on | main.py CAL_NOISE_ON=True | f68ee61 | 2026-11-16 | MH_03_medium_s14 | PASS | 4.070 | 1.077 | 1.232 | 3.866 | 4.697 | 0.32 |
+| step6e-H-on | main.py CAL_NOISE_ON=True | f68ee61 | 2026-11-16 | MH_03_medium_s15 | PASS | 4.318 | 1.108 | 1.456 | 3.980 | 4.906 | 0.24 |
+| step6e-H-on | main.py CAL_NOISE_ON=True | f68ee61 | 2026-11-16 | MH_03_medium_s16 | PASS | 4.482 | 1.166 | 1.735 | 4.696 | 4.442 | 0.30 |
+| step6e-H-on | main.py CAL_NOISE_ON=True | f68ee61 | 2026-11-16 | MH_03_medium_s17 | PASS | 5.674 | 1.128 | 2.013 | 3.370 | 4.668 | 0.24 |
+| step6e-H-on | main.py CAL_NOISE_ON=True | f68ee61 | 2026-11-16 | MH_03_medium_s18 | PASS | 3.739 | 1.087 | 1.559 | 4.050 | 3.682 | 0.26 |
+| step6e-H-on | main.py CAL_NOISE_ON=True | f68ee61 | 2026-11-16 | MH_04_difficult_s13 | PASS | 6.684 | 1.239 | 1.100 | 6.727 | 7.044 | 0.22 |
+| step6e-H-on | main.py CAL_NOISE_ON=True | f68ee61 | 2026-11-16 | MH_04_difficult_s14 | PASS | 6.856 | 1.247 | 1.455 | 6.396 | 3.972 | 0.21 |
+| step6e-H-on | main.py CAL_NOISE_ON=True | f68ee61 | 2026-11-16 | MH_04_difficult_s15 | PASS | 7.017 | 1.294 | 2.028 | 5.712 | 3.413 | 0.25 |
+| step6e-H-on | main.py CAL_NOISE_ON=True | f68ee61 | 2026-11-16 | MH_04_difficult_s16 | PASS | 6.607 | 1.200 | 1.337 | 6.144 | 4.549 | 0.22 |
+| step6e-H-on | main.py CAL_NOISE_ON=True | f68ee61 | 2026-11-16 | MH_04_difficult_s17 | PASS | 6.614 | 1.232 | 1.680 | 6.133 | 5.092 | 0.24 |
+| step6e-H-on | main.py CAL_NOISE_ON=True | f68ee61 | 2026-11-16 | MH_04_difficult_s18 | PASS | 6.749 | 1.235 | 1.541 | 6.104 | 3.703 | 0.24 |
+| step6e-H-on | main.py CAL_NOISE_ON=True | f68ee61 | 2026-11-16 | MH_05_difficult_s13 | PASS | 8.160 | 1.064 | 2.420 | 5.074 | 5.504 | 0.23 |
+| step6e-H-on | main.py CAL_NOISE_ON=True | f68ee61 | 2026-11-16 | MH_05_difficult_s14 | PASS | 7.459 | 1.074 | 2.888 | 5.527 | 3.288 | 0.24 |
+| step6e-H-on | main.py CAL_NOISE_ON=True | f68ee61 | 2026-11-16 | MH_05_difficult_s15 | PASS | 7.358 | 1.055 | 2.402 | 5.486 | 3.818 | 0.25 |
+| step6e-H-on | main.py CAL_NOISE_ON=True | f68ee61 | 2026-11-16 | MH_05_difficult_s16 | PASS | 7.172 | 1.035 | 3.124 | 5.551 | 2.956 | 0.24 |
+| step6e-H-on | main.py CAL_NOISE_ON=True | f68ee61 | 2026-11-16 | MH_05_difficult_s17 | PASS | 6.942 | 1.076 | 0.963 | 5.973 | 4.708 | 0.26 |
+| step6e-H-on | main.py CAL_NOISE_ON=True | f68ee61 | 2026-11-16 | MH_05_difficult_s18 | PASS | 9.127 | 1.160 | 1.594 | 5.360 | 4.252 | 0.25 |
 | step8-B-both | main.py DEAD_ON=True FC_ON=True | ce94cef | 2026-11-16 | MH_03_medium_s7 | PASS | 3.710 | 1.102 | 1.607 | 4.443 | 2.134 | 0.26 |
 | step8-B-both | main.py DEAD_ON=True FC_ON=True | ce94cef | 2026-11-16 | MH_03_medium_s8 | PASS | 6.159 | 1.151 | 2.286 | 3.879 | 5.576 | 0.24 |
 | step8-B-both | main.py DEAD_ON=True FC_ON=True | ce94cef | 2026-11-16 | MH_03_medium_s9 | PASS | 4.692 | 1.157 | 2.189 | 4.331 | 2.779 | 0.25 |
