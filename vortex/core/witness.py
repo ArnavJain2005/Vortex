@@ -62,11 +62,22 @@ The strict V1 condition is unchanged.
 Step 6d (PRE_HOLD): the rows before the anchor keep the anchor's position (0, 0, 0); their attitude still
 comes from the backward gyro integration. Backward dead reckoning without witnesses was worse than
 standing still on clean MH_01/02 and could reach hundreds of metres when a dropout fell before the anchor.
+
+Step E (SMOOTH_ON, reference only, OFF): fixed-interval Rauch-Tung-Striebel smoother at the filter tick.
+At each tick close the gain C = P+ Phi^T (P-)^-1 (previous posterior, this prior) and the correction
+injected at the previous tick are stored as a block (t, C, b, d) in single precision; a full store
+(SMOOTH_MAX_BLOCKS) merges adjacent blocks pairwise by composing their affine maps e'_start = A e'_end + b,
+so memory never grows. After the forward pass, the backward recursion gives the smoothed error at every
+stored tick, and each row from the anchor on is corrected linearly in time between its two bracketing
+ticks. Rows before the anchor and after the last tick (the blind window) are unchanged. Works on
+SYNTHETIC data (second rest carried back: 12.2 -> 0.8 m), but on MH_01/02 it lowers RPE 1 s and raises
+APE and dropout growth in every envelope setting tried (Docs/TRACK3_PLAN.md step E), so it is not shipped.
 """
 
 from __future__ import annotations
 
 import math
+from array import array
 
 from . import strapdown as sd
 
@@ -111,6 +122,10 @@ FC_ON = True                 # step 8a rule (16 Nov): passes; velocity decays to
 ZUPT_DEN_BINS = 4            # ticks (1 s = MIN_STILL_S): MH_01/02 study, false denoised-still runs in flight were 2 ticks
 ZUPT_DEN_ON = False          # V1 also fires after ZUPT_DEN_BINS denoised-still, steady ticks in a row
 PRE_HOLD = True              # rule passed 16 Nov; rows before the anchor keep the anchor position (attitude still from the backward pass)
+# step E (reference only until its pre-registered rule passes, Docs/TRACK3_PLAN.md step E)
+SMOOTH_ON = False            # fixed-interval (RTS) smoother at the filter tick; non-causal (offline)
+SMOOTH_MAX_BLOCKS = 1024     # blocks stored (fixed cap): 256 s at one tick per block; longer files merge
+                             # adjacent blocks pairwise. Single precision: 4 x (225 + 15 + 15) bytes + 8 per block
 N = 15
 
 
@@ -238,8 +253,128 @@ def row_sigma(cov, d, gap, tilt2, dv2):
     return math.sqrt(v) if v > 0.0 else 0.0
 
 
+def phi_entries(r, fx, fy, fz, T):
+    """The non-zero entries (row, col, value) of A in Phi = I + A, built exactly as in kf_propagate."""
+    A = [(0, 3, T), (1, 4, T), (2, 5, T),
+         (3, 7, T * fz), (3, 8, -T * fy), (4, 6, -T * fz), (4, 8, T * fx), (5, 6, T * fy), (5, 7, -T * fx)]
+    for i in range(3):
+        for j in range(3):
+            a = -T * r[3 * i + j]
+            A.append((3 + i, 12 + j, a))
+            A.append((6 + i, 9 + j, a))
+    return A
+
+
+def smooth_gain(Pp, A, Pm):
+    """Step E: RTS gain C = Pp Phi^T Pm^-1 (row-major N x N). Pp: posterior covariance at the previous
+    tick (before any gap inflation); A: Phi's entries (empty: Phi = I); Pm: prior covariance at this tick
+    (after gap inflation and propagation). Solved through the Cholesky factor of the symmetrised Pm.
+    Returns None when Pm is not positive definite (the caller then stores C = 0: no smoothing across)."""
+    M = Pp[:]                                  # M = Phi Pp; C^T = Pm^-1 M since Pp is symmetric
+    for i, j, a in A:
+        oi, oj = i * N, j * N
+        for c in range(N):
+            M[oi + c] += a * Pp[oj + c]
+    L = [0.0] * (N * N)
+    for i in range(N):
+        for j in range(i + 1):
+            s = 0.5 * (Pm[i * N + j] + Pm[j * N + i])
+            for k in range(j):
+                s -= L[i * N + k] * L[j * N + k]
+            if i == j:
+                if not s > 0.0:
+                    return None
+                L[i * N + i] = math.sqrt(s)
+            else:
+                L[i * N + j] = s / L[j * N + j]
+    C = [0.0] * (N * N)
+    y = [0.0] * N
+    for col in range(N):
+        for i in range(N):
+            s = M[i * N + col]
+            for k in range(i):
+                s -= L[i * N + k] * y[k]
+            y[i] = s / L[i * N + i]
+        for i in range(N - 1, -1, -1):
+            s = y[i]
+            for k in range(i + 1, N):
+                s -= L[k * N + i] * y[k]
+            y[i] = s / L[i * N + i]
+        for i in range(N):
+            C[col * N + i] = y[i]
+    return C
+
+
+def _f32(xs):
+    """Round to single precision (the smoother's storage)."""
+    return list(array("f", xs))
+
+
+def smooth_merge(b1, b2):
+    """Compose two adjacent blocks (t, A, b, d): e'_start = A e'_end + b, with e' the smoothed error
+    relative to the forward prior at a tick, d the forward correction injected at the block's first tick."""
+    t1, A1, c1, d1 = b1
+    _, A2, c2, _ = b2
+    A = [0.0] * (N * N)
+    c = c1[:]
+    for i in range(N):
+        oi = i * N
+        for k in range(N):
+            a = A1[oi + k]
+            if a != 0.0:
+                ok = k * N
+                for j in range(N):
+                    A[oi + j] += a * A2[ok + j]
+                c[i] += a * c2[k]
+    return (t1, _f32(A), _f32(c), d1)
+
+
+def smooth_push(blocks, blk, cap):
+    """Append a block; when the store is full, merge adjacent pairs (memory never grows past cap)."""
+    if len(blocks) == cap:
+        merged = [smooth_merge(blocks[i], blocks[i + 1]) for i in range(0, cap - 1, 2)]
+        if cap % 2:
+            merged.append(blocks[-1])
+        blocks[:] = merged
+    blocks.append(blk)
+
+
+def smooth_apply(out, rows, anchor, blocks, t_end, d_end):
+    """Backward RTS recursion over the stored blocks, then the correction of every row from the anchor on:
+    linear in time between the smoothed error just after the bracketing earlier tick (relative to the
+    forward posterior) and just before the later tick (relative to the forward prior). Rows after the last
+    tick (the blind window) are unchanged: there the smoothed state equals the filtered one."""
+    if not blocks:
+        return out
+    seg = []
+    ep = list(d_end)                            # e'_N = d_N: the final smoothed state is the filtered one
+    t_next = t_end
+    for t0, A, b, d in reversed(blocks):
+        es = [b[i] + sum(A[i * N + k] * ep[k] for k in range(N)) for i in range(N)]
+        seg.append((t0, [es[i] - d[i] for i in range(N)], t_next, ep))
+        ep, t_next = es, t0
+    seg.reverse()
+    j = 0
+    tr = None
+    for idx in range(anchor, len(rows)):
+        t = rows[idx][0]
+        if t is not None:
+            tr = t
+        if tr is None or tr > t_end:
+            continue
+        while j < len(seg) - 1 and tr > seg[j][2]:
+            j += 1
+        t0, e0, t1, e1 = seg[j]
+        w = 0.0 if t1 <= t0 or tr <= t0 else (tr - t0) / (t1 - t0)
+        e = [e0[i] + (e1[i] - e0[i]) * w for i in range(N)]
+        o = out[idx]
+        q = sd.qmul_normalised(sd.exp_step(e[6], e[7], e[8], 1.0), o[3:7])
+        out[idx] = (o[0] + e[0], o[1] + e[1], o[2] + e[2]) + tuple(q)
+    return out
+
+
 def estimate(rows, v1=None, v2=None, v2p=None, log=None, jam=None, gap_on=None, dead=None, fc=None,
-             pre_hold=None, zden=None, sig=None):
+             pre_hold=None, zden=None, sig=None, smooth=None):
     """rows: list of (t_ns or None, six floats). Returns one (px, py, pz, qw, qx, qy, qz) per row.
     v1, v2, v2p, jam, gap_on, dead, fc, pre_hold, zden: switches (default the module's *_ON). log: optional list, gets
     one dict per tick. sig: optional list, gets one per-row position sigma (m, 3D) per row (step 8b,
@@ -252,6 +387,7 @@ def estimate(rows, v1=None, v2=None, v2p=None, log=None, jam=None, gap_on=None, 
     dead = DEAD_ON if dead is None else dead
     zden = ZUPT_DEN_ON if zden is None else zden
     tau = (FC_TAU if (FC_ON if fc is None else fc) else None)
+    smooth = SMOOTH_ON if smooth is None else smooth
     c = [0.0, 0.0, 0.0]                 # running centre of the volume envelope
     cal = sd.calibrate(rows)
     init, anchor = cal.init, cal.anchor
@@ -266,6 +402,10 @@ def estimate(rows, v1=None, v2=None, v2p=None, log=None, jam=None, gap_on=None, 
     v = [0.0, 0.0, 0.0]
     P = kf_init(init.still)
     cov = _pos_cov(P)                   # (pp, pv, vv) after the last tick (W6)
+    blocks = []                         # step E: (t, C, b, d) per stored block
+    sPp = P[:]                          # posterior covariance at the last tick
+    sd_prev = _f32([0.0] * N)           # correction injected at the last tick
+    st_prev = None                      # time of the last tick
     dx = [0.0] * N
     tick_ns = int(TICK_S * 1e9)
     t_last = None
@@ -309,6 +449,7 @@ def estimate(rows, v1=None, v2=None, v2p=None, log=None, jam=None, gap_on=None, 
                     if tick_end is None:
                         tick_end = t + tick_ns
                         t_tick = t
+                        st_prev = t
                     elif t >= tick_end:
                         # ---- close the tick: propagate, witnesses, inject ----
                         T = (t_last - t_tick) * 1e-9
@@ -334,8 +475,16 @@ def estimate(rows, v1=None, v2=None, v2p=None, log=None, jam=None, gap_on=None, 
                                     ad2 = ja
                             if fn:
                                 kf_propagate(P, r, fs[0] / fn, fs[1] / fn, fs[2] / fn, T, ad2, gd2)
+                                if smooth:
+                                    sA = phi_entries(r, fs[0] / fn, fs[1] / fn, fs[2] / fn, T)
                             else:
                                 kf_propagate(P, r, 0.0, 0.0, g, T, ad2, gd2)
+                                if smooth:
+                                    sA = phi_entries(r, 0.0, 0.0, g, T)
+                        elif smooth:
+                            sA = []
+                        if smooth:
+                            sC = smooth_gain(sPp, sA, P)
                         still = sd.bin_is_still(bn, bs, bss)
                         if zden:
                             dst = sd.bin_is_still_denoised(bn, bs, bss, nd, wd)
@@ -368,7 +517,9 @@ def estimate(rows, v1=None, v2=None, v2p=None, log=None, jam=None, gap_on=None, 
                             kf_update(P, dx, 0, c[0] - p[0], V2P_SIGMA_H * V2P_SIGMA_H)
                             kf_update(P, dx, 1, c[1] - p[1], V2P_SIGMA_H * V2P_SIGMA_H)
                             kf_update(P, dx, 2, c[2] - p[2], V2P_SIGMA_V * V2P_SIGMA_V)
+                        sdx = None
                         if zupt or v2 or v2p:
+                            sdx = dx
                             q, p, v, bg, ba = inject(q, p, v, bg, ba, dx)
                             dx = [0.0] * N
                         r0 = rot_matrix(q)
@@ -389,6 +540,15 @@ def estimate(rows, v1=None, v2=None, v2p=None, log=None, jam=None, gap_on=None, 
                                         dv2[k] += (d[k] * d[k] - dv2[k]) * b
                             ring.append((zb, (v[0], v[1], v[2])))
                         cov = _pos_cov(P)
+                        if smooth:
+                            chk = 0.0
+                            if sdx is not None:
+                                for e in sdx:
+                                    chk += e
+                            sd_new = _f32(sdx if sdx is not None and chk - chk == 0.0 else [0.0] * N)
+                            smooth_push(blocks, (st_prev, _f32(sC if sC is not None else [0.0] * (N * N)),
+                                                 sd_prev, sd_prev), SMOOTH_MAX_BLOCKS)
+                            sd_prev, st_prev, sPp = sd_new, t_last, P[:]
                         if log is not None:
                             log.append({"t": t_last, "zupt": zupt, "ba": ba, "bg": bg, "v": tuple(v),
                                         "jg": jg, "ja": ja, "gap": gap, "tilt2": tilt2, "dv2": tuple(dv2),
@@ -458,6 +618,8 @@ def estimate(rows, v1=None, v2=None, v2p=None, log=None, jam=None, gap_on=None, 
         out.append((p[0], p[1], p[2], q[0], q[1], q[2], q[3]))
     if sig is not None:
         sig[0:0] = [float("nan")] * anchor
+    if smooth:
+        smooth_apply(out, rows, anchor, blocks, st_prev, sd_prev)
     return out
 
 

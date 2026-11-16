@@ -58,7 +58,7 @@ concise answers; say plainly what was not verified.
 
 ```
 pip install -e .[dev]
-pytest                                        # 17 Nov 2026: 227 passed (Windows, Python 3.14; test_ccore.py needs g++ on PATH)
+pytest                                        # 17 Nov 2026: 232 passed (Windows, Python 3.14; test_ccore.py needs g++ on PATH)
 python -S main.py IMU.csv estimated_trajectory.txt                       # submission entry point: a stub importing pathfinder.py (the estimator, stdlib only)
 g++ -O2 -std=c++17 -ffp-contract=off -o build/vortex main.cpp           # C core (Windows MinGW: add -static); build/vortex IMU.csv OUT.txt
 python -S benchmark.py --runs 15 --gate --cbin build/vortex.exe          # also measures the C core (gate: RSS <= 8 MB, same bytes as main.py)
@@ -79,6 +79,8 @@ python tools/blind_study.py --tag NAME data/euroc/MH_01_easy ... [--seed0 N --ta
 python tools/coverage.py --tag NAME --seqs MH_01_easy,MH_02_easy --seeds 100,101 [--k68 K --k95 K]  # W6 sigma coverage; Docs/COVERAGE.md
 python tools/drag_fit.py data/euroc/MH_01_easy [--after-rest]              # 16 Nov 2026: NO-GO (pre-registered); see Docs/DRAG.md
 python tools/drag_fit.py --rule v2 data/euroc/V1_01_easy data/euroc/V1_02_medium data/euroc/V1_03_difficult  # rule v2 decision; run ONCE: 17 Nov 2026 NO-GO (V3 dropped)
+python tools/smooth_eval.py --tag NAME --seqs MH_01_easy,MH_02_easy [--copies MH_01_easy_s1,...]  # step E smoother off/on (reference); Docs/smooth/
+python tools/smooth_grid.py                                                # 17 Nov 2026: smoother worse on APE in all 12 settings (MH_01/02)
 python tools/integrator_check.py data/euroc/MH_01_easy                     # 16 Nov 2026: own gyro bias within 1.2e-3 rad/s of GT
 python -m vortex check --synthetic
 python -S tools/measure_floor.py --runs 30 [--cbin floor_c.exe]   # 15 Nov 2026: Win 3.13/3.14, WSL2 3.12 (Linux needs /usr/bin/time)
