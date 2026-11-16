@@ -219,11 +219,31 @@ def coast(p, v, dt, tau):
     return [p[0] + v[0] * s, p[1] + v[1] * s, p[2] + v[2] * s], [v[0] * e, v[1] * e, v[2] * e]
 
 
+def _pos_cov(P):
+    """Sums over the 3 axes of the position variance, position-velocity covariance and velocity variance."""
+    return (P[0] + P[N + 1] + P[2 * N + 2], P[3] + P[N + 4] + P[2 * N + 5],
+            P[3 * N + 3] + P[4 * N + 4] + P[5 * N + 5])
+
+
+def row_sigma(cov, d, gap, tilt2, dv2):
+    """Step 8b (W6): 3D position sigma of one row. The last tick's position covariance, carried d seconds
+    on its velocity covariance (pp + 2 pv d + vv d^2), plus, while the IMU is missing for `gap` seconds
+    since that tick, the dropout model's velocity change (gap_inflate: sum dv2 (gap / horizon)^2 gap^2 / 4).
+    An error bar for reporting only: the estimator never reads it."""
+    pp, pv, vv = cov
+    v = pp + 2.0 * pv * d + vv * d * d
+    if gap > 0.0 and tilt2 >= 0.0:
+        h = GAP_H_TICKS * TICK_S
+        v += (dv2[0] + dv2[1] + dv2[2]) * (gap / h) ** 2 * gap * gap * 0.25
+    return math.sqrt(v) if v > 0.0 else 0.0
+
+
 def estimate(rows, v1=None, v2=None, v2p=None, log=None, jam=None, gap_on=None, dead=None, fc=None,
-             pre_hold=None, zden=None):
+             pre_hold=None, zden=None, sig=None):
     """rows: list of (t_ns or None, six floats). Returns one (px, py, pz, qw, qx, qy, qz) per row.
     v1, v2, v2p, jam, gap_on, dead, fc, pre_hold, zden: switches (default the module's *_ON). log: optional list, gets
-    one dict per tick."""
+    one dict per tick. sig: optional list, gets one per-row position sigma (m, 3D) per row (step 8b,
+    W6; NaN before the anchor), see row_sigma()."""
     v1 = V1_ON if v1 is None else v1
     v2 = V2_ON if v2 is None else v2
     v2p = V2P_ON if v2p is None else v2p
@@ -245,6 +265,7 @@ def estimate(rows, v1=None, v2=None, v2p=None, log=None, jam=None, gap_on=None, 
     p = [0.0, 0.0, 0.0]
     v = [0.0, 0.0, 0.0]
     P = kf_init(init.still)
+    cov = _pos_cov(P)                   # (pp, pv, vv) after the last tick (W6)
     dx = [0.0] * N
     tick_ns = int(TICK_S * 1e9)
     t_last = None
@@ -367,6 +388,7 @@ def estimate(rows, v1=None, v2=None, v2p=None, log=None, jam=None, gap_on=None, 
                                     for k in range(3):
                                         dv2[k] += (d[k] * d[k] - dv2[k]) * b
                             ring.append((zb, (v[0], v[1], v[2])))
+                        cov = _pos_cov(P)
                         if log is not None:
                             log.append({"t": t_last, "zupt": zupt, "ba": ba, "bg": bg, "v": tuple(v),
                                         "jg": jg, "ja": ja, "gap": gap, "tilt2": tilt2, "dv2": tuple(dv2),
@@ -429,7 +451,13 @@ def estimate(rows, v1=None, v2=None, v2p=None, log=None, jam=None, gap_on=None, 
                     prev = None
                     gap += dt
                     h1 = h2 = None
+        if sig is not None:
+            tr = t if t is not None else t_last
+            d = 0.0 if t_tick is None or tr is None else (tr - t_tick) * 1e-9
+            sig.append(row_sigma(cov, d, gap, tilt2, dv2))
         out.append((p[0], p[1], p[2], q[0], q[1], q[2], q[3]))
+    if sig is not None:
+        sig[0:0] = [float("nan")] * anchor
     return out
 
 
