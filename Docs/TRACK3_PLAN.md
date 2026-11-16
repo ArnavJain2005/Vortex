@@ -53,7 +53,7 @@ organisers, see Q1). Full-time work starts **20 Nov**.
 | 5 | `benchmark.py` (tracemalloc and process RSS, ms per s of IMU) and `score.py` (ATE/RPE split by dropout and blind windows, coverage) | `benchmark.py` + `Docs/BUDGET.md` + tracemalloc pytest gate: **Done (verified on synthetic input)** 16 Nov. `score.py` (`vortex/scoring.py`): evo-style ATE/RPE, alignments none/origin/se3/sim3/given, phase split, waypoint proxies: **Done (verified against evo on synthetic data)** 16 Nov; not yet run on MH_01 | Both run on MH_01 |
 | 6 | Filter core: initialisation and self-calibration (W2), front end and jamming meter (W3), dropout bridging | 6a init + strapdown integrator: **Done (verified on SYNTHETIC data and MH_01)** 16 Nov. 6b self-calibration on the longest still run in the first 60 s + backward pass before it: **Done (verified on SYNTHETIC data and MH_01..05)** 16 Nov; reference and `main.py` bit-identical. 6c dropout covariance (`GAP_ON`, **on**) and noise meter (`JAM_ON`, **off** by rule v2): **Done (verified on SYNTHETIC data and seeded degraded MH copies)** 16 Nov; reference and `main.py` bit-identical. Degraded held-out mean APE 8.48 -> 6.69 m (seeds 4..6); clean unchanged. Failure detection: with the forecaster (step 8) | Beats dead reckoning on degraded MH_01 |
 | 7 | Velocity witnesses (W1): V1, V2 core; V3 after go/no-go; V4, V5 switchable; platform detection (W4) | 7a error-state filter + V1 + V2: **Done (verified on SYNTHETIC data and MH_01..05)** 16 Nov; reference and `main.py` bit-identical. Result: drift bounded (APE 249..1,288 m -> 3.5..6.6 m) but **not better than a never-moving trajectory** (mean APE 5.29 vs 5.25 m). V3: rule v2 pre-registered 16 Nov (commit c1b594c), waiting for Vicon Room 1. V4, V5, W4: Not started | Ablation table, each witness on and off, on held-out sequences |
-| 8 | Blind 5 s forecaster (W5) and per-row confidence (W6) | Not started | Blind error below constant velocity; coverage table |
+| 8 | Blind 5 s forecaster (W5), dead-sensor detection, per-row confidence (W6) | 8a dead-sensor detection (`DEAD_ON`) and velocity-decay forecaster (`FC_ON`, FC_TAU 0.5 s chosen on MH_01/02): **built, decision rule pre-registered** 16 Nov; held-out run pending. W6: Not started | Blind error below constant velocity; coverage table |
 | 9 | Efficiency pass (C core if whole-process RAM counts); submission bundle, Dockerfile, deck, video | Not started | Valid `team_name.zip` by 21 Nov 6 PM; submitted 3 h before cutoff |
 
 ## Open questions (Q1 to Q5 are in the email drafted for prism@samsung.com on 15 Nov)
@@ -266,3 +266,62 @@ This is a second look chosen after seeing v1: weaker evidence than a first pre-r
 Not checked: TUM-VI (no data); the organisers' degradation levels (Q2); "missing"-mode dropouts and
 stuck/zero failures on real data (synthetic tests only); the blind 5 s window still coasts at constant
 velocity (step 8).
+
+
+## Step 8a: dead-sensor detection and blind forecaster (16 Nov 2026, branch `track3/step8-blind`)
+
+**What happens now in the blind 5 s window.** After the IMU fails, every row is invalid (NaN), so no
+tick closes, no witness acts, attitude is held and position coasts at the last velocity. Zero and stuck
+failures are worse: their rows are valid numbers, so they are integrated (zero specific force; a frozen
+rate and force).
+
+**Two switches** (`vortex/core/witness.py`, mirrored in `main.py`):
+- `DEAD_ON`: a row is dead (treated as invalid) when its gyro or its accelerometer triple has repeated
+  exactly for STUCK_ROWS = 5 rows in a row, or its accelerometer triple is exactly (0, 0, 0). Clean
+  MH_01..05: longest exact repeat is 2 rows, no zero triple (checked). The first 4 rows of a stuck run are
+  still integrated (held values, 20 ms at 200 Hz).
+- `FC_ON`: while coasting without IMU data (invalid rows, or a step longer than MAX_DT), velocity
+  decays toward 0 with time constant FC_TAU and position integrates it: the mean forecast of an
+  Ornstein-Uhlenbeck velocity, i.e. the V2 speed envelope's prior. Off = constant velocity. This applies
+  to every gap, dropouts included.
+
+**Tuning (MH_01/02 only;** `python tools/blind_study.py --tag step8-tune data/euroc/MH_01_easy
+data/euroc/MH_02_easy`, 6 failure points x 3 modes x seeds 100..105, `Docs/BLIND.md`). Means over 12
+runs:
+
+| Setting | Blind growth m | Blind RMSE m |
+|---|---|---|
+| constant velocity (now) | 5.509 | 6.903 |
+| FC_TAU 2 s | 2.980 | 6.625 |
+| FC_TAU 1 s | 2.530 | 6.475 |
+| **FC_TAU 0.5 s (chosen: lowest growth)** | **2.434** | 6.298 |
+| hold position (0.001 s) | 2.486 | 6.016 |
+| zero failure, DEAD off / on | 28.066 / 5.509 | 14.848 / 6.903 |
+| stuck failure, DEAD off / on | 13.777 / 5.519 | 9.447 / 6.917 |
+
+The filter's velocity at the failure is worth about nothing: holding position is as good as any decay.
+Oracle checks with ground truth (analysis only, scratch script): even the TRUE velocity at the failure
+cuts the 5 s forecast error only from 1.8..5.3 m (hold) to 1.5..4.0 m; pulling toward the running
+centre is worse than holding on 4 of 5 sequences. Most blind error is the error already present at the
+failure (blind RMSE 6.0..6.9 m against growth 2.4..5.5 m).
+
+**Decision rule, committed before any held-out run** (held-out data does not exist yet):
+- (A) `tools/blind_study.py --tag step8-heldout --seed0 200 --taus cv,0.5` on MH_03..05: 6 failure
+  points x modes nan/zero/stuck, seeds 200..205.
+- (B) new copies `python -m vortex.degrade data/euroc/<seq> data/degraded/<seq>_s<seed> --seed <seed>
+  --failure_mode <mode>`, MH_03..05 x seed 7 (nan), 8 (zero), 9 (stuck), scored with `main.py`
+  (`tools/eval_euroc.py --degraded --seqs ...`, `--set` per reading).
+- `DEAD_ON` ships on only if (1) clean MH_01..05 output is unchanged (largest difference 0), (2) on (A)'s
+  zero and stuck runs mean blind growth falls by at least 30 % (forecaster off in both), and (3) on (B)'s
+  seed 8 and 9 copies mean APE is not worse.
+- `FC_ON` (FC_TAU 0.5 s, judged with DEAD on) ships on only if (1) clean MH_01..05 output is unchanged,
+  (2) on all of (A) mean blind growth falls by at least 10 % and mean blind RMSE is not worse, and (3) on
+  all 9 copies of (B) mean APE is at most +1 % and mean dropout growth at most +5 %.
+- Otherwise the switch ships off. No constant changes after this commit.
+
+**Found on the way, not fixed here (step 6b issue).** In one tuning run (MH_02, failure at 0.9, seed
+104) APE was 134.6 m: a dropout at 23..25 s fell before the calibration anchor (28.1 s), and the
+backward pass (dead reckoning, no witnesses) reached 757 m error in the first 10 s. The blind window was
+normal. Any dropout or heavy noise before the anchor can do this; MH_01/02 anchors are at 27-28 s, inside
+the degraded part when healthy_s is 10 s.
+
