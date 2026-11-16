@@ -10,6 +10,7 @@ Clean (undegraded) IMU input. APE = absolute position error after Umeyama alignm
 | step6a | 51303.92 / 1132.918 | 34197.60 / 919.509 | 18192.52 / 554.725 | 17687.41 / 687.304 | 593.57 / 25.035 | 24395.00 | 663.898 |
 | step6b | 1288.50 / 40.053 | 941.41 / 33.634 | 676.70 / 25.476 | 248.88 / 13.122 | 508.41 / 21.554 | 732.78 | 26.768 |
 | step6c-clean-both | 4.06 / 0.507 | 5.97 / 0.966 | 3.51 / 1.031 | 6.60 / 1.178 | 6.74 / 1.025 | 5.37 | 0.941 |
+| step6c | 3.99 / 0.506 | 5.97 / 0.973 | 3.53 / 0.983 | 6.41 / 1.193 | 6.55 / 1.023 | 5.29 | 0.936 |
 | step7a-v1-only | 1234.09 / 38.353 | 1054.49 / 37.560 | 724.62 / 27.683 | 297.33 / 15.490 | 274.86 / 12.221 | 717.08 | 26.261 |
 | step7a-v1-v2speed | 4.02 / 0.512 | 6.02 / 0.931 | 3.43 / 1.149 | 6.47 / 1.160 | 6.56 / 1.043 | 5.30 | 0.959 |
 | step7a-v1-v2volume | 3.86 / 0.539 | 5.98 / 1.019 | 3.78 / 0.974 | 6.35 / 1.285 | 6.39 / 1.084 | 5.27 | 0.980 |
@@ -40,6 +41,11 @@ Clean (undegraded) IMU input. APE = absolute position error after Umeyama alignm
 | step6c-clean-both | main.py | f8dfe4f | 2026-11-16 | MH_03_medium | PASS | 3.51 | 4.12 | 3.48 | 0.639 | 1.031 | 0.66 |
 | step6c-clean-both | main.py | f8dfe4f | 2026-11-16 | MH_04_difficult | PASS | 6.60 | 4.01 | 6.56 | 1.63 | 1.178 | 0.39 |
 | step6c-clean-both | main.py | f8dfe4f | 2026-11-16 | MH_05_difficult | PASS | 6.74 | 4.70 | 6.70 | 1.83 | 1.025 | 0.49 |
+| step6c | main.py | bd35767 | 2026-11-16 | MH_01_easy | PASS | 3.99 | 5.96 | 3.98 | 1.08 | 0.506 | 0.32 |
+| step6c | main.py | bd35767 | 2026-11-16 | MH_02_easy | PASS | 5.97 | 7.56 | 4.28 | 0.303 | 0.973 | 0.31 |
+| step6c | main.py | bd35767 | 2026-11-16 | MH_03_medium | PASS | 3.53 | 4.12 | 3.47 | 0.584 | 0.983 | 0.25 |
+| step6c | main.py | bd35767 | 2026-11-16 | MH_04_difficult | PASS | 6.41 | 3.76 | 6.35 | 1.55 | 1.193 | 0.22 |
+| step6c | main.py | bd35767 | 2026-11-16 | MH_05_difficult | PASS | 6.55 | 4.73 | 6.40 | 2.18 | 1.023 | 0.23 |
 | step7a-v1-only | main.py V2P_ON=False V2_ON=False | 290c894 | 2026-11-16 | MH_01_easy | PASS | 1234.09 | 3727.33 | 4.25 | 0.000569 | 38.353 | 0.37 |
 | step7a-v1-only | main.py V2P_ON=False V2_ON=False | 290c894 | 2026-11-16 | MH_02_easy | PASS | 1054.49 | 3057.07 | 4.60 | 0.000599 | 37.560 | 0.28 |
 | step7a-v1-only | main.py V2P_ON=False V2_ON=False | 290c894 | 2026-11-16 | MH_03_medium | PASS | 724.62 | 1999.12 | 3.56 | 0.000489 | 27.683 | 0.24 |

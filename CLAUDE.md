@@ -58,7 +58,7 @@ concise answers; say plainly what was not verified.
 
 ```
 pip install -e .[dev]
-pytest                                        # 16 Nov 2026: 161 passed (Windows, Python 3.14)
+pytest                                        # 16 Nov 2026: 170 passed (Windows, Python 3.14)
 python -S main.py IMU.csv estimated_trajectory.txt                       # submission entry point (stdlib only)
 python -S benchmark.py --runs 15 --gate [--tag NAME --commit SHA]        # writes Docs/budget/<tag>.json; then:
 python benchmark.py --render                                             # rebuilds Docs/BUDGET.md (never hand-edit)
@@ -66,13 +66,15 @@ python score.py --gt data/euroc/MH_01_easy --est est.txt [--events deg/degrade.j
 python tools/crosscheck_evo.py --evo-bin <venv>/Scripts                   # 16 Nov 2026: matches evo to 4.2e-7 m (synthetic)
 python tools/eval_euroc.py --tag NAME [--main main.py] [--set V2_ON=False]  # runs + scores every data/euroc sequence; Docs/RESULTS.md
 python tools/eval_euroc.py --tag floor-still --main tools/baseline_still.py  # the never-moving floor (mean APE 5.25 m on MH)
+python -m vortex.degrade data/euroc/MH_03_medium data/degraded/MH_03_medium_s4 --seed 4  # degraded copies: <seq>_s<seed>
+python tools/eval_euroc.py --tag NAME --degraded [--seqs MH_03_medium_s4,...]  # every data/degraded copy; alignment from the clean run
 python tools/drag_fit.py data/euroc/MH_01_easy [--after-rest]              # 16 Nov 2026: NO-GO (pre-registered); see Docs/DRAG.md
 python tools/drag_fit.py --rule v2 data/euroc/V1_01_easy data/euroc/V1_02_medium data/euroc/V1_03_difficult  # rule v2 decision; run ONCE
 python tools/integrator_check.py data/euroc/MH_01_easy                     # 16 Nov 2026: own gyro bias within 1.2e-3 rad/s of GT
 python -m vortex check --synthetic
 python -S tools/measure_floor.py --runs 30 [--cbin floor_c.exe]   # 15 Nov 2026: Win 3.13/3.14, WSL2 3.12 (Linux needs /usr/bin/time)
 python tools/measure_floor.py --render                          # rebuilds Docs/FLOOR.md from Docs/floor/*.json
-python -m vortex.degrade data/euroc/MH_01_easy out/MH_01_s1 --seed 1   # 16 Nov 2026: run on synthetic only
+python -m vortex.degrade data/euroc/MH_01_easy out/MH_01_s1 --seed 1   # 16 Nov 2026: MH_01..05 seeds 1..3, MH_03..05 seeds 4..6
 python -m vortex.check_output IMU.csv estimated_trajectory.txt         # stdlib only; exit 0 = pass
 python -m vortex baselines --synthetic
 python -m vortex check --advio data/advio --seq 1          # not yet run on real data

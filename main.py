@@ -12,11 +12,12 @@ line that is not blank and does not start with '#' (vortex/rowspec.py states the
 timestamp is the input ns value with the decimal point moved 9 digits left, done on the text, so it
 is exact. A row whose timestamp is not an integer repeats the previous row's timestamp.
 
-STATUS (step 7a): self-calibration on the longest still run in the first 60 s (gyro bias, g, tilt),
+STATUS (steps 7a + 6c): self-calibration on the longest still run in the first 60 s (gyro bias, g, tilt),
 backward integration from mid-run over the rows before it (dead reckoning, no witnesses), then a
 forward error-state Kalman filter (15 states, one covariance step per 0.25 s tick) with the
-witnesses V1 stillness (ZUPT + gyro bias) and V2 flight envelope (speed and volume); fallback to the
-step 6a first-second initialisation. Rules: vortex/core/witness.py. Performance: Docs/BUDGET.md.
+witnesses V1 stillness (ZUPT + gyro bias) and V2 flight envelope (speed and volume); dropouts and
+gaps add covariance learned from the recent motion (GAP_ON); a noise meter (JAM_ON) is built but off;
+fallback to the step 6a first-second initialisation. Rules: vortex/core/witness.py. Performance: Docs/BUDGET.md.
 
 Passes: (1) calibration scan of the first 60 s; (2) rows before the anchor are stored (64 bytes per
 row, at most PRE_MAX_ROWS) and integrated backward; (3) one streaming forward pass writes every row.
