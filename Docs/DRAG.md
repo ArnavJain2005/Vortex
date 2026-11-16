@@ -30,3 +30,22 @@ Pre-registered rule (16 Nov 2026, before real data): with 1 s smoothing and grou
 Rows named `*_after_rest` are EXPLORATORY (option added 16 Nov 2026 after MH_01 showed a hand-carried start, then a ground rest, then flight): they fit only data after the longest ground-truth rest, so rotors are on. They never change the pre-registered decision; switching V3 on would need a new rule fixed in advance and tested on sequences not used here.
 
 Plots: `Docs/drag/<sequence>.svg`.
+
+## Rule v2 (pre-registered 16 Nov 2026 after exploring MH, before any Vicon Room data)
+
+Airborne part only (after the longest ground-truth rest), ground-truth accel bias removed, 1 s smoothing, axes perpendicular to the mean airborne specific force. Per axis: R^2 with the FIXED k = 0.20 /s (offset refitted) and the free-fit k. A sequence passes if both axes have R^2 >= 0.5 and k within 30 % of 0.20. GO if at least 2 of V1_01_easy, V1_02_medium, V1_03_difficult pass. Stage B (estimator gain on the same sequences, V3 frozen on MH) decides whether V3 is switched on; see `tools/drag_fit.py`.
+
+| Sequence | Role | Date | Airborne s | Axis | k free 1/s | R^2 fixed k | R^2 free | Axis result | Sequence |
+|---|---|---|---|---|---|---|---|---|---|
+| MH_01_easy | tuning set (exploratory) | 2026-11-16 | 138 | a | 0.1830 | 0.690 | 0.696 | pass | pass |
+| MH_01_easy | tuning set (exploratory) | 2026-11-16 | 138 | b | 0.1836 | 0.650 | 0.655 | pass | pass |
+| MH_02_easy | tuning set (exploratory) | 2026-11-16 | 112 | a | 0.1940 | 0.767 | 0.768 | pass | pass |
+| MH_02_easy | tuning set (exploratory) | 2026-11-16 | 112 | b | 0.1772 | 0.812 | 0.826 | pass | pass |
+| MH_03_medium | tuning set (exploratory) | 2026-11-16 | 115 | a | 0.2038 | 0.880 | 0.880 | pass | pass |
+| MH_03_medium | tuning set (exploratory) | 2026-11-16 | 115 | b | 0.1847 | 0.688 | 0.693 | pass | pass |
+| MH_04_difficult | tuning set (exploratory) | 2026-11-16 | 80 | a | 0.2232 | 0.950 | 0.960 | pass | pass |
+| MH_04_difficult | tuning set (exploratory) | 2026-11-16 | 80 | b | 0.1874 | 0.760 | 0.764 | pass | pass |
+| MH_05_difficult | tuning set (exploratory) | 2026-11-16 | 92 | a | 0.2182 | 0.955 | 0.962 | pass | pass |
+| MH_05_difficult | tuning set (exploratory) | 2026-11-16 | 92 | b | 0.1768 | 0.880 | 0.896 | pass | pass |
+
+**Stage A decision: INCOMPLETE (needs V1_01_easy, V1_02_medium, V1_03_difficult)**
