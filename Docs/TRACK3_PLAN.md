@@ -643,7 +643,17 @@ This does not reach 8 MB: the interpreter with `math` and `array` alone peaks at
 | stub, matching bytecode | **11.95 MB** (-3.81) | **11.83 MB** (-3.80) | **10.27 MB** (-3.52) |
 | stub, no cached bytecode | 15.75 MB (-0.01) | 15.28 MB (-0.36) | 13.94 MB (+0.15) |
 
-4. `benchmark.py --gate`: see the budget table below.
+4. `benchmark.py --runs 15 --gate` at fd89e4a: PASS on Win 3.14, Win 3.13, WSL2 3.12 (synthetic),
+   Win 3.14 MH_01 and degraded MH_01_s1 (`Docs/BUDGET.md`). Timing is unchanged within noise: 21
+   interleaved runs on MH_01 (Win 3.14) gave 9.44 us/row for the stub, 9.70 from source.
+
+| Run (`python -S`, peak RSS) | Stub, bytecode | Stub, no cached bytecode | `pathfinder.py` from source |
+|---|---|---|---|
+| Win 3.14, synthetic | 11.46 MB | 15.85 MB | 15.42 MB |
+| Win 3.13, synthetic | 11.04 MB | 15.33 MB | 15.06 MB |
+| WSL2 3.12, synthetic | 10.07 MB | 13.07 MB | 13.36 MB |
+| Win 3.14, MH_01 | 11.80 MB | 15.79 MB | 15.87 MB |
+| Win 3.14, degraded MH_01_s1 | 12.00 MB | 15.77 MB | 15.98 MB |
 
 **Found on the way.** The Windows shell these runs used sets `PYTHONDONTWRITEBYTECODE=1` (not checked
 whether Arnav's own terminals do), so Python there never writes a cache: a stub alone would gain
