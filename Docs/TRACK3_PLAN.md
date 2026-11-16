@@ -28,7 +28,7 @@ meter sets the trust of each:
 |---|---|---|
 | V1 Stillness (zero-velocity updates) | Both datasets | Core. **On** (step 7a, 16 Nov). On EuRoC MH it fires only during the starting ground rest (3 to 25 ticks), so it adds nothing in flight there; it matters for walking (TUM-VI) and landings |
 | V2 Flight envelope learned in the healthy phase | Both datasets | Core. **On** (step 7a, 16 Nov): speed envelope + volume envelope (running centre), fixed values chosen on MH_01/02; learning them in the healthy phase is still to do. Bounds drift from km to metres, but only to the level of a trajectory that never moves (see step 7a) |
-| V3 Rotor drag (horizontal specific force proportional to body velocity) | Multirotor (EuRoC) | **Off: NO-GO** on MH_01 (16 Nov, pre-registered rule). Exploratory: k about 0.2 /s in flight on all five MH sequences; revisit only with a new rule fixed in advance |
+| V3 Rotor drag (horizontal specific force proportional to body velocity) | Multirotor (EuRoC) | **Off.** Rule v1: NO-GO on MH_01 (16 Nov; the hand-carried start). **Rule v2 pre-registered** 16 Nov (commit c1b594c, `tools/drag_fit.py`): airborne part only, thrust-perpendicular axes, fixed k = 0.20 /s. Decision on Vicon Room 1 (not yet downloaded): stage A = signal on 2 of 3 sequences, stage B = V3 on only if mean APE and RPE 1 s improve >= 10 % over V1 + V2 there. MH_01..05 (tuning set) pass stage A with R^2 0.65..0.96 |
 | V4 Turn physics (speed = lateral accel / turn rate, steady turns) | Steady turns | Switchable |
 | V5 Walking rhythm | Hand-held (TUM-VI) | Switchable |
 | V6 Tilt and acceleration link | Multirotor | Feeds the blind 5 s forecaster |
@@ -52,7 +52,7 @@ organisers, see Q1). Full-time work starts **20 Nov**.
 | 4 | Seeded degradation script: rising noise, bias drift, 2 s dropouts, failure + 5 s | **Done (verified on synthetic files)** 16 Nov: `vortex/degrade.py`; NaN or missing dropout rows, NaN/zero/stuck failure, optional duplicate and swapped rows; levels are placeholders until Q2 | Same seed gives identical files (checked) |
 | 5 | `benchmark.py` (tracemalloc and process RSS, ms per s of IMU) and `score.py` (ATE/RPE split by dropout and blind windows, coverage) | `benchmark.py` + `Docs/BUDGET.md` + tracemalloc pytest gate: **Done (verified on synthetic input)** 16 Nov. `score.py` (`vortex/scoring.py`): evo-style ATE/RPE, alignments none/origin/se3/sim3/given, phase split, waypoint proxies: **Done (verified against evo on synthetic data)** 16 Nov; not yet run on MH_01 | Both run on MH_01 |
 | 6 | Filter core: initialisation and self-calibration (W2), front end and jamming meter (W3), dropout bridging | 6a init + strapdown integrator: **Done (verified on SYNTHETIC data and MH_01)** 16 Nov. 6b self-calibration on the longest still run in the first 60 s + backward pass before it: **Done (verified on SYNTHETIC data and MH_01..05)** 16 Nov; reference and `main.py` bit-identical. Jamming meter, dropout bridging: Not started (after V1 + V2, per the work order) | Beats dead reckoning on degraded MH_01 |
-| 7 | Velocity witnesses (W1): V1, V2 core; V3 after go/no-go; V4, V5 switchable; platform detection (W4) | 7a error-state filter + V1 + V2: **Done (verified on SYNTHETIC data and MH_01..05)** 16 Nov; reference and `main.py` bit-identical. Result: drift bounded (APE 249..1,288 m -> 3.5..6.6 m) but **not better than a never-moving trajectory** (mean APE 5.29 vs 5.25 m). V3 (new pre-registered rule), V4, V5, W4: Not started | Ablation table, each witness on and off, on held-out sequences |
+| 7 | Velocity witnesses (W1): V1, V2 core; V3 after go/no-go; V4, V5 switchable; platform detection (W4) | 7a error-state filter + V1 + V2: **Done (verified on SYNTHETIC data and MH_01..05)** 16 Nov; reference and `main.py` bit-identical. Result: drift bounded (APE 249..1,288 m -> 3.5..6.6 m) but **not better than a never-moving trajectory** (mean APE 5.29 vs 5.25 m). V3: rule v2 pre-registered 16 Nov (commit c1b594c), waiting for Vicon Room 1. V4, V5, W4: Not started | Ablation table, each witness on and off, on held-out sequences |
 | 8 | Blind 5 s forecaster (W5) and per-row confidence (W6) | Not started | Blind error below constant velocity; coverage table |
 | 9 | Efficiency pass (C core if whole-process RAM counts); submission bundle, Dockerfile, deck, video | Not started | Valid `team_name.zip` by 21 Nov 6 PM; submitted 3 h before cutoff |
 
@@ -65,7 +65,7 @@ organisers, see Q1). Full-time work starts **20 Nov**.
 | Q3 | Are waypoint positions or times given as input? | Arnav |
 | Q4 | Is 8 MB peak RAM measured for the whole process or the algorithm only? Is `main.cpp` accepted? **Now urgent:** a bare `python -S -c pass` already peaks at 8.4 MB RSS (WSL2 Linux, 3.12) and 9.5 to 9.7 MB (Windows 3.13/3.14), so CPython cannot meet 8 MB whole-process RSS; a C++ parse + write floor peaks at 4.3 MB (Windows). See `Docs/FLOOR.md`. Step 6a: compiling the larger `main.py` source adds about 1.1 MB peak RSS (11.8 vs 10.7 MB compile-only, Win 3.14); a 3-line stub importing a cached `.pyc` peaks at 10.3 MB, but a `.pyc` only works on the matching Python version (decide in step 9). Step 6b: compile-only is now 13.07 MB vs a bare 9.80 MB (+3.3 MB, Win 3.14); the run itself from a cached `.pyc` peaks at 11.92 MB on MH_01. Splitting the source into separately compiled modules may also lower the compile peak (not measured). Step 7a: compile-only 14.91 MB vs 13.15 MB for 6b and 9.80 MB bare (Win 3.14); the MH_01 run from a cached `.pyc` peaks at 12.05 MB (6b: 11.92), from source at 15.43 MB. The filter itself costs about 0.1 MB; compiling costs about 3.4 MB | Arnav |
 | Q5 | Demo video length: 2 to 3, 3, or 5 minutes? | Arnav |
-| Q6 | Is the rotor-drag signal visible in EuRoC's IMU (offline fit on clean MH_01)? **Answered 16 Nov: NO-GO under the pre-registered rule** (whole sequence; the hand-carried start breaks it). Exploratory in-flight fit: visible, k 0.14 to 0.25 /s. See `Docs/DRAG.md` | Arnav + Claude, before 20 Nov |
+| Q6 | Is the rotor-drag signal visible in EuRoC's IMU (offline fit on clean MH_01)? **Answered 16 Nov: NO-GO under the pre-registered rule** (whole sequence; the hand-carried start breaks it). Exploratory in-flight fit: visible, k 0.14 to 0.25 /s. See `Docs/DRAG.md`. **Rule v2** pre-registered 16 Nov (commit c1b594c): decided on Vicon Room 1 | Arnav + Claude, before 20 Nov |
 
 ## Results so far (15 Nov 2026, branch `track3/python-pipeline`)
 
@@ -183,4 +183,16 @@ Tuning was done on MH_01/02 only; MH_03..05 were run once with the chosen values
 | Before vs after the anchor (MH_02, analysis only) | before (hand-carried, unfiltered): APE 11.0 m, RPE 1.84 m; after: 4.04 m, 0.75 m. The smoother step should cover the part before the anchor | scratch analysis |
 | `python -S main.py`, whole process | 8.90 us/row Win 3.14, 8.53 Win 3.13, 7.52 Linux 3.12 (6b: 6.11, 5.45, 6.20); MH_01 8.69 us/row, 1.74 ms per IMU-s. Gate PASS on all | `Docs/BUDGET.md` |
 | Memory | tracemalloc 288 KB synthetic, 585 KB MH_01. Peak RSS 14.80 MB (Win 3.14), 14.34 (Win 3.13), 12.78 (Linux), 15.36 (MH_01): compile memory, see Q4 | same |
+
+## Drag rule v2 for V3 (16 Nov 2026, branch `track3/v3-rule-v2`, rule commit c1b594c)
+
+Rule v1 failed on MH because every MH sequence starts hand-carried (no rotor drag). Exploration on MH_01..05 (all already used) chose the v2 settings; the rule was committed before any Vicon Room data was on disk (`data/euroc` held MH_01..05 only).
+
+| Item | Result | Where |
+|---|---|---|
+| Exploratory: body y/z axes vs axes perpendicular to the mean airborne specific force | second axis R^2 0.38..0.61 -> 0.65..0.90 (the IMU sits about 20 deg off the thrust axis, so body z mixes in thrust) | scratch analysis |
+| Exploratory: one pooled k for all five | k = 0.1996 /s; R^2 with that fixed k 0.65..0.96 on every axis | same |
+| Rule v2 on MH_01..05 (TUNING SET, not evidence) | all five pass: R^2 fixed k 0.65..0.96, free k 0.177..0.223 (within 12 % of 0.20) | `Docs/DRAG.md`, `Docs/drag/v2_*.json` |
+| Stage A decision (Vicon Room 1) | **Not run: data not downloaded** | needs Arnav |
+| `pytest` | 161 passed (155 + 6 rule v2) | Windows, Python 3.14.7 |
 

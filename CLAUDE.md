@@ -58,7 +58,7 @@ concise answers; say plainly what was not verified.
 
 ```
 pip install -e .[dev]
-pytest                                        # 16 Nov 2026: 155 passed (Windows, Python 3.14)
+pytest                                        # 16 Nov 2026: 161 passed (Windows, Python 3.14)
 python -S main.py IMU.csv estimated_trajectory.txt                       # submission entry point (stdlib only)
 python -S benchmark.py --runs 15 --gate [--tag NAME --commit SHA]        # writes Docs/budget/<tag>.json; then:
 python benchmark.py --render                                             # rebuilds Docs/BUDGET.md (never hand-edit)
@@ -67,6 +67,7 @@ python tools/crosscheck_evo.py --evo-bin <venv>/Scripts                   # 16 N
 python tools/eval_euroc.py --tag NAME [--main main.py] [--set V2_ON=False]  # runs + scores every data/euroc sequence; Docs/RESULTS.md
 python tools/eval_euroc.py --tag floor-still --main tools/baseline_still.py  # the never-moving floor (mean APE 5.25 m on MH)
 python tools/drag_fit.py data/euroc/MH_01_easy [--after-rest]              # 16 Nov 2026: NO-GO (pre-registered); see Docs/DRAG.md
+python tools/drag_fit.py --rule v2 data/euroc/V1_01_easy data/euroc/V1_02_medium data/euroc/V1_03_difficult  # rule v2 decision; run ONCE
 python tools/integrator_check.py data/euroc/MH_01_easy                     # 16 Nov 2026: own gyro bias within 1.2e-3 rad/s of GT
 python -m vortex check --synthetic
 python -S tools/measure_floor.py --runs 30 [--cbin floor_c.exe]   # 15 Nov 2026: Win 3.13/3.14, WSL2 3.12 (Linux needs /usr/bin/time)
