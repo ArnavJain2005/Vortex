@@ -3,7 +3,8 @@
 Organisers' limits: peak RAM 8 MB; 20 ms compute per 1 s of IMU (100 us per row at 200 Hz); single thread; offline.
 Our design targets (2x margin for an unknown evaluator CPU): 50 us per row; 4 MB tracemalloc peak.
 
-Peak RSS includes the CPython interpreter (8.4 MB on Linux, 9.5 MB on Windows before any work; see `Docs/FLOOR.md`). Whether the 8 MB limit means whole-process RSS is open question Q4.
+Peak RSS is whole-process and in MiB (2^20 bytes). It includes the CPython interpreter: on our machines a bare `python -S` peaks at 8.4 MiB (WSL2, Python 3.12) and 9.5 MiB (Windows) before any work (`Docs/FLOOR.md`); other Python builds and OSes differ, so this floor is not universal. Whether the 8 MB limit means whole-process RSS, and MB or MiB, is open question Q4.
+`--gate` uses the strictest reading: the worst run's peak RSS <= 8,000,000 bytes (7.63 MiB). IMU seconds come from the input's timestamps (runs recorded before this change used rows / 200).
 `main.py` is a stub that imports `pathfinder.py`, so Python loads its cached bytecode instead of compiling it (step 9a); the process table also shows a run with no cached bytecode.
 Timing varies about +-15% between reruns on the same laptop.
 
@@ -19,13 +20,13 @@ Timing varies about +-15% between reruns on the same laptop.
 
 ## Summary: `python -S main.py` against the budget
 
-| Run | us per row | Left of 100 (of 50 target) | Wall ms per IMU-s | CPU ms per IMU-s | Left of 20 ms | Peak RSS MB | Peak private MB | tracemalloc KB | Left of 4 MB | Output |
-|---|---|---|---|---|---|---|---|---|---|---|
-| linux-wsl2-py312 | 10.92 | 89.1 (39.1) | 2.18 | 1.44 | 17.8 | 10.07 | - | 234.3 | 3862 KB | PASS |
-| windows-py313 | 9.28 | 90.7 (40.7) | 1.86 | 1.82 | 18.1 | 11.04 | 5.50 | 234.3 | 3862 KB | PASS |
-| windows-py314-mh01-degraded | 10.54 | 89.5 (39.5) | 2.11 | 1.94 | 17.9 | 12.00 | 6.65 | 587.0 | 3509 KB | PASS |
-| windows-py314-mh01 | 9.46 | 90.5 (40.5) | 1.89 | 1.87 | 18.1 | 11.80 | 6.52 | 587.0 | 3509 KB | PASS |
-| windows-py314 | 12.08 | 87.9 (37.9) | 2.42 | 2.34 | 17.6 | 11.46 | 6.05 | 289.3 | 3807 KB | PASS |
+| Run | us per row | Left of 100 (of 50 target) | Wall ms per IMU-s | CPU ms per IMU-s | Left of 20 ms | Peak RSS MiB (median / max) | Under 8,000,000 B | Peak private MiB | tracemalloc KB | Left of 4 MB | Output |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| linux-wsl2-py312 | 10.92 | 89.1 (39.1) | 2.18 | 1.44 | 17.8 | 10.07 / 10.09 | **NO** | - | 234.3 | 3862 KB | PASS |
+| windows-py313 | 9.28 | 90.7 (40.7) | 1.86 | 1.82 | 18.1 | 11.04 / 11.14 | **NO** | 5.50 | 234.3 | 3862 KB | PASS |
+| windows-py314-mh01-degraded | 10.54 | 89.5 (39.5) | 2.11 | 1.94 | 17.9 | 12.00 / 12.11 | **NO** | 6.65 | 587.0 | 3509 KB | PASS |
+| windows-py314-mh01 | 9.46 | 90.5 (40.5) | 1.89 | 1.87 | 18.1 | 11.80 / 12.09 | **NO** | 6.52 | 587.0 | 3509 KB | PASS |
+| windows-py314 | 12.08 | 87.9 (37.9) | 2.42 | 2.34 | 17.6 | 11.46 / 11.51 | **NO** | 6.05 | 289.3 | 3807 KB | PASS |
 
 ## Stages (in-process, cumulative, median us per row)
 
@@ -64,7 +65,7 @@ Timing varies about +-15% between reruns on the same laptop.
 
 ## Witnesses
 
-None implemented yet.
+The shipped witnesses (V1 stillness, V2 envelope and position prior; switches in `pathfinder.py`) run inside the forward pass: their cost is in the last stage row above, not timed separately.
 
 ## Stored state for offline passes
 
@@ -78,7 +79,7 @@ None implemented yet.
 
 ## Process variants
 
-| Run | Command | us per row | Wall ms per IMU-s | Peak RSS MB |
+| Run | Command | us per row | Wall ms per IMU-s | Peak RSS MiB |
 |---|---|---|---|---|
 | linux-wsl2-py312 | `python -S main.py` | 10.92 | 2.18 | 10.07 |
 | linux-wsl2-py312 | `python main.py` | 10.14 | 2.03 | 10.71 |

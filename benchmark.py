@@ -13,9 +13,16 @@ Results go to Docs/budget/<tag>.json; --render rebuilds Docs/BUDGET.md from all 
 
 Usage:
   python -S benchmark.py [--rows 36000] [--runs 9] [--input FILE] [--tag NAME] [--commit SHA] [--gate]
+                         [--allow-rss]
   python benchmark.py --render
---gate exits 1 if the design targets are missed: process <= 50 us per row with -S,
-tracemalloc <= 4 MB, output passes the checker. Timing gates are flaky: run on a quiet machine.
+--gate exits 1 if a limit or design target is missed, for `python -S main.py` (bytecode cached):
+  - peak RSS of the worst run (max, not median) <= 8,000,000 bytes: the stricter reading of "8 MB"
+    (7.63 MiB), whole process (open question Q4);
+  - wall ms per IMU-second <= 20, IMU seconds taken from the input's timestamps (not rows / 200);
+  - process <= 50 us per row with -S (design target); tracemalloc <= 4 MB; output passes the checker.
+--allow-rss skips only the RSS check, for tracking timing regressions; it prints "RSS NOT CHECKED",
+and that result is not a budget pass. Timing gates are flaky: run on a quiet machine.
+RSS is measured in MiB (2^20 bytes); the JSON keys say "mb" for history, the ledger says MiB.
 """
 import importlib.util
 import json
@@ -35,12 +42,15 @@ sys.path.insert(0, ROOT)
 import measure_floor  # noqa: E402  (run_measured, summarise, cpu name)
 import synth_euroc  # noqa: E402
 from vortex import check_output  # noqa: E402  (stdlib only)
+from vortex.rowspec import BOM, is_data_line  # noqa: E402  (stdlib only)
 
 OUT_DIR = os.path.join(ROOT, "Docs", "budget")
-IMU_HZ = 200.0
+IMU_HZ = 200.0                # nominal rate; used only when the input has fewer than two timestamps
 BUDGET_US_ROW, TARGET_US_ROW = 100.0, 50.0
 BUDGET_MS_PER_S = 20.0
 BUDGET_RSS_MB, TARGET_TRACE_MB = 8.0, 4.0
+BUDGET_RSS_BYTES = 8_000_000  # "8 MB" read as decimal (stricter than 8 MiB); see the docstring
+MIB = 2 ** 20                 # measure_floor reports peak RSS in MiB
 
 # Stage switches passed to main.run, cumulative. Each new filter stage or witness adds a row here.
 STAGES = [
@@ -67,6 +77,34 @@ def git_commit():
         return None
 
 
+def imu_seconds(src):
+    """Sensor time covered by the input: (max - min) integer ns timestamp of the data rows, times
+    n / (n - 1) so n rows at period T count as n * T (36,000 rows at 200 Hz -> 180 s). Dropped rows
+    inside a dropout still count as covered time. Returns (seconds, source); falls back to
+    rows / IMU_HZ when fewer than two rows carry an integer timestamp."""
+    lo = hi = None
+    n = rows = 0
+    with open(src, "rb") as f:
+        for line in f:
+            if not is_data_line(line):
+                continue
+            rows += 1
+            s = line.split(b",", 1)[0].strip()
+            if s[:3] == BOM:
+                s = s[3:].strip()
+            if not s.isdigit():
+                continue
+            t = int(s)
+            n += 1
+            if lo is None or t < lo:
+                lo = t
+            if hi is None or t > hi:
+                hi = t
+    if n < 2 or hi == lo:
+        return rows / IMU_HZ, "rows / %.0f Hz (fewer than two distinct timestamps)" % IMU_HZ
+    return (hi - lo) * 1e-9 * n / (n - 1), "timestamps"
+
+
 def measure(a):
     rows, runs = a["rows"], a["runs"]
     tmp = tempfile.gettempdir()
@@ -79,12 +117,12 @@ def measure(a):
     dst = os.path.join(tmp, "vortex_bench_out.txt")
     main = load_main()
     n = main.run(src, dst)
-    imu_s = n / IMU_HZ
+    imu_s, imu_src = imu_seconds(src)
 
     res = {"platform": platform.system(), "platform_release": platform.release(),
            "cpu": measure_floor._cpu_name(), "python": platform.python_version(),
            "date": time.strftime("%Y-%m-%d"), "commit": a["commit"] or git_commit(),
-           "input": label, "rows": n, "imu_seconds": imu_s, "runs": runs}
+           "input": label, "rows": n, "imu_seconds": imu_s, "imu_seconds_source": imu_src, "runs": runs}
 
     stages = []
     for name, kw in STAGES:
@@ -129,7 +167,7 @@ def measure(a):
         s["cpu_ms_per_imu_s"] = s["cpu_ms_median"] / imu_s
         s["us_per_row"] = s["wall_ms_median"] * 1e3 / n
         procs.append(s)
-        print("  %-18s %6.2f us/row  %5.2f ms/imu-s  rss %5.2f MB"
+        print("  %-18s %6.2f us/row  %5.2f ms/imu-s  rss %5.2f MiB"
               % (label_p, s["us_per_row"], s["wall_ms_per_imu_s"], s["peak_rss_mb_median"]))
     res["process"] = procs
 
@@ -139,9 +177,20 @@ def measure(a):
     return res
 
 
-def gate(res):
+def gate(res, rss=True):
+    """Failures of `python -S main.py` (process[0]) against the limits and design targets.
+    rss=False skips only the peak-RSS limit (see --allow-rss)."""
     fails = []
     p = res["process"][0]
+    if rss:
+        worst = p.get("peak_rss_mb_max", p["peak_rss_mb_median"])
+        if worst is None:
+            fails.append("peak RSS not measured")
+        elif worst * MIB > BUDGET_RSS_BYTES:
+            fails.append("peak RSS %.0f bytes (%.2f MiB) > %d bytes"
+                         % (worst * MIB, worst, BUDGET_RSS_BYTES))
+    if p["wall_ms_per_imu_s"] > BUDGET_MS_PER_S:
+        fails.append("process %.2f ms per IMU-s > %.0f" % (p["wall_ms_per_imu_s"], BUDGET_MS_PER_S))
     if p["us_per_row"] > TARGET_US_ROW:
         fails.append("process %.2f us/row > %.0f" % (p["us_per_row"], TARGET_US_ROW))
     if res["tracemalloc_peak_kb"] > TARGET_TRACE_MB * 1024:
@@ -164,8 +213,12 @@ def render():
          "single thread; offline.",
          "Our design targets (2x margin for an unknown evaluator CPU): 50 us per row; 4 MB tracemalloc peak.",
          "",
-         "Peak RSS includes the CPython interpreter (8.4 MB on Linux, 9.5 MB on Windows before any work; "
-         "see `Docs/FLOOR.md`). Whether the 8 MB limit means whole-process RSS is open question Q4.",
+         "Peak RSS is whole-process and in MiB (2^20 bytes). It includes the CPython interpreter: on our "
+         "machines a bare `python -S` peaks at 8.4 MiB (WSL2, Python 3.12) and 9.5 MiB (Windows) before any "
+         "work (`Docs/FLOOR.md`); other Python builds and OSes differ, so this floor is not universal. "
+         "Whether the 8 MB limit means whole-process RSS, and MB or MiB, is open question Q4.",
+         "`--gate` uses the strictest reading: the worst run's peak RSS <= 8,000,000 bytes (7.63 MiB). "
+         "IMU seconds come from the input's timestamps (runs recorded before this change used rows / 200).",
          "`main.py` is a stub that imports `pathfinder.py`, so Python loads its cached bytecode instead of "
          "compiling it (step 9a); the process table also shows a run with no cached bytecode.",
          "Timing varies about +-15% between reruns on the same laptop.", "",
@@ -178,14 +231,17 @@ def render():
             d["python"], d["input"], d["rows"], d["imu_seconds"]))
     L += ["", "## Summary: `python -S main.py` against the budget", "",
           "| Run | us per row | Left of 100 (of 50 target) | Wall ms per IMU-s | CPU ms per IMU-s | Left of 20 ms "
-          "| Peak RSS MB | Peak private MB | tracemalloc KB | Left of 4 MB | Output |",
-          "|---|---|---|---|---|---|---|---|---|---|---|"]
+          "| Peak RSS MiB (median / max) | Under 8,000,000 B | Peak private MiB | tracemalloc KB | Left of 4 MB "
+          "| Output |",
+          "|---|---|---|---|---|---|---|---|---|---|---|---|"]
     for tag, d in data:
         p = d["process"][0]
-        L.append("| %s | %s | %s (%s) | %s | %s | %s | %s | %s | %s | %s KB | %s |" % (
+        worst = p.get("peak_rss_mb_max", p["peak_rss_mb_median"])
+        under = "-" if worst is None else ("yes" if worst * MIB <= BUDGET_RSS_BYTES else "**NO**")
+        L.append("| %s | %s | %s (%s) | %s | %s | %s | %s / %s | %s | %s | %s | %s KB | %s |" % (
             tag, _f(p["us_per_row"]), _f(BUDGET_US_ROW - p["us_per_row"], 1),
             _f(TARGET_US_ROW - p["us_per_row"], 1), _f(p["wall_ms_per_imu_s"]), _f(p["cpu_ms_per_imu_s"]),
-            _f(BUDGET_MS_PER_S - p["wall_ms_per_imu_s"], 1), _f(p["peak_rss_mb_median"]),
+            _f(BUDGET_MS_PER_S - p["wall_ms_per_imu_s"], 1), _f(p["peak_rss_mb_median"]), _f(worst), under,
             _f(p["peak_private_mb_median"]), _f(d["tracemalloc_peak_kb"], 1),
             _f(TARGET_TRACE_MB * 1024 - d["tracemalloc_peak_kb"], 0), d["output_check"]))
     L += ["", "## Stages (in-process, cumulative, median us per row)", "",
@@ -197,7 +253,9 @@ def render():
     for tag, d in data:
         for s in d["passes"]:
             L.append("| %s | %s | %s |" % (tag, s["pass"], _f(s["us_per_row"])))
-    L += ["", "## Witnesses", "", "None implemented yet.", "",
+    L += ["", "## Witnesses", "",
+          "The shipped witnesses (V1 stillness, V2 envelope and position prior; switches in `pathfinder.py`) "
+          "run inside the forward pass: their cost is in the last stage row above, not timed separately.", "",
           "## Stored state for offline passes", "",
           "| Run | Bytes per stored row | Stored this run | Worst-case total bytes |", "|---|---|---|---|"]
     for tag, d in data:
@@ -206,7 +264,7 @@ def render():
                                             "%d (%d rows)" % (d["stored_bytes_this_run"], d["stored_rows"]),
                                             d["stored_bytes_worst_case"]))
     L += ["", "## Process variants", "",
-          "| Run | Command | us per row | Wall ms per IMU-s | Peak RSS MB |", "|---|---|---|---|---|"]
+          "| Run | Command | us per row | Wall ms per IMU-s | Peak RSS MiB |", "|---|---|---|---|---|"]
     for tag, d in data:
         for p in d["process"]:
             L.append("| %s | `%s` | %s | %s | %s |" % (tag, p["case"], _f(p["us_per_row"]),
@@ -235,8 +293,10 @@ def main(argv):
         f.write("\n")
     print("wrote Docs/budget/%s.json" % tag)
     if "--gate" in argv:
-        fails = gate(res)
-        print("GATE:", "PASS" if not fails else "FAIL: " + "; ".join(fails))
+        rss = "--allow-rss" not in argv
+        fails = gate(res, rss=rss)
+        verdict = "PASS" if not fails else "FAIL: " + "; ".join(fails)
+        print("GATE:", verdict + ("" if rss else "  (RSS NOT CHECKED: not a budget pass)"))
         return 1 if fails else 0
     return 0
 
