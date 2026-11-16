@@ -52,7 +52,7 @@ organisers, see Q1). Full-time work starts **20 Nov**.
 | 4 | Seeded degradation script: rising noise, bias drift, 2 s dropouts, failure + 5 s | **Done (verified on synthetic files)** 16 Nov: `vortex/degrade.py`; NaN or missing dropout rows, NaN/zero/stuck failure, optional duplicate and swapped rows; levels are placeholders until Q2 | Same seed gives identical files (checked) |
 | 5 | `benchmark.py` (tracemalloc and process RSS, ms per s of IMU) and `score.py` (ATE/RPE split by dropout and blind windows, coverage) | `benchmark.py` + `Docs/BUDGET.md` + tracemalloc pytest gate: **Done (verified on synthetic input)** 16 Nov. `score.py` (`vortex/scoring.py`): evo-style ATE/RPE, alignments none/origin/se3/sim3/given, phase split, waypoint proxies: **Done (verified against evo on synthetic data)** 16 Nov; not yet run on MH_01 | Both run on MH_01 |
 | 6 | Filter core: initialisation and self-calibration (W2), front end and jamming meter (W3), dropout bridging | 6a init + strapdown integrator: **Done (verified on SYNTHETIC data and MH_01)** 16 Nov. 6b self-calibration on the longest still run in the first 60 s + backward pass before it: **Done (verified on SYNTHETIC data and MH_01..05)** 16 Nov; reference and `main.py` bit-identical. 6c dropout covariance (`GAP_ON`, **on**) and noise meter (`JAM_ON`, **off** by rule v2): **Done (verified on SYNTHETIC data and seeded degraded MH copies)** 16 Nov; reference and `main.py` bit-identical. Degraded held-out mean APE 8.48 -> 6.69 m (seeds 4..6); clean unchanged. 6d rows before the anchor hold its position (`PRE_HOLD`, **on** by a pre-registered no-harm rule): **Done (verified on SYNTHETIC data and MH_01..05 clean and degraded)** 16 Nov; clean mean APE 5.29 -> 4.84 m (MH_02 5.98 -> 3.85, a tuning sequence). 6e denoised still test when the strict one finds no run (`CAL_NOISE_ON`, **on** by a pre-registered rule): **Done (verified on SYNTHETIC data and MH_01..05 clean and degraded)** 16 Nov; degraded MH_02 fallbacks 19/20 -> 0/20 (tuning), clean unchanged. Failure detection: step 8a | Beats dead reckoning on degraded MH_01 |
-| 7 | Velocity witnesses (W1): V1, V2 core; V3 after go/no-go; V4, V5 switchable; platform detection (W4) | 7a error-state filter + V1 + V2: **Done (verified on SYNTHETIC data and MH_01..05)** 16 Nov; reference and `main.py` bit-identical. Result: drift bounded (APE 249..1,288 m -> 3.5..6.6 m) but **not better than a never-moving trajectory** (mean APE 5.29 vs 5.25 m). V3: rule v2 pre-registered 16 Nov (commit c1b594c), waiting for Vicon Room 1. V4, V5, W4: Not started | Ablation table, each witness on and off, on held-out sequences |
+| 7 | Velocity witnesses (W1): V1, V2 core; V3 after go/no-go; V4, V5 switchable; platform detection (W4) | 7a error-state filter + V1 + V2: **Done (verified on SYNTHETIC data and MH_01..05)** 16 Nov; reference and `main.py` bit-identical. Result: drift bounded (APE 249..1,288 m -> 3.5..6.6 m) but **not better than a never-moving trajectory** (mean APE 5.29 vs 5.25 m). V3: rule v2 pre-registered 16 Nov (commit c1b594c), waiting for Vicon Room 1. 7b denoised V1 (`ZUPT_DEN_ON`): built in the reference, **off** (pre-registered rule failed on held-out MH_03..05: APE +0.2 %, needed -2 %) 16 Nov; not in `main.py`. V4, V5, W4: Not started | Ablation table, each witness on and off, on held-out sequences |
 | 8 | Blind 5 s forecaster (W5), dead-sensor detection, per-row confidence (W6) | 8a dead-sensor detection (`DEAD_ON`, **on**) and velocity-decay forecaster (`FC_ON`, **on**, FC_TAU 0.5 s chosen on MH_01/02): **Done (verified on SYNTHETIC data and seeded degraded MH copies)** 16 Nov; both pass the pre-registered rule on held-out MH_03..05; reference and `main.py` bit-identical. Held-out blind growth -49.5 % (study A); zero failures 27.0 -> 4.4 m. W6: Not started | Blind error below constant velocity; coverage table |
 | 9 | Efficiency pass (C core if whole-process RAM counts); submission bundle, Dockerfile, deck, video | Not started | Valid `team_name.zip` by 21 Nov 6 PM; submitted 3 h before cutoff |
 
@@ -518,4 +518,53 @@ identical to step 6d (largest difference 0.0).
 Not checked: TUM-VI (no data); a hover with rotor vibration passing the denoised test (no such case
 occurred: every recovered run was a true rest by ground truth); V1 stillness (ZUPT) in the filter still
 uses the strict test, so with heavy noise it fires less (matters for walking, TUM-VI).
+
+
+## Step 7b: denoised stillness witness (V1) (16 Nov 2026, branch `track3/step7b-zupt`)
+
+**Problem.** V1 (ZUPT + gyro bias) fires only when two ticks pass the strict still test. With added
+noise above STILL_ACC_STD the rests are not seen: degraded MH_01 (healthy 10 s) keeps about 10 of its 25
+clean ZUPT ticks, degraded MH_02 about 0 of 6.
+
+**Switch** `ZUPT_DEN_ON` (reference only, `vortex/core/witness.py`; not in `main.py`). V1 also fires when
+ZUPT_DEN_BINS = 4 ticks in a row (1 s, = MIN_STILL_S) pass step 6e's denoised still test and are pairwise
+steady under the denoised tolerance. The strict condition is unchanged.
+
+**Hazard found first** (MH_01/02 only, ground truth for diagnosis): removing the white-noise variance
+also removes rotor vibration, the signature that tells steady flight from rest. Single pairs of ticks
+passed the denoised test in flight at 0.55..0.79 m/s (4 runs over 2 x 20 degraded copies), all exactly 2
+ticks long; true rests gave runs of 2 to 12+ ticks. Hence the run length of 4.
+
+**Tuning (MH_01/02;** reference estimator, alignment from each setting's clean run):
+
+| Set | Off | On |
+|---|---|---|
+| Clean MH_01 / MH_02 APE m | 3.9106 / 3.8459 | 3.9106 / 3.8988 (+1.4 %) |
+| Degraded, healthy 10 s, seeds 100..119: MH_01 / MH_02 mean APE m | 4.236 / 4.570 | 4.225 / 4.413 |
+| Degraded, healthy 2 s, seeds 120..129: MH_01 / MH_02 mean APE m | 4.220 / 4.607 | 4.145 / 4.618 |
+| False ZUPT ticks (ground-truth speed > 0.1 m/s), all 60 copies | 0 | 0 |
+
+The effect on MH is small and mixed (-3.4 % .. +1.4 %): on these drone sequences V1 only matters at the
+ground rest. It would matter for standing periods in walking data (TUM-VI, not downloaded).
+
+**Decision rule, committed before any held-out run.** A gain is required, because the switch costs
+per-row work in `main.py`'s hot loop and carries the in-flight hazard. Held-out: clean MH_03..05 and,
+generated in memory after this commit, MH_03..05 x seeds 19..21 (healthy 10 s) and x seeds 22..24
+(healthy 2 s), 18 copies, reference estimator. `ZUPT_DEN_ON` is ported to `main.py` and ships on only if
+(a) mean APE over the 18 copies improves by at least 2 %, (b) clean MH_03..05 mean APE is not worse, and
+(c) no ZUPT tick falls where ground-truth speed exceeds 0.1 m/s. Otherwise it stays off, in the reference
+only, until TUM-VI data exists.
+
+**Outcome** (16 Nov; rule committed at 1ac2f45; reference estimator, `python tools/zupt_eval.py
+MH_03_medium,MH_04_difficult,MH_05_difficult 19,20,21 10 OUT` and `... 22,23,24 2 OUT`; 18 held-out copies):
+
+| Check | Off | On | Rule |
+|---|---|---|---|
+| (a) mean APE, 18 copies (healthy 10 s and 2 s) | 6.482 m | 6.496 m (+0.2 %) | >= 2 % better: **fails** |
+| (b) clean MH_03..05 mean APE | 5.485 m | 5.466 m | not worse: passes |
+| (c) ZUPT ticks at ground-truth speed > 0.1 m/s | 0 | 0 | none: passes |
+
+**ZUPT_DEN_ON stays off and is not ported to `main.py`.** On these drone sequences V1 matters only at the
+ground rest, and recovering those ticks under noise does not move APE. Revisit with TUM-VI (walking, with
+standing periods). `main.py` and every shipped result are unchanged by this step.
 

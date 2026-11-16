@@ -58,7 +58,7 @@ concise answers; say plainly what was not verified.
 
 ```
 pip install -e .[dev]
-pytest                                        # 16 Nov 2026: 188 passed (Windows, Python 3.14)
+pytest                                        # 16 Nov 2026: 190 passed (Windows, Python 3.14)
 python -S main.py IMU.csv estimated_trajectory.txt                       # submission entry point (stdlib only)
 python -S benchmark.py --runs 15 --gate [--tag NAME --commit SHA]        # writes Docs/budget/<tag>.json; then:
 python benchmark.py --render                                             # rebuilds Docs/BUDGET.md (never hand-edit)

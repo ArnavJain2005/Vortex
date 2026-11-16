@@ -358,3 +358,28 @@ def test_pre_hold_keeps_the_anchor_position_and_backward_attitude():
     assert all(o[:3] == (0.0, 0.0, 0.0) for o in on[:anchor])
     assert [o[3:] for o in on[:anchor]] == [o[3:] for o in off[:anchor]]
     assert max(abs(c) for o in off[:anchor] for c in o[:3]) > 0.01   # the backward pass did move
+
+
+# ---------------------------------------------------------------- step 7b: denoised V1 (reference only)
+
+def test_denoised_zupt_fires_in_a_noisy_rest_after_the_run_length():
+    # SYNTHETIC: rest 10..24 s and 36..46 s with white noise above the strict still thresholds
+    rows, _, _ = _profile(46.0, [(8, 10, -1), (24, 26, +1), (34, 36, -1)], gyro_noise=0.03, acc_noise=0.15, seed=8)
+    for on in (False, True):
+        log = []
+        wx.estimate(rows, zden=on, log=log)
+        late = [L for L in log if L["t"] - rows[0][0] > 37e9]                # the second rest
+        n = sum(L["zupt"] for L in late)
+        if on:
+            assert n >= 0.7 * len(late)                                         # 29 of 36 here
+            first = next(i for i, L in enumerate(late) if L["zupt"])
+            assert late[first]["zr"] >= wx.ZUPT_DEN_BINS
+        else:
+            assert n == 0                                                     # strict test: noise too high
+    moving = [L for L in log if 26e9 < L["t"] - rows[0][0] < 33e9]
+    assert not any(L["zupt"] for L in moving)
+
+
+def test_denoised_zupt_off_changes_nothing(second_rest):
+    rows, _, _ = second_rest
+    assert wx.estimate(rows, zden=False) == wx.estimate(rows)
