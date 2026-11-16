@@ -53,7 +53,7 @@ organisers, see Q1). Full-time work starts **20 Nov**.
 | 5 | `benchmark.py` (tracemalloc and process RSS, ms per s of IMU) and `score.py` (ATE/RPE split by dropout and blind windows, coverage) | `benchmark.py` + `Docs/BUDGET.md` + tracemalloc pytest gate: **Done (verified on synthetic input)** 16 Nov. `score.py` (`vortex/scoring.py`): evo-style ATE/RPE, alignments none/origin/se3/sim3/given, phase split, waypoint proxies: **Done (verified against evo on synthetic data)** 16 Nov; not yet run on MH_01 | Both run on MH_01 |
 | 6 | Filter core: initialisation and self-calibration (W2), front end and jamming meter (W3), dropout bridging | 6a init + strapdown integrator: **Done (verified on SYNTHETIC data and MH_01)** 16 Nov. 6b self-calibration on the longest still run in the first 60 s + backward pass before it: **Done (verified on SYNTHETIC data and MH_01..05)** 16 Nov; reference and `main.py` bit-identical. 6c dropout covariance (`GAP_ON`, **on**) and noise meter (`JAM_ON`, **off** by rule v2): **Done (verified on SYNTHETIC data and seeded degraded MH copies)** 16 Nov; reference and `main.py` bit-identical. Degraded held-out mean APE 8.48 -> 6.69 m (seeds 4..6); clean unchanged. Failure detection: with the forecaster (step 8) | Beats dead reckoning on degraded MH_01 |
 | 7 | Velocity witnesses (W1): V1, V2 core; V3 after go/no-go; V4, V5 switchable; platform detection (W4) | 7a error-state filter + V1 + V2: **Done (verified on SYNTHETIC data and MH_01..05)** 16 Nov; reference and `main.py` bit-identical. Result: drift bounded (APE 249..1,288 m -> 3.5..6.6 m) but **not better than a never-moving trajectory** (mean APE 5.29 vs 5.25 m). V3: rule v2 pre-registered 16 Nov (commit c1b594c), waiting for Vicon Room 1. V4, V5, W4: Not started | Ablation table, each witness on and off, on held-out sequences |
-| 8 | Blind 5 s forecaster (W5), dead-sensor detection, per-row confidence (W6) | 8a dead-sensor detection (`DEAD_ON`) and velocity-decay forecaster (`FC_ON`, FC_TAU 0.5 s chosen on MH_01/02): **built, decision rule pre-registered** 16 Nov; held-out run pending. W6: Not started | Blind error below constant velocity; coverage table |
+| 8 | Blind 5 s forecaster (W5), dead-sensor detection, per-row confidence (W6) | 8a dead-sensor detection (`DEAD_ON`, **on**) and velocity-decay forecaster (`FC_ON`, **on**, FC_TAU 0.5 s chosen on MH_01/02): **Done (verified on SYNTHETIC data and seeded degraded MH copies)** 16 Nov; both pass the pre-registered rule on held-out MH_03..05; reference and `main.py` bit-identical. Held-out blind growth -49.5 % (study A); zero failures 27.0 -> 4.4 m. W6: Not started | Blind error below constant velocity; coverage table |
 | 9 | Efficiency pass (C core if whole-process RAM counts); submission bundle, Dockerfile, deck, video | Not started | Valid `team_name.zip` by 21 Nov 6 PM; submitted 3 h before cutoff |
 
 ## Open questions (Q1 to Q5 are in the email drafted for prism@samsung.com on 15 Nov)
@@ -324,4 +324,60 @@ failure (blind RMSE 6.0..6.9 m against growth 2.4..5.5 m).
 backward pass (dead reckoning, no witnesses) reached 757 m error in the first 10 s. The blind window was
 normal. Any dropout or heavy noise before the anchor can do this; MH_01/02 anchors are at 27-28 s, inside
 the degraded part when healthy_s is 10 s.
+
+**Outcome** (16 Nov; rule committed at ce94cef, before the held-out data existed).
+
+(A) `Docs/BLIND.md` `step8-heldout`: MH_03..05 x 6 failure points x 3 modes, seeds 200..205, reference
+estimator, means:
+
+| Setting | Runs | Blind growth m | Blind RMSE m | APE m |
+|---|---|---|---|---|
+| nan failure, constant velocity (step 6c) | 18 | 8.638 | 8.391 | 6.526 |
+| nan failure, FC on | 18 | 4.367 | 7.141 | 6.385 |
+| zero failure, DEAD off / on / on + FC | 18 | 27.015 / 8.638 / 4.367 | 14.851 / 8.391 / 7.141 | 7.220 / 6.526 / 6.385 |
+| stuck failure, DEAD off / on / on + FC | 18 | 9.356 / 8.652 / 4.371 | 7.927 / 8.356 / 7.128 | 6.512 / 6.525 / 6.384 |
+
+(B) `main.py` on the new copies MH_03..05 x seeds 7 (nan), 8 (zero), 9 (stuck); `Docs/RESULTS.md`
+tags `step8-B-off` (= step 6c), `step8-B-dead`, `step8-B-both`. Means:
+
+| Reading | Copies | APE m | Dropout growth m | Blind growth m | Blind RMSE m |
+|---|---|---|---|---|---|
+| step 6c (both off) | 9 | 6.975 | 2.657 | 15.886 | 8.663 |
+| DEAD on | 9 | 6.709 | 2.657 | 5.616 | 3.793 |
+| DEAD + FC on | 9 | 6.761 | 2.060 | 5.228 | 3.389 |
+
+Judgement:
+- `DEAD_ON` (1) clean output byte-identical (largest difference 0.0); (2) (A) zero + stuck blind growth
+  18.185 -> 8.645 m, -52.5 % (>= 30 %); (3) (B) seeds 8 + 9 mean APE 7.526 -> 7.127 m, -5.3 %. **Passes:
+  ships on.**
+- `FC_ON` (1) clean byte-identical; (2) (A) all 54 runs blind growth 8.643 -> 4.368 m (-49.5 %), blind
+  RMSE 8.380 -> 7.137 m (-14.8 %); (3) (B) mean APE 6.709 -> 6.761 m (+0.78 %, limit +1 %), dropout
+  growth 2.657 -> 2.060 m (-22.4 %). **Passes: ships on.** Close on APE; on (B) blind growth falls only
+  6.9 %, and on two stuck copies it rose (MH_04_s9 4.74 -> 5.87 m, MH_05_s9 2.68 -> 5.38 m).
+- With constant velocity, DEAD raised blind RMSE on stuck failures in (A) (7.93 -> 8.36 m); with FC also
+  on it is 7.13 m.
+
+Shipped settings (`main.py`, tags `step8` clean and `step8-deg`, all 33 copies, contract PASS on all)
+against step 6c `main.py` on the same copies (`step6c-deg-gap`, `step6c-rep-gap`, `step8-B-off`):
+
+| Copies | APE m | Dropout growth m | Blind growth m | Blind RMSE m |
+|---|---|---|---|---|
+| MH_01/02 x seeds 1..3 (tuning) | 5.578 -> 5.507 | 1.652 -> 0.926 | 5.502 -> 2.356 | 5.212 -> 4.103 |
+| MH_03..05 x seeds 1..3 | 6.852 -> 6.320 | 3.303 -> 2.369 | 13.478 -> 5.916 | 11.383 -> 6.572 |
+| MH_03..05 x seeds 4..6 | 6.687 -> 6.516 | 3.195 -> 2.281 | 6.771 -> 5.311 | 7.404 -> 5.455 |
+| MH_03..05 x seeds 7..9 (nan/zero/stuck) | 6.975 -> 6.761 | 2.657 -> 2.060 | 15.886 -> 5.228 | 8.663 -> 3.389 |
+| Clean MH_01..05 | identical to step 6c (largest difference 0.0) | | | |
+
+| Item | Result | Where |
+|---|---|---|
+| `pytest` | 181 passed (170 + 6 step 8a reference + 5 equivalence) | Windows, Python 3.14.7 |
+| Budget, `python -S main.py` (commit 02e2e5d) | 9.78 us/row, 15.20 MB peak RSS, 289 KB tracemalloc (Win 3.14); 8.63, 14.74 MB (Win 3.13); 7.30, 13.13 MB (Linux 3.12); MH_01 8.98, 15.70 MB; degraded MH_01_s1 8.85, 15.68 MB. Step 6c (bd35767): 8.38, 15.07; 8.48, 14.50; 7.82, 13.05; 8.21, 15.58; 8.59, 15.62. Within the +-15 % rerun spread except Win 3.14 (+17 %); gate PASS on all | `Docs/BUDGET.md` |
+
+Seeds 1..6 were seen during step 6c (not during the step 8a tuning); seeds 7..9 and 200..205 were made
+after the rule.
+
+Not checked: TUM-VI (no data); the organisers' failure format (Q2): a failure that writes plausible
+noise, a slowly freezing sensor or a stuck value that changes in the last bit would not be caught;
+STUCK_ROWS assumes about 200 Hz; per-row confidence (W6) and a coverage table are not started; the
+backward-pass blow-up above is not fixed.
 

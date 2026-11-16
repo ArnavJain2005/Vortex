@@ -1,5 +1,5 @@
 {
- "commit": "bd35767",
+ "commit": "02e2e5d",
  "cpu": "Intel(R) Core(TM) i7-14650HX",
  "date": "2026-11-16",
  "imu_seconds": 184.1,
@@ -8,7 +8,7 @@
  "passes": [
   {
    "pass": "calibration scan + backward pre-anchor pass + forward pass (no smoother yet)",
-   "us_per_row": 8.132142857176385
+   "us_per_row": 8.516952743096338
   }
  ],
  "platform": "Windows",
@@ -16,54 +16,54 @@
  "process": [
   {
    "case": "python -S main.py",
-   "cpu_ms_median": 296.875,
-   "cpu_ms_per_imu_s": 1.6125746876697447,
-   "peak_private_mb_median": 10.6875,
-   "peak_rss_mb_max": 15.8671875,
-   "peak_rss_mb_median": 15.58203125,
-   "runs": 9,
-   "us_per_row": 8.206309071162577,
-   "wall_ms_median": 302.1563000002061,
-   "wall_ms_min": 298.3911999981501,
-   "wall_ms_per_imu_s": 1.6412618142325155
+   "cpu_ms_median": 328.125,
+   "cpu_ms_per_imu_s": 1.782319391634981,
+   "peak_private_mb_median": 10.8125,
+   "peak_rss_mb_max": 16.0390625,
+   "peak_rss_mb_median": 15.69921875,
+   "runs": 15,
+   "us_per_row": 8.975516023900775,
+   "wall_ms_median": 330.47850000002654,
+   "wall_ms_min": 305.40779999864753,
+   "wall_ms_per_imu_s": 1.7951032047801552
   },
   {
    "case": "python main.py",
-   "cpu_ms_median": 328.125,
-   "cpu_ms_per_imu_s": 1.782319391634981,
-   "peak_private_mb_median": 13.6328125,
-   "peak_rss_mb_max": 18.90625,
-   "peak_rss_mb_median": 18.60546875,
-   "runs": 9,
-   "us_per_row": 9.339679522072887,
-   "wall_ms_median": 343.88700000272365,
-   "wall_ms_min": 328.7602999989758,
-   "wall_ms_per_imu_s": 1.8679359044145771
+   "cpu_ms_median": 359.375,
+   "cpu_ms_per_imu_s": 1.9520640956002173,
+   "peak_private_mb_median": 14.02734375,
+   "peak_rss_mb_max": 19.390625,
+   "peak_rss_mb_median": 18.93359375,
+   "runs": 15,
+   "us_per_row": 9.75545627367866,
+   "wall_ms_median": 359.1958999968483,
+   "wall_ms_min": 345.81769999931566,
+   "wall_ms_per_imu_s": 1.9510912547357324
   }
  ],
  "python": "3.14.7",
  "rows": 36820,
- "runs": 9,
+ "runs": 15,
  "stages": [
   {
    "stage": "parse (read, split, 6 floats, timestamp)",
-   "us_per_row": 1.5947039652332367,
-   "us_per_row_min": 1.56130635525537
+   "us_per_row": 1.8008473656296584,
+   "us_per_row_min": 1.5842476914861148
   },
   {
    "stage": "parse + write (identity poses)",
-   "us_per_row": 2.261265616653457,
-   "us_per_row_min": 2.2247311243736063
+   "us_per_row": 2.584961977138084,
+   "us_per_row_min": 2.3488240088121803
   },
   {
    "stage": "parse + init + strapdown integrator",
-   "us_per_row": 6.781075502498433,
-   "us_per_row_min": 6.533984247704658
+   "us_per_row": 7.606442151056215,
+   "us_per_row_min": 7.090274307378598
   },
   {
    "stage": "parse + init + strapdown integrator + write (full main.py)",
-   "us_per_row": 8.132142857176385,
-   "us_per_row_min": 7.501175991313391
+   "us_per_row": 8.516952743096338,
+   "us_per_row_min": 7.85799565461687
   }
  ],
  "stored_bytes_per_block": 64,

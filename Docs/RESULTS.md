@@ -16,6 +16,7 @@ Clean (undegraded) IMU input. APE = absolute position error after Umeyama alignm
 | step7a-v1-v2volume | 3.86 / 0.539 | 5.98 / 1.019 | 3.78 / 0.974 | 6.35 / 1.285 | 6.39 / 1.084 | 5.27 | 0.980 |
 | step7a-v1v2 | 3.99 / 0.506 | 5.97 / 0.973 | 3.53 / 0.983 | 6.41 / 1.193 | 6.55 / 1.023 | 5.29 | 0.936 |
 | step7a-v2-no-v1 | 4.02 / 0.505 | 6.00 / 0.973 | 3.51 / 0.992 | 6.28 / 1.185 | 6.51 / 1.016 | 5.27 | 0.934 |
+| step8 | 3.99 / 0.506 | 5.97 / 0.973 | 3.53 / 0.983 | 6.41 / 1.193 | 6.55 / 1.023 | 5.29 | 0.936 |
 
 ## Every run
 
@@ -71,6 +72,11 @@ Clean (undegraded) IMU input. APE = absolute position error after Umeyama alignm
 | step7a-v2-no-v1 | main.py V1_ON=False | 290c894 | 2026-11-16 | MH_03_medium | PASS | 3.51 | 4.03 | 3.47 | 0.62 | 0.992 | 0.28 |
 | step7a-v2-no-v1 | main.py V1_ON=False | 290c894 | 2026-11-16 | MH_04_difficult | PASS | 6.28 | 4.03 | 6.17 | 1.66 | 1.185 | 0.22 |
 | step7a-v2-no-v1 | main.py V1_ON=False | 290c894 | 2026-11-16 | MH_05_difficult | PASS | 6.51 | 4.96 | 6.36 | 2.17 | 1.016 | 0.24 |
+| step8 | main.py | 02e2e5d | 2026-11-16 | MH_01_easy | PASS | 3.99 | 5.96 | 3.98 | 1.08 | 0.506 | 0.40 |
+| step8 | main.py | 02e2e5d | 2026-11-16 | MH_02_easy | PASS | 5.97 | 7.56 | 4.28 | 0.303 | 0.973 | 0.33 |
+| step8 | main.py | 02e2e5d | 2026-11-16 | MH_03_medium | PASS | 3.53 | 4.12 | 3.47 | 0.584 | 0.983 | 0.34 |
+| step8 | main.py | 02e2e5d | 2026-11-16 | MH_04_difficult | PASS | 6.41 | 3.76 | 6.35 | 1.55 | 1.193 | 0.24 |
+| step8 | main.py | 02e2e5d | 2026-11-16 | MH_05_difficult | PASS | 6.55 | 4.73 | 6.40 | 2.18 | 1.023 | 0.31 |
 
 # Degraded input
 
@@ -91,6 +97,7 @@ Copies made by `python -m vortex.degrade <clean sequence> data/degraded/<sequenc
 | step8-B-both | 9 | 6.761 | 1.146 | 2.060 | 5.228 | 3.389 |
 | step8-B-dead | 9 | 6.709 | 1.179 | 2.657 | 5.616 | 3.793 |
 | step8-B-off | 9 | 6.975 | 1.460 | 2.657 | 15.886 | 8.663 |
+| step8-deg | 33 | 6.346 | 1.058 | 1.999 | 4.916 | 4.951 |
 
 ## Every degraded run
 
@@ -219,3 +226,36 @@ Copies made by `python -m vortex.degrade <clean sequence> data/degraded/<sequenc
 | step8-B-off | main.py DEAD_ON=False FC_ON=False | ce94cef | 2026-11-16 | MH_05_difficult_s7 | PASS | 6.547 | 1.247 | 1.931 | 7.808 | 5.895 | 0.27 |
 | step8-B-off | main.py DEAD_ON=False FC_ON=False | ce94cef | 2026-11-16 | MH_05_difficult_s8 | PASS | 8.063 | 1.611 | 2.248 | 21.698 | 13.194 | 0.25 |
 | step8-B-off | main.py DEAD_ON=False FC_ON=False | ce94cef | 2026-11-16 | MH_05_difficult_s9 | PASS | 10.108 | 2.086 | 4.977 | 28.031 | 14.807 | 0.23 |
+| step8-deg | main.py | 02e2e5d | 2026-11-16 | MH_01_easy_s1 | PASS | 4.082 | 0.590 | 1.002 | 0.633 | 5.289 | 0.30 |
+| step8-deg | main.py | 02e2e5d | 2026-11-16 | MH_01_easy_s2 | PASS | 6.335 | 0.818 | 1.253 | 0.750 | 3.400 | 0.34 |
+| step8-deg | main.py | 02e2e5d | 2026-11-16 | MH_01_easy_s3 | PASS | 6.334 | 0.722 | 1.236 | 0.607 | 4.598 | 0.34 |
+| step8-deg | main.py | 02e2e5d | 2026-11-16 | MH_02_easy_s1 | PASS | 5.424 | 0.567 | 0.547 | 4.448 | 3.109 | 0.29 |
+| step8-deg | main.py | 02e2e5d | 2026-11-16 | MH_02_easy_s2 | PASS | 5.759 | 0.552 | 0.982 | 3.355 | 4.736 | 0.30 |
+| step8-deg | main.py | 02e2e5d | 2026-11-16 | MH_02_easy_s3 | PASS | 5.107 | 0.576 | 0.536 | 4.339 | 3.487 | 0.31 |
+| step8-deg | main.py | 02e2e5d | 2026-11-16 | MH_03_medium_s1 | PASS | 3.936 | 1.203 | 2.598 | 6.358 | 5.258 | 0.25 |
+| step8-deg | main.py | 02e2e5d | 2026-11-16 | MH_03_medium_s2 | PASS | 5.501 | 1.224 | 2.554 | 6.921 | 12.073 | 0.27 |
+| step8-deg | main.py | 02e2e5d | 2026-11-16 | MH_03_medium_s3 | PASS | 4.291 | 1.212 | 2.488 | 4.572 | 8.293 | 0.28 |
+| step8-deg | main.py | 02e2e5d | 2026-11-16 | MH_03_medium_s4 | PASS | 3.986 | 1.133 | 2.269 | 3.831 | 5.963 | 0.32 |
+| step8-deg | main.py | 02e2e5d | 2026-11-16 | MH_03_medium_s5 | PASS | 4.554 | 1.159 | 2.802 | 3.449 | 5.705 | 0.26 |
+| step8-deg | main.py | 02e2e5d | 2026-11-16 | MH_03_medium_s6 | PASS | 4.143 | 1.179 | 2.515 | 4.306 | 3.916 | 0.27 |
+| step8-deg | main.py | 02e2e5d | 2026-11-16 | MH_03_medium_s7 | PASS | 3.710 | 1.102 | 1.607 | 4.443 | 2.134 | 0.26 |
+| step8-deg | main.py | 02e2e5d | 2026-11-16 | MH_03_medium_s8 | PASS | 6.159 | 1.151 | 2.286 | 3.879 | 5.576 | 0.27 |
+| step8-deg | main.py | 02e2e5d | 2026-11-16 | MH_03_medium_s9 | PASS | 4.692 | 1.157 | 2.189 | 4.331 | 2.779 | 0.28 |
+| step8-deg | main.py | 02e2e5d | 2026-11-16 | MH_04_difficult_s1 | PASS | 6.652 | 1.239 | 1.334 | 5.976 | 4.212 | 0.20 |
+| step8-deg | main.py | 02e2e5d | 2026-11-16 | MH_04_difficult_s2 | PASS | 6.953 | 1.186 | 2.869 | 5.967 | 6.221 | 0.22 |
+| step8-deg | main.py | 02e2e5d | 2026-11-16 | MH_04_difficult_s3 | PASS | 7.977 | 1.226 | 2.392 | 6.206 | 4.862 | 0.21 |
+| step8-deg | main.py | 02e2e5d | 2026-11-16 | MH_04_difficult_s4 | PASS | 7.363 | 1.216 | 2.172 | 6.543 | 8.092 | 0.22 |
+| step8-deg | main.py | 02e2e5d | 2026-11-16 | MH_04_difficult_s5 | PASS | 7.007 | 1.216 | 1.072 | 6.279 | 4.794 | 0.21 |
+| step8-deg | main.py | 02e2e5d | 2026-11-16 | MH_04_difficult_s6 | PASS | 10.033 | 1.186 | 3.380 | 6.716 | 7.548 | 0.21 |
+| step8-deg | main.py | 02e2e5d | 2026-11-16 | MH_04_difficult_s7 | PASS | 7.264 | 1.173 | 2.340 | 6.053 | 3.489 | 0.21 |
+| step8-deg | main.py | 02e2e5d | 2026-11-16 | MH_04_difficult_s8 | PASS | 6.956 | 1.210 | 1.212 | 5.741 | 3.506 | 0.21 |
+| step8-deg | main.py | 02e2e5d | 2026-11-16 | MH_04_difficult_s9 | PASS | 8.206 | 1.251 | 1.814 | 5.865 | 1.925 | 0.20 |
+| step8-deg | main.py | 02e2e5d | 2026-11-16 | MH_05_difficult_s1 | PASS | 6.803 | 1.042 | 2.345 | 5.984 | 4.005 | 0.25 |
+| step8-deg | main.py | 02e2e5d | 2026-11-16 | MH_05_difficult_s2 | PASS | 7.563 | 1.087 | 3.167 | 5.511 | 5.959 | 0.26 |
+| step8-deg | main.py | 02e2e5d | 2026-11-16 | MH_05_difficult_s3 | PASS | 7.205 | 1.080 | 1.576 | 5.749 | 8.269 | 0.23 |
+| step8-deg | main.py | 02e2e5d | 2026-11-16 | MH_05_difficult_s4 | PASS | 7.621 | 1.061 | 2.216 | 5.700 | 3.056 | 0.23 |
+| step8-deg | main.py | 02e2e5d | 2026-11-16 | MH_05_difficult_s5 | PASS | 6.827 | 1.049 | 1.392 | 5.614 | 5.401 | 0.25 |
+| step8-deg | main.py | 02e2e5d | 2026-11-16 | MH_05_difficult_s6 | PASS | 7.110 | 1.075 | 2.712 | 5.362 | 4.622 | 0.25 |
+| step8-deg | main.py | 02e2e5d | 2026-11-16 | MH_05_difficult_s7 | PASS | 6.548 | 1.109 | 1.739 | 5.540 | 3.131 | 0.21 |
+| step8-deg | main.py | 02e2e5d | 2026-11-16 | MH_05_difficult_s8 | PASS | 7.624 | 1.071 | 1.917 | 5.822 | 5.276 | 0.22 |
+| step8-deg | main.py | 02e2e5d | 2026-11-16 | MH_05_difficult_s9 | PASS | 9.691 | 1.093 | 3.440 | 5.380 | 2.689 | 0.24 |
