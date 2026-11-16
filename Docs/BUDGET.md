@@ -10,49 +10,49 @@ Timing varies about +-15% between reruns on the same laptop.
 
 | Run | Commit | Date | OS | CPU | Python | Input | Rows |
 |---|---|---|---|---|---|---|---|
-| linux-wsl2-py312 | 6862f9d | 2026-11-15 | Linux 5.15.167.4-microsoft-standard-WSL2 | Intel(R) Core(TM) i7-14650HX | 3.12.3 | SYNTHETIC (tools/synth_euroc.py, seed 0) | 36000 (180 s) |
-| windows-py313 | 6862f9d | 2026-11-16 | Windows 11 | Intel(R) Core(TM) i7-14650HX | 3.13.5 | SYNTHETIC (tools/synth_euroc.py, seed 0) | 36000 (180 s) |
-| windows-py314-mh01 | 6862f9d | 2026-11-16 | Windows 11 | Intel(R) Core(TM) i7-14650HX | 3.14.7 | real: data/euroc/MH_01_easy/mav0/imu0/data.csv | 36820 (184 s) |
-| windows-py314 | 6862f9d | 2026-11-16 | Windows 11 | Intel(R) Core(TM) i7-14650HX | 3.14.7 | SYNTHETIC (tools/synth_euroc.py, seed 0) | 36000 (180 s) |
+| linux-wsl2-py312 | 290c894 | 2026-11-16 | Linux 5.15.167.4-microsoft-standard-WSL2 | Intel(R) Core(TM) i7-14650HX | 3.12.3 | SYNTHETIC (tools/synth_euroc.py, seed 0) | 36000 (180 s) |
+| windows-py313 | 290c894 | 2026-11-16 | Windows 11 | Intel(R) Core(TM) i7-14650HX | 3.13.5 | SYNTHETIC (tools/synth_euroc.py, seed 0) | 36000 (180 s) |
+| windows-py314-mh01 | 290c894 | 2026-11-16 | Windows 11 | Intel(R) Core(TM) i7-14650HX | 3.14.7 | real: data/euroc/MH_01_easy/mav0/imu0/data.csv | 36820 (184 s) |
+| windows-py314 | 290c894 | 2026-11-16 | Windows 11 | Intel(R) Core(TM) i7-14650HX | 3.14.7 | SYNTHETIC (tools/synth_euroc.py, seed 0) | 36000 (180 s) |
 
 ## Summary: `python -S main.py` against the budget
 
 | Run | us per row | Left of 100 (of 50 target) | Wall ms per IMU-s | CPU ms per IMU-s | Left of 20 ms | Peak RSS MB | Peak private MB | tracemalloc KB | Left of 4 MB | Output |
 |---|---|---|---|---|---|---|---|---|---|---|
-| linux-wsl2-py312 | 6.20 | 93.8 (43.8) | 1.24 | 0.83 | 18.8 | 11.48 | - | 158.8 | 3937 KB | PASS |
-| windows-py313 | 5.45 | 94.5 (44.5) | 1.09 | 1.04 | 18.9 | 12.97 | 7.40 | 162.9 | 3933 KB | PASS |
-| windows-py314-mh01 | 6.31 | 93.7 (43.7) | 1.26 | 1.27 | 18.7 | 13.71 | 8.29 | 578.8 | 3517 KB | PASS |
-| windows-py314 | 6.11 | 93.9 (43.9) | 1.22 | 1.22 | 18.8 | 13.38 | 7.97 | 282.8 | 3813 KB | PASS |
+| linux-wsl2-py312 | 7.52 | 92.5 (42.5) | 1.50 | 1.28 | 18.5 | 12.78 | - | 163.7 | 3932 KB | PASS |
+| windows-py313 | 8.53 | 91.5 (41.5) | 1.71 | 1.65 | 18.3 | 14.34 | 9.42 | 167.8 | 3928 KB | PASS |
+| windows-py314-mh01 | 8.69 | 91.3 (41.3) | 1.74 | 1.70 | 18.3 | 15.36 | 10.47 | 585.4 | 3511 KB | PASS |
+| windows-py314 | 8.90 | 91.1 (41.1) | 1.78 | 1.74 | 18.2 | 14.80 | 9.93 | 287.7 | 3808 KB | PASS |
 
 ## Stages (in-process, cumulative, median us per row)
 
 | Run | Stage | us per row | min |
 |---|---|---|---|
-| linux-wsl2-py312 | parse (read, split, 6 floats, timestamp) | 1.37 | 1.09 |
-| linux-wsl2-py312 | parse + write (identity poses) | 2.06 | 1.77 |
-| linux-wsl2-py312 | parse + init + strapdown integrator | 3.17 | 2.81 |
-| linux-wsl2-py312 | parse + init + strapdown integrator + write (full main.py) | 4.26 | 3.89 |
-| windows-py313 | parse (read, split, 6 floats, timestamp) | 1.45 | 1.41 |
-| windows-py313 | parse + write (identity poses) | 2.20 | 2.14 |
-| windows-py313 | parse + init + strapdown integrator | 3.51 | 3.38 |
-| windows-py313 | parse + init + strapdown integrator + write (full main.py) | 5.27 | 4.89 |
-| windows-py314-mh01 | parse (read, split, 6 floats, timestamp) | 1.67 | 1.61 |
-| windows-py314-mh01 | parse + write (identity poses) | 2.47 | 2.31 |
-| windows-py314-mh01 | parse + init + strapdown integrator | 4.36 | 4.06 |
-| windows-py314-mh01 | parse + init + strapdown integrator + write (full main.py) | 6.01 | 5.18 |
-| windows-py314 | parse (read, split, 6 floats, timestamp) | 1.58 | 1.56 |
-| windows-py314 | parse + write (identity poses) | 2.33 | 2.24 |
-| windows-py314 | parse + init + strapdown integrator | 4.26 | 3.92 |
-| windows-py314 | parse + init + strapdown integrator + write (full main.py) | 5.69 | 5.09 |
+| linux-wsl2-py312 | parse (read, split, 6 floats, timestamp) | 1.38 | 1.14 |
+| linux-wsl2-py312 | parse + write (identity poses) | 2.00 | 1.82 |
+| linux-wsl2-py312 | parse + init + strapdown integrator | 4.97 | 4.68 |
+| linux-wsl2-py312 | parse + init + strapdown integrator + write (full main.py) | 6.02 | 5.74 |
+| windows-py313 | parse (read, split, 6 floats, timestamp) | 1.47 | 1.42 |
+| windows-py313 | parse + write (identity poses) | 2.16 | 2.14 |
+| windows-py313 | parse + init + strapdown integrator | 6.38 | 5.76 |
+| windows-py313 | parse + init + strapdown integrator + write (full main.py) | 7.30 | 6.96 |
+| windows-py314-mh01 | parse (read, split, 6 floats, timestamp) | 1.68 | 1.60 |
+| windows-py314-mh01 | parse + write (identity poses) | 2.39 | 2.31 |
+| windows-py314-mh01 | parse + init + strapdown integrator | 7.14 | 6.68 |
+| windows-py314-mh01 | parse + init + strapdown integrator + write (full main.py) | 7.81 | 7.61 |
+| windows-py314 | parse (read, split, 6 floats, timestamp) | 1.68 | 1.57 |
+| windows-py314 | parse + write (identity poses) | 2.40 | 2.29 |
+| windows-py314 | parse + init + strapdown integrator | 7.50 | 6.75 |
+| windows-py314 | parse + init + strapdown integrator + write (full main.py) | 8.41 | 7.90 |
 
 ## Passes
 
 | Run | Pass | us per row |
 |---|---|---|
-| linux-wsl2-py312 | calibration scan + backward pre-anchor pass + forward pass (no smoother yet) | 4.26 |
-| windows-py313 | calibration scan + backward pre-anchor pass + forward pass (no smoother yet) | 5.27 |
-| windows-py314-mh01 | calibration scan + backward pre-anchor pass + forward pass (no smoother yet) | 6.01 |
-| windows-py314 | calibration scan + backward pre-anchor pass + forward pass (no smoother yet) | 5.69 |
+| linux-wsl2-py312 | calibration scan + backward pre-anchor pass + forward pass (no smoother yet) | 6.02 |
+| windows-py313 | calibration scan + backward pre-anchor pass + forward pass (no smoother yet) | 7.30 |
+| windows-py314-mh01 | calibration scan + backward pre-anchor pass + forward pass (no smoother yet) | 7.81 |
+| windows-py314 | calibration scan + backward pre-anchor pass + forward pass (no smoother yet) | 8.41 |
 
 ## Witnesses
 
@@ -71,11 +71,11 @@ None implemented yet.
 
 | Run | Command | us per row | Wall ms per IMU-s | Peak RSS MB |
 |---|---|---|---|---|
-| linux-wsl2-py312 | `python -S main.py` | 6.20 | 1.24 | 11.48 |
-| linux-wsl2-py312 | `python main.py` | 6.06 | 1.21 | 12.44 |
-| windows-py313 | `python -S main.py` | 5.45 | 1.09 | 12.97 |
-| windows-py313 | `python main.py` | 5.83 | 1.17 | 13.54 |
-| windows-py314-mh01 | `python -S main.py` | 6.31 | 1.26 | 13.71 |
-| windows-py314-mh01 | `python main.py` | 7.03 | 1.41 | 17.01 |
-| windows-py314 | `python -S main.py` | 6.11 | 1.22 | 13.38 |
-| windows-py314 | `python main.py` | 6.96 | 1.39 | 16.50 |
+| linux-wsl2-py312 | `python -S main.py` | 7.52 | 1.50 | 12.78 |
+| linux-wsl2-py312 | `python main.py` | 8.06 | 1.61 | 13.89 |
+| windows-py313 | `python -S main.py` | 8.53 | 1.71 | 14.34 |
+| windows-py313 | `python main.py` | 8.76 | 1.75 | 14.94 |
+| windows-py314-mh01 | `python -S main.py` | 8.69 | 1.74 | 15.36 |
+| windows-py314-mh01 | `python main.py` | 9.86 | 1.97 | 18.58 |
+| windows-py314 | `python -S main.py` | 8.90 | 1.78 | 14.80 |
+| windows-py314 | `python main.py` | 9.87 | 1.97 | 17.93 |
