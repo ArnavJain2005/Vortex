@@ -597,3 +597,37 @@ the record and for a later attempt; no held-out run was spent, since the tuning 
 out. What dominates the error is the trajectory's offset from the never-moving level (step 7a), which
 nothing in the IMU-only filter observes.
 
+
+## Step 9a: compile memory (16 Nov 2026, branch `track3/step9-bundle`)
+
+**Problem.** `python -S main.py` compiles its own ~1,000-line source on every run. Measured before
+any change (scratch probe, `tools/measure_floor.run_measured`, MH_01, 7 runs, median peak RSS):
+
+| | Win 3.14 | Win 3.13 |
+|---|---|---|
+| `python -S -c "import math, array"` (floor) | 10.72 MB | 10.44 MB |
+| compile `main.py` only | 15.55 MB | 15.27 MB |
+| import the same code from a cached `.pyc` only | 10.91 MB | 10.57 MB |
+| run `main.py` from source | 16.00 MB | 15.64 MB |
+| run a 3-line stub importing the same code from a `.pyc` | 12.05 MB | 11.23 MB |
+
+Compiling costs about 4.8 MB; loading the compiled code costs 0.2 MB. A script given on the command
+line is always compiled from source, but an imported module is loaded from `__pycache__` when a
+matching `.pyc` is there.
+
+**Change.** The estimator moves unchanged to `pathfinder.py`; `main.py` becomes a stub (imports `sys`
+only) that puts its own folder on `sys.path`, imports `pathfinder` and calls `pathfinder.main`. The
+bundle ships hash-checked `.pyc` files (valid whatever the file times after unzipping) for each Python
+we can build them with; without a matching one, Python compiles the source as before.
+
+**Rule (written before the change).** Ship the stub only if all hold:
+1. Output byte-identical to the current `main.py` on clean MH_01..05 and every `data/degraded` copy.
+2. Peak RSS of the MH_01 run with a matching `.pyc` at least 2 MB lower than from source, on Win
+   3.14, Win 3.13 and WSL2 Linux 3.12.
+3. Without a matching `.pyc` (cold, `-X pycache_prefix` on an empty folder), peak RSS at most 0.5 MB
+   above the current `main.py`.
+4. `benchmark.py --gate` passes on all three.
+
+This does not reach 8 MB: the interpreter with `math` and `array` alone peaks at 9.3 to 10.7 MB
+(`Docs/FLOOR.md`). Whether a C core is needed still depends on Q4.
+
