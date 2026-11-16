@@ -78,7 +78,7 @@ python -m vortex.degrade data/euroc/MH_03_medium data/degraded/MH_03_medium_s8 -
 python tools/blind_study.py --tag NAME data/euroc/MH_01_easy ... [--seed0 N --taus cv,0.5]  # blind 5 s study; Docs/BLIND.md
 python tools/coverage.py --tag NAME --seqs MH_01_easy,MH_02_easy --seeds 100,101 [--k68 K --k95 K]  # W6 sigma coverage; Docs/COVERAGE.md
 python tools/drag_fit.py data/euroc/MH_01_easy [--after-rest]              # 16 Nov 2026: NO-GO (pre-registered); see Docs/DRAG.md
-python tools/drag_fit.py --rule v2 data/euroc/V1_01_easy data/euroc/V1_02_medium data/euroc/V1_03_difficult  # rule v2 decision; run ONCE
+python tools/drag_fit.py --rule v2 data/euroc/V1_01_easy data/euroc/V1_02_medium data/euroc/V1_03_difficult  # rule v2 decision; run ONCE: 17 Nov 2026 NO-GO (V3 dropped)
 python tools/integrator_check.py data/euroc/MH_01_easy                     # 16 Nov 2026: own gyro bias within 1.2e-3 rad/s of GT
 python -m vortex check --synthetic
 python -S tools/measure_floor.py --runs 30 [--cbin floor_c.exe]   # 15 Nov 2026: Win 3.13/3.14, WSL2 3.12 (Linux needs /usr/bin/time)

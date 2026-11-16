@@ -1,0 +1,63 @@
+{
+ "airborne_s": 143.5550000667572,
+ "axes": {
+  "a": {
+   "checks": {
+    "k_close": true,
+    "r2_fixed_ok": true
+   },
+   "dir": [
+    -0.05728267309206863,
+    -0.9983579995990552,
+    0.0
+   ],
+   "k_free": 0.2238134865673432,
+   "k_rel_dev": 0.11906743283671598,
+   "pass": true,
+   "r2_fixed_k": 0.5418486537350538,
+   "r2_free": 0.5480529999655411
+  },
+  "b": {
+   "checks": {
+    "k_close": false,
+    "r2_fixed_ok": false
+   },
+   "dir": [
+    -0.34289022816540315,
+    0.019673973518869774,
+    -0.9391694342314685
+   ],
+   "k_free": 0.08341477178933458,
+   "k_rel_dev": 0.5829261410533271,
+   "pass": false,
+   "r2_fixed_k": -0.049472786643703026,
+   "r2_free": 0.05188846966622562
+  }
+ },
+ "date": "2026-11-17",
+ "pass": false,
+ "rest_end_s": 0.0,
+ "role": "DECISION",
+ "rows_used": 28712,
+ "rule": "v2",
+ "rule_v2": {
+  "decision_sequences": [
+   "V1_01_easy",
+   "V1_02_medium",
+   "V1_03_difficult"
+  ],
+  "k_fixed": 0.2,
+  "max_k_rel_dev": 0.3,
+  "min_pass": 2,
+  "min_r2": 0.5,
+  "rest_min_s": 5.0,
+  "rest_speed": 0.05,
+  "smooth_s": 1.0
+ },
+ "sequence": "V1_01_easy",
+ "thrust_dir": [
+  0.9376273176439053,
+  -0.05379813567914425,
+  -0.3434541800667789
+ ]
+}
