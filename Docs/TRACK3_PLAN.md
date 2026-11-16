@@ -381,3 +381,41 @@ noise, a slowly freezing sensor or a stuck value that changes in the last bit wo
 STUCK_ROWS assumes about 200 Hz; per-row confidence (W6) and a coverage table are not started; the
 backward-pass blow-up above is not fixed.
 
+
+## Step 6d: rows before the anchor (16 Nov 2026, branch `track3/step6d-backward`)
+
+**Problem.** Rows before the calibration anchor (mid still run, 27-28 s into MH_01/02) get poses from
+a backward strapdown pass: dead reckoning with no witnesses. Found in step 8a: one degraded MH_02 copy
+reached 757 m error there (APE 134.6 m) after a dropout before the anchor.
+
+**Switch** `PRE_HOLD` (`vortex/core/witness.py`, mirrored in `main.py`): rows before the anchor keep the
+anchor's position (0, 0, 0); their attitude still comes from the backward gyro integration. Off = the
+step 6b backward pass.
+
+**Tuning (MH_01/02 only;** scratch study, reference estimator, alignment from each variant's own clean
+run; ground truth for scoring only). Clean, and 20 degraded copies per sequence (default levels, seeds
+100..119):
+
+| | Backward pass (now) | Backward to the first gap, then hold | Hold position |
+|---|---|---|---|
+| Clean MH_01 APE / pre-anchor RMSE m | 3.986 / 4.38 | same | 3.911 / 4.19 |
+| Clean MH_02 APE / pre-anchor RMSE m | 5.975 / 10.98 | same | 3.846 / 4.25 |
+| Degraded MH_01, mean APE (max) m | 5.881 (16.33) | 5.032 (8.06) | 4.236 (5.52) |
+| Degraded MH_01, mean pre-anchor RMSE m | 10.29 | 7.54 | 4.19 |
+
+Backward dead reckoning is worse than standing still even on clean data (the step 7a lesson again); the
+added noise from 10 s on makes it worse. Degraded MH_02: the calibration fell back to the step 6a
+first-second initialisation in 19 of 20 copies (the added noise starts before its still run and breaks
+the still test), so there is no backward segment and nothing changes; see "Found" below.
+
+**Decision rule, committed before any held-out run with the switch.** Held-out: clean MH_03..05 and new
+copies MH_03..05 x seeds 10..12 (default levels; made after this commit). `PRE_HOLD` ships on only if
+(a) clean MH_03..05 mean APE (SE3) is not worse, (b) on the 9 new copies mean APE (given alignment, from
+each setting's own clean run) is not worse, and (c) no single held-out run's APE is worse by more than
+10 %. Otherwise it ships off. Caveat: MH_03..05 anchors are early (11.8, 13.5 and 1.5 s), so the
+held-out test has little to act on; this is a no-harm test there, the gain is measured on MH_01/02.
+
+**Found, not fixed.** When the added noise starts before the still run (healthy_s 10 s, MH_02 still run
+at about 20-36 s), the still test fails and calibration falls back to the first second: gyro bias and
+tilt are then not calibrated. The organisers' healthy length is unknown (Q2).
+

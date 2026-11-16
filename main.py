@@ -85,6 +85,7 @@ STUCK_ROWS = 5
 DEAD_ON = True
 FC_TAU = 0.5
 FC_ON = True
+PRE_HOLD = False
 N = 15
 
 LAST = {"pre_rows": 0, "calibrated": False, "zupt_ticks": 0, "ba": (0.0, 0.0, 0.0), "jam": (-1.0, -1.0),
@@ -637,8 +638,11 @@ def run(src, dst, write=True, integrate=True):
                 o = 7 * n
                 n += 1
                 if write:
-                    ap(fmt % (sec, frac, pre[o], pre[o + 1], pre[o + 2], pre[o + 4], pre[o + 5], pre[o + 6],
-                              pre[o + 3]))
+                    if PRE_HOLD:                    # step 6d: position held at the anchor's
+                        ap(fmt % (sec, frac, 0.0, 0.0, 0.0, pre[o + 4], pre[o + 5], pre[o + 6], pre[o + 3]))
+                    else:
+                        ap(fmt % (sec, frac, pre[o], pre[o + 1], pre[o + 2], pre[o + 4], pre[o + 5], pre[o + 6],
+                                  pre[o + 3]))
                     k -= 1
                     if not k:
                         w(b"".join(out))
