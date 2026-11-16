@@ -214,3 +214,64 @@ def test_never_nan_with_witnesses_on(second_rest):
     assert all(math.isfinite(c) for row in out for c in row)
     for r in out:
         assert sum(c * c for c in r[3:]) == pytest.approx(1.0)
+
+
+# ---------- step 6c: noise meter and dropout covariance (SYNTHETIC) ----------
+
+def test_gap_inflate_matches_constant_acceleration_model():
+    rng = np.random.default_rng(4)
+    P0 = _rand_spd(rng)
+    L, tilt2, dv2 = 1.5, 4e-3, (0.3, 0.2, 0.05)
+    s = (L / (wx.GAP_H_TICKS * wx.TICK_S)) ** 2
+    want = P0.copy()
+    for k in range(3):
+        G = np.zeros(15)
+        G[k], G[3 + k] = L / 2, 1.0            # p += v L, v += a L with a constant: p gets a L^2 / 2
+        want += np.outer(G, G) * dv2[k] * s
+    want[6, 6] += 0.5 * tilt2 * s
+    want[7, 7] += 0.5 * tilt2 * s
+    P = [float(x) for x in P0.ravel()]
+    wx.gap_inflate(P, L, tilt2, dv2)
+    assert np.allclose(np.array(P).reshape(15, 15), want, rtol=1e-13, atol=1e-15)
+
+
+def test_gap_switch_changes_nothing_without_gaps(second_rest):
+    rows, _, _ = second_rest
+    assert wx.estimate(rows, gap_on=True) == wx.estimate(rows, gap_on=False)
+
+
+def test_noise_meter_below_datasheet_changes_nothing(second_rest):
+    rows, _, _ = second_rest     # 2e-3 rad/s and 2e-2 m/s^2 per sample: below the filter's densities
+    log = []
+    assert wx.estimate(rows, jam=True, log=log) == wx.estimate(rows, jam=False)
+    jg = np.median([L["jg"] for L in log])
+    assert jg < wx.GYRO_NOISE ** 2
+
+
+def test_noise_meter_reads_the_added_white_noise():
+    rows, _, _ = _profile(40.0, [(8, 10, -1), (24, 26, +1)], gyro_noise=0.03, acc_noise=0.4, seed=5)
+    log = []
+    wx.estimate(rows, log=log)
+    dt = DT_NS * 1e-9
+    jg = np.median([L["jg"] for L in log[40:]])
+    ja = np.median([L["ja"] for L in log[40:]])
+    # the profile's smooth motion barely shows in second differences: the meter reads the noise
+    assert jg == pytest.approx(0.03 ** 2 * dt, rel=0.1)
+    assert ja == pytest.approx(0.4 ** 2 * dt, rel=0.1)
+
+
+def test_dropout_inflates_velocity_and_tilt_variance(second_rest):
+    rows, _, _ = second_rest
+    i0 = 6000                                               # 30 s: moving, after the calibration rest
+    bad = list(rows)
+    bad[i0:i0 + 400] = [(t, (float("nan"),) * 6) for t, _ in bad[i0:i0 + 400]]   # a 2 s dropout
+    t_end = bad[i0 + 400][0]
+    after = {}
+    for on in (True, False):
+        log = []
+        wx.estimate(bad, gap_on=on, log=log)
+        L = next(L for L in log if L["t"] >= t_end - DT_NS)   # closed by the first row after it
+        assert L["gap"] == pytest.approx(2.0, abs=0.01)
+        after[on] = L
+    assert after[True]["pv"] > 2 * after[False]["pv"]
+    assert after[True]["ptilt"] > 2 * after[False]["ptilt"]

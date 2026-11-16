@@ -212,3 +212,27 @@ MH_01..05 the mean APE and mean RPE 1 s are each within +5 % of step 7a. Each sw
 other one on and off; both readings are reported. MH_01/02 copies are reported but do not decide.
 Caveat: the dropout-covariance idea came from diagnosing the step 7a baseline on MH_03_medium_s1 (a
 held-out copy: velocity ran away to 10 m/s after the third dropout); no constant was set from it.
+
+**Rule v1 outcome** (16 Nov; reference filter via a scratch runner, step 7a reproduced exactly with both
+switches off; held-out = MH_03..05 x seeds 1..3, means):
+
+| Reading | APE m | Dropout growth m | Blind 5 s growth m |
+|---|---|---|---|
+| both off (= step 7a) | 8.869 | 3.471 | 22.004 |
+| JAM only | 7.659 | 2.818 | 14.127 |
+| GAP only | 6.852 | 3.303 | 13.478 |
+| both on | 6.661 | 2.789 | 9.821 |
+
+GAP_ON fails (b) in both readings: dropout growth -4.8 % (JAM off) and -1.0 % (JAM on), short of 5 %,
+although APE improves 23 % / 13 % and blind growth 39 % / 30 %. JAM_ON passes with GAP off (APE -13.6 %)
+and fails (b) with GAP on (-2.8 %); rule v1 did not say how to combine the readings. Clean MH_01..05:
+JAM_ON 5.375 m APE (+1.6 %), 0.941 m RPE 1 s (+0.5 %): passes (c); GAP_ON cannot change a run without
+gaps (tested). **Under rule v1 both switches stay off.**
+
+**Rule v2 (replication), committed before seeds 4..6 exist.** v1's target for GAP was the wrong one: the
+dropout covariance acts after the window (the witnesses pull the tilt back), while dropout growth is
+measured inside it. New copies MH_03..05 x seeds 4..6 (noise and dropout realisations never run), same
+constants, no tuning. Each switch is judged with the other on; if one fails, the other is re-judged with
+it off. A switch ships on only if on those 9 copies (a) mean APE is not worse, (b) mean APE or mean blind
+5 s growth improves by at least 5 %, and (c) the clean condition of v1 holds. Otherwise it ships off.
+This is a second look chosen after seeing v1: weaker evidence than a first pre-registered test.
