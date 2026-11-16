@@ -3,7 +3,8 @@
 Organisers' limits: peak RAM 8 MB; 20 ms compute per 1 s of IMU (100 us per row at 200 Hz); single thread; offline.
 Our design targets (2x margin for an unknown evaluator CPU): 50 us per row; 4 MB tracemalloc peak.
 
-Peak RSS includes the CPython interpreter (8.4 MB on Linux, 9.5 MB on Windows before any work; see `Docs/FLOOR.md`). Whether the 8 MB limit means whole-process RSS is open question Q4.
+Peak RSS is whole-process and in MiB (2^20 bytes). It includes the CPython interpreter: on our machines a bare `python -S` peaks at 8.4 MiB (WSL2, Python 3.12) and 9.5 MiB (Windows) before any work (`Docs/FLOOR.md`); other Python builds and OSes differ, so this floor is not universal. Whether the 8 MB limit means whole-process RSS, and MB or MiB, is open question Q4.
+`--gate` uses the strictest reading: the worst run's peak RSS <= 8,000,000 bytes (7.63 MiB). IMU seconds come from the input's timestamps (runs recorded before this change used rows / 200).
 `main.py` is a stub that imports `pathfinder.py`, so Python loads its cached bytecode instead of compiling it (step 9a); the process table also shows a run with no cached bytecode.
 Timing varies about +-15% between reruns on the same laptop.
 
@@ -20,27 +21,27 @@ Timing varies about +-15% between reruns on the same laptop.
 
 ## Summary: `python -S main.py` against the budget
 
-| Run | us per row | Left of 100 (of 50 target) | Wall ms per IMU-s | CPU ms per IMU-s | Left of 20 ms | Peak RSS MB | Peak private MB | tracemalloc KB | Left of 4 MB | Output |
-|---|---|---|---|---|---|---|---|---|---|---|
-| linux-wsl2-py312-mh01 | 16.01 | 84.0 (34.0) | 3.20 | 1.25 | 16.8 | 10.23 | - | 463.2 | 3633 KB | PASS |
-| linux-wsl2-py312 | 9.77 | 90.2 (40.2) | 1.95 | 1.39 | 18.0 | 10.07 | - | 234.3 | 3862 KB | PASS |
-| windows-py313 | 8.67 | 91.3 (41.3) | 1.73 | 1.65 | 18.3 | 11.07 | 5.52 | 234.3 | 3862 KB | PASS |
-| windows-py314-mh01-degraded | 8.91 | 91.1 (41.1) | 1.78 | 1.74 | 18.2 | 12.00 | 6.66 | 587.0 | 3509 KB | PASS |
-| windows-py314-mh01 | 9.31 | 90.7 (40.7) | 1.86 | 1.78 | 18.1 | 11.80 | 6.47 | 587.0 | 3509 KB | PASS |
-| windows-py314 | 10.17 | 89.8 (39.8) | 2.03 | 1.91 | 18.0 | 11.46 | 6.05 | 289.3 | 3807 KB | PASS |
+| Run | us per row | Left of 100 (of 50 target) | Wall ms per IMU-s | CPU ms per IMU-s | Left of 20 ms | Peak RSS MiB (median / max) | Under 8,000,000 B | Peak private MiB | tracemalloc KB | Left of 4 MB | Output |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| linux-wsl2-py312-mh01 | 16.01 | 84.0 (34.0) | 3.20 | 1.25 | 16.8 | 10.23 / 10.31 | **NO** | - | 463.2 | 3633 KB | PASS |
+| linux-wsl2-py312 | 9.77 | 90.2 (40.2) | 1.95 | 1.39 | 18.0 | 10.07 / 10.12 | **NO** | - | 234.3 | 3862 KB | PASS |
+| windows-py313 | 8.67 | 91.3 (41.3) | 1.73 | 1.65 | 18.3 | 11.07 / 11.12 | **NO** | 5.52 | 234.3 | 3862 KB | PASS |
+| windows-py314-mh01-degraded | 8.91 | 91.1 (41.1) | 1.78 | 1.74 | 18.2 | 12.00 / 12.11 | **NO** | 6.66 | 587.0 | 3509 KB | PASS |
+| windows-py314-mh01 | 9.31 | 90.7 (40.7) | 1.86 | 1.78 | 18.1 | 11.80 / 12.10 | **NO** | 6.47 | 587.0 | 3509 KB | PASS |
+| windows-py314 | 10.17 | 89.8 (39.8) | 2.03 | 1.91 | 18.0 | 11.46 / 11.52 | **NO** | 6.05 | 289.3 | 3807 KB | PASS |
 
 ## Summary: the C core (`main.cpp`) against the budget
 
 Runs measured with `--cbin`. Its output is compared byte for byte with `python -S main.py`'s.
 
-| Run | us per row | Wall ms per IMU-s | CPU ms per IMU-s | Peak RSS MB | Left of 8 MB | Peak private MB | Same bytes as main.py | Output |
+| Run | us per row | Wall ms per IMU-s | CPU ms per IMU-s | Peak RSS MiB (median / max) | Under 8,000,000 B | Peak private MiB | Same bytes as main.py | Output |
 |---|---|---|---|---|---|---|---|---|
-| linux-wsl2-py312-mh01 | 3.98 | 0.80 | 0.16 | 2.70 | 5.30 | - | yes | PASS |
-| linux-wsl2-py312 | 1.21 | 0.24 | 0.22 | 2.38 | 5.62 | - | yes | PASS |
-| windows-py313 | 1.55 | 0.31 | 0.26 | 4.45 | 3.55 | 2.15 | yes | PASS |
-| windows-py314-mh01-degraded | 1.32 | 0.26 | 0.19 | 4.75 | 3.25 | 2.15 | yes | PASS |
-| windows-py314-mh01 | 1.28 | 0.26 | 0.25 | 4.75 | 3.25 | 2.15 | yes | PASS |
-| windows-py314 | 1.66 | 0.33 | 0.35 | 4.44 | 3.56 | 2.15 | yes | PASS |
+| linux-wsl2-py312-mh01 | 3.98 | 0.80 | 0.16 | 2.70 / 2.77 | yes | - | yes | PASS |
+| linux-wsl2-py312 | 1.21 | 0.24 | 0.22 | 2.38 / 2.42 | yes | - | yes | PASS |
+| windows-py313 | 1.55 | 0.31 | 0.26 | 4.45 / 4.45 | yes | 2.15 | yes | PASS |
+| windows-py314-mh01-degraded | 1.32 | 0.26 | 0.19 | 4.75 / 4.75 | yes | 2.15 | yes | PASS |
+| windows-py314-mh01 | 1.28 | 0.26 | 0.25 | 4.75 / 4.75 | yes | 2.15 | yes | PASS |
+| windows-py314 | 1.66 | 0.33 | 0.35 | 4.44 / 4.45 | yes | 2.15 | yes | PASS |
 
 ## Stages (in-process, cumulative, median us per row)
 
@@ -84,7 +85,7 @@ Runs measured with `--cbin`. Its output is compared byte for byte with `python -
 
 ## Witnesses
 
-None implemented yet.
+The shipped witnesses (V1 stillness, V2 envelope and position prior; switches in `pathfinder.py`) run inside the forward pass: their cost is in the last stage row above, not timed separately.
 
 ## Stored state for offline passes
 
@@ -99,7 +100,7 @@ None implemented yet.
 
 ## Process variants
 
-| Run | Command | us per row | Wall ms per IMU-s | Peak RSS MB |
+| Run | Command | us per row | Wall ms per IMU-s | Peak RSS MiB |
 |---|---|---|---|---|
 | linux-wsl2-py312-mh01 | `python -S main.py` | 16.01 | 3.20 | 10.23 |
 | linux-wsl2-py312-mh01 | `python main.py` | 20.32 | 4.06 | 10.92 |
