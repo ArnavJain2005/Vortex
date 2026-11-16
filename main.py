@@ -12,11 +12,13 @@ line that is not blank and does not start with '#' (vortex/rowspec.py states the
 timestamp is the input ns value with the decimal point moved 9 digits left, done on the text, so it
 is exact. A row whose timestamp is not an integer repeats the previous row's timestamp.
 
-STATUS (steps 7a + 6c): self-calibration on the longest still run in the first 60 s (gyro bias, g, tilt),
+STATUS (steps 7a + 6c + 8a + 6d): self-calibration on the longest still run in the first 60 s (gyro bias, g, tilt),
 backward integration from mid-run over the rows before it (dead reckoning, no witnesses), then a
 forward error-state Kalman filter (15 states, one covariance step per 0.25 s tick) with the
 witnesses V1 stillness (ZUPT + gyro bias) and V2 flight envelope (speed and volume); dropouts and
 gaps add covariance learned from the recent motion (GAP_ON); a noise meter (JAM_ON) is built but off;
+dead sensors (stuck or all-zero rows) are treated as missing (DEAD_ON) and velocity decays toward 0 in gaps (FC_ON);
+rows before the anchor keep the anchor's position, attitude from the backward pass (PRE_HOLD);
 fallback to the step 6a first-second initialisation. Rules: vortex/core/witness.py. Performance: Docs/BUDGET.md.
 
 Passes: (1) calibration scan of the first 60 s; (2) rows before the anchor are stored (64 bytes per
@@ -80,6 +82,11 @@ GAP_H_TICKS = 8
 GAP_TAU = 20.0
 JAM_ON = False
 GAP_ON = True
+STUCK_ROWS = 5
+DEAD_ON = True
+FC_TAU = 0.5
+FC_ON = True
+PRE_HOLD = True
 N = 15
 
 LAST = {"pre_rows": 0, "calibrated": False, "zupt_ticks": 0, "ba": (0.0, 0.0, 0.0), "jam": (-1.0, -1.0),
@@ -540,6 +547,7 @@ def run(src, dst, write=True, integrate=True):
     sqrt = math.sqrt
     cos = math.cos
     sin = math.sin
+    exp = math.exp
     max_dt = MAX_DT
     max_jump = MAX_JUMP_S
     max_ss = MAX_SUMSQ
@@ -591,6 +599,10 @@ def run(src, dst, write=True, integrate=True):
     ring = []
     tilt2 = -1.0
     dv2 = [0.0, 0.0, 0.0]
+    dead, stuck = DEAD_ON, STUCK_ROWS
+    sg = sa = 0                              # current run of identical gyro / accel triples
+    sgx = sgy = sgz = sax = say = saz = NAN
+    fc, tau = FC_ON, FC_TAU
     zupt_ticks = 0
     zs2, zm2 = ZUPT_SIGMA * ZUPT_SIGMA, ZARU_SIGMA_MIN * ZARU_SIGMA_MIN
     t = tl = 0
@@ -627,8 +639,11 @@ def run(src, dst, write=True, integrate=True):
                 o = 7 * n
                 n += 1
                 if write:
-                    ap(fmt % (sec, frac, pre[o], pre[o + 1], pre[o + 2], pre[o + 4], pre[o + 5], pre[o + 6],
-                              pre[o + 3]))
+                    if PRE_HOLD:                    # step 6d: position held at the anchor's
+                        ap(fmt % (sec, frac, 0.0, 0.0, 0.0, pre[o + 4], pre[o + 5], pre[o + 6], pre[o + 3]))
+                    else:
+                        ap(fmt % (sec, frac, pre[o], pre[o + 1], pre[o + 2], pre[o + 4], pre[o + 5], pre[o + 6],
+                                  pre[o + 3]))
                     k -= 1
                     if not k:
                         w(b"".join(out))
@@ -663,7 +678,20 @@ def run(src, dst, write=True, integrate=True):
             n += 1
             if integrate and tok:
                 t = int(ts)
-                if gx * gx + gy * gy + gz * gz + ax * ax + ay * ay + az * az < max_ss:
+                ok = gx * gx + gy * gy + gz * gz + ax * ax + ay * ay + az * az < max_ss
+                if ok and dead:
+                    # ---- dead sensor: a triple repeating exactly, or an all-zero accelerometer ----
+                    if gx == sgx and gy == sgy and gz == sgz:
+                        sg += 1
+                    else:
+                        sgx = gx; sgy = gy; sgz = gz; sg = 1
+                    if ax == sax and ay == say and az == saz:
+                        sa += 1
+                    else:
+                        sax = ax; say = ay; saz = az; sa = 1
+                    if sg >= stuck or sa >= stuck or not (ax or ay or az):
+                        ok = False
+                if ok:
                     if have_t:
                         dt = (t - tl) * 1e-9
                         if 0 < dt <= max_jump:
@@ -827,8 +855,14 @@ def run(src, dst, write=True, integrate=True):
                                 else:
                                     has_prev = False
                             else:
-                                # gap or no previous sample: constant velocity, then take this sample
-                                px = px + vx * dt; py = py + vy * dt; pz = pz + vz * dt
+                                # gap or no previous sample: coast, then take this sample
+                                if fc:
+                                    e = exp(-dt / tau)
+                                    s = tau * (1.0 - e)
+                                    px = px + vx * s; py = py + vy * s; pz = pz + vz * s
+                                    vx = vx * e; vy = vy * e; vz = vz * e
+                                else:
+                                    px = px + vx * dt; py = py + vy * dt; pz = pz + vz * dt
                                 gap += dt
                                 pcx = gx - bgx; pcy = gy - bgy; pcz = gz - bgz
                                 ux = 2.0 * (qy * az - qz * ay)
@@ -862,7 +896,13 @@ def run(src, dst, write=True, integrate=True):
                 elif have_t:
                     dt = (t - tl) * 1e-9
                     if 0 < dt <= max_jump:
-                        px = px + vx * dt; py = py + vy * dt; pz = pz + vz * dt
+                        if fc:
+                            e = exp(-dt / tau)
+                            s = tau * (1.0 - e)
+                            px = px + vx * s; py = py + vy * s; pz = pz + vz * s
+                            vx = vx * e; vy = vy * e; vz = vz * e
+                        else:
+                            px = px + vx * dt; py = py + vy * dt; pz = pz + vz * dt
                         tl = t
                         has_prev = False
                         gap += dt

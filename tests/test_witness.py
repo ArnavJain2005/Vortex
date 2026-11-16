@@ -68,7 +68,7 @@ def test_rot_matrix_matches_geometry():
 
 def test_witnesses_off_equals_step_6b():
     rows, _, _ = _move_rest_move(bias=(0.01, -0.02, 0.08), gyro_noise=0.002, acc_noise=0.02)
-    assert wx.estimate(rows, v1=False, v2=False, v2p=False) == sd.estimate(rows)
+    assert wx.estimate(rows, v1=False, v2=False, v2p=False, pre_hold=False) == sd.estimate(rows)
 
 
 # ---------- synthetic profile with a second rest and a bias step after calibration ----------
@@ -275,3 +275,86 @@ def test_dropout_inflates_velocity_and_tilt_variance(second_rest):
         after[on] = L
     assert after[True]["pv"] > 2 * after[False]["pv"]
     assert after[True]["ptilt"] > 2 * after[False]["ptilt"]
+
+
+# ---------------------------------------------------------------- step 8: dead sensor, forecaster
+
+NAN6 = (float("nan"),) * 6
+
+
+def _fail(rows, i0, mode):
+    """SYNTHETIC failure from row i0 on: 'nan', 'zero' (all six 0.0) or 'stuck' (row i0 - 1 repeated)."""
+    val = {"nan": NAN6, "zero": (0.0,) * 6, "stuck": rows[i0 - 1][1]}[mode]
+    return list(rows[:i0]) + [(t, val) for t, _ in rows[i0:]]
+
+
+def test_dead_detection_changes_nothing_on_live_data(second_rest):
+    rows, _, _ = second_rest
+    assert wx.estimate(rows, dead=True) == wx.estimate(rows, dead=False)
+
+
+def test_zero_rows_coast_like_nan_rows(second_rest):
+    rows = second_rest[0][:7000]
+    i0 = 6000                                               # 30 s, moving; 5 s of failure
+    ref = wx.estimate(_fail(rows, i0, "nan"), dead=False)
+    assert wx.estimate(_fail(rows, i0, "zero"), dead=True) == ref
+    off = wx.estimate(_fail(rows, i0, "zero"), dead=False)  # integrated: zero specific force
+    assert math.dist(off[-1][:3], ref[-1][:3]) > 20.0     # (66 m here; V2 holds the vertical)
+
+
+def test_stuck_rows_coast_from_the_stuck_rows_th_repeat(second_rest):
+    rows = second_rest[0][:7000]
+    i0 = 6000
+    stuck = _fail(rows, i0, "stuck")
+    k = i0 - 2 + wx.STUCK_ROWS                              # the run starts at row i0 - 1
+    expect = stuck[:k] + [(t, NAN6) for t, _ in stuck[k:]]
+    assert wx.estimate(stuck, dead=True) == wx.estimate(expect, dead=False)
+    assert wx.estimate(stuck, dead=False) != wx.estimate(expect, dead=False)
+
+
+def test_one_stuck_sensor_is_enough(second_rest):
+    rows = second_rest[0][:7000]
+    i0 = 6000
+    g = rows[i0 - 1][1][:3]
+    stuck = list(rows[:i0]) + [(t, g + v[3:]) for t, v in rows[i0:]]   # gyro stuck, accel live
+    k = i0 - 2 + wx.STUCK_ROWS
+    expect = stuck[:k] + [(t, NAN6) for t, _ in stuck[k:]]
+    assert wx.estimate(stuck, dead=True) == wx.estimate(expect, dead=False)
+
+
+def test_coast_decays_velocity_toward_zero():
+    p, v = wx.coast([1.0, 2.0, 3.0], [1.0, -2.0, 0.5], 3.0, 2.0)
+    e = math.exp(-1.5)
+    assert v == pytest.approx([e, -2.0 * e, 0.5 * e], rel=1e-15)
+    assert p == pytest.approx([1.0 + 2.0 * (1 - e), 2.0 - 4.0 * (1 - e), 3.0 + 1.0 * (1 - e)], rel=1e-15)
+    p2, v2 = wx.coast(*wx.coast([1.0, 2.0, 3.0], [1.0, -2.0, 0.5], 1.0, 2.0), 2.0, 2.0)
+    assert p2 == pytest.approx(p, rel=1e-12) and v2 == pytest.approx(v, rel=1e-12)  # composes
+    assert wx.coast([0.0] * 3, [1.0, 0.0, 0.0], 3.0, None) == ([3.0, 0.0, 0.0], [1.0, 0.0, 0.0])
+    assert wx.coast([0.0] * 3, [1.0, 0.0, 0.0], 1e6, 2.0)[0][0] == pytest.approx(2.0)  # bounded
+
+
+def test_forecaster_acts_only_while_coasting(second_rest):
+    rows = second_rest[0][:7000]
+    assert wx.estimate(rows, fc=True) == wx.estimate(rows, fc=False)    # no gaps: identical
+    i0 = 6000
+    bad = _fail(rows, i0, "nan")
+    on, off = wx.estimate(bad, fc=True), wx.estimate(bad, fc=False)
+    assert on[:i0] == off[:i0]
+    L = (rows[-1][0] - rows[i0 - 1][0]) * 1e-9
+    want = wx.FC_TAU * (1.0 - math.exp(-L / wx.FC_TAU)) / L
+    for k in range(3):
+        d_on, d_off = on[-1][k] - on[i0 - 1][k], off[-1][k] - off[i0 - 1][k]
+        assert d_on == pytest.approx(want * d_off, rel=1e-9, abs=1e-12)
+
+
+# ---------------------------------------------------------------- step 6d: hold before the anchor
+
+def test_pre_hold_keeps_the_anchor_position_and_backward_attitude():
+    rows, _, _ = _move_rest_move(bias=(0.01, -0.02, 0.08), gyro_noise=0.002, acc_noise=0.02, seed=3)
+    anchor = sd.calibrate(rows).anchor
+    assert anchor > 100
+    on, off = wx.estimate(rows, pre_hold=True), wx.estimate(rows, pre_hold=False)
+    assert on[anchor:] == off[anchor:]                       # nothing after the anchor changes
+    assert all(o[:3] == (0.0, 0.0, 0.0) for o in on[:anchor])
+    assert [o[3:] for o in on[:anchor]] == [o[3:] for o in off[:anchor]]
+    assert max(abs(c) for o in off[:anchor] for c in o[:3]) > 0.01   # the backward pass did move

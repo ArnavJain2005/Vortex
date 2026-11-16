@@ -70,7 +70,8 @@ def test_parameters_identical():
     for name in ("TICK_S", "GYRO_NOISE", "ACC_NOISE", "GYRO_WALK", "ACC_WALK", "P0_VEL", "P0_TILT", "P0_YAW",
                  "P0_BG", "P0_BA", "P0_TILT_FALLBACK", "P0_BG_FALLBACK", "ZUPT_SIGMA", "ZARU_SIGMA_MIN",
                  "V2_SIGMA_H", "V2_SIGMA_V", "V2P_SIGMA_H", "V2P_SIGMA_V", "V2P_TAU", "V1_ON", "V2_ON",
-                 "V2P_ON", "JAM_TAU", "GAP_H_TICKS", "GAP_TAU", "JAM_ON", "GAP_ON", "N"):
+                 "V2P_ON", "JAM_TAU", "GAP_H_TICKS", "GAP_TAU", "JAM_ON", "GAP_ON", "STUCK_ROWS", "DEAD_ON", "FC_TAU",
+                 "FC_ON", "PRE_HOLD", "N"):
         assert getattr(main, name) == getattr(wx, name), name
 
 
@@ -106,7 +107,10 @@ def test_physical_motion_with_still_start(tmp_path, monkeypatch):
     assert dp < 1e-9                                         # same arithmetic order: rounding only
 
 
-def test_move_rest_move_backward_pass(tmp_path, monkeypatch):
+@pytest.mark.parametrize("hold", [False, True])
+def test_move_rest_move_backward_pass(tmp_path, monkeypatch, hold):
+    for mod in (main, wx):
+        monkeypatch.setattr(mod, "PRE_HOLD", hold)
     rows, _, _ = _move_rest_move(bias=(0.01, -0.02, 0.08), gyro_noise=0.002, acc_noise=0.02, seed=3)
     # sprinkle the messy cases into the stored (pre-anchor) part and after it
     nan = float("nan")
@@ -120,6 +124,9 @@ def test_move_rest_move_backward_pass(tmp_path, monkeypatch):
     assert sd.calibrate(sd.rows_from_raw(euroc.read_imu_csv(src))).run_s is not None
     dp, dq = _compare(src, tmp_path, monkeypatch)
     assert dp < 1e-9 and main.LAST["calibrated"] and main.LAST["pre_rows"] > 1000
+    if hold:
+        first = (tmp_path / "est.txt").read_text().splitlines()[0].split()
+        assert [float(x) for x in first[1:4]] == [0.0, 0.0, 0.0]
 
 
 def test_pre_segment_cap_fallback(tmp_path, monkeypatch):
@@ -152,7 +159,7 @@ def test_witnesses_fire_and_match(tmp_path, monkeypatch, second_rest_rows):
 
 
 def test_witnesses_off_equals_step_6b(tmp_path, monkeypatch, second_rest_rows):
-    for name in ("V1_ON", "V2_ON", "V2P_ON"):
+    for name in ("V1_ON", "V2_ON", "V2P_ON", "PRE_HOLD"):
         monkeypatch.setattr(main, name, False)
     src = _write_rows(tmp_path / "imu.csv", second_rest_rows)
     dp, dq = _compare(src, tmp_path, monkeypatch, reference=sd.estimate_file)
@@ -184,3 +191,34 @@ def test_meter_and_gap_match(tmp_path, monkeypatch, noisy_gappy_rows, jam, gap):
     else:
         assert main.LAST["jam"] == (-1.0, -1.0)
     assert (main.LAST["tilt2"] > 0.0) == gap
+
+
+@pytest.fixture(scope="module")
+def failing_rows():
+    """SYNTHETIC: a 2 s NaN dropout, a gyro stuck for 0.5 s (accel live), two all-zero accelerometer rows,
+    then a stuck failure (last row repeated) for the final 5 s."""
+    rows, _, _ = _profile(40.0, [(8, 10, -1), (22, 24, +1)], gyro_noise=0.03, acc_noise=0.4, seed=7)
+    nan = float("nan")
+    rows = list(rows)
+    rows[5000:5400] = [(t, (nan,) * 6) for t, _ in rows[5000:5400]]
+    g = rows[5999][1][:3]
+    rows[6000:6100] = [(t, g + v[3:]) for t, v in rows[6000:6100]]
+    rows[6500:6502] = [(t, v[:3] + (0.0, 0.0, 0.0)) for t, v in rows[6500:6502]]
+    rows[7000:] = [(t, rows[6999][1]) for t, _ in rows[7000:]]
+    return rows
+
+
+@pytest.mark.parametrize("dead, fc", [(True, True), (True, False), (False, True), (False, False)])
+def test_dead_and_forecaster_match(tmp_path, monkeypatch, failing_rows, dead, fc):
+    for mod in (main, wx):
+        monkeypatch.setattr(mod, "DEAD_ON", dead)
+        monkeypatch.setattr(mod, "FC_ON", fc)
+    src = _write_rows(tmp_path / "imu.csv", failing_rows)
+    dp, dq = _compare(src, tmp_path, monkeypatch)
+    assert dp < 1e-9
+
+
+def test_failing_rows_exercise_both_switches(failing_rows):
+    base = wx.estimate(failing_rows, dead=False, fc=False)
+    assert wx.estimate(failing_rows, dead=True, fc=False) != base
+    assert wx.estimate(failing_rows, dead=False, fc=True) != base

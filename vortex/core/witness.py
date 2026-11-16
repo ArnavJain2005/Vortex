@@ -1,4 +1,4 @@
-"""Reference estimator, steps 7a + 6c: error-state Kalman filter with the core velocity witnesses
+"""Reference estimator, steps 7a + 6c + 8a: error-state Kalman filter with the core velocity witnesses
 V1 (stillness) and V2 (flight envelope), a noise meter and dropout covariance. Plain Python floats, no numpy; main.py copies the filter
 functions verbatim so the two stay bit-identical.
 
@@ -47,9 +47,21 @@ error that leaves is learned from the filter's own recent motion: over a horizon
 smoothed with time constant GAP_TAU. A gap of length L adds (L / horizon)^2 times these to the tilt
 and velocity variances (constant-acceleration model for position: + var L^2 / 4, cross term var L / 2),
 so the witnesses can pull the state back after the gap. Yaw is not inflated (nothing observes it).
+
+Step 8a, two switches; with both off the output equals step 6c exactly.
+Dead sensor (DEAD_ON): a row whose gyro or accelerometer triple has repeated exactly for STUCK_ROWS rows
+in a row (stuck), or whose accelerometer triple is exactly (0, 0, 0), is treated as an invalid row.
+Forecaster (FC_ON): while coasting without IMU data, velocity decays toward 0 with time constant FC_TAU
+(coast()); off = constant velocity. Applies to every gap, so to dropouts and to the blind window.
+
+Step 6d (PRE_HOLD): the rows before the anchor keep the anchor's position (0, 0, 0); their attitude still
+comes from the backward gyro integration. Backward dead reckoning without witnesses was worse than
+standing still on clean MH_01/02 and could reach hundreds of metres when a dropout fell before the anchor.
 """
 
 from __future__ import annotations
+
+import math
 
 from . import strapdown as sd
 
@@ -84,6 +96,13 @@ GAP_H_TICKS = 8              # ticks (2 s, the slides' dropout length): horizon 
 GAP_TAU = 20.0               # s, smoothing of the learned motion statistics
 JAM_ON = False               # rule v2 (16 Nov): fails with GAP_ON on; see Docs/TRACK3_PLAN.md step 6c
 GAP_ON = True
+# step 8a (decided by the pre-registered rule, Docs/TRACK3_PLAN.md step 8a)
+STUCK_ROWS = 5               # rows: a sensor triple repeating exactly this often in a row is dead (clean MH_01..05: longest run 2)
+DEAD_ON = True               # step 8a rule (16 Nov): passes on held-out MH_03..05; dead-sensor detection
+FC_TAU = 0.5                 # s, velocity decay while coasting: lowest mean blind growth on MH_01/02 (Docs/BLIND.md step8-tune)
+FC_ON = True                 # step 8a rule (16 Nov): passes; velocity decays toward 0 while coasting (off = constant velocity)
+# step 6d (decided by the pre-registered rule, Docs/TRACK3_PLAN.md step 6d)
+PRE_HOLD = True              # rule passed 16 Nov; rows before the anchor keep the anchor position (attitude still from the backward pass)
 N = 15
 
 
@@ -182,19 +201,34 @@ def inject(q, p, v, bg, ba, dx):
             (bg[0] + dx[9], bg[1] + dx[10], bg[2] + dx[11]), (ba[0] + dx[12], ba[1] + dx[13], ba[2] + dx[14]))
 
 
-def estimate(rows, v1=None, v2=None, v2p=None, log=None, jam=None, gap_on=None):
+def coast(p, v, dt, tau):
+    """Coast dt seconds without IMU data. tau None: constant velocity. Otherwise velocity decays toward 0
+    with time constant tau (the mean of an Ornstein-Uhlenbeck velocity) and position integrates it."""
+    if tau is None:
+        return [p[0] + v[0] * dt, p[1] + v[1] * dt, p[2] + v[2] * dt], v
+    e = math.exp(-dt / tau)
+    s = tau * (1.0 - e)
+    return [p[0] + v[0] * s, p[1] + v[1] * s, p[2] + v[2] * s], [v[0] * e, v[1] * e, v[2] * e]
+
+
+def estimate(rows, v1=None, v2=None, v2p=None, log=None, jam=None, gap_on=None, dead=None, fc=None,
+             pre_hold=None):
     """rows: list of (t_ns or None, six floats). Returns one (px, py, pz, qw, qx, qy, qz) per row.
-    v1, v2, v2p, jam, gap_on: switches (default the module's *_ON). log: optional list, gets one
-    dict per tick."""
+    v1, v2, v2p, jam, gap_on, dead, fc, pre_hold: switches (default the module's *_ON). log: optional list, gets
+    one dict per tick."""
     v1 = V1_ON if v1 is None else v1
     v2 = V2_ON if v2 is None else v2
     v2p = V2P_ON if v2p is None else v2p
     jam = JAM_ON if jam is None else jam
     gap_on = GAP_ON if gap_on is None else gap_on
+    dead = DEAD_ON if dead is None else dead
+    tau = (FC_TAU if (FC_ON if fc is None else fc) else None)
     c = [0.0, 0.0, 0.0]                 # running centre of the volume envelope
     cal = sd.calibrate(rows)
     init, anchor = cal.init, cal.anchor
     out = sd.backward(rows, anchor, init)
+    if PRE_HOLD if pre_hold is None else pre_hold:
+        out = [(0.0, 0.0, 0.0) + o[3:] for o in out]
     q = init.q
     bg = init.bg
     ba = (0.0, 0.0, 0.0)
@@ -220,9 +254,23 @@ def estimate(rows, v1=None, v2=None, v2p=None, log=None, jam=None, gap_on=None):
     ring = []                           # (gravity direction in body, velocity) at the last ticks
     tilt2 = -1.0                        # learned squared changes over the horizon (< 0: none yet)
     dv2 = [0.0, 0.0, 0.0]
+    sg = sa = 0                         # length of the current run of identical gyro / accel triples
+    lg = la = None
     for t, vals in rows[anchor:]:
         if t is not None:
-            if sd.is_valid(vals):
+            ok = sd.is_valid(vals)
+            if ok and dead:
+                if vals[:3] == lg:
+                    sg += 1
+                else:
+                    lg, sg = vals[:3], 1
+                if vals[3:] == la:
+                    sa += 1
+                else:
+                    la, sa = vals[3:], 1
+                if sg >= STUCK_ROWS or sa >= STUCK_ROWS or not (vals[3] or vals[4] or vals[5]):
+                    ok = False
+            if ok:
                 dt = None if t_last is None else (t - t_last) * 1e-9
                 if dt is None or 0 < dt <= sd.MAX_JUMP_S:
                     if tick_end is None:
@@ -337,7 +385,7 @@ def estimate(rows, v1=None, v2=None, v2p=None, log=None, jam=None, gap_on=None):
                         h2 = h1
                         h1 = vals
                     else:
-                        p = [p[0] + v[0] * dt, p[1] + v[1] * dt, p[2] + v[2] * dt]
+                        p, v = coast(p, v, dt, tau)
                         prev = sd._sample(q, vc, bg[0], bg[1], bg[2])
                         gap += dt
                         h1, h2 = vals, None
@@ -345,7 +393,7 @@ def estimate(rows, v1=None, v2=None, v2p=None, log=None, jam=None, gap_on=None):
             elif t_last is not None:
                 dt = (t - t_last) * 1e-9
                 if 0 < dt <= sd.MAX_JUMP_S:
-                    p = [p[0] + v[0] * dt, p[1] + v[1] * dt, p[2] + v[2] * dt]
+                    p, v = coast(p, v, dt, tau)
                     t_last = t
                     prev = None
                     gap += dt
