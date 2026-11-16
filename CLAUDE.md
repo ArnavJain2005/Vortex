@@ -58,9 +58,12 @@ concise answers; say plainly what was not verified.
 
 ```
 pip install -e .[dev]
-pytest                                        # 16 Nov 2026: 194 passed (Windows, Python 3.14)
+pytest                                        # 16 Nov 2026: 212 passed (Windows, Python 3.14; test_ccore.py needs g++ on PATH)
 python -S main.py IMU.csv estimated_trajectory.txt                       # submission entry point: a stub importing pathfinder.py (the estimator, stdlib only)
+g++ -O2 -std=c++17 -ffp-contract=off -o build/vortex main.cpp           # C core (Windows MinGW: add -static); build/vortex IMU.csv OUT.txt
+python -S benchmark.py --runs 15 --gate --cbin build/vortex.exe          # also measures the C core (gate: RSS <= 8 MB, same bytes as main.py)
 python tools/make_bundle.py stage                                        # once per Python to carry bytecode for (py -3.13, py -3.14, python3 in WSL)
+python tools/make_bundle.py eval EVAL_IMU.csv --cbin build/vortex.exe    # estimated_trajectory.txt + metadata.json into the stage
 python tools/make_bundle.py zip --name NAME                              # dist/NAME.zip; then: python tools/make_bundle.py verify dist/NAME.zip
 python -S benchmark.py --runs 15 --gate [--tag NAME --commit SHA]        # writes Docs/budget/<tag>.json; then:
 python benchmark.py --render                                             # rebuilds Docs/BUDGET.md (never hand-edit)

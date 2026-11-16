@@ -13,6 +13,7 @@ Results go to Docs/budget/<tag>.json; --render rebuilds Docs/BUDGET.md from all 
 
 Usage:
   python -S benchmark.py [--rows 36000] [--runs 9] [--input FILE] [--tag NAME] [--commit SHA] [--gate]
+                         [--cbin PATH]    # also the C core (main.cpp built to PATH): process, RSS, output
                          [--allow-rss]
   python benchmark.py --render
 --gate exits 1 if a limit or design target is missed, for `python -S main.py` (bytecode cached):
@@ -20,8 +21,11 @@ Usage:
     (7.63 MiB), whole process (open question Q4);
   - wall ms per IMU-second <= 20, IMU seconds taken from the input's timestamps (not rows / 200);
   - process <= 50 us per row with -S (design target); tracemalloc <= 4 MB; output passes the checker.
---allow-rss skips only the RSS check, for tracking timing regressions; it prints "RSS NOT CHECKED",
-and that result is not a budget pass. Timing gates are flaky: run on a quiet machine.
+With --cbin, the C core is gated the same way (worst-run RSS <= 8,000,000 bytes, <= 20 ms per IMU-s,
+<= 50 us per row) and its output must be identical to main.py's and pass the checker.
+--allow-rss skips only the RSS check of `python -S main.py` (never the C core's), for tracking the
+Python fallback's timing; it prints "RSS NOT CHECKED", and that result is not a budget pass for
+main.py. Timing gates are flaky: run on a quiet machine.
 RSS is measured in MiB (2^20 bytes); the JSON keys say "mb" for history, the ledger says MiB.
 """
 import importlib.util
@@ -48,7 +52,7 @@ OUT_DIR = os.path.join(ROOT, "Docs", "budget")
 IMU_HZ = 200.0                # nominal rate; used only when the input has fewer than two timestamps
 BUDGET_US_ROW, TARGET_US_ROW = 100.0, 50.0
 BUDGET_MS_PER_S = 20.0
-BUDGET_RSS_MB, TARGET_TRACE_MB = 8.0, 4.0
+TARGET_TRACE_MB = 4.0
 BUDGET_RSS_BYTES = 8_000_000  # "8 MB" read as decimal (stricter than 8 MiB); see the docstring
 MIB = 2 ** 20                 # measure_floor reports peak RSS in MiB
 
@@ -171,24 +175,52 @@ def measure(a):
               % (label_p, s["us_per_row"], s["wall_ms_per_imu_s"], s["peak_rss_mb_median"]))
     res["process"] = procs
 
+    if a.get("cbin"):
+        pdst = dst                                   # the runs above left main.py's output there
+        cdst = dst + ".c"
+        s = measure_floor.summarise(measure_floor.repeat([a["cbin"], src, cdst], runs))
+        s["case"] = "C core (main.cpp)"
+        s["wall_ms_per_imu_s"] = s["wall_ms_median"] / imu_s
+        s["cpu_ms_per_imu_s"] = s["cpu_ms_median"] / imu_s
+        s["us_per_row"] = s["wall_ms_median"] * 1e3 / n
+        with open(pdst, "rb") as f1, open(cdst, "rb") as f2:
+            s["output_identical_to_main_py"] = f1.read() == f2.read()
+        c = check_output.check(src, cdst)
+        s["output_check"] = "PASS" if c["ok"] else "FAIL: " + "; ".join(c["errors"][:3])
+        res["ccore"] = s
+        print("  %-18s %6.2f us/row  %5.2f ms/imu-s  rss %5.2f MiB  identical to main.py: %s  check: %s"
+              % ("C core", s["us_per_row"], s["wall_ms_per_imu_s"], s["peak_rss_mb_median"],
+                 s["output_identical_to_main_py"], s["output_check"]))
+
     chk = check_output.check(src, dst)
     res["output_check"] = "PASS" if chk["ok"] else "FAIL: " + "; ".join(chk["errors"][:3])
     print("  output check:", res["output_check"])
     return res
 
 
+def _worst_rss(s):
+    """Peak RSS of the worst run in MiB (older ledgers may only have the median)."""
+    return s.get("peak_rss_mb_max", s.get("peak_rss_mb_median"))
+
+
+def _rss_fail(s, who):
+    worst = _worst_rss(s)
+    if worst is None:
+        return "%s peak RSS not measured" % who
+    if worst * MIB > BUDGET_RSS_BYTES:
+        return "%s peak RSS %.0f bytes (%.2f MiB) > %d bytes" % (who, worst * MIB, worst, BUDGET_RSS_BYTES)
+    return None
+
+
 def gate(res, rss=True):
-    """Failures of `python -S main.py` (process[0]) against the limits and design targets.
-    rss=False skips only the peak-RSS limit (see --allow-rss)."""
+    """Failures of `python -S main.py` (process[0]) and, if measured, the C core against the limits
+    and design targets. rss=False skips only main.py's peak-RSS limit (see --allow-rss)."""
     fails = []
     p = res["process"][0]
     if rss:
-        worst = p.get("peak_rss_mb_max", p["peak_rss_mb_median"])
-        if worst is None:
-            fails.append("peak RSS not measured")
-        elif worst * MIB > BUDGET_RSS_BYTES:
-            fails.append("peak RSS %.0f bytes (%.2f MiB) > %d bytes"
-                         % (worst * MIB, worst, BUDGET_RSS_BYTES))
+        f = _rss_fail(p, "main.py")
+        if f:
+            fails.append(f)
     if p["wall_ms_per_imu_s"] > BUDGET_MS_PER_S:
         fails.append("process %.2f ms per IMU-s > %.0f" % (p["wall_ms_per_imu_s"], BUDGET_MS_PER_S))
     if p["us_per_row"] > TARGET_US_ROW:
@@ -197,6 +229,17 @@ def gate(res, rss=True):
         fails.append("tracemalloc %.0f KB > %.0f MB" % (res["tracemalloc_peak_kb"], TARGET_TRACE_MB))
     if res["output_check"] != "PASS":
         fails.append("output check failed")
+    c = res.get("ccore")
+    if c:
+        f = _rss_fail(c, "C core")
+        if f:
+            fails.append(f)
+        if c["wall_ms_per_imu_s"] > BUDGET_MS_PER_S:
+            fails.append("C core %.2f ms per IMU-s > %.0f" % (c["wall_ms_per_imu_s"], BUDGET_MS_PER_S))
+        if c["us_per_row"] > TARGET_US_ROW:
+            fails.append("C core %.2f us/row > %.0f" % (c["us_per_row"], TARGET_US_ROW))
+        if not c["output_identical_to_main_py"] or c["output_check"] != "PASS":
+            fails.append("C core output differs from main.py or fails the checker")
     return fails
 
 
@@ -236,7 +279,7 @@ def render():
           "|---|---|---|---|---|---|---|---|---|---|---|---|"]
     for tag, d in data:
         p = d["process"][0]
-        worst = p.get("peak_rss_mb_max", p["peak_rss_mb_median"])
+        worst = _worst_rss(p)
         under = "-" if worst is None else ("yes" if worst * MIB <= BUDGET_RSS_BYTES else "**NO**")
         L.append("| %s | %s | %s (%s) | %s | %s | %s | %s / %s | %s | %s | %s | %s KB | %s |" % (
             tag, _f(p["us_per_row"]), _f(BUDGET_US_ROW - p["us_per_row"], 1),
@@ -244,6 +287,22 @@ def render():
             _f(BUDGET_MS_PER_S - p["wall_ms_per_imu_s"], 1), _f(p["peak_rss_mb_median"]), _f(worst), under,
             _f(p["peak_private_mb_median"]), _f(d["tracemalloc_peak_kb"], 1),
             _f(TARGET_TRACE_MB * 1024 - d["tracemalloc_peak_kb"], 0), d["output_check"]))
+    L += ["", "## Summary: the C core (`main.cpp`) against the budget", "",
+          "Runs measured with `--cbin`. Its output is compared byte for byte with `python -S main.py`'s.", "",
+          "| Run | us per row | Wall ms per IMU-s | CPU ms per IMU-s | Peak RSS MiB (median / max) "
+          "| Under 8,000,000 B | Peak private MiB | Same bytes as main.py | Output |",
+          "|---|---|---|---|---|---|---|---|---|"]
+    for tag, d in data:
+        c = d.get("ccore")
+        if not c:
+            continue
+        worst = _worst_rss(c)
+        under = "-" if worst is None else ("yes" if worst * MIB <= BUDGET_RSS_BYTES else "**NO**")
+        L.append("| %s | %s | %s | %s | %s / %s | %s | %s | %s | %s |" % (
+            tag, _f(c["us_per_row"]), _f(c["wall_ms_per_imu_s"]), _f(c["cpu_ms_per_imu_s"]),
+            _f(c["peak_rss_mb_median"]), _f(worst), under,
+            _f(c["peak_private_mb_median"]), "yes" if c["output_identical_to_main_py"] else "NO",
+            c["output_check"]))
     L += ["", "## Stages (in-process, cumulative, median us per row)", "",
           "| Run | Stage | us per row | min |", "|---|---|---|---|"]
     for tag, d in data:
@@ -282,7 +341,8 @@ def main(argv):
         return 0
     get = lambda k, d: argv[argv.index(k) + 1] if k in argv else d  # noqa: E731
     a = {"rows": int(get("--rows", 36000)), "runs": int(get("--runs", 9)), "input": get("--input", None),
-         "commit": get("--commit", None)}
+         "commit": get("--commit", None),
+         "cbin": os.path.abspath(get("--cbin", None)) if "--cbin" in argv else None}
     print("benchmark: Python %s" % platform.python_version())
     res = measure(a)
     os.makedirs(OUT_DIR, exist_ok=True)

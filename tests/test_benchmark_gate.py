@@ -51,3 +51,14 @@ def test_gate_rss_uses_decimal_8mb_on_the_worst_run():
 def test_gate_compute_budget_per_imu_second():
     fails = benchmark.gate(_res(7.0, wall_ms_per_s=21.0))
     assert len(fails) == 1 and "ms per IMU-s" in fails[0]
+
+
+def test_gate_c_core_uses_the_same_rss_rule_and_allow_rss_does_not_skip_it():
+    res = _res(7.0)
+    res["ccore"] = {"us_per_row": 1.0, "wall_ms_per_imu_s": 0.5, "peak_rss_mb_median": 7.5,
+                    "peak_rss_mb_max": 7.65, "output_identical_to_main_py": True, "output_check": "PASS"}
+    for rss in (True, False):
+        fails = benchmark.gate(res, rss=rss)
+        assert len(fails) == 1 and fails[0].startswith("C core peak RSS")
+    res["ccore"]["peak_rss_mb_max"] = 4.3
+    assert benchmark.gate(res) == []
