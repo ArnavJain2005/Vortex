@@ -27,8 +27,10 @@ save space.
 zip) are the decision sequences of the pre-registered rule in `tools/drag_fit.py` (commit c1b594c). Extract
 them the same way, to `data/euroc/V1_0x_*/mav0/`. Do not use them for any tuning: run them once,
 `python tools/drag_fit.py --rule v2 data/euroc/V1_01_easy data/euroc/V1_02_medium data/euroc/V1_03_difficult`,
-and record the result. Vicon Room 2 (`V2_01..03`) is the reserve held-out set if anything changes after
-that.
+and record the result. Vicon Room 2 (`V2_01..03`) is the final test set: extract it the same way if you like, but nothing
+reads it until "run the final table" (`tools/eval_euroc.py` skips `V2_*` and refuses it without `--final`).
+
+V1_01..03 were extracted on 17 Nov 2026 (IMU 200 Hz, 145.6 / 85.5 / 107.5 s).
 
 ## TUM-VI
 

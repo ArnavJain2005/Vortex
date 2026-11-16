@@ -28,7 +28,7 @@ meter sets the trust of each:
 |---|---|---|
 | V1 Stillness (zero-velocity updates) | Both datasets | Core. **On** (step 7a, 16 Nov). On EuRoC MH it fires only during the starting ground rest (3 to 25 ticks), so it adds nothing in flight there; it matters for walking (TUM-VI) and landings |
 | V2 Flight envelope learned in the healthy phase | Both datasets | Core. **On** (step 7a, 16 Nov): speed envelope + volume envelope (running centre), fixed values chosen on MH_01/02; learning them in the healthy phase is still to do. Bounds drift from km to metres, but only to the level of a trajectory that never moves (see step 7a) |
-| V3 Rotor drag (horizontal specific force proportional to body velocity) | Multirotor (EuRoC) | **Off.** Rule v1: NO-GO on MH_01 (16 Nov; the hand-carried start). **Rule v2 pre-registered** 16 Nov (commit c1b594c, `tools/drag_fit.py`): airborne part only, thrust-perpendicular axes, fixed k = 0.20 /s. Decision on Vicon Room 1 (not yet downloaded): stage A = signal on 2 of 3 sequences, stage B = V3 on only if mean APE and RPE 1 s improve >= 10 % over V1 + V2 there. MH_01..05 (tuning set) pass stage A with R^2 0.65..0.96 |
+| V3 Rotor drag (horizontal specific force proportional to body velocity) | Multirotor (EuRoC) | **Off.** Rule v1: NO-GO on MH_01 (16 Nov; the hand-carried start). **Rule v2 pre-registered** 16 Nov (commit c1b594c, `tools/drag_fit.py`): airborne part only, thrust-perpendicular axes, fixed k = 0.20 /s. Decision on Vicon Room 1 (on disk since 17 Nov; stage A not yet run): stage A = signal on 2 of 3 sequences, stage B = V3 on only if mean APE and RPE 1 s improve >= 10 % over V1 + V2 there. MH_01..05 (tuning set) pass stage A with R^2 0.65..0.96 |
 | V4 Turn physics (speed = lateral accel / turn rate, steady turns) | Steady turns | Switchable |
 | V5 Walking rhythm | Hand-held (TUM-VI) | Switchable |
 | V6 Tilt and acceleration link | Multirotor | Feeds the blind 5 s forecaster |
@@ -742,3 +742,67 @@ WSL2 3.12. The evaluation files in it are MH_01 placeholders until the organiser
 Dockerfiles (repository root and `bundle/`) build the C core in a g++ stage and run it; not built
 yet (needs the Debian g++ packages downloaded inside the build).
 
+
+
+## Step A: new data, baselines first (17 Nov 2026, branch `track3/stepA-baselines`; no estimator change)
+
+**Data on disk** (A.1, checked 17 Nov): EuRoC MH_01..05 and **V1_01..03** (Vicon Room 1, extracted 17 Nov
+from `vicon_room1.zip`: `mav0/imu0` and `mav0/state_groundtruth_estimate0` only). **Missing: V2_01..03
+(Vicon Room 2) and TUM-VI room1..4.** A.2 (TUM-VI loader) and the TUM-VI half of A.3 and A.4 are blocked.
+
+| Sequence | IMU rows | Length | IMU rate | Ground-truth rows | Ground truth covers |
+|---|---|---|---|---|---|
+| V1_01_easy | 29,120 | 145.6 s | 200 Hz (dt 5.000 ms, no gaps) | 28,712 | 1.04..144.60 s |
+| V1_02_medium | 17,100 | 85.5 s | 200 Hz | 16,702 | 1.00..84.50 s |
+| V1_03_difficult | 21,500 | 107.5 s | 200 Hz | 20,932 | 1.83..106.49 s |
+
+Same IMU header and units as MH (`#timestamp [ns]`, gyro rad/s, accel m/s^2), same ground-truth layout.
+
+**Tooling.** `tools/eval_euroc.py`: `--cbin PATH` runs the C core instead of `python -S main.py`; clean runs
+now also record APE under the `none` and `origin` alignments (new table in `Docs/RESULTS.md`); **V2_\* is
+skipped by default and refused when named unless `--final` is given** (final test set). Tests:
+`tests/test_eval_euroc.py`.
+
+**Degraded copies** (existing seeds scheme, default placeholder levels, made 17 Nov): V1_01..03 x seeds
+1..3 (NaN failure) and seeds 7 (NaN), 8 (`--failure-mode zero`), 9 (`--failure-mode stuck`): 18 copies.
+
+**Baseline: shipped estimator (main.py at ea4258c = main.cpp), unchanged.** Tags `stepA-v1-py`,
+`stepA-v1-c`, `stepA-v1-floor`, `stepA-v1-deg-*`. Every later step is judged against these numbers.
+
+Clean V1, APE RMSE m under each alignment / RPE 1 s m:
+
+| Sequence | Estimator none / origin / SE3 / Sim3 | RPE 1 s | Never-moving floor none / origin / SE3 | Floor RPE 1 s |
+|---|---|---|---|---|
+| V1_01_easy | 2.82 / 2.38 / 1.77 / 1.77 | 0.409 | 2.38 / 2.70 / 1.85 | 0.439 |
+| V1_02_medium | 3.55 / 2.95 / 1.77 / 1.71 | 0.669 | 2.60 / 2.16 / 1.78 | 0.964 |
+| V1_03_difficult | 2.93 / 2.28 / 1.55 / 1.51 | 0.469 | 2.50 / 2.21 / 1.57 | 0.716 |
+| **Mean** | 3.10 / 2.53 / **1.70** / 1.66 | **0.516** | 2.49 / 2.36 / **1.73** | **0.706** |
+
+Degraded V1 (APE with the alignment fitted on the same main's clean run), means:
+
+| Copies | Estimator APE / RPE 1 s / dropout growth / blind growth / blind RMSE m | Floor APE / RPE 1 s / dropout growth / blind growth / blind RMSE m |
+|---|---|---|
+| seeds 1..3 (9) | 2.924 / 0.638 / 1.107 / 1.259 / 3.758 | 1.759 / 0.717 / 1.098 / 1.203 / 1.327 |
+| seeds 7..9, nan/zero/stuck (9) | 3.160 / 0.638 / 1.141 / 1.480 / 4.430 | 1.759 / 0.717 / 1.082 / 1.203 / 1.327 |
+| all 18 | **3.042** / 0.638 / 1.124 / 1.369 / 4.094 (worst APE 6.77, V1_03_s9) | **1.759** / 0.717 / 1.090 / 1.203 / 1.327 |
+
+**Reading.** Vicon Room 1 is a small volume (the floor's SE3 APE is only 1.6..1.9 m, against 4.3..6.9 m on
+MH). Clean, the estimator is level with standing still on APE (1.70 vs 1.73 m) and better on RPE 1 s
+(0.52 vs 0.71 m). Degraded, it is clearly **worse than the floor** (APE 3.04 vs 1.76 m; blind RMSE 4.09 vs
+1.33 m): the error already present when the IMU fails, not the 5 s growth, dominates (as on MH in step
+8a). Under the `none` and `origin` alignments the estimator is worse than the floor on all three
+sequences. This is the gap Step B has to close.
+
+**Output contract and equivalence.** `python -S main.py` and the C core (MinGW g++ 13.2, `-static`) give
+byte-identical output on all 86 inputs (MH_01..05 + V1_01..03 clean, 78 degraded copies), and every C
+output passes `vortex.check_output` (scratch script, 17 Nov).
+
+| Item | Result | Where |
+|---|---|---|
+| `pytest` | 227 passed (224 + 3 eval selection/runner) | Windows, Python 3.14.7 |
+| `benchmark.py --runs 15 --gate --allow-rss --cbin` | PASS on all five runs. C core: Win 3.14 synthetic 1.51 us/row, 4.45 MiB; V1_01 1.81 us/row, 4.45 MiB; degraded V1_02_s9 2.18 us/row, 4.45 MiB; WSL2 synthetic 1.43 us/row, 2.40 MiB; WSL2 V1_01 14.72 us/row (input read through the slow `/mnt/c` mount), 2.40 MiB. Output identical to main.py on all five. `python -S main.py` peaks at 10.1..11.5 MiB (above 8 MB, as known; hence `--allow-rss`) | `Docs/BUDGET.md` |
+
+Not checked: TUM-VI (not downloaded), so the loader check, long-file memory on TUM-VI and the
+hand-held baseline are open; the Linux C core equivalence on the V1 inputs (only the benchmark's two
+Linux runs compared bytes); peak RSS on a TUM-VI-length file (the 15 min synthetic check of step 9b
+stands).
