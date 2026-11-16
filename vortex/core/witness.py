@@ -54,6 +54,11 @@ in a row (stuck), or whose accelerometer triple is exactly (0, 0, 0), is treated
 Forecaster (FC_ON): while coasting without IMU data, velocity decays toward 0 with time constant FC_TAU
 (coast()); off = constant velocity. Applies to every gap, so to dropouts and to the blind window.
 
+Step 7b (ZUPT_DEN_ON): V1 also fires when ZUPT_DEN_BINS ticks in a row pass the calibration's denoised
+still test and are pairwise steady under the denoised tolerance (strapdown.bin_is_still_denoised,
+bins_steady_denoised), with the tick's per-channel second differences (rows integrated by a normal step).
+The strict V1 condition is unchanged.
+
 Step 6d (PRE_HOLD): the rows before the anchor keep the anchor's position (0, 0, 0); their attitude still
 comes from the backward gyro integration. Backward dead reckoning without witnesses was worse than
 standing still on clean MH_01/02 and could reach hundreds of metres when a dropout fell before the anchor.
@@ -102,6 +107,9 @@ DEAD_ON = True               # step 8a rule (16 Nov): passes on held-out MH_03..
 FC_TAU = 0.5                 # s, velocity decay while coasting: lowest mean blind growth on MH_01/02 (Docs/BLIND.md step8-tune)
 FC_ON = True                 # step 8a rule (16 Nov): passes; velocity decays toward 0 while coasting (off = constant velocity)
 # step 6d (decided by the pre-registered rule, Docs/TRACK3_PLAN.md step 6d)
+# step 7b (decided by the pre-registered rule, Docs/TRACK3_PLAN.md step 7b)
+ZUPT_DEN_BINS = 4            # ticks (1 s = MIN_STILL_S): MH_01/02 study, false denoised-still runs in flight were 2 ticks
+ZUPT_DEN_ON = False          # V1 also fires after ZUPT_DEN_BINS denoised-still, steady ticks in a row
 PRE_HOLD = True              # rule passed 16 Nov; rows before the anchor keep the anchor position (attitude still from the backward pass)
 N = 15
 
@@ -212,9 +220,9 @@ def coast(p, v, dt, tau):
 
 
 def estimate(rows, v1=None, v2=None, v2p=None, log=None, jam=None, gap_on=None, dead=None, fc=None,
-             pre_hold=None):
+             pre_hold=None, zden=None):
     """rows: list of (t_ns or None, six floats). Returns one (px, py, pz, qw, qx, qy, qz) per row.
-    v1, v2, v2p, jam, gap_on, dead, fc, pre_hold: switches (default the module's *_ON). log: optional list, gets
+    v1, v2, v2p, jam, gap_on, dead, fc, pre_hold, zden: switches (default the module's *_ON). log: optional list, gets
     one dict per tick."""
     v1 = V1_ON if v1 is None else v1
     v2 = V2_ON if v2 is None else v2
@@ -222,6 +230,7 @@ def estimate(rows, v1=None, v2=None, v2p=None, log=None, jam=None, gap_on=None, 
     jam = JAM_ON if jam is None else jam
     gap_on = GAP_ON if gap_on is None else gap_on
     dead = DEAD_ON if dead is None else dead
+    zden = ZUPT_DEN_ON if zden is None else zden
     tau = (FC_TAU if (FC_ON if fc is None else fc) else None)
     c = [0.0, 0.0, 0.0]                 # running centre of the volume envelope
     cal = sd.calibrate(rows)
@@ -249,6 +258,9 @@ def estimate(rows, v1=None, v2=None, v2p=None, log=None, jam=None, gap_on=None, 
     pn, ps, pss, pstill = 0, None, None, False
     h1 = h2 = None                      # last two raw rows of an unbroken run (noise meter)
     nd, dg, da, fdt = 0, 0.0, 0.0, 0.0  # second differences this tick; integrated time this tick
+    wd = [0.0] * 6                      # ... per channel (step 7b)
+    zr = 0                              # denoised-still, steady ticks in a row (step 7b)
+    pwv = None
     jg = ja = -1.0                      # smoothed measured densities^2 (< 0: none yet)
     gap = 0.0                           # seconds of this tick without integrated IMU data
     ring = []                           # (gravity direction in body, velocity) at the last ticks
@@ -304,7 +316,17 @@ def estimate(rows, v1=None, v2=None, v2p=None, log=None, jam=None, gap_on=None, 
                             else:
                                 kf_propagate(P, r, 0.0, 0.0, g, T, ad2, gd2)
                         still = sd.bin_is_still(bn, bs, bss)
-                        zupt = (v1 and still and pstill and sd.bins_steady(pn, ps, bn, bs))
+                        if zden:
+                            dst = sd.bin_is_still_denoised(bn, bs, bss, nd, wd)
+                            wv = sd.white_var(nd, wd)
+                            if dst and zr > 0 and sd.bins_steady_denoised(pn, ps, pwv, bn, bs, wv):
+                                zr += 1
+                            elif dst:
+                                zr = 1
+                            else:
+                                zr = 0
+                            pwv = wv
+                        zupt = v1 and ((still and pstill and sd.bins_steady(pn, ps, bn, bs)) or zr >= ZUPT_DEN_BINS)
                         if zupt:
                             for k in range(3):
                                 kf_update(P, dx, 3 + k, -v[k], ZUPT_SIGMA * ZUPT_SIGMA)
@@ -348,12 +370,13 @@ def estimate(rows, v1=None, v2=None, v2p=None, log=None, jam=None, gap_on=None, 
                         if log is not None:
                             log.append({"t": t_last, "zupt": zupt, "ba": ba, "bg": bg, "v": tuple(v),
                                         "jg": jg, "ja": ja, "gap": gap, "tilt2": tilt2, "dv2": tuple(dv2),
-                                        "pv": P[3 * N + 3], "ptilt": P[6 * N + 6]})
+                                        "pv": P[3 * N + 3], "ptilt": P[6 * N + 6], "zr": zr})
                         tick_end += tick_ns * ((t - tick_end) // tick_ns + 1)
                         t_tick = t_last
                         fs = [0.0, 0.0, 0.0]
                         fn = 0
                         nd, dg, da, fdt, gap = 0, 0.0, 0.0, 0.0, 0.0
+                        wd = [0.0] * 6
                         pn, ps, pss, pstill = bn, bs, bss, still
                         bn, bs, bss = 0, [0.0] * 6, [0.0] * 6
                     bn += 1
@@ -377,10 +400,18 @@ def estimate(rows, v1=None, v2=None, v2p=None, log=None, jam=None, gap_on=None, 
                             d1 = vals[1] - 2.0 * h1[1] + h2[1]
                             d2 = vals[2] - 2.0 * h1[2] + h2[2]
                             dg += d0 * d0 + d1 * d1 + d2 * d2
+                            if zden:
+                                wd[0] += d0 * d0
+                                wd[1] += d1 * d1
+                                wd[2] += d2 * d2
                             d0 = vals[3] - 2.0 * h1[3] + h2[3]
                             d1 = vals[4] - 2.0 * h1[4] + h2[4]
                             d2 = vals[5] - 2.0 * h1[5] + h2[5]
                             da += d0 * d0 + d1 * d1 + d2 * d2
+                            if zden:
+                                wd[3] += d0 * d0
+                                wd[4] += d1 * d1
+                                wd[5] += d2 * d2
                             nd += 1
                         h2 = h1
                         h1 = vals
