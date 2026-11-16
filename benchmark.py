@@ -114,7 +114,7 @@ def measure(a):
     procs = []
     stub, core = os.path.join(ROOT, "main.py"), os.path.join(ROOT, "pathfinder.py")
     # The bytecode the bundle ships (tools/make_bundle.py), written explicitly: a warm-up run would not
-    # write it when PYTHONDONTWRITEBYTECODE is set (it is in Arnav's Windows environment).
+    # write it when PYTHONDONTWRITEBYTECODE is set (it was in the Windows shell used for step 9a).
     py_compile.compile(core, cfile=importlib.util.cache_from_source(core), doraise=True,
                        invalidation_mode=py_compile.PycInvalidationMode.CHECKED_HASH)
     cold = tempfile.mkdtemp(prefix="vortex_nocache_")                     # empty: nothing cached, -B: none written

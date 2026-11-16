@@ -58,7 +58,7 @@ concise answers; say plainly what was not verified.
 
 ```
 pip install -e .[dev]
-pytest                                        # 16 Nov 2026: 192 passed (Windows, Python 3.14)
+pytest                                        # 16 Nov 2026: 194 passed (Windows, Python 3.14)
 python -S main.py IMU.csv estimated_trajectory.txt                       # submission entry point: a stub importing pathfinder.py (the estimator, stdlib only)
 python tools/make_bundle.py stage                                        # once per Python to carry bytecode for (py -3.13, py -3.14, python3 in WSL)
 python tools/make_bundle.py zip --name NAME                              # dist/NAME.zip; then: python tools/make_bundle.py verify dist/NAME.zip

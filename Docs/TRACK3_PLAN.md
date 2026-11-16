@@ -54,7 +54,7 @@ organisers, see Q1). Full-time work starts **20 Nov**.
 | 6 | Filter core: initialisation and self-calibration (W2), front end and jamming meter (W3), dropout bridging | 6a init + strapdown integrator: **Done (verified on SYNTHETIC data and MH_01)** 16 Nov. 6b self-calibration on the longest still run in the first 60 s + backward pass before it: **Done (verified on SYNTHETIC data and MH_01..05)** 16 Nov; reference and `main.py` bit-identical. 6c dropout covariance (`GAP_ON`, **on**) and noise meter (`JAM_ON`, **off** by rule v2): **Done (verified on SYNTHETIC data and seeded degraded MH copies)** 16 Nov; reference and `main.py` bit-identical. Degraded held-out mean APE 8.48 -> 6.69 m (seeds 4..6); clean unchanged. 6d rows before the anchor hold its position (`PRE_HOLD`, **on** by a pre-registered no-harm rule): **Done (verified on SYNTHETIC data and MH_01..05 clean and degraded)** 16 Nov; clean mean APE 5.29 -> 4.84 m (MH_02 5.98 -> 3.85, a tuning sequence). 6e denoised still test when the strict one finds no run (`CAL_NOISE_ON`, **on** by a pre-registered rule): **Done (verified on SYNTHETIC data and MH_01..05 clean and degraded)** 16 Nov; degraded MH_02 fallbacks 19/20 -> 0/20 (tuning), clean unchanged. Failure detection: step 8a | Beats dead reckoning on degraded MH_01 |
 | 7 | Velocity witnesses (W1): V1, V2 core; V3 after go/no-go; V4, V5 switchable; platform detection (W4) | 7a error-state filter + V1 + V2: **Done (verified on SYNTHETIC data and MH_01..05)** 16 Nov; reference and `main.py` bit-identical. Result: drift bounded (APE 249..1,288 m -> 3.5..6.6 m) but **not better than a never-moving trajectory** (mean APE 5.29 vs 5.25 m). V3: rule v2 pre-registered 16 Nov (commit c1b594c), waiting for Vicon Room 1. 7b denoised V1 (`ZUPT_DEN_ON`): built in the reference, **off** (pre-registered rule failed on held-out MH_03..05: APE +0.2 %, needed -2 %) 16 Nov; not in `main.py`. V4, V5, W4: Not started | Ablation table, each witness on and off, on held-out sequences |
 | 8 | Blind 5 s forecaster (W5), dead-sensor detection, per-row confidence (W6) | 8a dead-sensor detection (`DEAD_ON`, **on**) and velocity-decay forecaster (`FC_ON`, **on**, FC_TAU 0.5 s chosen on MH_01/02): **Done (verified on SYNTHETIC data and seeded degraded MH copies)** 16 Nov; both pass the pre-registered rule on held-out MH_03..05; reference and `main.py` bit-identical. Held-out blind growth -49.5 % (study A); zero failures 27.0 -> 4.4 m. 8b W6 per-row sigma from the filter covariance: built in the reference (`witness.row_sigma`, `tools/coverage.py`, `Docs/COVERAGE.md`) 16 Nov; **not informative** on MH_01/02 (rank correlation with the error -0.07), so no confidence is claimed; not in `main.py` | Blind error below constant velocity; coverage table |
-| 9 | Efficiency pass (C core if whole-process RAM counts); submission bundle, Dockerfile, deck, video | Not started | Valid `team_name.zip` by 21 Nov 6 PM; submitted 3 h before cutoff |
+| 9 | Efficiency pass (C core if whole-process RAM counts); submission bundle, Dockerfile, deck, video | 9a `main.py` is a stub importing `pathfinder.py`, and the bundle ships its bytecode: **Done (verified on MH_01..05 clean and degraded, Win 3.13/3.14, WSL2 3.12)** 16 Nov; outputs byte-identical, peak RSS -3.5 to -3.8 MB (MH_01: 11.95 MB Win 3.14, 10.27 MB Linux 3.12), still above 8 MB. Bundle builder `tools/make_bundle.py`, README, Dockerfile: zip verified on all three Pythons; Docker image not built (needs the base image download). C core: waits for Q4. Deck, video: Not started | Valid `team_name.zip` by 21 Nov 6 PM; submitted 3 h before cutoff |
 
 ## Open questions (Q1 to Q5 are in the email drafted for prism@samsung.com on 15 Nov)
 
@@ -63,7 +63,7 @@ organisers, see Q1). Full-time work starts **20 Nov**.
 | Q1 | Final deadline: 18 Nov or 22 Nov; Google Form link | Arnav |
 | Q2 | Track 3 student package: degradation script, sample data, evaluator | Arnav |
 | Q3 | Are waypoint positions or times given as input? | Arnav |
-| Q4 | Is 8 MB peak RAM measured for the whole process or the algorithm only? Is `main.cpp` accepted? **Now urgent:** a bare `python -S -c pass` already peaks at 8.4 MB RSS (WSL2 Linux, 3.12) and 9.5 to 9.7 MB (Windows 3.13/3.14), so CPython cannot meet 8 MB whole-process RSS; a C++ parse + write floor peaks at 4.3 MB (Windows). See `Docs/FLOOR.md`. Step 6a: compiling the larger `main.py` source adds about 1.1 MB peak RSS (11.8 vs 10.7 MB compile-only, Win 3.14); a 3-line stub importing a cached `.pyc` peaks at 10.3 MB, but a `.pyc` only works on the matching Python version (decide in step 9). Step 6b: compile-only is now 13.07 MB vs a bare 9.80 MB (+3.3 MB, Win 3.14); the run itself from a cached `.pyc` peaks at 11.92 MB on MH_01. Splitting the source into separately compiled modules may also lower the compile peak (not measured). Step 7a: compile-only 14.91 MB vs 13.15 MB for 6b and 9.80 MB bare (Win 3.14); the MH_01 run from a cached `.pyc` peaks at 12.05 MB (6b: 11.92), from source at 15.43 MB. The filter itself costs about 0.1 MB; compiling costs about 3.4 MB | Arnav |
+| Q4 | Is 8 MB peak RAM measured for the whole process or the algorithm only? Is `main.cpp` accepted? **Now urgent:** a bare `python -S -c pass` already peaks at 8.4 MB RSS (WSL2 Linux, 3.12) and 9.5 to 9.7 MB (Windows 3.13/3.14), so CPython cannot meet 8 MB whole-process RSS; a C++ parse + write floor peaks at 4.3 MB (Windows). See `Docs/FLOOR.md`. Step 6a: compiling the larger `main.py` source adds about 1.1 MB peak RSS (11.8 vs 10.7 MB compile-only, Win 3.14); a 3-line stub importing a cached `.pyc` peaks at 10.3 MB, but a `.pyc` only works on the matching Python version (decide in step 9). Step 6b: compile-only is now 13.07 MB vs a bare 9.80 MB (+3.3 MB, Win 3.14); the run itself from a cached `.pyc` peaks at 11.92 MB on MH_01. Splitting the source into separately compiled modules may also lower the compile peak (not measured). Step 7a: compile-only 14.91 MB vs 13.15 MB for 6b and 9.80 MB bare (Win 3.14); the MH_01 run from a cached `.pyc` peaks at 12.05 MB (6b: 11.92), from source at 15.43 MB. The filter itself costs about 0.1 MB; compiling costs about 3.4 MB. Step 9a: `main.py` is now a stub and the bundle ships the estimator's bytecode; MH_01 peaks at 11.95 MB (Win 3.14), 11.83 MB (Win 3.13), 10.27 MB (WSL2 3.12), against a 9.3 to 10.7 MB floor for the interpreter with `math` and `array` | Arnav |
 | Q5 | Demo video length: 2 to 3, 3, or 5 minutes? | Arnav |
 | Q6 | Is the rotor-drag signal visible in EuRoC's IMU (offline fit on clean MH_01)? **Answered 16 Nov: NO-GO under the pre-registered rule** (whole sequence; the hand-carried start breaks it). Exploratory in-flight fit: visible, k 0.14 to 0.25 /s. See `Docs/DRAG.md`. **Rule v2** pre-registered 16 Nov (commit c1b594c): decided on Vicon Room 1 | Arnav + Claude, before 20 Nov |
 
@@ -630,4 +630,31 @@ we can build them with; without a matching one, Python compiles the source as be
 
 This does not reach 8 MB: the interpreter with `math` and `array` alone peaks at 9.3 to 10.7 MB
 (`Docs/FLOOR.md`). Whether a C core is needed still depends on Q4.
+
+**Outcome: all four hold, the stub ships** (commit fd89e4a).
+1. Outputs: sha256 of all 65 outputs (clean MH_01..05 + 60 degraded copies, Win 3.14) identical for
+   the old `main.py`, the stub and `pathfinder.py` run directly.
+2. and 3. MH_01, 7 runs, median peak RSS, run from the staged bundle (`dist/stage`, bytecode built
+   by `tools/make_bundle.py stage`):
+
+| | Win 3.14 | Win 3.13 | WSL2 Linux 3.12 |
+|---|---|---|---|
+| before: `pathfinder.py` compiled from source | 15.76 MB | 15.63 MB | 13.79 MB |
+| stub, matching bytecode | **11.95 MB** (-3.81) | **11.83 MB** (-3.80) | **10.27 MB** (-3.52) |
+| stub, no cached bytecode | 15.75 MB (-0.01) | 15.28 MB (-0.36) | 13.94 MB (+0.15) |
+
+4. `benchmark.py --gate`: see the budget table below.
+
+**Found on the way.** The Windows shell these runs used sets `PYTHONDONTWRITEBYTECODE=1` (not checked
+whether Arnav's own terminals do), so Python there never writes a cache: a stub alone would gain
+nothing on a second run. An evaluator's machine could be set up the same way. That is why the bundle ships
+the `.pyc` files (reading them is unaffected by that variable) and `benchmark.py` writes them
+explicitly. Under `-I` the variable is ignored, which is why the tests did not show it.
+
+**Bundle.** `tools/make_bundle.py stage` (once per Python), `zip --name NAME`, `verify`. The zip
+(`NAME/`: `main.py`, `pathfinder.py`, `__pycache__/pathfinder.cpython-312/313/314.pyc`, `README.md`,
+`Dockerfile`, `LICENSE`, `MANIFEST.txt`) passed `verify` on Win 3.14, Win 3.13 and WSL2 3.12: output
+identical to `pathfinder.py`, checker PASS, estimator loaded from the shipped bytecode on the first
+run. The Dockerfile (`python:3.12.7-slim-bookworm`, bytecode compiled at build time) has not been
+built: that needs the base image downloaded.
 
