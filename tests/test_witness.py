@@ -404,3 +404,74 @@ def test_row_sigma_is_reporting_only(second_rest):
     anchor = sd.calibrate(rows).anchor
     assert len(sig) == len(rows) and all(math.isnan(x) for x in sig[:anchor])
     assert all(x >= 0.0 and math.isfinite(x) for x in sig[anchor:])
+
+
+# ---------- step E: fixed-interval (RTS) smoother, reference only (SMOOTH_ON off) ----------
+
+def test_smooth_gain_matches_dense():
+    rng = np.random.default_rng(5)
+    Pp = _rand_spd(rng)
+    q = quat_normalize(rng.standard_normal(4))
+    R = tuple(float(x) for x in quat_to_matrix(q).ravel())
+    A = wx.phi_entries(R, 0.3, -0.7, 9.6, 0.25)
+    Phi = np.eye(15)
+    for i, j, a in A:
+        Phi[i, j] += a
+    Pm = Phi @ Pp @ Phi.T + np.eye(15) * 1e-4
+    C = wx.smooth_gain([float(x) for x in Pp.ravel()], A, [float(x) for x in Pm.ravel()])
+    assert np.allclose(np.array(C).reshape(15, 15), Pp @ Phi.T @ np.linalg.inv(Pm), rtol=1e-9, atol=1e-12)
+    assert wx.smooth_gain([float(x) for x in Pp.ravel()], [], [0.0] * 225) is None   # not positive definite
+
+
+def test_smooth_off_by_default_changes_nothing(second_rest):
+    rows, _, _ = second_rest
+    assert wx.SMOOTH_ON is False
+    assert wx.estimate(rows) == wx.estimate(rows, smooth=False)
+
+
+def test_smoother_carries_the_second_rest_back(second_rest):
+    """SYNTHETIC: with V1 only, the bias steps after calibration are seen only at the second rest. The
+    smoother carries that back over the second motion; the last pose (the filtered one) is unchanged."""
+    from test_strapdown import _in_our_frame
+    rows, p, q = second_rest
+    cal = sd.calibrate(rows)
+    t = (np.array([r[0] for r in rows]) - T0) * 1e-9
+    m = (t >= 26.0) & (t <= 36.0)
+    err, outs = {}, {}
+    for on in (False, True):
+        out = np.array(wx.estimate(rows, v1=True, v2=False, v2p=False, smooth=on))
+        pt, _ = _in_our_frame(out.tolist(), p, q, cal.anchor)
+        err[on], outs[on] = np.linalg.norm(out[:, :3] - pt, axis=1), out
+    assert err[False][m].max() > 10.0 and err[True][m].max() < 1.0, (err[False][m].max(), err[True][m].max())
+    assert np.array_equal(outs[True][:cal.anchor], outs[False][:cal.anchor])   # rows before the anchor
+    assert np.array_equal(outs[True][-1], outs[False][-1])                     # after the last tick
+
+
+def test_smoother_store_never_exceeds_the_cap(second_rest, monkeypatch):
+    """The store merges adjacent blocks when full; a small cap must still help and never grow."""
+    rows, _, _ = second_rest
+    seen = []
+    real = wx.smooth_push
+
+    def spy(blocks, blk, cap):
+        real(blocks, blk, cap)
+        seen.append(len(blocks))
+    monkeypatch.setattr(wx, "SMOOTH_MAX_BLOCKS", 16)
+    monkeypatch.setattr(wx, "smooth_push", spy)
+    out = wx.estimate(rows, v1=True, v2=False, v2p=False, smooth=True)
+    assert max(seen) <= 16 and len(seen) > 100
+    assert all(math.isfinite(x) for o in out for x in o)
+
+
+def test_smooth_merge_composes_exactly():
+    rng = np.random.default_rng(7)
+    mk = lambda: (0, wx._f32(rng.standard_normal(225) * 0.2), wx._f32(rng.standard_normal(15)),  # noqa: E731
+                  wx._f32(rng.standard_normal(15)))
+    b1, b2 = mk(), mk()
+    e_end = rng.standard_normal(15)
+    A1, c1 = np.array(b1[1]).reshape(15, 15), np.array(b1[2])
+    A2, c2 = np.array(b2[1]).reshape(15, 15), np.array(b2[2])
+    want = A1 @ (A2 @ e_end + c2) + c1
+    t, A, c, d = wx.smooth_merge(b1, b2)
+    got = np.array(A).reshape(15, 15) @ e_end + np.array(c)
+    assert np.allclose(got, want, rtol=1e-5, atol=1e-5) and d == b1[3]
