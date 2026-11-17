@@ -30,6 +30,12 @@ Clean (undegraded) IMU input. APE = absolute position error after Umeyama alignm
 | stepA-v1-c | - | - | - | - | - | 1.77 / 0.409 | 1.77 / 0.669 | 1.55 / 0.469 | - | - |
 | stepA-v1-floor | - | - | - | - | - | 1.85 / 0.439 | 1.78 / 0.964 | 1.57 / 0.716 | - | - |
 | stepA-v1-py | - | - | - | - | - | 1.77 / 0.409 | 1.77 / 0.669 | 1.55 / 0.469 | - | - |
+| stepF-tune-bgcap-clean | 3.91 / 0.480 | 3.85 / 0.591 | - | - | - | - | - | - | - | - |
+| stepF-tune-both-clean | 3.91 / 0.480 | 3.85 / 0.591 | - | - | - | - | - | - | - | - |
+| stepF-tune-off-clean | 3.91 / 0.480 | 3.85 / 0.591 | - | - | - | - | - | - | - | - |
+| stepF-tune-p0v-clean | 3.91 / 0.480 | 3.85 / 0.591 | - | - | - | - | - | - | - | - |
+| stepF-tune-refresh-clean | 3.91 / 0.480 | 3.85 / 0.591 | - | - | - | - | - | - | - | - |
+| stepF-tune-reset-clean | 3.91 / 0.480 | 3.85 / 0.591 | - | - | - | - | - | - | - | - |
 
 ## APE RMSE m under every alignment (runs from step A on)
 
@@ -92,6 +98,18 @@ Clean (undegraded) IMU input. APE = absolute position error after Umeyama alignm
 | stepA-v1-py | V1_01_easy | 2.82 | 2.38 | 1.77 | 1.77 | 0.409 |
 | stepA-v1-py | V1_02_medium | 3.55 | 2.95 | 1.77 | 1.71 | 0.669 |
 | stepA-v1-py | V1_03_difficult | 2.93 | 2.28 | 1.55 | 1.51 | 0.469 |
+| stepF-tune-bgcap-clean | MH_01_easy | 6.46 | 7.83 | 3.91 | 3.73 | 0.480 |
+| stepF-tune-bgcap-clean | MH_02_easy | 7.05 | 8.95 | 3.85 | 3.02 | 0.591 |
+| stepF-tune-both-clean | MH_01_easy | 6.46 | 7.83 | 3.91 | 3.74 | 0.480 |
+| stepF-tune-both-clean | MH_02_easy | 7.05 | 8.95 | 3.85 | 3.02 | 0.591 |
+| stepF-tune-off-clean | MH_01_easy | 6.46 | 7.83 | 3.91 | 3.73 | 0.480 |
+| stepF-tune-off-clean | MH_02_easy | 7.05 | 8.95 | 3.85 | 3.02 | 0.591 |
+| stepF-tune-p0v-clean | MH_01_easy | 6.46 | 7.83 | 3.91 | 3.73 | 0.480 |
+| stepF-tune-p0v-clean | MH_02_easy | 7.05 | 8.95 | 3.85 | 3.02 | 0.591 |
+| stepF-tune-refresh-clean | MH_01_easy | 6.46 | 7.83 | 3.91 | 3.73 | 0.480 |
+| stepF-tune-refresh-clean | MH_02_easy | 7.05 | 8.95 | 3.85 | 3.02 | 0.591 |
+| stepF-tune-reset-clean | MH_01_easy | 6.46 | 7.83 | 3.91 | 3.74 | 0.480 |
+| stepF-tune-reset-clean | MH_02_easy | 7.05 | 8.95 | 3.85 | 3.02 | 0.591 |
 
 ## Every run
 
@@ -225,6 +243,18 @@ Clean (undegraded) IMU input. APE = absolute position error after Umeyama alignm
 | stepA-v1-py | main.py | ea4258c | 2026-11-17 | V1_01_easy | PASS | 1.77 | 1.92 | 1.77 | 0.847 | 0.409 | 0.38 |
 | stepA-v1-py | main.py | ea4258c | 2026-11-17 | V1_02_medium | PASS | 1.77 | 1.69 | 1.71 | 0.508 | 0.669 | 0.27 |
 | stepA-v1-py | main.py | ea4258c | 2026-11-17 | V1_03_difficult | PASS | 1.55 | 1.62 | 1.51 | 0.571 | 0.469 | 0.29 |
+| stepF-tune-bgcap-clean | main.py BGCAP_ON=True | 8cb550f | 2026-11-17 | MH_01_easy | PASS | 3.91 | 5.84 | 3.73 | 2.18 | 0.480 | 0.46 |
+| stepF-tune-bgcap-clean | main.py BGCAP_ON=True | 8cb550f | 2026-11-17 | MH_02_easy | PASS | 3.85 | 5.29 | 3.02 | 3.07 | 0.591 | 0.36 |
+| stepF-tune-both-clean | main.py REFRESH_ON=True RESET_ON=True | 8cb550f | 2026-11-17 | MH_01_easy | PASS | 3.91 | 5.87 | 3.74 | 2.17 | 0.480 | 0.59 |
+| stepF-tune-both-clean | main.py REFRESH_ON=True RESET_ON=True | 8cb550f | 2026-11-17 | MH_02_easy | PASS | 3.85 | 5.28 | 3.02 | 3.06 | 0.591 | 0.42 |
+| stepF-tune-off-clean | main.py | 8cb550f | 2026-11-17 | MH_01_easy | PASS | 3.91 | 5.84 | 3.73 | 2.18 | 0.480 | 0.38 |
+| stepF-tune-off-clean | main.py | 8cb550f | 2026-11-17 | MH_02_easy | PASS | 3.85 | 5.29 | 3.02 | 3.07 | 0.591 | 0.35 |
+| stepF-tune-p0v-clean | main.py P0V_ON=True | 8cb550f | 2026-11-17 | MH_01_easy | PASS | 3.91 | 5.84 | 3.73 | 2.18 | 0.480 | 0.40 |
+| stepF-tune-p0v-clean | main.py P0V_ON=True | 8cb550f | 2026-11-17 | MH_02_easy | PASS | 3.85 | 5.29 | 3.02 | 3.07 | 0.591 | 0.35 |
+| stepF-tune-refresh-clean | main.py REFRESH_ON=True | 8cb550f | 2026-11-17 | MH_01_easy | PASS | 3.91 | 5.84 | 3.73 | 2.18 | 0.480 | 0.42 |
+| stepF-tune-refresh-clean | main.py REFRESH_ON=True | 8cb550f | 2026-11-17 | MH_02_easy | PASS | 3.85 | 5.29 | 3.02 | 3.07 | 0.591 | 0.36 |
+| stepF-tune-reset-clean | main.py RESET_ON=True | 8cb550f | 2026-11-17 | MH_01_easy | PASS | 3.91 | 5.87 | 3.74 | 2.17 | 0.480 | 0.46 |
+| stepF-tune-reset-clean | main.py RESET_ON=True | 8cb550f | 2026-11-17 | MH_02_easy | PASS | 3.85 | 5.28 | 3.02 | 3.06 | 0.591 | 0.45 |
 
 # Official-script degraded input (from 17 Nov 2026; replaces every earlier degraded baseline)
 
@@ -266,6 +296,18 @@ Copies made by `python tools/official_degrade.py --all` with the organisers' `de
 | step3-tune-stuck-interp | b | 1..3 | 6 | 3.949 | 0.566 | 3.680 | 0.028 | 7.203 | 0.781 | 6/6 PASS |
 | step3-tune-stuck | a | 1..3 | 6 | 11.642 | 1.124 | 13.075 | 0.135 | 26.477 | 3.009 | 6/6 PASS |
 | step3-tune-stuck | b | 1..3 | 6 | 3.982 | 0.558 | 3.735 | 0.025 | 7.212 | 0.604 | 6/6 PASS |
+| stepF-tune-bgcap | a | 1..3 | 6 | 12.282 | 1.204 | 13.832 | 0.146 | 27.762 | 3.181 | 6/6 PASS |
+| stepF-tune-bgcap | b | 1..3 | 6 | 3.973 | 0.558 | 3.754 | 0.026 | 7.537 | 0.634 | 6/6 PASS |
+| stepF-tune-both | a | 1..3 | 6 | 12.272 | 1.210 | 14.065 | 0.140 | 29.041 | 3.204 | 6/6 PASS |
+| stepF-tune-both | b | 1..3 | 6 | 3.974 | 0.558 | 3.761 | 0.026 | 7.557 | 0.636 | 6/6 PASS |
+| stepF-tune-off | a | 1..3 | 6 | 12.282 | 1.204 | 13.832 | 0.146 | 27.762 | 3.181 | 6/6 PASS |
+| stepF-tune-off | b | 1..3 | 6 | 3.973 | 0.558 | 3.754 | 0.026 | 7.537 | 0.634 | 6/6 PASS |
+| stepF-tune-p0v | a | 1..3 | 6 | 12.282 | 1.204 | 13.832 | 0.146 | 27.762 | 3.181 | 6/6 PASS |
+| stepF-tune-p0v | b | 1..3 | 6 | 3.973 | 0.558 | 3.754 | 0.026 | 7.537 | 0.634 | 6/6 PASS |
+| stepF-tune-refresh | a | 1..3 | 6 | 12.282 | 1.204 | 13.832 | 0.146 | 27.763 | 3.180 | 6/6 PASS |
+| stepF-tune-refresh | b | 1..3 | 6 | 3.973 | 0.558 | 3.754 | 0.026 | 7.536 | 0.634 | 6/6 PASS |
+| stepF-tune-reset | a | 1..3 | 6 | 12.272 | 1.210 | 14.065 | 0.140 | 29.041 | 3.205 | 6/6 PASS |
+| stepF-tune-reset | b | 1..3 | 6 | 3.974 | 0.558 | 3.761 | 0.026 | 7.558 | 0.636 | 6/6 PASS |
 
 ## Every official-copy run
 
@@ -639,6 +681,78 @@ Copies made by `python tools/official_degrade.py --all` with the organisers' `de
 | step3-tune-stuck | main.py FF_STUCK6_ON=True | 44a61c6 | MH_02_easy_b_s1 | PASS | 4.050 | 0.618 | 4.867 | 0.018 | 8.034 | 0.244 | 0.47 |
 | step3-tune-stuck | main.py FF_STUCK6_ON=True | 44a61c6 | MH_02_easy_b_s2 | PASS | 3.890 | 0.604 | 3.528 | 0.008 | 6.522 | 0.421 | 0.43 |
 | step3-tune-stuck | main.py FF_STUCK6_ON=True | 44a61c6 | MH_02_easy_b_s3 | PASS | 4.168 | 0.600 | 3.132 | 0.034 | 6.562 | 0.626 | 0.43 |
+| stepF-tune-bgcap | main.py BGCAP_ON=True | 8cb550f | MH_01_easy_a_s1 | PASS | 12.403 | 1.268 | 14.152 | 0.199 | 22.407 | 1.063 | 0.39 |
+| stepF-tune-bgcap | main.py BGCAP_ON=True | 8cb550f | MH_01_easy_a_s2 | PASS | 17.496 | 1.268 | 20.713 | 0.178 | 31.852 | 2.714 | 0.36 |
+| stepF-tune-bgcap | main.py BGCAP_ON=True | 8cb550f | MH_01_easy_a_s3 | PASS | 8.572 | 0.974 | 9.255 | 0.035 | 24.284 | 4.494 | 0.36 |
+| stepF-tune-bgcap | main.py BGCAP_ON=True | 8cb550f | MH_01_easy_b_s1 | PASS | 4.091 | 0.494 | 4.041 | 0.036 | 8.189 | 0.938 | 0.42 |
+| stepF-tune-bgcap | main.py BGCAP_ON=True | 8cb550f | MH_01_easy_b_s2 | PASS | 4.019 | 0.510 | 3.572 | 0.038 | 7.737 | 0.788 | 0.43 |
+| stepF-tune-bgcap | main.py BGCAP_ON=True | 8cb550f | MH_01_easy_b_s3 | PASS | 3.779 | 0.505 | 3.515 | 0.016 | 7.306 | 0.706 | 0.41 |
+| stepF-tune-bgcap | main.py BGCAP_ON=True | 8cb550f | MH_02_easy_a_s1 | PASS | 11.463 | 1.388 | 9.947 | 0.102 | 37.225 | 4.427 | 0.30 |
+| stepF-tune-bgcap | main.py BGCAP_ON=True | 8cb550f | MH_02_easy_a_s2 | PASS | 7.357 | 1.082 | 9.396 | 0.008 | 16.919 | 3.641 | 0.30 |
+| stepF-tune-bgcap | main.py BGCAP_ON=True | 8cb550f | MH_02_easy_a_s3 | PASS | 16.404 | 1.245 | 19.528 | 0.354 | 33.888 | 2.746 | 0.31 |
+| stepF-tune-bgcap | main.py BGCAP_ON=True | 8cb550f | MH_02_easy_b_s1 | PASS | 3.995 | 0.623 | 4.793 | 0.018 | 8.138 | 0.215 | 0.38 |
+| stepF-tune-bgcap | main.py BGCAP_ON=True | 8cb550f | MH_02_easy_b_s2 | PASS | 3.901 | 0.609 | 3.605 | 0.009 | 6.427 | 0.455 | 0.36 |
+| stepF-tune-bgcap | main.py BGCAP_ON=True | 8cb550f | MH_02_easy_b_s3 | PASS | 4.052 | 0.608 | 2.999 | 0.038 | 7.424 | 0.702 | 0.35 |
+| stepF-tune-both | main.py REFRESH_ON=True RESET_ON=True | 8cb550f | MH_01_easy_a_s1 | PASS | 11.647 | 1.198 | 13.180 | 0.188 | 19.825 | 1.111 | 0.34 |
+| stepF-tune-both | main.py REFRESH_ON=True RESET_ON=True | 8cb550f | MH_01_easy_a_s2 | PASS | 20.388 | 1.269 | 24.379 | 0.176 | 45.796 | 2.548 | 0.36 |
+| stepF-tune-both | main.py REFRESH_ON=True RESET_ON=True | 8cb550f | MH_01_easy_a_s3 | PASS | 8.563 | 0.984 | 9.249 | 0.036 | 26.022 | 4.438 | 0.36 |
+| stepF-tune-both | main.py REFRESH_ON=True RESET_ON=True | 8cb550f | MH_01_easy_b_s1 | PASS | 4.092 | 0.494 | 4.041 | 0.036 | 8.210 | 0.941 | 0.45 |
+| stepF-tune-both | main.py REFRESH_ON=True RESET_ON=True | 8cb550f | MH_01_easy_b_s2 | PASS | 4.026 | 0.510 | 3.604 | 0.038 | 7.890 | 0.807 | 0.43 |
+| stepF-tune-both | main.py REFRESH_ON=True RESET_ON=True | 8cb550f | MH_01_easy_b_s3 | PASS | 3.779 | 0.505 | 3.515 | 0.016 | 7.300 | 0.704 | 0.59 |
+| stepF-tune-both | main.py REFRESH_ON=True RESET_ON=True | 8cb550f | MH_02_easy_a_s1 | PASS | 11.064 | 1.407 | 9.666 | 0.101 | 36.395 | 4.544 | 0.30 |
+| stepF-tune-both | main.py REFRESH_ON=True RESET_ON=True | 8cb550f | MH_02_easy_a_s2 | PASS | 8.262 | 1.144 | 10.163 | 0.008 | 19.972 | 3.935 | 0.31 |
+| stepF-tune-both | main.py REFRESH_ON=True RESET_ON=True | 8cb550f | MH_02_easy_a_s3 | PASS | 13.710 | 1.258 | 17.752 | 0.334 | 26.238 | 2.650 | 0.30 |
+| stepF-tune-both | main.py REFRESH_ON=True RESET_ON=True | 8cb550f | MH_02_easy_b_s1 | PASS | 3.998 | 0.623 | 4.795 | 0.018 | 8.166 | 0.214 | 0.37 |
+| stepF-tune-both | main.py REFRESH_ON=True RESET_ON=True | 8cb550f | MH_02_easy_b_s2 | PASS | 3.898 | 0.610 | 3.615 | 0.009 | 6.380 | 0.449 | 0.44 |
+| stepF-tune-both | main.py REFRESH_ON=True RESET_ON=True | 8cb550f | MH_02_easy_b_s3 | PASS | 4.050 | 0.608 | 2.995 | 0.038 | 7.395 | 0.700 | 0.43 |
+| stepF-tune-off | main.py | 8cb550f | MH_01_easy_a_s1 | PASS | 12.403 | 1.268 | 14.152 | 0.199 | 22.407 | 1.063 | 0.29 |
+| stepF-tune-off | main.py | 8cb550f | MH_01_easy_a_s2 | PASS | 17.496 | 1.268 | 20.713 | 0.178 | 31.852 | 2.714 | 0.38 |
+| stepF-tune-off | main.py | 8cb550f | MH_01_easy_a_s3 | PASS | 8.572 | 0.974 | 9.255 | 0.035 | 24.284 | 4.494 | 0.35 |
+| stepF-tune-off | main.py | 8cb550f | MH_01_easy_b_s1 | PASS | 4.091 | 0.494 | 4.041 | 0.036 | 8.189 | 0.938 | 0.41 |
+| stepF-tune-off | main.py | 8cb550f | MH_01_easy_b_s2 | PASS | 4.019 | 0.510 | 3.572 | 0.038 | 7.737 | 0.788 | 0.41 |
+| stepF-tune-off | main.py | 8cb550f | MH_01_easy_b_s3 | PASS | 3.779 | 0.505 | 3.515 | 0.016 | 7.306 | 0.706 | 0.42 |
+| stepF-tune-off | main.py | 8cb550f | MH_02_easy_a_s1 | PASS | 11.463 | 1.388 | 9.947 | 0.102 | 37.225 | 4.427 | 0.32 |
+| stepF-tune-off | main.py | 8cb550f | MH_02_easy_a_s2 | PASS | 7.357 | 1.082 | 9.396 | 0.008 | 16.919 | 3.641 | 0.33 |
+| stepF-tune-off | main.py | 8cb550f | MH_02_easy_a_s3 | PASS | 16.404 | 1.245 | 19.528 | 0.354 | 33.888 | 2.746 | 0.33 |
+| stepF-tune-off | main.py | 8cb550f | MH_02_easy_b_s1 | PASS | 3.995 | 0.623 | 4.793 | 0.018 | 8.138 | 0.215 | 0.35 |
+| stepF-tune-off | main.py | 8cb550f | MH_02_easy_b_s2 | PASS | 3.901 | 0.609 | 3.605 | 0.009 | 6.427 | 0.455 | 0.36 |
+| stepF-tune-off | main.py | 8cb550f | MH_02_easy_b_s3 | PASS | 4.052 | 0.608 | 2.999 | 0.038 | 7.424 | 0.702 | 0.43 |
+| stepF-tune-p0v | main.py P0V_ON=True | 8cb550f | MH_01_easy_a_s1 | PASS | 12.403 | 1.268 | 14.152 | 0.199 | 22.407 | 1.063 | 0.38 |
+| stepF-tune-p0v | main.py P0V_ON=True | 8cb550f | MH_01_easy_a_s2 | PASS | 17.496 | 1.268 | 20.713 | 0.178 | 31.852 | 2.714 | 0.35 |
+| stepF-tune-p0v | main.py P0V_ON=True | 8cb550f | MH_01_easy_a_s3 | PASS | 8.572 | 0.974 | 9.255 | 0.035 | 24.284 | 4.494 | 0.39 |
+| stepF-tune-p0v | main.py P0V_ON=True | 8cb550f | MH_01_easy_b_s1 | PASS | 4.091 | 0.494 | 4.041 | 0.036 | 8.189 | 0.938 | 0.42 |
+| stepF-tune-p0v | main.py P0V_ON=True | 8cb550f | MH_01_easy_b_s2 | PASS | 4.019 | 0.510 | 3.572 | 0.038 | 7.737 | 0.788 | 0.44 |
+| stepF-tune-p0v | main.py P0V_ON=True | 8cb550f | MH_01_easy_b_s3 | PASS | 3.779 | 0.505 | 3.515 | 0.016 | 7.306 | 0.706 | 0.44 |
+| stepF-tune-p0v | main.py P0V_ON=True | 8cb550f | MH_02_easy_a_s1 | PASS | 11.463 | 1.388 | 9.947 | 0.102 | 37.225 | 4.427 | 0.28 |
+| stepF-tune-p0v | main.py P0V_ON=True | 8cb550f | MH_02_easy_a_s2 | PASS | 7.357 | 1.082 | 9.396 | 0.008 | 16.919 | 3.641 | 0.32 |
+| stepF-tune-p0v | main.py P0V_ON=True | 8cb550f | MH_02_easy_a_s3 | PASS | 16.404 | 1.245 | 19.528 | 0.354 | 33.888 | 2.746 | 0.27 |
+| stepF-tune-p0v | main.py P0V_ON=True | 8cb550f | MH_02_easy_b_s1 | PASS | 3.995 | 0.623 | 4.793 | 0.018 | 8.138 | 0.215 | 0.33 |
+| stepF-tune-p0v | main.py P0V_ON=True | 8cb550f | MH_02_easy_b_s2 | PASS | 3.901 | 0.609 | 3.605 | 0.009 | 6.427 | 0.455 | 0.31 |
+| stepF-tune-p0v | main.py P0V_ON=True | 8cb550f | MH_02_easy_b_s3 | PASS | 4.052 | 0.608 | 2.999 | 0.038 | 7.424 | 0.702 | 0.44 |
+| stepF-tune-refresh | main.py REFRESH_ON=True | 8cb550f | MH_01_easy_a_s1 | PASS | 12.402 | 1.268 | 14.151 | 0.199 | 22.405 | 1.063 | 0.31 |
+| stepF-tune-refresh | main.py REFRESH_ON=True | 8cb550f | MH_01_easy_a_s2 | PASS | 17.500 | 1.268 | 20.718 | 0.178 | 31.866 | 2.713 | 0.33 |
+| stepF-tune-refresh | main.py REFRESH_ON=True | 8cb550f | MH_01_easy_a_s3 | PASS | 8.571 | 0.974 | 9.254 | 0.035 | 24.280 | 4.492 | 0.33 |
+| stepF-tune-refresh | main.py REFRESH_ON=True | 8cb550f | MH_01_easy_b_s1 | PASS | 4.090 | 0.494 | 4.040 | 0.036 | 8.188 | 0.938 | 0.40 |
+| stepF-tune-refresh | main.py REFRESH_ON=True | 8cb550f | MH_01_easy_b_s2 | PASS | 4.019 | 0.510 | 3.572 | 0.038 | 7.737 | 0.788 | 0.43 |
+| stepF-tune-refresh | main.py REFRESH_ON=True | 8cb550f | MH_01_easy_b_s3 | PASS | 3.779 | 0.505 | 3.515 | 0.016 | 7.305 | 0.706 | 0.38 |
+| stepF-tune-refresh | main.py REFRESH_ON=True | 8cb550f | MH_02_easy_a_s1 | PASS | 11.463 | 1.388 | 9.947 | 0.102 | 37.226 | 4.427 | 0.29 |
+| stepF-tune-refresh | main.py REFRESH_ON=True | 8cb550f | MH_02_easy_a_s2 | PASS | 7.357 | 1.082 | 9.396 | 0.008 | 16.922 | 3.640 | 0.35 |
+| stepF-tune-refresh | main.py REFRESH_ON=True | 8cb550f | MH_02_easy_a_s3 | PASS | 16.402 | 1.245 | 19.528 | 0.354 | 33.880 | 2.744 | 0.26 |
+| stepF-tune-refresh | main.py REFRESH_ON=True | 8cb550f | MH_02_easy_b_s1 | PASS | 3.995 | 0.623 | 4.793 | 0.018 | 8.137 | 0.215 | 0.36 |
+| stepF-tune-refresh | main.py REFRESH_ON=True | 8cb550f | MH_02_easy_b_s2 | PASS | 3.901 | 0.609 | 3.605 | 0.009 | 6.426 | 0.455 | 0.37 |
+| stepF-tune-refresh | main.py REFRESH_ON=True | 8cb550f | MH_02_easy_b_s3 | PASS | 4.052 | 0.608 | 2.999 | 0.038 | 7.424 | 0.702 | 0.39 |
+| stepF-tune-reset | main.py RESET_ON=True | 8cb550f | MH_01_easy_a_s1 | PASS | 11.647 | 1.198 | 13.181 | 0.188 | 19.826 | 1.111 | 0.34 |
+| stepF-tune-reset | main.py RESET_ON=True | 8cb550f | MH_01_easy_a_s2 | PASS | 20.386 | 1.270 | 24.377 | 0.176 | 45.789 | 2.548 | 0.33 |
+| stepF-tune-reset | main.py RESET_ON=True | 8cb550f | MH_01_easy_a_s3 | PASS | 8.564 | 0.984 | 9.250 | 0.036 | 26.026 | 4.439 | 0.33 |
+| stepF-tune-reset | main.py RESET_ON=True | 8cb550f | MH_01_easy_b_s1 | PASS | 4.092 | 0.494 | 4.041 | 0.036 | 8.211 | 0.941 | 0.47 |
+| stepF-tune-reset | main.py RESET_ON=True | 8cb550f | MH_01_easy_b_s2 | PASS | 4.026 | 0.510 | 3.605 | 0.038 | 7.891 | 0.807 | 0.38 |
+| stepF-tune-reset | main.py RESET_ON=True | 8cb550f | MH_01_easy_b_s3 | PASS | 3.779 | 0.505 | 3.515 | 0.016 | 7.301 | 0.704 | 0.41 |
+| stepF-tune-reset | main.py RESET_ON=True | 8cb550f | MH_02_easy_a_s1 | PASS | 11.065 | 1.407 | 9.667 | 0.101 | 36.395 | 4.545 | 0.32 |
+| stepF-tune-reset | main.py RESET_ON=True | 8cb550f | MH_02_easy_a_s2 | PASS | 8.261 | 1.144 | 10.163 | 0.008 | 19.964 | 3.935 | 0.34 |
+| stepF-tune-reset | main.py RESET_ON=True | 8cb550f | MH_02_easy_a_s3 | PASS | 13.711 | 1.258 | 17.752 | 0.334 | 26.247 | 2.652 | 0.30 |
+| stepF-tune-reset | main.py RESET_ON=True | 8cb550f | MH_02_easy_b_s1 | PASS | 3.998 | 0.623 | 4.795 | 0.018 | 8.166 | 0.214 | 0.39 |
+| stepF-tune-reset | main.py RESET_ON=True | 8cb550f | MH_02_easy_b_s2 | PASS | 3.898 | 0.610 | 3.616 | 0.009 | 6.381 | 0.449 | 0.39 |
+| stepF-tune-reset | main.py RESET_ON=True | 8cb550f | MH_02_easy_b_s3 | PASS | 4.050 | 0.608 | 2.995 | 0.038 | 7.396 | 0.700 | 0.36 |
 
 # Degraded input
 

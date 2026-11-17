@@ -83,6 +83,7 @@ Deadline **22 Nov 2026, 11:59 PM IST**, confirmed by the FAQ (Q1 closed). Full-t
 | R1 | FAQ re-plan, Step 1: C core retired from the submission; memory gate moved from RSS to the heap (tracemalloc) | **Done (verified)** 17 Nov: gate PASS on Win 3.14 synthetic + MH_01 and Win 3.13 synthetic; bundle verified on 3.13/3.14; Python Docker image built, MH_01 output identical | Python-only zip verified |
 | R2 | Official-script harness (both column readings), input front end, new baseline | **Done (verified)** 17 Nov: 64 copies (8 sequences x readings a, b x seeds 1, 2, 3, 42), front end correct on all 72 files; baseline in `Docs/STEP2_BASELINE.md` | Table shown to Arnav before Step 3 |
 | R3 | Fault front end: stuck rows, spikes, bridging of missing samples (three switches), blind-window protection | **Done (verified): all three switches OFF** by the pre-registered rule (17 Nov, rule at 99bf25b); shipped output unchanged | Each switch judged on 36 held-out copies |
+| F | Filter fixes from the 16-17 Nov reviews: gyro-bias cap on every still test (`BGCAP_ON`), covariance reset after injection (`RESET_ON`), refresh of the cached previous sample (`REFRESH_ON`), fallback velocity uncertainty (`P0V_ON`); four switches | **Rule committed, held-out run pending** (17 Nov) | Each switch judged on 36 fresh held-out copies (seeds 4-6) by the no-harm rule |
 
 ## Open questions (Q1 to Q5 are in the email drafted for prism@samsung.com on 15 Nov)
 
@@ -1130,3 +1131,55 @@ in-flight witness, with a rule written before any held-out copy is run. Nothing 
 `pytest`: 250 passed (245 after Step 2 + 5 smoother), Windows, Python 3.14.7. Budget not rerun: `pathfinder.py` and
 `main.py` unchanged.
 
+
+
+## Step F: filter fixes from the reviews (17 Nov 2026, branch `track3/stepF-bias-reset`)
+
+**Why.** Two external reviews (16 and 17 Nov) found four defects in the shipped filter, all confirmed in the
+code and present in both `pathfinder.py` and the reference:
+- The still tests bound the spread of the gyro, not its mean. A steady rotation is low-variance and steady,
+  so it is taken for rest and its rate for gyro bias. SYNTHETIC check: 8 s of 0.3 rad/s yaw from the first
+  row, calibrated as rest with a 0.300 rad/s z bias; the final yaw was 0.005 deg against a true 137 deg.
+  Only a bias prior can tell the two apart (the IMU readings are identical), so this is damage limitation:
+  a rotation slower than the cap still passes.
+- No covariance reset after the attitude correction is injected (`P <- G P G^T`).
+- The cached previous sample (bias-corrected gyro, world specific force) keeps the pre-injection attitude
+  and biases for the next trapezoid step.
+- With no still run (first-second fallback) the initial velocity sigma is still 0.01 m/s.
+
+**Pieces** (each a switch, default off; reference `vortex/core/strapdown.py` + `witness.py`, copied into
+`pathfinder.py`; `tests/test_stepF.py`, 23 tests):
+- `BGCAP_ON`: a bin or init window whose mean gyro norm exceeds `BG_MAX = 0.15` rad/s is not still, in every
+  still test: strict calibration and V1 (`bin_is_still`), the denoised calibration and V1 (`bin_is_still_denoised`)
+  and the first-second fallback (`initialise`). `BG_MAX` is 1.8x the largest calibrated |bg| on MH_01/02 (clean and
+  the 12 official copies: 0.080 to 0.083 rad/s); not tuned on anything else; TUM-VI not checked.
+- `RESET_ON`: `kf_reset`, G = I + [dth/2]x on the attitude block (global attitude error; Sola 2017, ESKF reset).
+  Checked against a finite-difference Jacobian of dth+ = Log(Exp(dth) Exp(-dth_hat)): second-order agreement,
+  and the opposite sign is visibly wrong.
+- `REFRESH_ON`: `refresh_prev`, the cached sample re-expressed with the corrected attitude and biases; equals a
+  fresh `_sample` with the corrected state to 1e-12.
+- `P0V_ON`: with no still run, the initial velocity sigma is the V2 envelope (2.0, 2.0, 0.3 m/s).
+- The smoother (Step E, reference only, off) does not apply the reset to its stored covariances; if it is ever
+  switched on together with `RESET_ON` that needs adding.
+
+**Tuning set (MH_01/02 x readings a, b x seeds 1-3, 12 copies; clean MH_01/02), mean APE SE3 m, reading a /
+reading b; gap and blind RMSE m; tags `stepF-tune-*`:** off 12.282 / 3.973, gap 8.793, blind 17.650, clean 3.8782;
+BGCAP identical to off (every MH calibration is under the cap); P0V identical (MH always calibrates); REFRESH
+12.282 / 3.973, identical gap and blind, clean 3.8783; RESET 12.272 / 3.974, gap 8.913 (+1.4 %), blind 18.299
+(+3.7 %), clean 3.8787; RESET + REFRESH as RESET. Nothing was tuned on these runs: `BG_MAX` and the P0V sigmas
+are set from the calibrated MH bias and the envelope, not from accuracy.
+
+**Decision rule, committed before any held-out run of these switches** (`tools/judge_stepF.py`). Held-out set
+H: MH_03..05, V1_01..03 x readings a, b x seeds **4, 5, 6** (36 copies made with the organisers' script for this
+step; the seed 1-3 copies already decided Step 3). Clean set C: MH_01..05, V1_01..03. Judged in the order
+BGCAP, P0V, REFRESH, RESET, each with the earlier ones at their decided state. These fix demonstrated defects
+and add no new hint, so the rule is no-harm. A switch ships on only if all hold:
+1. mean APE (SE3 on the run) over H is not worse by more than 0.5 %;
+2. in each reading separately, mean APE over its 18 copies is not worse by more than 1 %;
+3. mean gap RMSE and mean blind RMSE over H are each not worse by more than 2 %;
+4. mean APE over C is not worse by more than 0.5 %;
+5. output contract PASS on every run;
+6. BGCAP only: the SYNTHETIC steady-rotation test in `tests/test_stepF.py` passes.
+Otherwise it ships off and is recorded as a measured experiment. No constant changes after this commit.
+Expected from the tuning set (a prediction, not part of the rule): BGCAP and P0V change little or nothing on
+EuRoC (their targets, moving starts, are rare there); RESET may fail condition 3 on the blind RMSE.
