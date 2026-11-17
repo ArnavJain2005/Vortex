@@ -22,6 +22,9 @@ Usage:
                              ORGANISERS' degrade_imu.py; named <sequence>_<reading a|b>_s<seed>. APE with SE3
                              Umeyama fitted on the run being scored, as the organisers do; RPE 1 s; error
                              inside missing-row bursts and in the blind 5 s from degrade.json)
+  python tools/eval_euroc.py --tag NAME --official --reverse [--set ...]
+                            (Step L1 null floor: the estimate's positions reversed in time before
+                             scoring; same spread and smoothness, no information about the flight)
   python tools/eval_euroc.py --render
 
 Vicon Room 2 (V2_*) is the final test set: it is skipped when no --seqs are given, and naming it in
@@ -71,9 +74,22 @@ def command(main_path, imu, est):
 CBIN = "cbin:"
 
 
-def wrapper(main_path, sets, tmp):
+REVERSE_CODE = """code = m.main(sys.argv)
+if code == 0:
+    with open(sys.argv[2], 'rb') as f:
+        P = [l.split(b' ', 4) for l in f]
+    with open(sys.argv[2], 'wb') as f:
+        f.write(b''.join(b' '.join((P[i][0], P[-1 - i][1], P[-1 - i][2], P[-1 - i][3], P[i][4]))
+                         for i in range(len(P))))
+sys.exit(code)"""
+
+
+def wrapper(main_path, sets, tmp, reverse=False):
     """A temporary script that imports main_path, sets module constants, then runs it. The constants of
-    main.py live in pathfinder.py next to it (main.py is a stub since step 9a), so that file is loaded."""
+    main.py live in pathfinder.py next to it (main.py is a stub since step 9a), so that file is loaded.
+    reverse=True (Step L1 null floor): the output's positions are then reversed in time (row i gets the
+    position of row N-1-i; timestamps and attitude unchanged). Same spread and smoothness as the estimate,
+    no information about the flight: what SE3 Umeyama alone can fit."""
     core = os.path.join(os.path.dirname(main_path), "pathfinder.py")
     if os.path.basename(main_path) == "main.py" and os.path.exists(core):
         main_path = core
@@ -83,7 +99,7 @@ def wrapper(main_path, sets, tmp):
     for name, value in sets:
         lines.append("assert hasattr(m, %r), 'no constant %s'" % (name, name))
         lines.append("m.%s = %s" % (name, value))
-    lines.append("sys.exit(m.main(sys.argv))")
+    lines.append(REVERSE_CODE if reverse else "sys.exit(m.main(sys.argv))")
     path = os.path.join(tmp, "wrapped_main.py")
     with open(path, "w", encoding="utf-8") as f:
         f.write("\n".join(lines) + "\n")
@@ -364,7 +380,11 @@ def main(argv=None):
     commit = get("--commit", None) or subprocess.run(["git", "rev-parse", "--short", "HEAD"], cwd=ROOT,
                                                       capture_output=True, text=True).stdout.strip()
     tmp = tempfile.mkdtemp(prefix="vortex_eval_")
-    run_path = CBIN + cbin if cbin else (wrapper(main_path, sets, tmp) if sets else main_path)
+    reverse = "--reverse" in argv
+    if cbin and reverse:
+        print("--reverse needs the Python main")
+        return 2
+    run_path = CBIN + cbin if cbin else (wrapper(main_path, sets, tmp, reverse) if sets or reverse else main_path)
     if cbin:
         main_path = cbin
     results = []
@@ -391,7 +411,7 @@ def main(argv=None):
     with open(os.path.join(OUT_DIR, tag + ".json"), "w", encoding="utf-8", newline="\n") as f:
         json.dump({"tag": tag, "commit": commit, "date": time.strftime("%Y-%m-%d"), "main": os.path.relpath(
             main_path, ROOT) if main_path.startswith(ROOT) else os.path.basename(main_path),
-            "set": {k: v for k, v in sets}, "degraded": degraded, "official": official,
+            "set": {k: v for k, v in sets}, "degraded": degraded, "official": official, "reverse": reverse,
             "python": sys.version.split()[0], "results": results}, f, indent=1, sort_keys=True)
         f.write("\n")
     print("wrote", os.path.relpath(render(), ROOT))

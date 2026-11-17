@@ -1035,10 +1035,147 @@ INTERP_ON = False            # Step 3: skip rows marked missing and integrate st
 INTERP_MAX_S = 0.3           # s; the script's bursts are 5-50 rows (<= 0.25 s at 200 Hz)
 
 
+# ---- Step L1: positions scaled about their centroid, alpha per noise class (vortex/core/shrink.py) ----
+SHRINK_ON = False
+SHRINK_NOISE = 0.10          # rad/s per sample: class threshold (physics, not tuned)
+SHRINK_WIN_S = 20.0
+SHRINK_BLIND_S = 5.0
+SHRINK_BIN_S = 0.25
+SHRINK_BIN_MIN = 5
+SHRINK_MAX_DT = 0.1
+SHRINK_ALPHA_LO = 0.10       # high-noise class: lowest tuning objective, MH_01/02 a (tools/shrink_tune.py)
+SHRINK_ALPHA_HI = 0.20       # low-noise class: lowest tuning objective, MH_01/02 b + clean (flat: 59.85 vs 61.76 at 1.0)
+SH_FMT = b"%s %.6f %.6f %.6f %s"
+
+
+def _sh_noise(src):
+    """Median per-bin gyro white-noise sigma in the meter window (shrink.gyro_noise); -1.0 if no bin."""
+    fl = float
+    bin_ns = int(SHRINK_BIN_S * 1e9)
+    max_dt = int(SHRINK_MAX_DT * 1e9)
+    t0 = None
+    t_last = None
+    h1 = h2 = None
+    bins = []
+    cur = -1
+    s = 0.0
+    c = 0
+    with _open_rows(src) as f:
+        for line in f:
+            if line[0] < 48:
+                line = line.strip()
+                if not line or line[0] == 35:
+                    continue
+            p = line.split(b",")
+            ts = p[0]
+            if not ts.isdigit():
+                ts = ts.strip()
+                if not ts.isdigit():
+                    continue
+            t = int(ts)
+            t_last = t
+            try:
+                gx = fl(p[1]); gy = fl(p[2]); gz = fl(p[3])
+                ax = fl(p[4]); ay = fl(p[5]); az = fl(p[6])
+            except (ValueError, IndexError):
+                h1 = h2 = None
+                continue
+            if not (gx - gx == 0.0 and gy - gy == 0.0 and gz - gz == 0.0 and ax - ax == 0.0
+                    and ay - ay == 0.0 and az - az == 0.0 and (ax != 0.0 or ay != 0.0 or az != 0.0)):
+                h1 = h2 = None
+                continue
+            if t0 is None:
+                t0 = t
+            if h1 is not None and 0 < t - h1[0] <= max_dt:
+                if h2 is not None:
+                    d1 = h1[0] - h2[0]
+                    d2 = t - h1[0]
+                    if 4 * abs(d2 - d1) <= d1:
+                        e0 = gx - 2.0 * h1[1] + h2[1]
+                        e1 = gy - 2.0 * h1[2] + h2[2]
+                        e2 = gz - 2.0 * h1[3] + h2[3]
+                        b = (t - t0) // bin_ns
+                        if b != cur:
+                            if c >= SHRINK_BIN_MIN:
+                                bins.append((cur, s / c))
+                            cur = b
+                            s = 0.0
+                            c = 0
+                        s += e0 * e0 + e1 * e1 + e2 * e2
+                        c += 1
+                h2 = h1
+            else:
+                h2 = None
+            h1 = (t, gx, gy, gz)
+    if c >= SHRINK_BIN_MIN:
+        bins.append((cur, s / c))
+    if t0 is None:
+        return -1.0
+    hi = t_last - int(SHRINK_BLIND_S * 1e9)
+    lo = hi - int(SHRINK_WIN_S * 1e9)
+    sel = sorted(m for b, m in bins if t0 + b * bin_ns >= lo and t0 + (b + 1) * bin_ns <= hi)
+    if not sel:
+        return -1.0
+    k = len(sel) // 2
+    med = sel[k] if len(sel) % 2 else 0.5 * (sel[k - 1] + sel[k])
+    return math.sqrt(med / 18.0)
+
+
+def _sh_apply(dst, alpha):
+    """Rewrite dst with positions scaled by alpha about their centroid (timestamps, attitude unchanged)."""
+    if alpha == 1.0:
+        return
+    fl = float
+    sx = sy = sz = 0.0
+    n = 0
+    with open(dst, "rb") as f:
+        for line in f:
+            p = line.split(b" ", 4)
+            sx += fl(p[1])
+            sy += fl(p[2])
+            sz += fl(p[3])
+            n += 1
+    if not n:
+        return
+    cx = sx / n
+    cy = sy / n
+    cz = sz / n
+    fmt = SH_FMT
+    tmp = dst + ".vortex_sh"
+    out = []
+    ap = out.append
+    k = CHUNK
+    with open(dst, "rb") as f, open(tmp, "wb") as g:
+        w = g.write
+        for line in f:
+            p = line.split(b" ", 4)
+            ap(fmt % (p[0], cx + alpha * (fl(p[1]) - cx), cy + alpha * (fl(p[2]) - cy),
+                      cz + alpha * (fl(p[3]) - cz), p[4]))
+            k -= 1
+            if not k:
+                w(b"".join(out))
+                out.clear()
+                k = CHUNK
+        if out:
+            w(b"".join(out))
+    os.replace(tmp, dst)
+
+
+def _shrink(src, dst, write, integrate):
+    LAST["shrink"] = None
+    if not (SHRINK_ON and write and integrate):
+        return
+    sigma = _sh_noise(src)
+    alpha = SHRINK_ALPHA_LO if sigma > SHRINK_NOISE else SHRINK_ALPHA_HI
+    LAST["shrink"] = (sigma, alpha)
+    _sh_apply(dst, alpha)
+
+
 def run(src, dst, write=True, integrate=True):
     """Stream src -> dst. Returns the number of data rows. With FRONT_ON a file that is not canonical, and
     with FF_STUCK6_ON / FF_SPIKE_ON every file, is first rewritten (canonical, faults marked missing) next to
-    dst (dst + '.vortex_in.csv', removed afterwards)."""
+    dst (dst + '.vortex_in.csv', removed afterwards). With SHRINK_ON dst is then rewritten once more with
+    the positions scaled about their centroid (Step L1)."""
     LAST["frontend"] = None
     LAST["faults"] = None
     lines = None
@@ -1057,7 +1194,9 @@ def run(src, dst, write=True, integrate=True):
         lines = _ff_filter_lines(lines, stats=st)
     LAST["env"] = None
     if lines is None:
-        return _run_learned(src, dst, write, integrate)
+        n = _run_learned(src, dst, write, integrate)
+        _shrink(src, dst, write, integrate)
+        return n
     tmp = dst + ".vortex_in.csv"
     try:
         with open(tmp, "wb") as g:
@@ -1066,7 +1205,9 @@ def run(src, dst, write=True, integrate=True):
         if f is not None:
             f.close()
     try:
-        return _run_learned(tmp, dst, write, integrate)
+        n = _run_learned(tmp, dst, write, integrate)
+        _shrink(tmp, dst, write, integrate)
+        return n
     finally:
         os.remove(tmp)
 

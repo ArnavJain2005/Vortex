@@ -747,13 +747,16 @@ def prepare_lines(path):
 
 
 def estimate_file(path):
-    """The estimator on an IMU csv, after prepare_lines(); rows marked missing become MissingRow."""
+    """The estimator on an IMU csv, after prepare_lines(); rows marked missing become MissingRow. With
+    shrink.SHRINK_ON the positions are then scaled about their centroid (Step L1)."""
     import os
     import tempfile
     from ..data import euroc
+    from . import shrink
     lines = prepare_lines(path)
     if lines is None:
-        return estimate_learned(sd.rows_from_raw(euroc.read_imu_csv(path)))
+        rows = sd.rows_from_raw(euroc.read_imu_csv(path))
+        return shrink.shrink(rows, estimate_learned(rows))
     fd, tmp = tempfile.mkstemp(suffix=".csv")
     miss = []
     try:
@@ -769,7 +772,7 @@ def estimate_file(path):
             lines.close()
         os.remove(tmp)
     rows = [(t, MissingRow(v)) if m else (t, v) for (t, v), m in zip(rows, miss)]
-    return estimate_learned(rows)
+    return shrink.shrink(rows, estimate_learned(rows))
 
 
 def estimate_learned(rows):
