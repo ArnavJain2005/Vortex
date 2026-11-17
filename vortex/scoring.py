@@ -260,7 +260,8 @@ def main(argv=None) -> int:
     ap.add_argument("--gt", required=True, help="sequence folder, ground-truth csv, or TUM .txt")
     ap.add_argument("--est", required=True, help="estimated_trajectory.txt")
     ap.add_argument("--events", help="degrade.json (phase windows)")
-    ap.add_argument("--imu", help="the IMU csv main.py read: also run the output contract checker")
+    ap.add_argument("--imu", help="the IMU csv main.py read: also run the output contract checker "
+                                  "(exit 1 if it fails)")
     ap.add_argument("--align", default="se3", choices=list(ALIGN_MODES) + ["given"])
     ap.add_argument("--given-from", help="estimate on the UNDEGRADED run; with --align given")
     ap.add_argument("--given-mode", default="se3", choices=["origin", "se3", "sim3"])
@@ -306,10 +307,20 @@ def main(argv=None) -> int:
             print("phase %-12s %5.1f-%5.1f s: rmse %s  end %s  growth %s m"
                   % (label, p["window_s"][0], p["window_s"][1], _fmt(p.get("rmse")),
                      _fmt(p.get("end_error")), _fmt(p.get("growth"))))
+    fixed = {k: info[k] for k in ("non_finite_dropped", "duplicates_dropped") if info.get(k)}
+    if info.get("was_unsorted"):
+        fixed["was_unsorted"] = True
+    if fixed:
+        # read_tum sorted / dropped rows before scoring: the numbers above are for the cleaned file,
+        # which an evaluator may not do. Not a failure by itself (one pose per input row may repeat
+        # an input's duplicate timestamp), but never silent.
+        print("WARNING: est file cleaned before scoring (scores are for the cleaned copy): %s" % fixed)
     if "contract" in res:
         print("output contract:", "PASS" if res["contract"]["ok"] else "FAIL %s" % res["contract"]["error_counts"])
     if a.json:
         Path(a.json).write_text(json.dumps(res, indent=1, sort_keys=True) + "\n")
+    if "contract" in res and not res["contract"]["ok"]:
+        return 1                    # scores were printed, but the output breaks the contract
     return 0
 
 

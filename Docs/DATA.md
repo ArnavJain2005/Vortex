@@ -23,6 +23,15 @@ multirotor, IMU at 200 Hz, ground truth from a laser tracker or motion capture.
 Only `imu0/` and `state_groundtruth_estimate0/` are needed; the camera folders can be deleted locally to
 save space.
 
+**Held-out data for drag rule v2 (V3).** `V1_01_easy`, `V1_02_medium`, `V1_03_difficult` (the Vicon Room 1
+zip) are the decision sequences of the pre-registered rule in `tools/drag_fit.py` (commit c1b594c). Extract
+them the same way, to `data/euroc/V1_0x_*/mav0/`. Do not use them for any tuning: run them once,
+`python tools/drag_fit.py --rule v2 data/euroc/V1_01_easy data/euroc/V1_02_medium data/euroc/V1_03_difficult`,
+and record the result. Vicon Room 2 (`V2_01..03`) is the final test set: extract it the same way if you like, but nothing
+reads it until "run the final table" (`tools/eval_euroc.py` skips `V2_*` and refuses it without `--final`).
+
+V1_01..03 were extracted on 17 Nov 2026 (IMU 200 Hz, 145.6 / 85.5 / 107.5 s).
+
 ## TUM-VI
 
 Schubert et al., *The TUM VI Benchmark for Evaluating Visual-Inertial Odometry*, IROS 2018. Hand-held

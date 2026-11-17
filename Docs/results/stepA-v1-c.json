@@ -1,0 +1,50 @@
+{
+ "commit": "ea4258c",
+ "date": "2026-11-17",
+ "degraded": false,
+ "main": "build\\vortex.exe",
+ "python": "3.14.7",
+ "results": [
+  {
+   "ate_none_rmse": 2.8196446030167657,
+   "ate_origin_rmse": 2.378614669084573,
+   "ate_se3_rmse": 1.7738981433481178,
+   "ate_sim3_rmse": 1.7711589353269412,
+   "contract": "PASS",
+   "final_se3": 1.924735417334139,
+   "rows": 29120,
+   "rpe200_rmse": 0.40885024621452093,
+   "sequence": "V1_01_easy",
+   "sim3_scale": 0.8468194433399397,
+   "wall_s": 0.11724849999882281
+  },
+  {
+   "ate_none_rmse": 3.5507219708268876,
+   "ate_origin_rmse": 2.9462976750372176,
+   "ate_se3_rmse": 1.7734234105792577,
+   "ate_sim3_rmse": 1.7056594840098442,
+   "contract": "PASS",
+   "final_se3": 1.690035617586854,
+   "rows": 17100,
+   "rpe200_rmse": 0.6691454344042631,
+   "sequence": "V1_02_medium",
+   "sim3_scale": 0.5076214878542542,
+   "wall_s": 0.044079300001612864
+  },
+  {
+   "ate_none_rmse": 2.9345368395622007,
+   "ate_origin_rmse": 2.275076576558205,
+   "ate_se3_rmse": 1.547698101623525,
+   "ate_sim3_rmse": 1.512643082941947,
+   "contract": "PASS",
+   "final_se3": 1.6211247845358638,
+   "rows": 21500,
+   "rpe200_rmse": 0.4689976881612566,
+   "sequence": "V1_03_difficult",
+   "sim3_scale": 0.5708356386431361,
+   "wall_s": 0.038265200011665
+  }
+ ],
+ "set": {},
+ "tag": "stepA-v1-c"
+}

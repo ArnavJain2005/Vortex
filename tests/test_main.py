@@ -1,4 +1,5 @@
-"""main.py (the submission entry point): output contract on messy input, standalone run, memory gate."""
+"""main.py (the submission entry point, a stub) and pathfinder.py (the estimator it imports): output
+contract on messy input, standalone run, bytecode use, memory gate."""
 
 import ast
 import importlib.util
@@ -16,14 +17,15 @@ from vortex.rowspec import is_data_line
 
 ROOT = Path(__file__).resolve().parents[1]
 MAIN = ROOT / "main.py"
+CORE = ROOT / "pathfinder.py"
 sys.path.insert(0, str(ROOT / "tools"))
 import synth_euroc  # noqa: E402
 
-ALLOWED_IMPORTS = {"sys", "math", "array", "json"}
+ALLOWED_IMPORTS = {"sys", "math", "array", "json", "os"}   # os: removes the front end's temporary canonical copy (Step 2); already loaded at start-up
 
 
 def _load_main():
-    spec = importlib.util.spec_from_file_location("vortex_main_under_test", MAIN)
+    spec = importlib.util.spec_from_file_location("vortex_main_under_test", CORE)
     mod = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(mod)
     return mod
@@ -54,15 +56,19 @@ def _count_rows(path):
         return sum(1 for line in f if is_data_line(line))
 
 
-def test_imports_are_stdlib_allowlist():
-    tree = ast.parse(MAIN.read_text(encoding="utf-8"))
+def _imports(path):
     names = set()
-    for node in ast.walk(tree):
+    for node in ast.walk(ast.parse(path.read_text(encoding="utf-8"))):
         if isinstance(node, ast.Import):
             names |= {a.name.split(".")[0] for a in node.names}
         elif isinstance(node, ast.ImportFrom):
             names.add((node.module or "").split(".")[0])
-    assert names <= ALLOWED_IMPORTS, names - ALLOWED_IMPORTS
+    return names
+
+
+def test_imports_are_stdlib_allowlist():
+    assert _imports(CORE) <= ALLOWED_IMPORTS, _imports(CORE) - ALLOWED_IMPORTS
+    assert _imports(MAIN) == {"sys", "pathfinder"}
 
 
 def test_messy_input_meets_contract(tmp_path):
@@ -118,17 +124,50 @@ def test_deterministic_bytes(tmp_path):
     assert (tmp_path / "a.txt").read_bytes() == (tmp_path / "b.txt").read_bytes()
 
 
-def test_runs_standalone_from_src_folder(tmp_path):
-    """Copied alone into src/ and run isolated (-I -S): no vortex package, no site-packages."""
+def _standalone(tmp_path):
     srcdir = tmp_path / "src"
     srcdir.mkdir()
     shutil.copy(MAIN, srcdir / "main.py")
+    shutil.copy(CORE, srcdir / "pathfinder.py")
     (tmp_path / "imu.csv").write_bytes(MESSY)
+    return srcdir
+
+
+def test_runs_standalone_from_src_folder(tmp_path):
+    """main.py + pathfinder.py copied alone into src/ and run isolated (-I -S) from another folder: no
+    vortex package, no site-packages, the script's folder not on sys.path by default."""
+    srcdir = _standalone(tmp_path)
     p = subprocess.run([sys.executable, "-I", "-S", str(srcdir / "main.py"), "imu.csv", "est.txt"],
                        cwd=tmp_path, capture_output=True, text=True)
     assert p.returncode == 0, p.stderr
     assert p.stdout == "" and p.stderr == ""
     assert check_output.check(tmp_path / "imu.csv", tmp_path / "est.txt")["ok"]
+
+
+def test_relative_script_path(tmp_path):
+    """`python main.py IN OUT` run from inside the folder (an empty script folder in __file__ terms)."""
+    srcdir = _standalone(tmp_path)
+    p = subprocess.run([sys.executable, "-I", "-S", "main.py", "../imu.csv", "../est.txt"],
+                       cwd=srcdir, capture_output=True, text=True)
+    assert p.returncode == 0, p.stderr
+    assert check_output.check(tmp_path / "imu.csv", tmp_path / "est.txt")["ok"]
+
+
+def test_stub_matches_estimator_and_loads_bytecode(tmp_path):
+    """Same bytes through the stub as from pathfinder.py; the second stub run loads pathfinder from
+    __pycache__ (python -v names the .pyc it loads code from) instead of compiling it."""
+    srcdir = _standalone(tmp_path)
+    run = lambda script, out, *flags: subprocess.run(  # noqa: E731
+        [sys.executable, "-I", "-S", *flags, str(srcdir / script), "imu.csv", out], cwd=tmp_path,
+        capture_output=True, text=True)
+    assert run("pathfinder.py", "direct.txt").returncode == 0
+    assert run("main.py", "first.txt").returncode == 0        # compiles and writes the cache
+    p = run("main.py", "second.txt", "-v")
+    assert p.returncode == 0, p.stderr[-500:]
+    loaded = [l for l in p.stderr.splitlines() if "code object from" in l and "pathfinder" in l]
+    assert loaded and loaded[0].rstrip("'").endswith(".pyc"), loaded
+    direct = (tmp_path / "direct.txt").read_bytes()
+    assert direct == (tmp_path / "first.txt").read_bytes() == (tmp_path / "second.txt").read_bytes()
 
 
 def test_cli_errors(tmp_path):
@@ -157,3 +196,33 @@ def test_memory_gate_bounded_and_flat(tmp_path):
     p_long = _traced_peak(long_, tmp_path / "o2.txt")
     assert p_long < 4 * 2**20, p_long
     assert p_long - p_short < 64 * 1024, (p_short, p_long)
+
+
+def _late_rest_file(path, before=11_000, rest=1_000, after=24_000, seed=7):
+    """SYNTHETIC: tumbling motion, then a 5 s rest just before the 60 s horizon, then motion."""
+    import random
+    rng = random.Random(seed)
+    t = synth_euroc.T0_NS
+    with open(path, "w", newline="\n") as f:
+        f.write(euroc.HEADER + "\n")
+        for i in range(before + rest + after):
+            r = rng.random
+            if before <= i < before + rest:
+                v = (0.002 + 0.001 * (r() - 0.5), -0.001 + 0.001 * (r() - 0.5), 0.003 + 0.001 * (r() - 0.5),
+                     0.01 * (r() - 0.5), 0.01 * (r() - 0.5), 9.81 + 0.01 * (r() - 0.5))
+            else:
+                ph = (i % 400) / 200.0 - 1.0
+                v = (0.3 * ph + 0.05 * (r() - 0.5), -0.2 * ph, 0.1 * ph, 9.3 + 0.8 * ph, -0.4 + 0.5 * ph,
+                     -2.4 + 0.3 * (r() - 0.5))
+            f.write("%d,%s\n" % (t, ",".join(repr(x) for x in v)))
+            t += synth_euroc.DT_NS
+    return path
+
+
+def test_memory_gate_with_backward_pass(tmp_path):
+    """Worst realistic case: ~11,000 stored rows for the backward pass; tracemalloc peak < 4 MB."""
+    src = _late_rest_file(tmp_path / "late.csv")
+    peak = _traced_peak(src, tmp_path / "o.txt")
+    assert main.LAST["calibrated"] and main.LAST["pre_rows"] > 10_000
+    assert peak < 4 * 2**20, peak
+    assert check_output.check(src, tmp_path / "o.txt")["ok"]
