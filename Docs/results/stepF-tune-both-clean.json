@@ -1,0 +1,41 @@
+{
+ "commit": "8cb550f",
+ "date": "2026-11-17",
+ "degraded": false,
+ "main": "main.py",
+ "official": false,
+ "python": "3.14.7",
+ "results": [
+  {
+   "ate_none_rmse": 6.46482931360364,
+   "ate_origin_rmse": 7.829775275891832,
+   "ate_se3_rmse": 3.9115072526565617,
+   "ate_sim3_rmse": 3.736760808614789,
+   "contract": "PASS",
+   "final_se3": 5.86980484982894,
+   "rows": 36820,
+   "rpe200_rmse": 0.4797781930334621,
+   "sequence": "MH_01_easy",
+   "sim3_scale": 2.1715649307117753,
+   "wall_s": 0.5859560999961104
+  },
+  {
+   "ate_none_rmse": 7.046090821085892,
+   "ate_origin_rmse": 8.950769270075343,
+   "ate_se3_rmse": 3.84608895594319,
+   "ate_sim3_rmse": 3.0245759210127465,
+   "contract": "PASS",
+   "final_se3": 5.2815808075771224,
+   "rows": 30400,
+   "rpe200_rmse": 0.5911732051708565,
+   "sequence": "MH_02_easy",
+   "sim3_scale": 3.064282486033176,
+   "wall_s": 0.41747089999262244
+  }
+ ],
+ "set": {
+  "REFRESH_ON": "True",
+  "RESET_ON": "True"
+ },
+ "tag": "stepF-tune-both-clean"
+}
