@@ -94,6 +94,7 @@ python tools/eval_euroc.py --tag NAME [--main main.py] [--set V2_ON=False]  # ru
 python tools/eval_euroc.py --tag floor-still --main tools/baseline_still.py  # the never-moving floor (mean APE 5.25 m on MH)
 python tools/official_degrade.py --all --readings a,b --seeds 1,2,3,42      # ORGANISERS' degrade_imu.py (in git-ignored tools/official/): data/official/<seq>_<a|b>_s<seed>
 python tools/eval_euroc.py --tag NAME --official [--seqs MH_03_medium_b_s1,...]  # every data/official copy; APE SE3 fitted on the run being scored
+python tools/judge_step3.py --name X --h-off TAG --h-on TAG --c-off TAG --c-on TAG  # Step 3 rule (17 Nov: STUCK6, SPIKE, INTERP all OFF)
 python tools/baseline_table.py --est TAG --floor TAG --clean TAG --floor-clean TAG --out NAME  # estimator vs floor per sequence/reading; Docs/NAME.md
 python -m vortex.degrade data/euroc/MH_03_medium data/degraded/MH_03_medium_s4 --seed 4  # HISTORY: our own fault model (not the official one); <seq>_s<seed>
 python tools/eval_euroc.py --tag NAME --degraded [--seqs MH_03_medium_s4,...]  # every data/degraded copy; alignment from the clean run

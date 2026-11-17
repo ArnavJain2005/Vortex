@@ -82,6 +82,7 @@ Deadline **22 Nov 2026, 11:59 PM IST**, confirmed by the FAQ (Q1 closed). Full-t
 | 9 | Efficiency pass (C core if whole-process RAM counts); submission bundle, Dockerfile, deck, video | 9a `main.py` is a stub importing `pathfinder.py`, and the bundle ships its bytecode: **Done (verified on MH_01..05 clean and degraded, Win 3.13/3.14, WSL2 3.12)** 16 Nov; outputs byte-identical, peak RSS -3.5 to -3.8 MB (MH_01: 11.95 MB Win 3.14, 10.27 MB Linux 3.12), still above 8 MB. Bundle builder `tools/make_bundle.py`, README, Dockerfile: zip verified on all three Pythons; Docker image built and its output identical on all 65 inputs. 9b C core `main.cpp` (Q4 unanswered, so the strict reading is assumed): **Done (verified on MH_01..05 clean and degraded, Windows and WSL2 Linux)** 16 Nov; peak RSS 2.7 MB Linux / 4.8 MB Windows on MH_01, bit-identical to `pathfinder.py` on Linux; bundle in the PRD layout. C-core Dockerfile not built yet. Deck, video: Not started | Valid `team_name.zip` by 21 Nov 6 PM; submitted 3 h before cutoff |
 | R1 | FAQ re-plan, Step 1: C core retired from the submission; memory gate moved from RSS to the heap (tracemalloc) | **Done (verified)** 17 Nov: gate PASS on Win 3.14 synthetic + MH_01 and Win 3.13 synthetic; bundle verified on 3.13/3.14; Python Docker image built, MH_01 output identical | Python-only zip verified |
 | R2 | Official-script harness (both column readings), input front end, new baseline | **Done (verified)** 17 Nov: 64 copies (8 sequences x readings a, b x seeds 1, 2, 3, 42), front end correct on all 72 files; baseline in `Docs/STEP2_BASELINE.md` | Table shown to Arnav before Step 3 |
+| R3 | Fault front end: stuck rows, spikes, bridging of missing samples (three switches), blind-window protection | **Done (verified): all three switches OFF** by the pre-registered rule (17 Nov, rule at 99bf25b); shipped output unchanged | Each switch judged on 36 held-out copies |
 
 ## Open questions (Q1 to Q5 are in the email drafted for prism@samsung.com on 15 Nov)
 
@@ -1005,3 +1006,37 @@ earlier ones at their decided state. A switch ships on only if all hold:
 4. mean APE over C is not worse by more than 0.5 %;
 5. output contract PASS on every run.
 Otherwise it ships off and is recorded as a measured experiment. No constant changes after this commit.
+
+**Outcome** (17 Nov; `python tools/judge_step3.py`, tags `step3-H-*` (36 held-out copies) and `step3-C-*`
+(8 clean sequences), `main.py` with `--set`; contract PASS on all 88 runs of each comparison):
+
+| Switch (judged with the earlier ones off) | Mean APE H | Reading a | Reading b | Gap RMSE | Blind RMSE | Clean APE | Verdict |
+|---|---|---|---|---|---|---|---|
+| STUCK6 | 5.086 -> 5.075 (-0.20 %) | 6.311 -> 6.190 (-1.92 %) | 3.861 -> 3.961 (**+2.60 %**) | -1.46 % | +1.41 % | +0.000 % | **off** (fails 1 and 2) |
+| SPIKE (100/3) | 5.086 -> 5.088 (+0.05 %) | +0.08 % | -0.00 % | -0.06 % | +0.52 % | +0.053 % | **off** (fails 1) |
+| INTERP (0.3 s) | 5.086 -> 5.412 (+6.42 %) | 6.311 -> 7.027 (**+11.34 %**) | 3.861 -> 3.798 (-1.62 %) | +5.07 % | +15.26 % | +0.000 % | **off** (fails 1, 2, 3) |
+
+**Reading.** None of the three pieces earns its place on the held-out copies. The two column readings
+pull in opposite directions: under reading b (sane gyro) bridging gaps helps a little (-1.6 %), under
+reading a (accelerometer-sized faults on the gyro) every extra gyro integration step hurts and coasting
+with the attitude held is better; removing stuck rows helps reading a and hurts reading b. Spike removal
+does nothing measurable: at 100/3 it finds about 40 % of the spikes, and the remaining ones plus the
+gyro noise dominate. The error is not in the isolated faults but in the attitude under the noise and bias
+walk the script adds (reading a), and in the never-moving-level offset (both readings).
+
+Shipped: `STUCK6_ON = SPIKE_ON = INTERP_ON = False` (reference and `pathfinder.py`); the code stays as a
+recorded experiment. Not retried on the same held-out copies: any reading-aware variant (for example
+bridging only when the gyro noise level is low) would need a new rule and copies never seen (new seeds).
+
+| Item | Result | Where |
+|---|---|---|
+| `pytest` | 256 passed (245 + 11 `tests/test_faults.py`) | Windows, Python 3.14.7 |
+| Reference vs `pathfinder.py` with switches on | max difference within the equivalence criterion on a SYNTHETIC degraded file (spikes, stuck runs, a 40-row burst, duplicates, zero tail) for four switch combinations; the fault pass emits identical lines | `tests/test_faults.py` |
+| Budget, `python -S benchmark.py --runs 15 --gate` (shipped settings, switches off) | PASS: synthetic 10.48 us/row, heap 506 / 1,005 / 5,278 KB (in-process / whole run / no bytecode); MH_01_easy_b_s1 10.24 us/row, 588 / 1,092 / 5,278 KB. No-bytecode heap on Win 3.13 (MH_01): 6,310 KB | `Docs/BUDGET.md` `step3-*` |
+
+The no-bytecode compile peak on 3.14 rose from 4.89 MB (Step 2) to 5.28 MB: the switched-off fault code is
+compiled too. Still under 8 MB; if it grows further, moving switched-off experiments out of
+`pathfinder.py` (they live in the reference anyway) is the cheapest fix.
+
+Not checked: TUM-VI (not downloaded); the seed-42 copies with the switches on (the switches ship off, so
+the Step 2 seed-42 numbers stand); a reading-aware variant (would need a new rule and new seeds).
