@@ -106,6 +106,40 @@ V2P_TAU = 10.0               # s, time constant of the running centre (EMA of ow
 V1_ON = True
 V2_ON = True
 V2P_ON = True
+# Step 4 (reference first; rule in Docs/TRACK3_PLAN.md, Step 4): envelope learned per file (LEARN_ON). Pass 1
+# runs with the fixed values above and records per tick, after the updates, v^2 + P_vv and (p - c)^2 + P_pp
+# (c = the running centre), horizontal (mean of x, y) and vertical. Over the ticks in the first LEARN_FRAC
+# of the file's time span the learned sigma is sqrt(mean): one EM step for the prior's variance, using the
+# filter's own posterior. Times LEARN_K (the prior is applied every 0.25 s tick as if the ticks were
+# independent; speed and position are correlated over seconds, so the per-tick sigma must be wider than the
+# spread), then clamped to [LEARN_MIN, LEARN_MAX]; LEARN_ITERS such steps, then the final pass.
+LEARN_ON = False
+LEARN_FRAC = 0.3
+LEARN_ITERS = 2
+LEARN_K = 1.0
+LEARN_MIN = (0.1, 0.05, 0.3, 0.1)   # speed h, v (m/s); volume h, v (m): wide, not tuned
+LEARN_MAX = (4.0, 1.0, 10.0, 4.0)
+
+
+def learn_env(acc, t0, t1):
+    """acc: flat list, 5 per tick (t_ns, vh2, vv2, ph2, pv2). Returns (sigma speed h, v, volume h, v)."""
+    lim = t0 + LEARN_FRAC * (t1 - t0)
+    n = 0
+    s = [0.0, 0.0, 0.0, 0.0]
+    for i in range(0, len(acc), 5):
+        if acc[i] <= lim:
+            n += 1
+            s[0] += acc[i + 1]
+            s[1] += acc[i + 2]
+            s[2] += acc[i + 3]
+            s[3] += acc[i + 4]
+    if n == 0:
+        return (V2_SIGMA_H, V2_SIGMA_V, V2P_SIGMA_H, V2P_SIGMA_V)
+    out = []
+    for k in range(4):
+        x = LEARN_K * math.sqrt(s[k] / n)
+        out.append(LEARN_MIN[k] if x < LEARN_MIN[k] else LEARN_MAX[k] if x > LEARN_MAX[k] else x)
+    return tuple(out)
 # step 6c (placeholders, not tuned)
 JAM_TAU = 2.0                # s, smoothing of the measured noise density
 GAP_H_TICKS = 8              # ticks (2 s, the slides' dropout length): horizon of the learned motion
@@ -411,7 +445,7 @@ def smooth_apply(out, rows, anchor, blocks, t_end, d_end):
 
 
 def estimate(rows, v1=None, v2=None, v2p=None, log=None, jam=None, gap_on=None, dead=None, fc=None,
-             pre_hold=None, zden=None, sig=None, smooth=None):
+             pre_hold=None, zden=None, sig=None, smooth=None, env=None, collect=None):
     """rows: list of (t_ns or None, six floats). Returns one (px, py, pz, qw, qx, qy, qz) per row.
     v1, v2, v2p, jam, gap_on, dead, fc, pre_hold, zden: switches (default the module's *_ON). log: optional list, gets
     one dict per tick. sig: optional list, gets one per-row position sigma (m, 3D) per row (step 8b,
@@ -468,6 +502,8 @@ def estimate(rows, v1=None, v2=None, v2p=None, log=None, jam=None, gap_on=None, 
     lg = la = None
     interp = INTERP_ON
     max_dt = INTERP_MAX_S if interp else sd.MAX_DT
+    e = env if env is not None else (V2_SIGMA_H, V2_SIGMA_V, V2P_SIGMA_H, V2P_SIGMA_V)
+    s2vh, s2vv, s2ph, s2pv = e[0] * e[0], e[1] * e[1], e[2] * e[2], e[3] * e[3]
     reset, refresh = RESET_ON, REFRESH_ON
     for t, vals in rows[anchor:]:
         if t is not None:
@@ -547,16 +583,16 @@ def estimate(rows, v1=None, v2=None, v2p=None, log=None, jam=None, gap_on=None, 
                                     var = ZARU_SIGMA_MIN * ZARU_SIGMA_MIN
                                 kf_update(P, dx, 9 + k, m - bg[k], var)
                         elif v2:
-                            kf_update(P, dx, 3, -v[0], V2_SIGMA_H * V2_SIGMA_H)
-                            kf_update(P, dx, 4, -v[1], V2_SIGMA_H * V2_SIGMA_H)
-                            kf_update(P, dx, 5, -v[2], V2_SIGMA_V * V2_SIGMA_V)
+                            kf_update(P, dx, 3, -v[0], s2vh)
+                            kf_update(P, dx, 4, -v[1], s2vh)
+                            kf_update(P, dx, 5, -v[2], s2vv)
                         if v2p and not zupt and T > 0.0:
                             a = T / V2P_TAU if T < V2P_TAU else 1.0
                             for k in range(3):
                                 c[k] += (p[k] - c[k]) * a
-                            kf_update(P, dx, 0, c[0] - p[0], V2P_SIGMA_H * V2P_SIGMA_H)
-                            kf_update(P, dx, 1, c[1] - p[1], V2P_SIGMA_H * V2P_SIGMA_H)
-                            kf_update(P, dx, 2, c[2] - p[2], V2P_SIGMA_V * V2P_SIGMA_V)
+                            kf_update(P, dx, 0, c[0] - p[0], s2ph)
+                            kf_update(P, dx, 1, c[1] - p[1], s2ph)
+                            kf_update(P, dx, 2, c[2] - p[2], s2pv)
                         sdx = None
                         if zupt or v2 or v2p:
                             sdx = dx
@@ -572,6 +608,13 @@ def estimate(rows, v1=None, v2=None, v2p=None, log=None, jam=None, gap_on=None, 
                                     if refresh and prev is not None:
                                         prev = refresh_prev(prev, qo, q, dx)
                             dx = [0.0] * N
+                        if collect is not None:
+                            d0 = p[0] - c[0]
+                            d1 = p[1] - c[1]
+                            d2 = p[2] - c[2]
+                            collect.extend((float(t_last), 0.5 * (v[0] * v[0] + P[48] + v[1] * v[1] + P[64]),
+                                            v[2] * v[2] + P[80], 0.5 * (d0 * d0 + P[0] + d1 * d1 + P[16]),
+                                            d2 * d2 + P[32]))
                         r0 = rot_matrix(q)
                         if gap_on:
                             zb = (r0[6], r0[7], r0[8])
@@ -710,7 +753,7 @@ def estimate_file(path):
     from ..data import euroc
     lines = prepare_lines(path)
     if lines is None:
-        return estimate(sd.rows_from_raw(euroc.read_imu_csv(path)))
+        return estimate_learned(sd.rows_from_raw(euroc.read_imu_csv(path)))
     fd, tmp = tempfile.mkstemp(suffix=".csv")
     miss = []
     try:
@@ -726,4 +769,21 @@ def estimate_file(path):
             lines.close()
         os.remove(tmp)
     rows = [(t, MissingRow(v)) if m else (t, v) for (t, v), m in zip(rows, miss)]
-    return estimate(rows)
+    return estimate_learned(rows)
+
+
+def estimate_learned(rows):
+    """estimate(), with the envelope learned per file first when LEARN_ON (LEARN_ITERS passes)."""
+    if not LEARN_ON:
+        return estimate(rows)
+    ts = [t for t, _ in rows if t is not None]
+    env = None
+    for _ in range(LEARN_ITERS):
+        acc = []
+        estimate(rows, env=env, collect=acc)
+        env = learn_env(acc, ts[0], ts[-1]) if ts else None
+    LAST_ENV[0] = env
+    return estimate(rows, env=env)
+
+
+LAST_ENV = [None]

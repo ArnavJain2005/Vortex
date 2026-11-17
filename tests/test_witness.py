@@ -406,6 +406,50 @@ def test_row_sigma_is_reporting_only(second_rest):
     assert all(x >= 0.0 and math.isfinite(x) for x in sig[anchor:])
 
 
+# ---- Step 4: envelope learned per file (LEARN_ON) ----
+
+def test_learned_envelope_reference_and_pathfinder_agree(tmp_path, monkeypatch):
+    import importlib.util
+    from pathlib import Path
+    import test_core_equivalence as tce
+    from test_core_equivalence import _compare, _write_rows
+    from test_strapdown import _move_rest_move
+    root = Path(__file__).resolve().parents[1]
+    spec = importlib.util.spec_from_file_location("vortex_pf_learn", root / "pathfinder.py")
+    pf = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(pf)
+    rows, _, _ = _move_rest_move(bias=(0.01, -0.02, 0.08), gyro_noise=0.002, acc_noise=0.02, seed=5)
+    src = _write_rows(tmp_path / "imu.csv", rows)
+    for iters, k in ((1, 1.0), (2, 1.5)):
+        for mod in (wx, pf):
+            monkeypatch.setattr(mod, "LEARN_ON", True)
+            monkeypatch.setattr(mod, "LEARN_ITERS", iters)
+            monkeypatch.setattr(mod, "LEARN_K", k)
+        monkeypatch.setattr(tce, "main", pf)
+        _compare(src, tmp_path, monkeypatch, reference=wx.estimate_file)
+        assert pf.LAST["env"] == wx.LAST_ENV[0] and pf.LAST["env"] is not None
+
+
+def test_learn_env_window_and_clamps(monkeypatch):
+    acc = []
+    for k in range(10):                        # ticks at t = 0..9; speed^2 1 in the first half, 100 later
+        acc += [float(k), 1.0 if k < 5 else 100.0, 0.0, 4.0, 1e6]
+    monkeypatch.setattr(wx, "LEARN_FRAC", 0.5)
+    env = wx.learn_env(acc, 0, 9)              # window t <= 4.5: ticks 0..4
+    assert env[0] == 1.0 and env[1] == wx.LEARN_MIN[1] and env[2] == 2.0 and env[3] == wx.LEARN_MAX[3]
+    monkeypatch.setattr(wx, "LEARN_K", 1.5)
+    assert wx.learn_env(acc, 0, 9)[0] == 1.5 and wx.learn_env(acc, 0, 9)[2] == 3.0
+    assert wx.learn_env([], 0, 9) == (wx.V2_SIGMA_H, wx.V2_SIGMA_V, wx.V2P_SIGMA_H, wx.V2P_SIGMA_V)
+
+
+def test_learn_off_changes_nothing(tmp_path):
+    from test_core_equivalence import _write_rows
+    from test_strapdown import _move_rest_move
+    rows, _, _ = _move_rest_move(seed=6, gyro_noise=0.001, acc_noise=0.01)
+    assert not wx.LEARN_ON
+    assert wx.estimate_learned(rows) == wx.estimate(rows)
+
+
 # ---------- step E: fixed-interval (RTS) smoother, reference only (SMOOTH_ON off) ----------
 
 def test_smooth_gain_matches_dense():
