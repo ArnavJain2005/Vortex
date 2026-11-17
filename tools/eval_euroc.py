@@ -17,6 +17,11 @@ Usage:
   python tools/eval_euroc.py --tag NAME --cbin build/vortex.exe [...]
                              (RECORDED EXPERIMENT: run the old C core binary instead of `python -S <main>`;
                              --set is not allowed. The organisers accept Python only, FAQ 17 Nov 2026)
+  python tools/eval_euroc.py --tag NAME --official [--seqs MH_01_easy_a_s1,...]
+                             (every folder under data/official/, made by tools/official_degrade.py with the
+                             ORGANISERS' degrade_imu.py; named <sequence>_<reading a|b>_s<seed>. APE with SE3
+                             Umeyama fitted on the run being scored, as the organisers do; RPE 1 s; error
+                             inside missing-row bursts and in the blind 5 s from degrade.json)
   python tools/eval_euroc.py --render
 
 Vicon Room 2 (V2_*) is the final test set: it is skipped when no --seqs are given, and naming it in
@@ -36,6 +41,7 @@ from vortex import check_output, scoring  # noqa: E402
 
 DATA = os.path.join(ROOT, "data", "euroc")
 DEGRADED = os.path.join(ROOT, "data", "degraded")
+OFFICIAL = os.path.join(ROOT, "data", "official")
 OUT_DIR = os.path.join(ROOT, "Docs", "results")
 FINAL_PREFIX = "V2_"  # Vicon Room 2: final test set, never run without --final
 
@@ -144,6 +150,67 @@ def evaluate_degraded(main_path, name, tmp, clean_cache):
             "blind_end": ph["blind"].get("end_error")}
 
 
+def official_base(name):
+    """MH_01_easy_a_s42 -> (MH_01_easy, a, 42)."""
+    rest, seed = name.rsplit("_s", 1)
+    base, reading = rest.rsplit("_", 1)
+    return base, reading, int(seed)
+
+
+def evaluate_official(main_path, name, tmp):
+    """One official-script copy, scored as the organisers score it: SE3 fitted on this run."""
+    base, reading, seed = official_base(name)
+    seq_dir = os.path.join(OFFICIAL, name)
+    imu = os.path.join(seq_dir, "mav0", "imu0", "data.csv")
+    with open(os.path.join(seq_dir, "degrade.json"), encoding="utf-8") as f:
+        events = json.load(f)
+    ref = scoring.read_ground_truth(os.path.join(DATA, base))
+    est = os.path.join(tmp, name + ".txt")
+    p, wall = run_main(main_path, imu, est)
+    if p.returncode != 0:
+        return {"sequence": name, "error": p.stderr[-400:]}
+    chk = check_output.check(imu, est)
+    e, _ = scoring.read_tum(est)
+    r = scoring.score(ref, e, align="se3", rpe_deltas=(200,), events=events)
+    ph = r["phases"]
+    drops = [d for d in ph["dropouts"] if d.get("n")]
+    return {"sequence": name, "base": base, "reading": reading, "seed": seed, "rows": chk["input_rows"],
+            "contract": "PASS" if chk["ok"] else "FAIL", "wall_s": wall,
+            "ape_se3_rmse": r["ape"]["rmse"], "rpe200_rmse": r["rpe"]["200"]["rmse"],
+            "gap_rmse_mean": sum(d["rmse"] for d in drops) / len(drops) if drops else None,
+            "gap_growth_mean": sum(d["growth"] for d in drops) / len(drops) if drops else None,
+            "gaps": len(drops), "blind_rmse": ph["blind"].get("rmse"), "blind_growth": ph["blind"].get("growth")}
+
+
+OFF_COLS = [("ape_se3_rmse", "APE SE3 m"), ("rpe200_rmse", "RPE 1 s m"), ("gap_rmse_mean", "Gap RMSE m"),
+            ("gap_growth_mean", "Gap growth m"), ("blind_rmse", "Blind RMSE m"), ("blind_growth", "Blind growth m")]
+
+
+def _mean(xs):
+    xs = [x for x in xs if x is not None]
+    return sum(xs) / len(xs) if xs else None
+
+
+def pivot_official(runs):
+    """Means per tag, reading and seed group (tuning seeds vs the script's seed 42, reported apart)."""
+    L = ["## Official-script copies: means (APE with SE3 fitted on the run being scored)", "",
+         "| Tag | Reading | Seeds | Copies | " + " | ".join(c[1] for c in OFF_COLS) + " | Contract |",
+         "|---|---|---|---|" + "---|" * (len(OFF_COLS) + 1)]
+    for run in runs:
+        ok = [r for r in run["results"] if "error" not in r]
+        for reading in ("a", "b"):
+            for lab, sel in (("1..3", lambda s: s != 42), ("42", lambda s: s == 42)):
+                rs = [r for r in ok if r["reading"] == reading and sel(r["seed"])]
+                if not rs:
+                    continue
+                cells = ["-" if _mean([r[k] for r in rs]) is None else "%.3f" % _mean([r[k] for r in rs])
+                         for k, _ in OFF_COLS]
+                passed = sum(r["contract"] == "PASS" for r in rs)
+                L.append("| %s | %s | %s | %d | %s | %d/%d PASS |" % (run["tag"], reading, lab, len(rs),
+                                                                      " | ".join(cells), passed, len(rs)))
+    return L
+
+
 DEG_COLS = [("ape_given_rmse", "APE m"), ("rpe200_rmse", "RPE 1 s m"), ("dropout_growth_mean", "Dropout growth m"),
             ("blind_growth", "Blind 5 s growth m"), ("blind_rmse", "Blind RMSE m")]
 
@@ -202,8 +269,9 @@ def pivot_alignments(runs):
 def render():
     files = sorted(glob.glob(os.path.join(OUT_DIR, "*.json")))
     every = [json.load(open(p, encoding="utf-8")) for p in files]
-    runs = [r for r in every if not r.get("degraded")]
+    runs = [r for r in every if not r.get("degraded") and not r.get("official")]
     deg = [r for r in every if r.get("degraded")]
+    off = [r for r in every if r.get("official")]
     L = ["# Results on EuRoC (generated by `python tools/eval_euroc.py --render`; do not edit by hand)", "",
          "Clean (undegraded) IMU input. APE = absolute position error after Umeyama alignment of the whole "
          "trajectory (SE3, or Sim3 with scale). Final = position error of the last pose after SE3. "
@@ -221,6 +289,28 @@ def render():
             L.append("| %s | %s | %s | %s | %s | %s | %.2f | %.2f | %.2f | %.3g | %.3f | %.2f |" % (
                 run["tag"], how, run["commit"], run["date"], r["sequence"], r["contract"], r["ate_se3_rmse"],
                 r["final_se3"], r["ate_sim3_rmse"], r["sim3_scale"], r["rpe200_rmse"], r["wall_s"]))
+    if off:
+        L += ["", "# Official-script degraded input (from 17 Nov 2026; replaces every earlier degraded baseline)", "",
+              "Copies made by `python tools/official_degrade.py --all` with the organisers' `degrade_imu.py` "
+              "(default levels: max_level 1.0, gamma 1.7). Reading **a** = the raw EuRoC file fed straight in "
+              "(the script then puts its accelerometer faults on the gyro columns); reading **b** = columns "
+              "reordered to accelerometer first. Seeds 1..3 are for tuning and comparison; seed 42 (the "
+              "script's own) is reported apart. APE: SE3 Umeyama fitted on the run being scored, as the "
+              "organisers score. Gap = missing-row bursts of >= 5 rows (window from the last row before to "
+              "the first row after); blind = the last 5 s (exact zeros).", ""] + pivot_official(off)
+        L += ["", "## Every official-copy run", "",
+              "| Tag | Main (settings) | Commit | Copy | Contract | " + " | ".join(c[1] for c in OFF_COLS)
+              + " | Wall s |", "|---|---|---|---|---|" + "---|" * (len(OFF_COLS) + 1)]
+        for run in off:
+            how = run.get("main", "main.py") + "".join(" %s=%s" % kv for kv in sorted(run.get("set", {}).items()))
+            for r in run["results"]:
+                if "error" in r:
+                    L.append("| %s | %s | %s | %s | ERROR |%s" % (run["tag"], how, run["commit"], r["sequence"],
+                                                                " - |" * (len(OFF_COLS) + 1)))
+                    continue
+                L.append("| %s | %s | %s | %s | %s | %s | %.2f |" % (
+                    run["tag"], how, run["commit"], r["sequence"], r["contract"],
+                    " | ".join("-" if r.get(k) is None else "%.3f" % r[k] for k, _ in OFF_COLS), r["wall_s"]))
     if deg:
         L += ["", "# Degraded input", "",
               "Copies made by `python -m vortex.degrade <clean sequence> data/degraded/<sequence>_s<seed> "
@@ -267,9 +357,10 @@ def main(argv=None):
         print("--set cannot change the C core's constants")
         return 2
     degraded = "--degraded" in argv
+    official = "--official" in argv
     seqs = get("--seqs", None)
-    seqs = select(os.listdir(DEGRADED if degraded else DATA), seqs.split(",") if seqs else None,
-                  "--final" in argv)
+    seqs = select(os.listdir(OFFICIAL if official else DEGRADED if degraded else DATA),
+                  seqs.split(",") if seqs else None, "--final" in argv)
     commit = get("--commit", None) or subprocess.run(["git", "rev-parse", "--short", "HEAD"], cwd=ROOT,
                                                       capture_output=True, text=True).stdout.strip()
     tmp = tempfile.mkdtemp(prefix="vortex_eval_")
@@ -279,10 +370,16 @@ def main(argv=None):
     results = []
     clean_cache = {}
     for s in seqs:
-        r = evaluate_degraded(run_path, s, tmp, clean_cache) if degraded else evaluate(run_path, s, tmp)
+        if official:
+            r = evaluate_official(run_path, s, tmp)
+        else:
+            r = evaluate_degraded(run_path, s, tmp, clean_cache) if degraded else evaluate(run_path, s, tmp)
         results.append(r)
         if "error" in r:
             print("%-16s ERROR %s" % (s, r["error"]))
+        elif official:
+            print("%-22s %s  " % (s, r["contract"]) + "  ".join(
+                "%s %s" % (lab, "-" if r.get(k) is None else "%.3f" % r[k]) for k, lab in OFF_COLS))
         elif degraded:
             print("%-19s %s  " % (s, r["contract"]) + "  ".join(
                 "%s %s" % (lab, "-" if r.get(k) is None else "%.3f" % r[k]) for k, lab in DEG_COLS))
@@ -294,7 +391,7 @@ def main(argv=None):
     with open(os.path.join(OUT_DIR, tag + ".json"), "w", encoding="utf-8", newline="\n") as f:
         json.dump({"tag": tag, "commit": commit, "date": time.strftime("%Y-%m-%d"), "main": os.path.relpath(
             main_path, ROOT) if main_path.startswith(ROOT) else os.path.basename(main_path),
-            "set": {k: v for k, v in sets}, "degraded": degraded,
+            "set": {k: v for k, v in sets}, "degraded": degraded, "official": official,
             "python": sys.version.split()[0], "results": results}, f, indent=1, sort_keys=True)
         f.write("\n")
     print("wrote", os.path.relpath(render(), ROOT))

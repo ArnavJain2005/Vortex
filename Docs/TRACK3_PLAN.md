@@ -81,6 +81,7 @@ Deadline **22 Nov 2026, 11:59 PM IST**, confirmed by the FAQ (Q1 closed). Full-t
 | 8 | Blind 5 s forecaster (W5), dead-sensor detection, per-row confidence (W6) | 8a dead-sensor detection (`DEAD_ON`, **on**) and velocity-decay forecaster (`FC_ON`, **on**, FC_TAU 0.5 s chosen on MH_01/02): **Done (verified on SYNTHETIC data and seeded degraded MH copies)** 16 Nov; both pass the pre-registered rule on held-out MH_03..05; reference and `main.py` bit-identical. Held-out blind growth -49.5 % (study A); zero failures 27.0 -> 4.4 m. 8b W6 per-row sigma from the filter covariance: built in the reference (`witness.row_sigma`, `tools/coverage.py`, `Docs/COVERAGE.md`) 16 Nov; **not informative** on MH_01/02 (rank correlation with the error -0.07), so no confidence is claimed; not in `main.py` | Blind error below constant velocity; coverage table |
 | 9 | Efficiency pass (C core if whole-process RAM counts); submission bundle, Dockerfile, deck, video | 9a `main.py` is a stub importing `pathfinder.py`, and the bundle ships its bytecode: **Done (verified on MH_01..05 clean and degraded, Win 3.13/3.14, WSL2 3.12)** 16 Nov; outputs byte-identical, peak RSS -3.5 to -3.8 MB (MH_01: 11.95 MB Win 3.14, 10.27 MB Linux 3.12), still above 8 MB. Bundle builder `tools/make_bundle.py`, README, Dockerfile: zip verified on all three Pythons; Docker image built and its output identical on all 65 inputs. 9b C core `main.cpp` (Q4 unanswered, so the strict reading is assumed): **Done (verified on MH_01..05 clean and degraded, Windows and WSL2 Linux)** 16 Nov; peak RSS 2.7 MB Linux / 4.8 MB Windows on MH_01, bit-identical to `pathfinder.py` on Linux; bundle in the PRD layout. C-core Dockerfile not built yet. Deck, video: Not started | Valid `team_name.zip` by 21 Nov 6 PM; submitted 3 h before cutoff |
 | R1 | FAQ re-plan, Step 1: C core retired from the submission; memory gate moved from RSS to the heap (tracemalloc) | **Done (verified)** 17 Nov: gate PASS on Win 3.14 synthetic + MH_01 and Win 3.13 synthetic; bundle verified on 3.13/3.14; Python Docker image built, MH_01 output identical | Python-only zip verified |
+| R2 | Official-script harness (both column readings), input front end, new baseline | **Done (verified)** 17 Nov: 64 copies (8 sequences x readings a, b x seeds 1, 2, 3, 42), front end correct on all 72 files; baseline in `Docs/STEP2_BASELINE.md` | Table shown to Arnav before Step 3 |
 
 ## Open questions (Q1 to Q5 are in the email drafted for prism@samsung.com on 15 Nov)
 
@@ -904,3 +905,149 @@ The 3.14 runs ran beside the full pytest suite, so their timing is pessimistic.
 Not checked: WSL2 Linux 3.12 (no stage, benchmark or verify run there this step, so the zip carries
 bytecode for 3.13 and 3.14 only); the Docker image on the degraded copies; how exactly the organisers
 start tracemalloc (we assume before `main.py` runs, the stricter reading).
+
+
+## Step 2: official-script harness, input front end, new baseline (17 Nov 2026, branch `track3/step2-official`)
+
+**Harness.** `tools/official_degrade.py` imports the organisers' `degrade_imu.py` from the git-ignored
+`tools/official/` (not committed: decision pending) and calls its `degrade()` with a chosen seed,
+max-level and gamma, without editing it. Its output for seed 42, reading a, MH_01 is byte-identical to
+the script's own CLI. Each copy `data/official/<seq>_<a|b>_s<seed>/` holds the degraded csv, `meta.json`
+(the script's statistics, what `--meta` writes) and `degrade.json` (phase windows for scoring:
+protected 2 s, missing-row bursts of >= 5 rows, last 5 s). Reading a = raw EuRoC (gyro first) fed in;
+reading b = reordered accelerometer first, left accelerometer first. 64 copies: MH_01..05, V1_01..03 x
+a, b x seeds 1, 2, 3, 42. Example (MH_01, seed 42): 36,820 -> 35,629 rows, 38 spikes, 525 stuck
+samples, 1,240 dropped (26 bursts), 49 duplicated rows, 1,001 zero rows.
+
+**Input front end** (`vortex/core/frontend.py`, copied into `pathfinder.py`; `FRONT_ON = True`). From
+the first 4,000 data rows: the accelerometer triple is the one whose median norm is nearest 9.81 m/s^2
+or 1 g and varies least (likeness gap needed 0.5; else the header names decide; else EuRoC order);
+timestamp unit from the median step (s / ms / us / ns, the script's thresholds); accelerometer in g
+when its median norm is in (0.5, 2.0). A non-canonical file is rewritten canonically next to the output
+(integer ns on the text, gyro first, m/s^2) and removed afterwards; a canonical EuRoC file is read as
+before, so clean outputs are byte-identical to Step 1 (checked on MH_01).
+- Correct, from the data alone, on all 8 clean files and all 64 copies (likeness gap >= 2.3; the
+  header agrees on every file), and on the most degraded 20 s of every copy (128 checks, gap >= 0.75).
+- **Cannot be detected:** gyro in deg/s versus a fast rad/s motion. A median gyro norm above 3 rad/s
+  is flagged (`gyro_suspect`), never converted. Also not handled: a header line without '#' still
+  counts as a data row (row rule unchanged); sub-nanosecond timestamp digits are truncated.
+
+**Baseline** (shipped estimator at 5699f6e, unchanged apart from the front end; `Docs/STEP2_BASELINE.md`,
+`Docs/RESULTS.md` tags `step2-*`). APE SE3 fitted on the run being scored; floor scored the same way.
+Held-out sequences (MH_03..05, V1_01..03), estimator / floor:
+
+| Input | Copies | APE m | RPE 1 s m | Gap RMSE m | Blind RMSE m |
+|---|---|---|---|---|---|
+| Clean | 6 | 3.59 / 3.75 | 0.791 / 0.912 | - | - |
+| Reading a, seeds 1..3 | 18 | **6.31 / 3.75** | 1.016 / 0.938 | 6.24 / 3.35 | 10.67 / 2.51 |
+| Reading a, seed 42 | 6 | 7.31 / 3.75 | 1.046 / 0.944 | 6.09 / 3.72 | 14.06 / 2.51 |
+| Reading b, seeds 1..3 | 18 | **3.86 / 3.75** | 0.840 / 0.938 | 3.50 / 3.35 | 3.49 / 2.51 |
+| Reading b, seed 42 | 6 | 3.82 / 3.75 | 0.841 / 0.944 | 3.91 / 3.72 | 2.86 / 2.51 |
+
+Reading. Under reading b the estimator is level with standing still on APE (+3 %) and better on RPE
+1 s, but worse in the gaps and in the blind 5 s. Under reading a (the gyro columns carry the
+accelerometer-sized noise, bias walk and spikes up to about 9 rad/s) it is far worse than the floor on
+every sequence: the attitude is lost. The blind 5 s error is dominated by the error already present at
+the failure (blind growth 0.6 m reading b, 1.4 m reading a, held out). Contract PASS on all 128
+official-copy runs and 16 clean runs.
+
+| Item | Result | Where |
+|---|---|---|
+| `pytest` | Full suite: 244 passed, 1 failed (`test_imports_are_stdlib_allowlist`: `os` now imported to remove the temporary copy; allow-list updated); `tests/test_main.py` rerun: 14 passed. Net: 245 (230 + 15 front end) | Windows, Python 3.14.7 |
+| Reference vs `pathfinder.py`, full precision | max difference 0 on MH_01_easy_b_s1, V1_02_medium_a_s42, MH_03_medium_b_s42 (real official copies) and the synthetic front-end cases | Windows 3.14 |
+| Budget, `python -S benchmark.py --runs 15 --gate` | PASS on all three. Heap in-process / whole run / no bytecode: synthetic 506 / 995 / 4,886 KB; MH_01_easy_b_s1 587 / 1,081 / 4,886 KB; MH_01_easy_a_s1 587 / 1,081 / 4,886 KB. Time 40.6, 38.1, 31.6 us/row: the laptop ran about 3x slower than in Step 1 throughout this session; on the same file in the same minute, Step 1 and Step 2 `pathfinder.run` took 1.33 s and 1.35 s (+1.5 %) | `Docs/BUDGET.md` `step2-*` |
+
+The front end adds about 216 KB to the in-process heap peak (the 4,000-row detection sample) and, for
+a non-canonical file, one extra pass that writes the canonical copy to disk.
+
+Not checked: TUM-VI (not downloaded); what the organisers actually feed the script (Q9); the
+`degrade_imu.py` licence and whether to commit it (Arnav); timing on a quiet machine (rerun the
+benchmark); the cost of the conversion pass in isolation.
+## Step E: forward-backward smoother (17 Nov 2026, branch `track3/stepE-smoother`; time-boxed, one session)
+
+Started before Step C because C is blocked (no TUM-VI) and V3 was dropped (so Step D does not apply).
+
+**What was built** (`vortex/core/witness.py`, switch `SMOOTH_ON`, **off**; reference only, not in
+`pathfinder.py` or `main.cpp`). A fixed-interval Rauch-Tung-Striebel smoother at the 0.25 s filter tick:
+- at each tick close, the gain C = P+ Phi^T (P-)^-1 (Cholesky solve) and the correction injected at the
+  previous tick are stored as one block, in single precision: 4 x (225 + 15 + 15) + 8 = **1,028 bytes per
+  block**;
+- fixed cap `SMOOTH_MAX_BLOCKS` = 1024 blocks (**1,052,672 bytes worst case**, any file length): up to 256 s at
+  one tick per block; a full store merges adjacent blocks pairwise (exact composition of their affine maps),
+  so a 15 min file ends with blocks of 4 ticks (1 s) and memory never grows;
+- after the forward pass the backward recursion gives the smoothed error at every stored tick; each row
+  from the anchor on is corrected linearly in time between its two bracketing ticks (dropouts are
+  bracketed on both sides). Rows before the anchor and after the last tick (the blind window) are
+  unchanged: the file ends in sensor failure, so the last smoothed state is the filtered one.
+
+The byte counts above are computed from the layout, not measured: the smoother was not ported to
+`main.cpp`, so its RSS on the longest file was not measured.
+
+**Checks (SYNTHETIC, `tests/test_witness.py`, 5 new tests).** RTS gain equals dense numpy; default output
+unchanged; second-rest profile with V1 only: max error over the second motion 12.2 -> 0.8 m (all witnesses
+on: 2.7 -> 0.36 m), rows before the anchor and the last row unchanged; with a cap of 16 blocks the store
+never exceeds 16 and the output stays finite; block merge composes exactly (to single precision).
+
+**Tuning set, MH_01/02 only** (`python tools/smooth_eval.py --tag stepE-tune ...`,
+`python tools/smooth_grid.py`; `Docs/smooth/`):
+
+| Setting | Clean APE m | Clean RPE 1 s m | Degraded APE m (6 copies) | Dropout growth m |
+|---|---|---|---|---|
+| forward only (shipped) | **3.878** | 0.536 | **4.358** | **0.894** |
+| smoother, shipped envelope | 4.387 | 0.330 | 4.655 | 1.129 |
+| smoother, best of 12 envelope settings by clean APE (V2_H 2, V2P_H 2, tau 10) | 4.292 | 0.384 | 4.468 | 1.006 |
+| smoother, range over all 12 settings | 4.29..4.52 | 0.29..0.38 | 4.47..4.90 | 1.01..1.39 |
+
+Blind growth 2.447 -> 2.383 m (shipped envelope; the blind window itself is unchanged, the difference is
+where it starts from).
+
+**Why it fails.** The smoother is right where the model is right (synthetic), but on MH the filter has no
+in-flight velocity measurement: V2 is a zero-mean prior and V2P a pull toward its own running centre. The
+forward estimate is collapsed toward the room centre (position std 0.5..0.8 m against 2.3..3.3 m in ground
+truth, MH_01/02, analysis only) and jittery (path length 1.7x ground truth). Smoothing removes the jitter
+(path 0.7x, RPE 1 s -38 %) but the motion it restores does not have the true shape, so APE and dropout
+growth rise. Smoothing cannot add information the filter does not have.
+
+**Decision: SMOOTH_ON stays off, without a held-out run.** The user's rule needs held-out mean APE and
+dropout growth to improve; both get worse on the tuning set in every setting tried, so (as in step 8b) no
+held-out data was spent and no rule was registered. The switch and tests stay in the reference for a later
+attempt (for example once an in-flight witness exists). `pathfinder.py`, `main.py`, `main.cpp` and every
+shipped result are unchanged.
+
+| Item | Result | Where |
+|---|---|---|
+| `pytest` | 232 passed (227 + 5 smoother) | Windows, Python 3.14.7 |
+| Budget | not rerun: `pathfinder.py`, `main.py` and `main.cpp` unchanged (step A numbers stand) | `Docs/BUDGET.md` `stepA-*` |
+
+Not checked: RSS of a C port (not ported); TUM-VI (no data); whether the organisers allow non-causal
+processing (open).
+
+### Step E, second look: official-script copies (17 Nov 2026, branch `track3/stepE2-smoother-official`)
+
+After Step 2 (official harness, `data/official/`), the smoother was rerun on the TUNING copies only:
+MH_01/02 x readings a, b x seeds 1..3 (12 copies; seed 42 is report-only and not used), read through the
+input front end as `main.py` reads them, scored as the organisers score (SE3 fitted on the run itself).
+`python tools/smooth_eval.py --tag stepE2-tune-official --official ...` (`Docs/smooth/stepE2-tune-official.json`).
+
+| Reading | Smoother | APE m | RPE 1 s m | Gap RMSE m | Gap growth m | Blind RMSE m | Blind growth m |
+|---|---|---|---|---|---|---|---|
+| b (accelerometer first) | off | **3.973** | 0.558 | **3.754** | 0.026 | 7.537 | 0.634 |
+| b | on | 4.341 | 0.399 | 3.863 | 0.022 | 7.350 | 0.559 |
+| a (raw EuRoC fed in) | off | 12.283 | 1.204 | 13.832 | 0.146 | 27.763 | 3.181 |
+| a | on | 10.734 | 1.343 | 11.193 | 0.058 | 29.110 | 3.195 |
+
+Never-moving floor on MH_01/02 (SE3 on the run): 4.31 / 4.65 m APE.
+
+**Reading.** Under reading b (and on clean data) the smoother raises APE (+9 %) and gap RMSE (+3 %),
+for the same reason as above. Under reading a it lowers APE 13 % and gap RMSE 19 %, but there the forward
+estimate is already about 3x worse than standing still (attitude lost to the gyro-sized faults): the
+smoother repairs part of a broken estimate rather than improving a working one, and the fault front end
+(O2) is meant to remove that failure first. The official gaps are short (5..50 rows), so bracketing them
+gives little (gap growth is already 0.02..0.15 m).
+
+**Decision: SMOOTH_ON stays off; no held-out run.** Revisit after O2 (spike / stuck rejection) and an
+in-flight witness, with a rule written before any held-out copy is run. Nothing shipped changes.
+
+`pytest`: 250 passed (245 after Step 2 + 5 smoother), Windows, Python 3.14.7. Budget not rerun: `pathfinder.py` and
+`main.py` unchanged.
+

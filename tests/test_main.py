@@ -21,7 +21,7 @@ CORE = ROOT / "pathfinder.py"
 sys.path.insert(0, str(ROOT / "tools"))
 import synth_euroc  # noqa: E402
 
-ALLOWED_IMPORTS = {"sys", "math", "array", "json"}
+ALLOWED_IMPORTS = {"sys", "math", "array", "json", "os"}   # os: removes the front end's temporary canonical copy (Step 2); already loaded at start-up
 
 
 def _load_main():
