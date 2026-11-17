@@ -37,13 +37,15 @@ FULL = b"%s.%s %.17g %.17g %.17g %.17g %.17g %.17g %.17g\n"
 
 
 def _load_pf():
-    spec = importlib.util.spec_from_file_location("vortex_pf_ccore", ROOT / "pathfinder.py")
+    spec = importlib.util.spec_from_file_location("vortex_pf_ccore", ROOT / "tools" / "pathfinder_lab.py")  # frozen full copy
     mod = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(mod)
     return mod
 
 
 pf = _load_pf()
+# Compared with tools/pathfinder_lab.py (the full estimator; equal to pathfinder.py with its experiments off,
+# tests/test_lab.py), since the C core still declares the JAM constants that left pathfinder.py on 18 Nov.
 # The C core is a recorded experiment frozen before Step F (CLAUDE.md: kept, never extended). It is compared
 # with pathfinder.py as it was then: the Step F switches (shipped on since 17 Nov 2026) are set back off in
 # this private copy of the module only.

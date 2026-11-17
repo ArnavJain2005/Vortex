@@ -26,7 +26,7 @@ from vortex import scoring  # noqa: E402
 
 import importlib.util  # noqa: E402
 
-spec = importlib.util.spec_from_file_location("pf_tune", os.path.join(ROOT, "pathfinder.py"))
+spec = importlib.util.spec_from_file_location("pf_tune", os.path.join(ROOT, "tools", "pathfinder_lab.py"))  # SHRINK lives in the lab copy
 pf = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(pf)
 

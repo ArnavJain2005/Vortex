@@ -1,5 +1,5 @@
 """Step L1: positions scaled about their centroid, alpha per noise class (vortex/core/shrink.py) and the
-pathfinder.py copy (`_sh_*`). All SYNTHETIC."""
+lab copy of the estimator (`tools/pathfinder_lab.py`, `_sh_*`; not shipped since 18 Nov). All SYNTHETIC."""
 
 import importlib.util
 import random
@@ -23,7 +23,7 @@ from test_strapdown import _move_rest_move  # noqa: E402
 
 
 def _load_pf():
-    spec = importlib.util.spec_from_file_location("vortex_pf_shrink", ROOT / "pathfinder.py")
+    spec = importlib.util.spec_from_file_location("vortex_pf_shrink", ROOT / "tools" / "pathfinder_lab.py")  # experiments live in the lab copy
     mod = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(mod)
     return mod
