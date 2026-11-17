@@ -160,6 +160,12 @@ PRE_HOLD = True              # rule passed 16 Nov; rows before the anchor keep t
 SMOOTH_ON = False            # fixed-interval (RTS) smoother at the filter tick; non-causal (offline)
 SMOOTH_MAX_BLOCKS = 1024     # blocks stored (fixed cap): 256 s at one tick per block; longer files merge
                              # adjacent blocks pairwise. Single precision: 4 x (225 + 15 + 15) bytes + 8 per block
+# Step F (rule in Docs/TRACK3_PLAN.md, Step F; judged 17 Nov 2026 on held-out seeds 4-6): REFRESH, P0V and
+# strapdown.BGCAP_ON passed and ship on; RESET failed (reading a mean APE +1.8 %) and ships off.
+RESET_ON = False            # OFF (failed the rule). After each injection: covariance reset P <- G P G^T (kf_reset)
+REFRESH_ON = True            # after each injection: the cached previous sample re-expressed with the corrected
+                             # attitude and biases (refresh_prev)
+P0V_ON = True                 # no still run (fallback init): initial velocity sigma = the V2 envelope, not P0_VEL
 N = 15
 
 
@@ -176,6 +182,8 @@ def kf_init(still):
     tilt = P0_TILT if still else P0_TILT_FALLBACK
     bg = P0_BG if still else P0_BG_FALLBACK
     sig = (0.0, 0.0, 0.0, P0_VEL, P0_VEL, P0_VEL, tilt, tilt, P0_YAW, bg, bg, bg, P0_BA, P0_BA, P0_BA)
+    if P0V_ON and not still:      # Step F: nothing says the sensor was at rest; the envelope is all we know
+        sig = (0.0, 0.0, 0.0, V2_SIGMA_H, V2_SIGMA_H, V2_SIGMA_V) + sig[6:]
     P = [0.0] * (N * N)
     for i in range(N):
         P[i * N + i] = sig[i] * sig[i]
@@ -256,6 +264,35 @@ def inject(q, p, v, bg, ba, dx):
     nq = sd.qmul_normalised(sd.exp_step(dx[6], dx[7], dx[8], 1.0), q)
     return (nq,[p[0] + dx[0], p[1] + dx[1], p[2] + dx[2]], [v[0] + dx[3], v[1] + dx[4], v[2] + dx[5]],
             (bg[0] + dx[9], bg[1] + dx[10], bg[2] + dx[11]), (ba[0] + dx[12], ba[1] + dx[13], ba[2] + dx[14]))
+
+
+def kf_reset(P, ex, ey, ez):
+    """Step F: covariance reset after injecting the attitude error (ex, ey, ez). With the global error
+    q_true = Exp(dth) q and q+ = Exp(dth_hat) q, the new error is dth+ = Log(Exp(dth) Exp(-dth_hat)),
+    whose Jacobian at dth = dth_hat is G = I + [dth_hat / 2]x to first order (Sola 2017, "Quaternion
+    kinematics for the error-state Kalman filter", ESKF reset, global angular error). P <- G P G^T; G is
+    the identity outside the attitude block, so only rows and columns 6..8 change."""
+    hx, hy, hz = 0.5 * ex, 0.5 * ey, 0.5 * ez
+    o6, o7, o8 = 6 * N, 7 * N, 8 * N
+    for c in range(N):                         # rows: G P
+        a, b, d = P[o6 + c], P[o7 + c], P[o8 + c]
+        P[o6 + c] = a - hz * b + hy * d
+        P[o7 + c] = b + hz * a - hx * d
+        P[o8 + c] = d - hy * a + hx * b
+    for rr in range(0, N * N, N):              # columns: (G P) G^T
+        a, b, d = P[rr + 6], P[rr + 7], P[rr + 8]
+        P[rr + 6] = a - hz * b + hy * d
+        P[rr + 7] = b + hz * a - hx * d
+        P[rr + 8] = d - hy * a + hx * b
+
+
+def refresh_prev(prev, qo, qn, dx):
+    """Step F: the cached previous sample (bias-corrected gyro, world specific force; see strapdown._sample)
+    re-expressed after an injection from attitude qo to qn and biases + dx[9..14], so the next trapezoid
+    step does not mix the old and the corrected state. Body force = R(qo)^T f_w, minus the accel bias
+    change, rotated by R(qn)."""
+    bx, by, bz = sd.rotate((qo[0], -qo[1], -qo[2], -qo[3]), prev[3], prev[4], prev[5])
+    return (prev[0] - dx[9], prev[1] - dx[10], prev[2] - dx[11]) + sd.rotate(qn, bx - dx[12], by - dx[13], bz - dx[14])
 
 
 def coast(p, v, dt, tau):
@@ -467,6 +504,7 @@ def estimate(rows, v1=None, v2=None, v2p=None, log=None, jam=None, gap_on=None, 
     max_dt = INTERP_MAX_S if interp else sd.MAX_DT
     e = env if env is not None else (V2_SIGMA_H, V2_SIGMA_V, V2P_SIGMA_H, V2P_SIGMA_V)
     s2vh, s2vv, s2ph, s2pv = e[0] * e[0], e[1] * e[1], e[2] * e[2], e[3] * e[3]
+    reset, refresh = RESET_ON, REFRESH_ON
     for t, vals in rows[anchor:]:
         if t is not None:
             ok = sd.is_valid(vals)
@@ -558,7 +596,17 @@ def estimate(rows, v1=None, v2=None, v2p=None, log=None, jam=None, gap_on=None, 
                         sdx = None
                         if zupt or v2 or v2p:
                             sdx = dx
+                            qo = q
                             q, p, v, bg, ba = inject(q, p, v, bg, ba, dx)
+                            if reset or refresh:
+                                chk = 0.0
+                                for e in dx:
+                                    chk += e
+                                if chk - chk == 0.0:        # inject applied it (a non-finite dx is discarded)
+                                    if reset:
+                                        kf_reset(P, dx[6], dx[7], dx[8])
+                                    if refresh and prev is not None:
+                                        prev = refresh_prev(prev, qo, q, dx)
                             dx = [0.0] * N
                         if collect is not None:
                             d0 = p[0] - c[0]
