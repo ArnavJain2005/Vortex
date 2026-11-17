@@ -126,7 +126,7 @@ Clean (undegraded) IMU input. APE = absolute position error after Umeyama alignm
 
 # Degraded input
 
-Copies made by `python -m vortex.degrade <clean sequence> data/degraded/<sequence>_s<seed> --seed <seed>` with the default (placeholder) levels: rising white noise, bias random walk, three 2 s NaN dropouts, total failure (NaN) at 85 % of the sequence, cut 5 s later. The organisers' script is unknown (Q2). APE uses the SE3 alignment fitted once on the same main's CLEAN run (align given), so it cannot absorb a fault. Growth = how far the position error vector moves across the window (start to end).
+Copies made by `python -m vortex.degrade <clean sequence> data/degraded/<sequence>_s<seed> --seed <seed>` with the default (placeholder) levels: rising white noise, bias random walk, three 2 s NaN dropouts, total failure (NaN) at 85 % of the sequence, cut 5 s later. **History, not evidence:** these copies come from our own `vortex/degrade.py`, which does not match the organisers' `degrade_imu.py` (received 17 Nov 2026). APE uses the SE3 alignment fitted once on the same main's CLEAN run (align given), so it cannot absorb a fault. Growth = how far the position error vector moves across the window (start to end).
 
 ## Degraded runs: means over every copy (seeded `vortex.degrade`, placeholder levels)
 

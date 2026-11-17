@@ -21,3 +21,6 @@ Thumbs.db
 # Submission bundle (tools/make_bundle.py)
 /dist/
 /build/
+
+# Organisers' degrade_imu.py: not committed until Arnav decides (needs pandas)
+/tools/official/

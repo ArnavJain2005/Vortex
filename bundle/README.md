@@ -1,47 +1,40 @@
 # Vortex: trajectory from a degraded IMU (Samsung PRISM XR Hackathon 2026, Track 3)
 
-Two entry points with the same output. The C core is the one that fits the 8 MB peak-RAM limit.
+Python only, as the organisers require (FAQ, 17 Nov 2026).
 
-## C core (recommended): `src/main.cpp`
-
-```
-g++ -O2 -std=c++17 -ffp-contract=off -o vortex src/main.cpp      # Windows MinGW: add -static
-./vortex <imu0/data.csv> <estimated_trajectory.txt>
-```
-
-C-style C++, standard library only, single thread, offline, deterministic, static buffers (no heap
-allocation of its own). Measured on our laptop (Intel i7-14650HX), EuRoC MH_01 (36,820 rows, 184 s):
-
-| | Peak RSS | Time per IMU row |
-|---|---|---|
-| Linux (Ubuntu 24.04, g++ 13.3) | 2.7 MB | 4.1 us (input on a slow WSL mount) |
-| Windows 11 (MinGW g++ 13.2, `-static`) | 4.8 MB | 1.4 us |
-
-Peak RSS does not grow with the flight length (2.4 MB on Linux for a 15-minute file).
-
-## Python: `src/main.py`
+## Run
 
 ```
 python -S src/main.py <imu0/data.csv> <estimated_trajectory.txt>
 ```
 
-Pure Python 3, standard library only (`sys`, `math`, `array`). Tested with CPython 3.12, 3.13 and
-3.14. `main.py` is a stub that imports `src/pathfinder.py`, so Python loads the shipped bytecode
-(`src/__pycache__`) instead of compiling the estimator, which would add about 4 MB of peak RSS. The
-CPython interpreter alone already peaks above 8 MB (8.4 to 9.7 MB before any work), so this entry
-point peaks at about 10 to 12 MB.
+Pure Python 3, standard library only (`sys`, `math`, `array`): no numpy, nothing to install. Single
+thread, offline, deterministic. Tested with CPython 3.12, 3.13 and 3.14. `main.py` is a stub that
+imports `src/pathfinder.py` (the estimator), so Python loads the shipped bytecode (`src/__pycache__`)
+instead of compiling the estimator on every run.
 
-**Same output.** On Linux the two entry points give bit-identical poses on all our test inputs (clean
-EuRoC MH_01 to MH_05 and 60 degraded copies). On Windows they give identical output files; the full
-precision poses differ by at most 6e-13 m, from the two C maths libraries.
+## Budget (measured on our laptop, Intel i7-14650HX, Windows 11; `benchmark.py`, `Docs/BUDGET.md`)
+
+The 8 MB limit is measured at algorithm / heap level (FAQ), so we measure the heap with `tracemalloc`,
+started before `main.py` runs.
+
+| Input | Heap peak, whole run | Time per IMU row | ms per IMU-second |
+|---|---|---|---|
+| EuRoC MH_01 (36,820 rows, 184 s), Python 3.14 | 1.06 MB | 11.7 us | 2.3 |
+| SYNTHETIC 36,000 rows, Python 3.14 / 3.13 | 0.76 / 1.19 MB | 13.5 / 9.4 us | 2.7 / 1.9 |
+
+With no matching bytecode (another Python version), Python compiles `pathfinder.py` first and the
+parser and compiler add to the traced heap: 4.4 MB (3.14) and 6.3 MB (3.13) peak on the same inputs,
+still under 8 MB. Whole-process RSS, which includes the interpreter, is 11 to 12 MiB; it is not what
+the organisers measure.
 
 ## Input and output
 
 - Input: EuRoC `imu0/data.csv` format (`timestamp [ns], w_x, w_y, w_z [rad/s], a_x, a_y, a_z [m/s^2]`).
   Header and comment lines start with `#`; blank lines are skipped. Bad, missing or NaN values are
   allowed: every data row still gets a pose.
-- Output: one line `timestamp tx ty tz qx qy qz qw` per input data row, same order, timestamp in
-  seconds (the input nanoseconds with the decimal point moved, so it is exact).
+- Output: one line `timestamp tx ty tz qx qy qz qw` per input data row, same order, never more rows,
+  timestamp in seconds (the input nanoseconds with the decimal point moved, so it is exact).
 - Exit code 0 on success, 2 on wrong arguments, 1 if a file cannot be read or written.
 
 ## Docker
@@ -51,18 +44,17 @@ docker build -t vortex .
 docker run --rm -v "<folder with the csv>:/data" vortex /data/data.csv /data/estimated_trajectory.txt
 ```
 
-The image builds the C core and runs it; the Python entry point is in the image too (see the
-Dockerfile).
+The image (`python:3.12.7-slim-bookworm`) compiles the estimator's bytecode at build time and runs
+`python -S /app/main.py`.
 
 ## Files
 
 | File | What it is |
 |---|---|
 | `estimated_trajectory.txt` | Our output for the evaluation input. |
-| `metadata.json` | Runtime, peak memory and machine of that run. |
-| `src/main.cpp` | C core. |
-| `src/main.py`, `src/pathfinder.py` | Python entry point (stub) and estimator. |
-| `src/__pycache__/` | Bytecode of `pathfinder.py` for CPython 3.12, 3.13, 3.14 (hash-checked, so valid after unzipping). |
+| `metadata.json` | Runtime, heap peak, peak RSS and machine of that run. |
+| `src/main.py`, `src/pathfinder.py` | Entry point (stub) and estimator. |
+| `src/__pycache__/` | Bytecode of `pathfinder.py` for the CPython versions listed in `MANIFEST.txt` (hash-checked, so valid after unzipping). |
 | `Dockerfile`, `LICENSE`, `MANIFEST.txt` | Container, licence, sha256 of every file. |
 
 ## Method (short)

@@ -15,7 +15,8 @@ Usage:
                              on the clean sequence (align "given"), so it cannot absorb a fault; errors
                              are split by phase from degrade.json)
   python tools/eval_euroc.py --tag NAME --cbin build/vortex.exe [...]
-                             (run the C core binary instead of `python -S <main>`; --set is not allowed)
+                             (RECORDED EXPERIMENT: run the old C core binary instead of `python -S <main>`;
+                             --set is not allowed. The organisers accept Python only, FAQ 17 Nov 2026)
   python tools/eval_euroc.py --render
 
 Vicon Room 2 (V2_*) is the final test set: it is skipped when no --seqs are given, and naming it in
@@ -225,7 +226,8 @@ def render():
               "Copies made by `python -m vortex.degrade <clean sequence> data/degraded/<sequence>_s<seed> "
               "--seed <seed>` with the default (placeholder) levels: rising white noise, bias random walk, "
               "three 2 s NaN dropouts, total failure (NaN) at 85 % of the sequence, cut 5 s later. "
-              "The organisers' script is unknown (Q2). APE uses the SE3 alignment fitted once on the same "
+              "**History, not evidence:** these copies come from our own `vortex/degrade.py`, which does not "
+              "match the organisers' `degrade_imu.py` (received 17 Nov 2026). APE uses the SE3 alignment fitted once on the same "
               "main's CLEAN run (align given), so it cannot absorb a fault. Growth = how far the position "
               "error vector moves across the window (start to end).", ""] + pivot_degraded(deg)
         L += ["", "## Every degraded run", "",
