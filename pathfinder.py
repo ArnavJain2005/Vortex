@@ -59,6 +59,8 @@ STEADY_ACC = 0.05
 TRIM_S = 0.5
 PRE_MAX_ROWS = 15000
 CAL_NOISE_ON = True
+BG_MAX = 0.15
+BGCAP_ON = False
 # step 7a filter and witnesses: identical to vortex/core/witness.py (a test checks), sources noted there
 TICK_S = BLOCK_S
 GYRO_NOISE = 1.7e-3
@@ -92,6 +94,9 @@ DEAD_ON = True
 FC_TAU = 0.5
 FC_ON = True
 PRE_HOLD = True
+RESET_ON = False
+REFRESH_ON = False
+P0V_ON = False
 N = 15
 
 LAST = {"pre_rows": 0, "calibrated": False, "zupt_ticks": 0, "ba": (0.0, 0.0, 0.0), "jam": (-1.0, -1.0),
@@ -275,6 +280,10 @@ def _still_denoised(src, t0, n, s, ss):
             continue
         if raw <= STUCK_STD * STUCK_STD:
             continue
+        if BGCAP_ON:
+            mx, my, mz = s[o] / n[j], s[o + 1] / n[j], s[o + 2] / n[j]
+            if not mx * mx + my * my + mz * mz <= BG_MAX * BG_MAX:
+                continue
         fx, fy, fz = s[o + 3] / n[j], s[o + 4] / n[j], s[o + 5] / n[j]
         fn = sqrt(fx * fx + fy * fy + fz * fz)
         still[j] = ACC_NORM_MIN <= fn <= ACC_NORM_MAX
@@ -330,6 +339,10 @@ def _calibrate(src):
             continue
         if max(sd) <= STUCK_STD:
             continue
+        if BGCAP_ON:
+            mx, my, mz = s[o] / n[j], s[o + 1] / n[j], s[o + 2] / n[j]
+            if not mx * mx + my * my + mz * mz <= BG_MAX * BG_MAX:
+                continue
         fx, fy, fz = s[o + 3] / n[j], s[o + 4] / n[j], s[o + 5] / n[j]
         fn = sqrt(fx * fx + fy * fy + fz * fz)
         still[j] = ACC_NORM_MIN <= fn <= ACC_NORM_MAX
@@ -473,6 +486,8 @@ def _initialise(win):
             var[i] += d * d
     std = [sqrt(var[i] / n) for i in range(6)]
     still = max(std[0], std[1], std[2]) < STILL_GYRO_STD and max(std[3], std[4], std[5]) < STILL_ACC_STD
+    if still and BGCAP_ON:
+        still = mean[0] * mean[0] + mean[1] * mean[1] + mean[2] * mean[2] <= BG_MAX * BG_MAX
     fx, fy, fz = mean[3], mean[4], mean[5]
     fn = sqrt(fx * fx + fy * fy + fz * fz)
     if fn < 1.0:
@@ -503,6 +518,8 @@ def _kf_init(still):
     tilt = P0_TILT if still else P0_TILT_FALLBACK
     bg = P0_BG if still else P0_BG_FALLBACK
     sig = (0.0, 0.0, 0.0, P0_VEL, P0_VEL, P0_VEL, tilt, tilt, P0_YAW, bg, bg, bg, P0_BA, P0_BA, P0_BA)
+    if P0V_ON and not still:
+        sig = (0.0, 0.0, 0.0, V2_SIGMA_H, V2_SIGMA_H, V2_SIGMA_V) + sig[6:]
     P = [0.0] * (N * N)
     for i in range(N):
         P[i * N + i] = sig[i] * sig[i]
@@ -578,6 +595,10 @@ def _bin_still(n, s, ss):
         return False
     if max(sd) <= STUCK_STD:
         return False
+    if BGCAP_ON:
+        mx, my, mz = s[0] / n, s[1] / n, s[2] / n
+        if not mx * mx + my * my + mz * mz <= BG_MAX * BG_MAX:
+            return False
     fx, fy, fz = s[3] / n, s[4] / n, s[5] / n
     fn = math.sqrt(fx * fx + fy * fy + fz * fz)
     return ACC_NORM_MIN <= fn <= ACC_NORM_MAX
@@ -617,6 +638,39 @@ def _inject(qw, qx, qy, qz, px, py, pz, vx, vy, vz, bgx, bgy, bgz, bax, bay, baz
     return (nw * inv, nx * inv, ny * inv, nz * inv, px + dx[0], py + dx[1], pz + dx[2],
             vx + dx[3], vy + dx[4], vz + dx[5], bgx + dx[9], bgy + dx[10], bgz + dx[11],
             bax + dx[12], bay + dx[13], baz + dx[14])
+
+
+def _kf_reset(P, ex, ey, ez):
+    """witness.kf_reset (Step F): P <- G P G^T, G = I + [dth / 2]x on the attitude block."""
+    hx, hy, hz = 0.5 * ex, 0.5 * ey, 0.5 * ez
+    o6, o7, o8 = 6 * N, 7 * N, 8 * N
+    for c in range(N):
+        a, b, d = P[o6 + c], P[o7 + c], P[o8 + c]
+        P[o6 + c] = a - hz * b + hy * d
+        P[o7 + c] = b + hz * a - hx * d
+        P[o8 + c] = d - hy * a + hx * b
+    for rr in range(0, N * N, N):
+        a, b, d = P[rr + 6], P[rr + 7], P[rr + 8]
+        P[rr + 6] = a - hz * b + hy * d
+        P[rr + 7] = b + hz * a - hx * d
+        P[rr + 8] = d - hy * a + hx * b
+
+
+def _rotate(w, x, y, z, vx, vy, vz):
+    """strapdown.rotate: R(q) v."""
+    tx = 2.0 * (y * vz - z * vy)
+    ty = 2.0 * (z * vx - x * vz)
+    tz = 2.0 * (x * vy - y * vx)
+    return (vx + w * tx + (y * tz - z * ty),
+            vy + w * ty + (z * tx - x * tz),
+            vz + w * tz + (x * ty - y * tx))
+
+
+def _refresh_prev(pcx, pcy, pcz, pfx, pfy, pfz, ow, ox, oy, oz, qw, qx, qy, qz, dx):
+    """witness.refresh_prev (Step F): the cached previous sample after an injection from q_o to q."""
+    bx, by, bz = _rotate(ow, -ox, -oy, -oz, pfx, pfy, pfz)
+    return (pcx - dx[9], pcy - dx[10], pcz - dx[11]) + _rotate(qw, qx, qy, qz, bx - dx[12], by - dx[13],
+                                                                 bz - dx[14])
 
 
 # ---- input front end (Step 2): copy of vortex/core/frontend.py, same rules (tests/test_frontend.py) ----
@@ -1021,6 +1075,7 @@ def _run(src, dst, write=True, integrate=True):
     sg = sa = 0                              # current run of identical gyro / accel triples
     sgx = sgy = sgz = sax = say = saz = NAN
     fc, tau = FC_ON, FC_TAU
+    reset, refresh = RESET_ON, REFRESH_ON
     zupt_ticks = 0
     zs2, zm2 = ZUPT_SIGMA * ZUPT_SIGMA, ZARU_SIGMA_MIN * ZARU_SIGMA_MIN
     t = tl = 0
@@ -1169,9 +1224,20 @@ def _run(src, dst, write=True, integrate=True):
                                     kf_update(P, dx, 1, ccy - py, V2P_SIGMA_H * V2P_SIGMA_H)
                                     kf_update(P, dx, 2, ccz - pz, V2P_SIGMA_V * V2P_SIGMA_V)
                                 if zupt or v2 or v2p:
+                                    ow, ox, oy, oz = qw, qx, qy, qz
                                     (qw, qx, qy, qz, px, py, pz, vx, vy, vz, bgx, bgy, bgz, bax, bay,
                                      baz) = _inject(qw, qx, qy, qz, px, py, pz, vx, vy, vz, bgx, bgy, bgz,
                                                     bax, bay, baz, dx)
+                                    if reset or refresh:
+                                        chk = 0.0
+                                        for e in dx:
+                                            chk += e
+                                        if chk - chk == 0.0:
+                                            if reset:
+                                                _kf_reset(P, dx[6], dx[7], dx[8])
+                                            if refresh and has_prev:
+                                                (pcx, pcy, pcz, pfx, pfy, pfz) = _refresh_prev(
+                                                    pcx, pcy, pcz, pfx, pfy, pfz, ow, ox, oy, oz, qw, qx, qy, qz, dx)
                                     dx = [0.0] * N
                                 r0 = _rot_matrix(qw, qx, qy, qz)
                                 if gap_on:

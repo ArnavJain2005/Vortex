@@ -74,6 +74,12 @@ STEADY_ACC = 0.05          # m/s^2, bin-to-bin change of mean specific force (~1
 TRIM_S = 0.5               # s cut from each end of a long still run before averaging
 PRE_MAX_ROWS = 15000       # rows stored for the backward pass (memory cap: 64 bytes per row in pathfinder.py)
 CAL_NOISE_ON = True        # step 6e (rule passed 16 Nov): if no strict still run, retry with the white noise removed (see calibrate)
+# Step F (switch default off; rule in Docs/TRACK3_PLAN.md, Step F). A steady rotation has low variance and
+# steady bin means, so the still tests alone take it for rest and its rate for gyro bias (a constant 0.3 rad/s
+# yaw at the start was erased completely). With BGCAP_ON a bin or init window whose mean gyro norm exceeds
+# BG_MAX is not still: in bin_is_still (calibration and V1), bin_is_still_denoised (6e, 7b) and initialise.
+BG_MAX = 0.15              # rad/s: 1.8x the largest calibrated |bg| on MH_01/02 (clean and official copies a/b s1-3: 0.080-0.083); TUM-VI not checked
+BGCAP_ON = False
 # 6b thresholds measured afterwards on clean MH_01..05 (0.25 s bins, longest still run in 60 s):
 # in-run gyro std max 0.003..0.017 rad/s, accel std max 0.061..0.094 m/s^2.
 MAX_SUMSQ = 1e8            # a row whose six values' sum of squares reaches this is invalid (values of
@@ -137,6 +143,8 @@ def initialise(win) -> Init:
             var[i] += d * d
     std = [math.sqrt(var[i] / n) for i in range(6)]
     still = max(std[0], std[1], std[2]) < STILL_GYRO_STD and max(std[3], std[4], std[5]) < STILL_ACC_STD
+    if still and BGCAP_ON:
+        still = mean[0] * mean[0] + mean[1] * mean[1] + mean[2] * mean[2] <= BG_MAX * BG_MAX
     fx, fy, fz = mean[3], mean[4], mean[5]
     fn = math.sqrt(fx * fx + fy * fy + fz * fz)
     if fn < 1.0:                               # no usable gravity reading
@@ -205,9 +213,17 @@ def bin_is_still(n, s, ss):
         return False
     if max(sd) <= STUCK_STD:
         return False
+    if BGCAP_ON and not gyro_plausible(n, s):
+        return False
     fx, fy, fz = s[3] / n, s[4] / n, s[5] / n
     fn = math.sqrt(fx * fx + fy * fy + fz * fz)
     return ACC_NORM_MIN <= fn <= ACC_NORM_MAX
+
+
+def gyro_plausible(n, s):
+    """Step F: the bin's mean gyro is small enough to be a bias (norm <= BG_MAX)."""
+    gx, gy, gz = s[0] / n, s[1] / n, s[2] / n
+    return gx * gx + gy * gy + gz * gz <= BG_MAX * BG_MAX
 
 
 def bins_steady(na, sa, nb_, sb):
@@ -268,6 +284,8 @@ def bin_is_still_denoised(n, s, ss, nd, d2):
     if max(ex[0], ex[1], ex[2]) >= STILL_GYRO_STD or max(ex[3], ex[4], ex[5]) >= STILL_ACC_STD:
         return False
     if raw <= STUCK_STD * STUCK_STD:
+        return False
+    if BGCAP_ON and not gyro_plausible(n, s):
         return False
     fx, fy, fz = s[3] / n, s[4] / n, s[5] / n
     fn = math.sqrt(fx * fx + fy * fy + fz * fz)
