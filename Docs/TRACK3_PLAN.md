@@ -85,6 +85,7 @@ Deadline **22 Nov 2026, 11:59 PM IST**, confirmed by the FAQ (Q1 closed). Full-t
 | R3 | Fault front end: stuck rows, spikes, bridging of missing samples (three switches), blind-window protection | **Done (verified): all three switches OFF** by the pre-registered rule (17 Nov, rule at 99bf25b); shipped output unchanged | Each switch judged on 36 held-out copies |
 | R4 | Envelope (V2 speed and volume sigmas) learned per flight instead of fixed values chosen on Machine Hall (`LEARN_ON`) | **Done (verified): OFF** by the pre-registered rule (17 Nov, rule at c1769cb): held-out APE 3.739 m vs floor 3.748 (passes), clean +6.7 % (fails); shipped output unchanged | Held-out mean APE <= never-moving floor; clean no worse |
 | R5 | Rotor drag (V3): drag rule v2 stages A and B as pre-registered (c1b594c) on V1_01..03; build V3 only if stage A passes | **Done (verified): NO-GO, V3 not built.** Stage A re-run 17 Nov reproduces the Step B result exactly (1 of 3 sequences pass, 2 needed); stage B not reached | Stage A on 2 of 3 Vicon Room 1 sequences |
+| R6 | Batch forward-backward smoother at the 0.25 s tick (`SMOOTH_ON`, Step E code in the reference) | **In progress**: end-rest check done (no end anchor); rule committed before the held-out run (18 Nov) | Held-out APE and gap RMSE improve >= 2 %; clean not worse |
 | F | Filter fixes from the 16-17 Nov reviews: gyro-bias cap on every still test (`BGCAP_ON`), covariance reset after injection (`RESET_ON`), refresh of the cached previous sample (`REFRESH_ON`), fallback velocity uncertainty (`P0V_ON`); four switches | **Done** (17 Nov): BGCAP, P0V, REFRESH pass and ship on; RESET fails (reading a APE +1.8 %) and ships off. Held-out mean APE 4.972 -> 4.962 m; floor 3.745 m | Each switch judged on 36 fresh held-out copies (seeds 4-6) by the no-harm rule |
 
 ## Open questions (Q1 to Q5 are in the email drafted for prism@samsung.com on 15 Nov)
@@ -1361,3 +1362,51 @@ the full suite was not re-run (no code changed since Step 4: 259 passed; 287 aft
 Not done, and why: a rule v3 (for example axis a only, which holds on all three with k 0.19..0.22 /s) would
 be chosen after seeing V1_01..03, so it would need decision data never seen; the only unseen EuRoC
 sequences are V2_01..03, the final test set. Not proposed.
+
+## Step 6: batch forward-backward smoother (18 Nov 2026, branch `track3/step6-smoother`)
+
+Brief: fixed-interval smoothing at the 0.25 s tick, rows re-integrated between smoothed ticks, storage
+capped (bytes per tick, worst case on a 15 min file), check whether flights end with a ground rest before
+the zeroed 5 s (an end anchor for the backward pass); on only if held-out mean APE and gap error improve
+by a stated margin and clean runs are not worse.
+
+**Starting point.** The RTS smoother of Step E (`witness.SMOOTH_ON`, reference only) with the shipped
+estimator after Step F. Step F does not change the MH_01/02 tuning copies (APE identical to 4 decimals with
+its switches off or on), so the Step E second-look numbers still describe the current estimator; rerun to
+confirm (`python tools/smooth_eval.py --tag step6-tune-official-postF --official <12 MH_01/02 copies>`,
+`--tag step6-tune-clean-postF --seqs MH_01_easy,MH_02_easy`): clean 3.878 -> 4.387 m (+13 %); reading b
+3.973 -> 4.340 (+9 %); reading a 12.283 -> 10.734 (-13 %); gap RMSE a 13.83 -> 11.19, b 3.75 -> 3.86.
+
+**End anchor: none.** `python tools/end_rest.py` (clean) and `python tools/end_rest.py --official --seqs
+<seed-1 copies>`: the estimator's own V1 stillness test, run over the file. On every MH_01..05 and
+V1_01..03 file (clean and both readings) the last still tick before the blind window is the opening rest,
+80 to 146 s earlier (V1_01: no still tick at all, even clean). Ground truth at the start of the blind window
+(DIAGNOSTIC only, never read by the estimator): mean speed over the 3 s before it 0.17 to 0.98 m/s on every
+file. The flights end in motion, so the backward pass has no end anchor: its only information is the V2
+envelope prior, as in the forward pass.
+
+**Rows between ticks.** Not built as re-integration. Scoring only the rows that close a tick (where the
+smoothed state is exact and any between-tick treatment, linear or re-integrated, gives the same pose):
+clean MH_01 3.782 -> 4.057 m, MH_02 3.604 -> 4.197 m (smoother off -> on; EXPLORATORY, tuning set, scratch
+script). The loss is at the ticks themselves, so no between-tick treatment can remove it. For scale: a
+re-integration differs from the linear correction by at most about (g x tilt error + accel-bias error) x
+T^2 / 2 = (9.8 x 0.05 + 0.1) x 0.25^2 / 2 = 0.02 m within a tick, against a 0.3 to 0.6 m APE loss.
+
+**Storage** (Step E layout, computed, not measured): 1,028 bytes per stored block (15 x 15 gain + two
+15-vectors in single precision + time), at most `SMOOTH_MAX_BLOCKS` = 1024 blocks = 1,052,672 bytes for any
+file length; a 15 min file (3,600 ticks) ends with blocks of 4 ticks (1 s). Only the reference has it
+(Python lists, so its own footprint is larger); not ported to `pathfinder.py` unless it passes.
+
+**Decision rule, committed before any held-out run of the smoother.** Setting: the Step E smoother as it
+is (shipped envelope, cap 1024, linear correction between ticks), reference estimator, both from
+`tools/smooth_eval.py` (off and on in the same harness). Held-out set H: MH_03..05, V1_01..03 x readings a,
+b x seeds 1, 2, 3 (36 copies; seed 42 reported only). Clean set C: MH_01..05, V1_01..03. `SMOOTH_ON` passes
+only if all hold:
+1. mean APE (SE3 on the run) over H improves by at least 2 %;
+2. mean gap RMSE over H improves by at least 2 %;
+3. mean APE over C is not worse by more than 0.5 %.
+Reported, not deciding: per reading, RPE 1 s, blind RMSE, the never-moving floor (`step2-floor-off`) on the
+same copies, seed 42. If it passed it would be ported to `pathfinder.py` (bit-identical, budget gate) before
+shipping. Expected from tuning: condition 3 fails. `python tools/judge_step6.py --h step6-H --c step6-C
+--floor step2-floor-off --r42 step6-R42`. No constant changes after this commit.
+
