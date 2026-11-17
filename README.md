@@ -1,135 +1,145 @@
-# Vortex
+<div align="center">
 
-Samsung PRISM XR Hackathon Challenge 2026, **Track 3: Path Finder, trajectory estimation under sensor
-degradation**. Team: Arnav Jain (lead), Arya M, Nandhitha Chowdary Surapaneni.
+<img src="assets/vortex-title.gif" alt="Vortex — Path Finder. An animated IMU trajectory passes through a degraded segment and continues into five seconds of blind prediction." width="100%">
 
-> **Vortex never bets on one source of velocity. It gathers independent velocity witnesses from the
-> IMU's own physics, learns them while the sensor is healthy, and lets a jamming meter decide how much to
-> trust each one.**
+<br>
 
-## The problem
+<a href="https://research.samsung.com/"><img src="assets/samsung-research-card.svg" alt="Samsung Research (R&amp;D), on a white card for visibility in dark mode" width="220"></a>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+<a href="https://www.samsungprism.com/"><img src="assets/samsung-prism.png" alt="Samsung PRISM" width="125"></a>
 
-An aircraft flies through waypoints in a GPS-denied area. Jamming makes its IMU steadily worse: rising
-noise, drifting bias, 2-second dropouts, then total failure. From the degraded IMU alone (EuRoC MAV and
-TUM-VI data, EuRoC `imu0/data.csv` format, gravity alignment unknown) we must output the 6-DoF trajectory,
-one pose per IMU row, and keep predicting for 5 s after the IMU dies. Budget: at most 8 MB peak RAM and
-20 ms of compute per second of IMU, on a single thread, offline.
+<p><strong>Samsung PRISM XR Hackathon Challenge 2026 · Track 3: Path Finder</strong></p>
+<p>IMU-only, 6-DoF trajectory estimation under sensor degradation.</p>
 
-Integrating a degraded IMU drifts fast, and the usual fix, a neural network trained on other flights, is
-heavy, may not transfer to hidden sequences, and is hard to fit in 8 MB.
+[Challenge](#the-challenge) · [Architecture](#architecture) · [Measured results](#measured-results) · [Run](#run-vortex) · [Research notes](#research-notes)
 
-## Our approach: velocity witnesses
+</div>
 
-A degraded IMU drifts because velocity is only ever integrated. Yet the IMU also carries drift-free
-hints about velocity. Each is weak or situational alone; weighted by trust, together they hold drift
-down. Vortex uses no pretrained network: everything is calibrated during the healthy opening seconds of
-each flight.
+---
 
-| Witness | What it says about velocity | Applies to | Status in plan |
-|---|---|---|---|
-| **V1 Stillness** | Velocity is about zero on the ground, hovering or paused | Both datasets | Core |
-| **V2 Flight envelope** | Speed and acceleration stay within the range learned in the healthy phase | Both datasets | Core |
-| **V3 Rotor drag** | On a multirotor the horizontal accelerometer axes mostly measure rotor drag, proportional to body-frame velocity; the drag constant is a filter state estimated from IMU data alone ([Leishman et al.](https://typeset.io/pdf/quadrotors-and-accelerometers-state-estimation-with-an-4x1kjlx4ju.pdf), [Martin & Sarras](https://www.arxiv.org/pdf/1510.03249)). Recent learned inertial-odometry methods leave this term out | Multirotor (EuRoC) | Switchable, after an offline go/no-go test |
-| **V4 Turn physics** | In a steady turn, speed is about sideways acceleration divided by turn rate | Steady turns | Switchable |
-| **V5 Walking rhythm** | Step frequency and bounce give walking speed | Hand-held (TUM-VI) | Switchable |
-| **V6 Tilt and acceleration** | A multirotor speeds up as it tilts and slows as it levels | Multirotor | Feeds the blind 5 s forecaster |
-| **V7 Rotor vibration** | Vibration pattern may track rotor speed | Multirotor | Experiment only |
+## The challenge
 
-Around the witnesses:
+An aircraft must navigate without GPS or cameras while its IMU becomes less reliable: noise and bias grow, readings disappear for up to two seconds, and the sensor eventually fails. The task is to reconstruct a **6-DoF pose for every input IMU row**, including the five seconds after failure, from a EuRoC-format `imu0/data.csv` alone. The evaluator uses EuRoC MAV and TUM-VI sequences with hidden ground truth.
 
-| Component | What it does |
+| Input → output | Operating limits | Evaluation |
+|---|---|---|
+| Gyroscope + accelerometer → `timestamp tx ty tz qx qy qz qw`; one pose per input row, in order, never appended | Python only; offline (batch smoothing allowed), one thread; **8 MB peak at heap level** and **20 ms compute per second of IMU** | SE(3)-aligned ATE (evo) against hidden ground truth: 60 points for trajectory (waypoints 30, blind prediction 20, dropouts 10); 40 for efficiency (memory 20, runtime 20) |
+
+The organisers' FAQ (17 Nov 2026) settled the open points: Python only (`main.py`; `main.cpp` is not accepted), the 8 MB limit is measured at algorithm / heap level rather than process RSS, non-causal smoothing is allowed, scoring uses SE(3) Umeyama alignment, dropouts are physically missing rows, and test data is any EuRoC or TUM-VI sequence degraded with their `degrade_imu.py`.
+
+Small attitude and bias errors grow rapidly under inertial integration. Vortex anchors calibration on a detected still interval, then combines inertial integration with a detected-stillness constraint (V1) and a flight-envelope **motion prior** (V2), which on every tick pulls velocity toward zero and position toward a slow-moving centre of the estimate's own recent track. V2 bounds drift; it is an assumption about the platform, not an independent measurement of motion. The current build also handles dropouts, detects zero or stuck IMU failure, and forecasts through missing data. On five **clean** EuRoC Machine Hall sequences, the mean of the five per-sequence SE(3)-aligned translational APE RMSEs is **4.84 m**, against 5.25 m for a never-moving trajectory; the per-sequence results below show this is not evidence of useful motion recovery, which remains an open problem. The estimator uses no camera, GPS, barometer, ground truth, or pretrained model.
+
+## Architecture
+
+**Implemented in the standalone submission entry point:**
+
+```mermaid
+flowchart TD
+    A["EuRoC-format IMU CSV"] --> B["Stillness calibration in first 60 s"]
+    B --> C["Pre-anchor attitude + held position"]
+    B --> D["Forward strapdown + V1/V2 filter"]
+    D --> E["Gap and dead-sensor forecast"]
+    C --> F["One 6-DoF pose per input row"]
+    E --> F
+```
+
+`main.py` is the small submission launcher; it imports the standard-library estimator in [`pathfinder.py`](pathfinder.py). The estimator finds the longest usable still run in the first 60 seconds to estimate tilt, gravity magnitude, and gyro bias; when the strict test fails, a noise-tolerant second pass tries to recover a rest before falling back to first-second initialization. Before the anchor it holds position and integrates attitude backward. After the anchor it streams trapezoidal inertial integration through a 15-state error-state Kalman filter. Every input data row receives a pose. The [readable reference filter](vortex/core/witness.py) and optimized implementation agree exactly on recorded synthetic and real MH cases.
+
+The forward filter uses **V1 stillness** (zero-velocity and gyro-bias updates) and **V2 flight envelope** (speed and running-position-volume constraints). Dropouts add covariance; invalid, zero, and exactly stuck sensor rows coast with velocity decaying toward zero on a 0.5 s time constant. V2's values were chosen on MH_01/02; learning them from each healthy flight is still pending. The noise meter exists but is switched off after its validation rule failed. See the [implementation plan](Docs/TRACK3_PLAN.md).
+
+| IMU-only cue | Role | Status |
+|---|---|---|
+| V1 · Stillness | Zero-velocity and gyro-bias updates at detected rests | **On**; no in-flight rest on these MH runs |
+| V2 · Flight envelope | Speed prior and position constraint around a running centre | **On**; primarily responsible for bounded drift, but flattens real motion |
+| V3 · Rotor drag | Potential body-frame velocity from multirotor acceleration | **Off:** original rule returned NO-GO; a revised rule awaits Vicon Room validation |
+| Turn physics, walking rhythm, tilt response | Conditional cues for motion and platform | Future experiments; require held-out gains and budget checks |
+
+After-rest MH rotor-drag fits are exploratory; the revised, pre-registered rule requires Vicon Room data and a separate estimator gain before V3 can ship. A denoised V1 variant also failed its held-out improvement rule and remains in the reference implementation only. See the [drag study](Docs/DRAG.md) and [plan](Docs/TRACK3_PLAN.md).
+
+## Measured results
+
+**Five clean EuRoC Machine Hall sequences · whole-trajectory SE(3) aligned APE and 1 s RPE (metres).** MH_01/02 informed settings; MH_03–05 were used for held-out checks. These are recorded local runs, not hidden-evaluator scores.
+
+| Estimator | Mean APE ↓ | Mean 1 s RPE ↓ | Reading |
+|---|---:|---:|---|
+| Never-moving trajectory | **5.25** | **0.878** | Essential sanity floor for these small-area flights |
+| Step 6b · calibrated dead reckoning | 732.78 | 26.768 | Still interval corrects the moving-start gyro-bias failure, but drift grows |
+| Step 7a · V1 + V2 | 5.29 | 0.936 | Drift bounded, but worse than the stationary floor |
+| **Current · pre-anchor hold + calibration fallback** | **4.84** | **0.854** | Below the floor on the five-sequence mean; MH_02 gives 40% of that margin |
+
+Current per-sequence APE: **MH_01 3.91 m · MH_02 3.85 m · MH_03 3.53 m · MH_04 6.38 m · MH_05 6.55 m**. Holding position before the anchor improves MH_02, a tuning sequence, from 5.97 to 3.85 m (95% of that change's gain). On MH_03–05 the effect is within about 0.6%, so the mean's small edge over the stationary floor is **not evidence of general motion reconstruction**. V2 drives the large gain over dead reckoning; V1 adds little during MH flight because it mainly fires at the ground rest. The [generated results ledger](Docs/RESULTS.md) includes the per-sequence scores and ablations.
+
+**Organisers' degradation script (17 Nov, [baseline table](Docs/STEP2_BASELINE.md)):** on held-out sequences (MH_03–05, V1_01–03), copies made with the official `degrade_imu.py`, APE with SE(3) fitted on each run: with columns fed accelerometer first (reading b, seeds 1–3) the estimator scores **3.86 m against 3.75 m for a never-moving trajectory**; with the raw gyro-first EuRoC file fed straight in (reading a, the script then puts accelerometer-sized faults on the gyro) it scores **6.31 m against 3.75 m**. Both are worse than standing still; closing that gap is the current work. Which column order the organisers use is unknown, so both are tested.
+
+**Seeded degradation with our own placeholder fault model (history, not evidence: it does not match the organisers' `degrade_imu.py`; re-baselining on the official script is under way):** the current entry point passed the output contract on **60 degraded MH copies**; their recorded mean APE is **6.223 m**, 1 s RPE **1.084 m**, and five-second blind-window error growth **5.057 m**. These copies mix seeds and healthy-window lengths; the figures are not official challenge scores. In a separate held-out study of **54 seeded failure windows** on MH_03–05, with dead detection enabled in both readings, the 0.5 s velocity-decay forecast reduced mean blind growth from **8.643 to 4.368 m (49.5%)** against constant-velocity coasting; the blind RMSE fell from 8.380 to 7.137 m. This forecast primarily limits *new* error during failure; error already accumulated before failure remains. See the [degraded results](Docs/RESULTS.md) and [blind study](Docs/BLIND.md).
+
+| Other check | Recorded outcome |
 |---|---|
-| **Healthy-phase self-calibration** | Learns biases, noise floor, drag constant and flight envelope while the IMU is still clean. |
-| **Jamming meter** | Estimates noise level and bias drift every second and sets the trust of the IMU and of every witness; physically impossible samples are gated out. A fault changes trust, never silently anything else. |
-| **Platform detection** | Tells a multirotor (EuRoC) from a hand-held rig (TUM-VI) from the IMU spectrum and picks the matching witnesses. |
-| **Blind 5 s forecaster** | A tiny model of this flight's own motion, fitted online by recursive least squares, constrained by tilt, drag and the envelope, with a widening confidence cone. |
-| **Confidence per pose** | Position covariance for every row in `metadata.json`, and a reported coverage: how often the true position fell inside our 90% bound, per fault type. |
+| Output and equivalence | All five MH runs pass the row contract; optimized `main.py` matches the reference on those sequences and synthetic cases ([tests](tests/test_core_equivalence.py)) |
+| Latest automated suite | **230 passing tests**, Windows/Python 3.14 (17 Nov) ([plan](Docs/TRACK3_PLAN.md)) |
+| Real MH_01 efficiency | **2.34 ms per IMU-second**, 11.7 µs/row, **1.06 MB heap peak** (tracemalloc over the whole run) on Windows/Python 3.14 ([budget ledger](Docs/BUDGET.md)) |
+| Submission packaging | Python-only bundle verified on Python 3.13/3.14 and its Docker image checked on MH_01 (17 Nov); earlier: same output bytes on all 65 clean and degraded MH inputs ([bundle guide](bundle/README.md)) |
+| Synthetic scoring cross-check | Worst reported difference **4.2 × 10⁻⁷ m** from independently installed evo ([ledger](Docs/EVO_CROSSCHECK.md)) |
 
-Every row of the input still produces exactly one output pose: during dropouts the estimator coasts on
-the last trusted rates, and after failure the forecaster takes over.
+The launcher loads matching, hash-checked bytecode shipped in the bundle. That matters for the heap too: without matching bytecode Python compiles the estimator first, and the parser and compiler add 4.4 to 6.3 MB to the traced heap (still under 8 MB); output stays identical. Compute is within the 20 ms/IMU-second limit on the measured laptop. Whole-process RSS (11 to 12 MiB, the interpreter included) is reported for the record but is not what the organisers measure. A plausible-noise or slowly freezing failure can evade the current dead-sensor detector. TUM-VI accuracy and real Galaxy S24 operation remain unverified. An earlier C core (`main.cpp`, 2.7 MB RSS) is kept in the repository as a recorded experiment and is not submitted.
 
-No witness is load-bearing: V1 and V2 alone must bound drift. Every other witness sits behind a switch
-and stays on only if our scoring script shows a gain on sequences we did not tune on. The ablation table
-in the final results is generated by script.
+**Confidence study:** a per-row position sigma exists in the reference analysis, but it did not rank error on the MH_01/02 tuning set (Spearman correlation **−0.07** over 344,494 scored rows). It is not in the submission entry point, and no calibrated per-row confidence is claimed ([coverage ledger](Docs/COVERAGE.md)).
 
-**Honest limits.** No witness has been tested on EuRoC or TUM-VI yet. Drag is small next to rotor
-vibration, turn physics only holds in steady turns, and rotor vibration may be unusable at a 200 Hz IMU.
+## Run Vortex
 
-**Beyond the competition.** On a real aircraft the same trust layer takes witnesses that jamming cannot
-touch: pitot tube (airspeed), barometer (climb rate), optical flow, motor RPM. The scored run uses only
-`imu0/data.csv`; these belong to the deployment story and the S24 demo (the phone's barometer).
+Python 3.10+; `main.py` and `pathfinder.py` use only the standard library. Analysis and test tools use `pyproject.toml` dependencies.
 
-## Status (15 Nov 2026)
+```bash
+python -m pip install -e '.[dev]'
+pytest
 
-| Part | State |
-|---|---|
-| Quaternion maths, data types, ATE/RPE metrics with alignment, TUM writer | Done, tested |
-| Synthetic IMU generator, still-period detection, dead-reckoning baselines | Done, tested |
-| Sensor stations: live Galaxy S24 stream (Sensor Logger HTTP push), synthetic stream | Done, tested with simulated pushes. **Not yet run with the real S24.** |
-| EuRoC/TUM-VI loader, degradation script, `main.py`, output checker | Not started |
-| Error-state filter, velocity witnesses V1 to V7, self-calibration, jamming meter, forecaster | Not started |
-| Benchmark (peak RAM, ms per second of IMU), scoring split by fault window | Not started |
-| Submission bundle, Dockerfile | Not started |
-
-32 tests pass (Linux, Python 3.13). **No result on EuRoC or TUM-VI has been measured yet.** No accuracy,
-memory or runtime figure is claimed until a script in this repo produces it. Synthetic numbers describe
-the code, not real data.
-
-## Quick start
-
-Python 3.10+.
-
-```
-pip install -e .[dev]
-pytest                                            # 32 tests
-python -m vortex check --synthetic
-python -m vortex baselines --synthetic            # writes results/synthetic-s0/
+# Format and output-contract smoke test; this is synthetic, not a flight.
+python tools/synth_euroc.py imu.csv --rows 36000 --seed 0
+python -S main.py imu.csv estimated_trajectory.txt
+python -m vortex.check_output imu.csv estimated_trajectory.txt
 ```
 
-Planned submission entry point (not built yet):
+The checker should report `PASS: 36000 input rows, 36000 output rows`. The synthetic file exercises parsing and output; it does not establish navigation accuracy.
 
-```
-python main.py path/to/imu0/data.csv estimated_trajectory.txt
-```
+For the submission artifact, [stage and verify the bundle](bundle/README.md) with `tools/make_bundle.py`. Run its `stage` step once under each Python version whose cached bytecode you want to include (tested: 3.12, 3.13, 3.14); `python tools/make_bundle.py zip --name NAME` creates `dist/NAME.zip`, and `python tools/make_bundle.py verify dist/NAME.zip` checks it. The bundle also includes a [Dockerfile](bundle/Dockerfile). A plain source checkout runs without staged bytecode, but has higher peak RSS.
 
-Output: `timestamp tx ty tz qx qy qz qw`, timestamps in seconds, space-separated, one line per input IMU
-row.
+For a local EuRoC sequence, put `MH_01_easy` under the ignored `data/euroc/` directory ([data setup](Docs/DATA.md)). The data is not committed:
 
-## Demo: live jamming dial on a Galaxy S24
-
-For the jury round, the same estimator runs on a Samsung Galaxy S24's IMU streamed live over Wi-Fi. A
-slider raises noise, bias and dropouts while the trajectory and its confidence cone update, then the IMU
-is cut and the blind 5 s cone grows. The phone is hand-held, so the demo shows the jamming meter, the
-gait prior and blind prediction, not the drag model.
-
-```
-python -m vortex station                          # waits 30 s for the S24, else synthetic
-python -m vortex station --source phone --save data/phone/live-01
+```bash
+python -S main.py data/euroc/MH_01_easy/mav0/imu0/data.csv estimated_trajectory.txt
+python -m vortex.check_output data/euroc/MH_01_easy/mav0/imu0/data.csv estimated_trajectory.txt
+python score.py --gt data/euroc/MH_01_easy --est estimated_trajectory.txt
 ```
 
-It prints the URL to enter in Sensor Logger (Settings > Data Streaming > HTTP Push). Phone and computer
-must be on the same Wi-Fi. The jamming dial itself is not built yet.
+To reproduce the five-sequence clean-data table with locally downloaded MH data and ground truth:
 
-## Repository layout
-
-```
-vortex/              Python package
-  geometry.py        quaternions (Hamilton, w x y z, body-to-world)
-  types.py           ImuData, Trajectory, Sequence
-  metrics.py         alignment, ATE, RPE, drift
-  trajectory_io.py   TUM read/write
-  baselines.py       dead reckoning, freeze-on-loss
-  stations.py        live sensor stations: S24 via HTTP push, synthetic
-  data/synthetic.py  synthetic sequences with exact ground truth
-  data/phone.py      S24 recordings exported by Sensor Logger
-  data/advio.py      ADVIO loader (earlier direction, kept for reference)
-  cli.py             `python -m vortex ...`
-tests/               pytest suite
-Docs/                plan, data instructions
+```bash
+python tools/eval_euroc.py --tag my-current-clean --seqs MH_01_easy,MH_02_easy,MH_03_medium,MH_04_difficult,MH_05_difficult
 ```
 
-## Third-party data and code
+This writes a tagged JSON record under `Docs/results/` and rebuilds `Docs/RESULTS.md`. Choose a new tag to keep the recorded runs intact.
 
-See [`THIRD_PARTY.md`](THIRD_PARTY.md). EuRoC, TUM-VI and ADVIO data are not committed to this repo.
-[evo](https://github.com/MichaelGrupp/evo) (GPL-3) is used only as an installed tool for cross-checking
-metrics; none of its code is copied in.
+To create a reproducible degraded copy and score the healthy, degraded, dropout, and blind windows, use the [fault injector](vortex/degrade.py) and [evaluator](tools/eval_euroc.py):
+
+```bash
+python -m vortex.degrade data/euroc/MH_01_easy data/degraded/MH_01_easy_s1 --seed 1
+python tools/eval_euroc.py --tag my-current-degraded --degraded --seqs MH_01_easy_s1
+```
+
+The evaluator checks row coverage. These fault levels are project placeholders and do not match the organisers' `degrade_imu.py`; the official-script harness replaces them.
+
+## Research notes
+
+- [Track 3 plan](Docs/TRACK3_PLAN.md) — current stage, real-sequence diagnostics, design, and acceptance criteria.
+- [Generated results](Docs/RESULTS.md) — clean and seeded degraded EuRoC metrics, stationary floor, and ablations.
+- [Blind-window study](Docs/BLIND.md) — dead-sensor detection and five-second forecast comparisons.
+- [Confidence coverage](Docs/COVERAGE.md) — why the experimental per-row sigma is not reported as calibrated confidence.
+- [Submission bundle](bundle/README.md) — launcher, bytecode, manifest, Docker, and verification.
+- [Budget ledger](Docs/BUDGET.md) and [efficiency floor](Docs/FLOOR.md) — synthetic and real timing, heap and process memory, and interpreter cost.
+- [Rotor-drag study](Docs/DRAG.md) — pre-registered NO-GO result and explicitly labeled exploratory fits.
+- [Scorer cross-check](Docs/EVO_CROSSCHECK.md) — evo comparison on synthetic trajectories.
+- [Data instructions](Docs/DATA.md) and [third-party notices](THIRD_PARTY.md) — datasets stay outside the repository.
+
+**Current solo entrant:** Arnav Jain. Vortex is a submission to the Samsung PRISM XR Hackathon Challenge 2026. Samsung Research and Samsung PRISM marks identify the challenge context.
+
+<sub>Project code: [MIT](LICENSE). Brand marks are Samsung's; [Research mark](https://cdn.codeground.org/nsr/images/layout/logo-sr.png) and [PRISM mark](https://www.samsungprism.com/assets/images/prism_logo.png) are reproduced from their official sites.</sub>

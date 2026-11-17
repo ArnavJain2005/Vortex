@@ -8,6 +8,9 @@ Contract (organisers' slides, plus our reading of them):
   - every value finite (no nan / inf);
   - quaternion unit norm within quat_tol.
 '\\r\\n' line ends are accepted (evo reads them) and reported as a warning.
+Output timestamps that do not increase are a warning, not an error: the contract mirrors the input
+row for row, so an input with a repeated or swapped timestamp gives the same in the output. The
+warning makes it visible, because scorers sort and drop such rows (vortex/scoring.py does).
 
 CLI: python -m vortex.check_output IMU.csv estimated_trajectory.txt   (exit 0 = pass, 1 = fail)
 """
@@ -60,6 +63,8 @@ def check(imu_path, out_path, ts_tol_s: float = 0.0, quat_tol: float = 1e-6, max
         err("count", "row count: %d input data rows, %d output pose lines" % (len(expected), len(poses)))
 
     tol = Decimal(repr(ts_tol_s))
+    prev_t = None
+    n_repeat = n_back = 0
     for i, (no, line) in enumerate(poses):
         if "\t" in line:
             err("separator", "line %d: tab separator" % no)
@@ -75,6 +80,17 @@ def check(imu_path, out_path, ts_tol_s: float = 0.0, quat_tol: float = 1e-6, max
         if not all(math.isfinite(v) for v in vals):
             err("finite", "line %d: value not finite" % no)
             continue
+        try:
+            t_dec = Decimal(fields[0])
+        except InvalidOperation:
+            t_dec = None
+        if t_dec is not None and prev_t is not None:
+            if t_dec == prev_t:
+                n_repeat += 1
+            elif t_dec < prev_t:
+                n_back += 1
+        if t_dec is not None:
+            prev_t = t_dec
         if i < len(expected) and expected[i] is not None:
             try:
                 diff = abs(Decimal(fields[0]) - Decimal(expected[i]))
@@ -87,6 +103,10 @@ def check(imu_path, out_path, ts_tol_s: float = 0.0, quat_tol: float = 1e-6, max
         if abs(n - 1.0) > quat_tol:
             err("unit", "line %d: quaternion not unit (norm %.9f)" % (no, n))
 
+    if n_repeat:
+        warnings.append("%d output timestamps repeat the previous one" % n_repeat)
+    if n_back:
+        warnings.append("%d output timestamps go backwards" % n_back)
     return {"ok": not counts, "input_rows": len(expected), "output_rows": len(poses),
             "errors": errors, "error_counts": counts, "warnings": warnings}
 

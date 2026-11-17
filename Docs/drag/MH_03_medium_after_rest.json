@@ -1,0 +1,74 @@
+{
+ "after_rest": true,
+ "axes": {
+  "y": {
+   "c_first_half": -0.10866389555862896,
+   "c_full": -0.11221872382115052,
+   "checks": {
+    "k_positive": true,
+    "k_stable": true,
+    "r2_test_ok": true
+   },
+   "f_std": 0.21416452332833022,
+   "k_diff_velocity": 0.2035192366524186,
+   "k_first_half": 0.20286904286157265,
+   "k_full": 0.20350841119763655,
+   "k_raw": 0.20329140241009566,
+   "k_rel_change": 0.022949332802139885,
+   "k_second_half": 0.20752475204145446,
+   "pass": true,
+   "r2_diff_velocity": 0.8790478326597254,
+   "r2_first_half": 0.9674966242374937,
+   "r2_full": 0.8786044739243857,
+   "r2_raw": 0.12117607984265477,
+   "r2_second_half_refit": 0.7129368250235926,
+   "r2_test": 0.7125779998291893,
+   "r2_test_same_offset": 0.711123187278122,
+   "v_std": 0.9864200073630334
+  },
+  "z": {
+   "c_first_half": -3.3431649208408554,
+   "c_full": -3.3328796815480777,
+   "checks": {
+    "k_positive": true,
+    "k_stable": true,
+    "r2_test_ok": true
+   },
+   "f_std": 0.19631207653045904,
+   "k_diff_velocity": 0.18875143784124238,
+   "k_first_half": 0.16653326192340498,
+   "k_full": 0.18860423456305836,
+   "k_raw": 0.18571573065404373,
+   "k_rel_change": 0.18041866895609757,
+   "k_second_half": 0.19657897137654287,
+   "pass": true,
+   "r2_diff_velocity": 0.4597751273448998,
+   "r2_first_half": 0.32474342591717287,
+   "r2_full": 0.4584994036212089,
+   "r2_raw": 0.024750003954514432,
+   "r2_second_half_refit": 0.5196189377574882,
+   "r2_test": 0.5074801370659993,
+   "r2_test_same_offset": 0.5034065492221982,
+   "v_std": 0.7047984903014948
+  }
+ },
+ "bias_removed": true,
+ "date": "2026-11-16",
+ "decision": "n/a (EXPLORATORY post-hoc airborne-only fit, not the pre-registered rule)",
+ "imu_rate_hz": 200.0000004663037,
+ "overlap_s": 114.52999973297119,
+ "rest_end_s": 16.975000143051147,
+ "rows_imu": 27008,
+ "rows_used": 22907,
+ "rows_valid": 27008,
+ "rule": {
+  "max_k_rel_change": 0.3,
+  "min_r2_test": 0.5,
+  "smooth_s": 1.0
+ },
+ "sequence": "MH_03_medium_after_rest",
+ "smooth_rows": 200,
+ "smooth_s": 1.0,
+ "thrust_axis": "x",
+ "velocity_source": "ground-truth velocity columns"
+}

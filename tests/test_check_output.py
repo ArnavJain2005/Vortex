@@ -84,3 +84,19 @@ def test_cli_exit_codes(tmp_path, capsys):
     b.write_text("garbage\n")
     assert check_output.main([str(a), str(b)]) == 1
     assert "FAIL" in capsys.readouterr().out
+
+
+def test_chronology_is_a_warning_not_an_error(tmp_path):
+    # GOOD mirrors IMU, which repeats one timestamp and then goes back to 5 ns: still a pass,
+    # but both are reported so a scorer's silent sort / dedupe cannot hide them.
+    r = check_output.check(*_files(tmp_path))
+    assert r["ok"], r["errors"]
+    assert "1 output timestamps repeat the previous one" in r["warnings"]
+    assert "1 output timestamps go backwards" in r["warnings"]
+
+
+def test_increasing_output_has_no_chronology_warning(tmp_path):
+    imu = HEADER + "\n1000000000,0,0,0,9.8,0,0\n1005000000,0,0,0,9.8,0,0\n"
+    out = "1.000000000 0 0 0 0 0 0 1\n1.005000000 0 0 0 0 0 0 1\n"
+    r = check_output.check(*_files(tmp_path, imu=imu, out=out))
+    assert r["ok"] and r["warnings"] == []

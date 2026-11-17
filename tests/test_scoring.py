@@ -185,3 +185,36 @@ def test_cli_end_to_end(tmp_path, capsys):
     assert r["ape"]["rmse"] == pytest.approx(0.1, abs=1e-5)
     assert "blind" in r["phases"]
     assert "ATE" in capsys.readouterr().out
+
+
+def _contract_files(tmp_path, n_out):
+    g = _gt(n=2000)
+    _write_tum(tmp_path / "gt.txt", g)
+    _write_tum(tmp_path / "est.txt", scoring.Traj(t=g.t[:n_out], p=g.p[:n_out], R=g.R[:n_out]))
+    with open(tmp_path / "imu.csv", "w") as f:
+        f.write("#timestamp [ns],wx,wy,wz,ax,ay,az\n")
+        for t in g.t:                                   # the exact digits _write_tum wrote
+            f.write("%d,0,0,0,0,0,9.81\n" % int(("%.9f" % t).replace(".", "")))
+    return ["--gt", str(tmp_path / "gt.txt"), "--est", str(tmp_path / "est.txt"), "--imu", str(tmp_path / "imu.csv"),
+            "--align", "none"]
+
+
+def test_cli_exits_0_when_output_contract_passes(tmp_path, capsys):
+    assert scoring.main(_contract_files(tmp_path, 2000)) == 0
+    assert "output contract: PASS" in capsys.readouterr().out
+
+
+def test_cli_exits_1_when_output_contract_fails(tmp_path, capsys):
+    # one pose missing: scores still print, but the run must not look like a success
+    assert scoring.main(_contract_files(tmp_path, 1999)) == 1
+    assert "output contract: FAIL" in capsys.readouterr().out
+
+
+def test_cli_warns_when_est_file_was_cleaned(tmp_path, capsys):
+    g = _gt(n=200)
+    _write_tum(tmp_path / "gt.txt", g)
+    idx = np.r_[np.arange(100), 99, np.arange(100, 200)]          # one duplicate row
+    _write_tum(tmp_path / "est.txt", scoring.Traj(t=g.t[idx], p=g.p[idx], R=g.R[idx]))
+    assert scoring.main(["--gt", str(tmp_path / "gt.txt"), "--est", str(tmp_path / "est.txt"),
+                         "--align", "none"]) == 0
+    assert "WARNING: est file cleaned" in capsys.readouterr().out

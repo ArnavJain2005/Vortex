@@ -1,0 +1,63 @@
+{
+ "airborne_s": 114.52999973297119,
+ "axes": {
+  "a": {
+   "checks": {
+    "k_close": true,
+    "r2_fixed_ok": true
+   },
+   "dir": [
+    -0.007816089598760264,
+    -0.9999694539051601,
+    0.0
+   ],
+   "k_free": 0.20376932640469114,
+   "k_rel_dev": 0.018846632023455656,
+   "pass": true,
+   "r2_fixed_k": 0.879919771568403,
+   "r2_free": 0.8802209622844266
+  },
+  "b": {
+   "checks": {
+    "k_close": true,
+    "r2_fixed_ok": true
+   },
+   "dir": [
+    -0.3406102421057159,
+    0.0026623214940785533,
+    -0.9402008163243362
+   ],
+   "k_free": 0.1846979521575295,
+   "k_rel_dev": 0.07651023921235262,
+   "pass": true,
+   "r2_fixed_k": 0.6884175107712698,
+   "r2_free": 0.6931754415375437
+  }
+ },
+ "date": "2026-11-16",
+ "pass": true,
+ "rest_end_s": 16.975000143051147,
+ "role": "tuning set (exploratory)",
+ "rows_used": 22907,
+ "rule": "v2",
+ "rule_v2": {
+  "decision_sequences": [
+   "V1_01_easy",
+   "V1_02_medium",
+   "V1_03_difficult"
+  ],
+  "k_fixed": 0.2,
+  "max_k_rel_dev": 0.3,
+  "min_pass": 2,
+  "min_r2": 0.5,
+  "rest_min_s": 5.0,
+  "rest_speed": 0.05,
+  "smooth_s": 1.0
+ },
+ "sequence": "MH_03_medium",
+ "thrust_dir": [
+  0.9401720968610321,
+  -0.007348693821218552,
+  -0.3406206467362955
+ ]
+}

@@ -1,0 +1,42 @@
+{
+ "commit": "8cb550f",
+ "date": "2026-11-17",
+ "degraded": false,
+ "main": "main.py",
+ "official": false,
+ "python": "3.14.7",
+ "results": [
+  {
+   "ate_none_rmse": 5.6356497544059865,
+   "ate_origin_rmse": 6.883150639446862,
+   "ate_se3_rmse": 4.2473472364328115,
+   "ate_sim3_rmse": 4.147905917236118,
+   "contract": "PASS",
+   "final_se3": 5.268965816104031,
+   "rows": 36820,
+   "rpe200_rmse": 0.5246177099521252,
+   "sequence": "MH_01_easy",
+   "sim3_scale": 4.680785646845374,
+   "wall_s": 1.0239429000066593
+  },
+  {
+   "ate_none_rmse": 5.894606589357813,
+   "ate_origin_rmse": 7.433194058438646,
+   "ate_se3_rmse": 4.576094908745495,
+   "ate_sim3_rmse": 4.1037393966452,
+   "contract": "PASS",
+   "final_se3": 5.5650300763147476,
+   "rows": 30400,
+   "rpe200_rmse": 0.547531302999953,
+   "sequence": "MH_02_easy",
+   "sim3_scale": 14.19680062315591,
+   "wall_s": 0.9204497000027914
+  }
+ ],
+ "set": {
+  "LEARN_FRAC": "0.5",
+  "LEARN_ITERS": "2",
+  "LEARN_ON": "True"
+ },
+ "tag": "step4-tune-f0.5-i2-clean"
+}

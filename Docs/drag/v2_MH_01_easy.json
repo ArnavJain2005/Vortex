@@ -1,0 +1,63 @@
+{
+ "airborne_s": 138.3450002670288,
+ "axes": {
+  "a": {
+   "checks": {
+    "k_close": true,
+    "r2_fixed_ok": true
+   },
+   "dir": [
+    -0.009830349307701821,
+    -0.9999516809488789,
+    0.0
+   ],
+   "k_free": 0.18302363339290417,
+   "k_rel_dev": 0.08488183303547919,
+   "pass": true,
+   "r2_fixed_k": 0.6904417025497527,
+   "r2_free": 0.696433467641852
+  },
+  "b": {
+   "checks": {
+    "k_close": true,
+    "r2_fixed_ok": true
+   },
+   "dir": [
+    -0.33817268336172385,
+    0.003324516241238803,
+    -0.9410782028182849
+   ],
+   "k_free": 0.18363873978969353,
+   "k_rel_dev": 0.08180630105153242,
+   "pass": true,
+   "r2_fixed_k": 0.649733135324454,
+   "r2_free": 0.6549319106286496
+  }
+ },
+ "date": "2026-11-16",
+ "pass": true,
+ "rest_end_s": 43.55999970436096,
+ "role": "tuning set (exploratory)",
+ "rows_used": 27670,
+ "rule": "v2",
+ "rule_v2": {
+  "decision_sequences": [
+   "V1_01_easy",
+   "V1_02_medium",
+   "V1_03_difficult"
+  ],
+  "k_fixed": 0.2,
+  "max_k_rel_dev": 0.3,
+  "min_pass": 2,
+  "min_r2": 0.5,
+  "rest_min_s": 5.0,
+  "rest_speed": 0.05,
+  "smooth_s": 1.0
+ },
+ "sequence": "MH_01_easy",
+ "thrust_dir": [
+  0.9410327308124941,
+  -0.009251127459568001,
+  -0.3381890243344793
+ ]
+}

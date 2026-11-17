@@ -25,8 +25,32 @@ PRE-REGISTERED DECISION RULE (fixed 16 Nov 2026, before any real EuRoC data was 
   Otherwise NO-GO, and V3 stays switched off. One sequence passing is not enough to switch V3 on in
   the submission: that also needs a gain in score.py on sequences we did not tune on.
 
+PRE-REGISTERED RULE v2 (fixed 16 Nov 2026, AFTER exploring MH_01..05, BEFORE any Vicon Room data was
+on disk; the git history of this file is the record). Settings were chosen on MH only (exploratory
+fits: one k = 0.1996 /s explains R^2 0.65..0.96 on every thrust-perpendicular axis of MH_01..05).
+  Decision data: EuRoC Vicon Room 1, V1_01_easy, V1_02_medium, V1_03_difficult (same drone, other room,
+  never used for tuning). Nothing may be tuned after seeing them; a change needs new held-out data
+  (Vicon Room 2).
+  Stage A, signal (this tool, `--rule v2`), per sequence:
+    - airborne part: after the longest ground-truth rest (speed < 0.05 m/s for >= 5 s); the whole
+      sequence if there is none. Ground-truth accelerometer bias removed, 1 s centred moving average.
+    - axes: the two body directions perpendicular to u, the mean airborne specific-force direction:
+      a = unit(u x e_z) (e_x if u is within 1e-3 of +-e_z), b = u x a.
+    - per axis: R^2 of f against -K_FIXED v + c (c refitted per sequence: the filter tracks the bias)
+      and the free-fit k.
+    - the sequence passes if on BOTH axes R^2 >= 0.5 and |k_free - K_FIXED| <= 0.3 K_FIXED.
+    GO if at least 2 of the 3 sequences pass; otherwise NO-GO and V3 is dropped.
+  Stage B, estimator gain (tools/eval_euroc.py, only after a stage A GO): V3 is built and its
+    parameters frozen on MH_01..05 only; it is switched on in main.py only if, on the three clean
+    Vicon Room 1 sequences, mean APE SE3 AND mean RPE 1 s are each at least 10 % lower than V1 + V2
+    alone at the same commit, and no sequence's APE is more than 10 % worse. Before the submission it
+    must also be limited to multirotors (platform detection W4) or the risk stated.
+
 Usage:
-  python tools/drag_fit.py data/euroc/MH_01_easy [more sequences] [--win 1.0] [--no-bias]
+  python tools/drag_fit.py --rule v2 data/euroc/V1_01_easy [...]       # stage A; writes Docs/drag/v2_*.json
+  python tools/drag_fit.py data/euroc/MH_01_easy [more sequences] [--win 1.0] [--no-bias] [--after-rest]
+  --after-rest: EXPLORATORY, added 16 Nov 2026 AFTER seeing MH_01 (hand-carried start): fits only data
+  after the longest ground-truth rest (speed < 0.05 m/s for >= 5 s). Never yields a GO/NO-GO decision.
   python tools/drag_fit.py --synthetic [--k 0.3]     # SYNTHETIC self-check, writes nothing to Docs
   python tools/drag_fit.py --render
 Needs numpy. No plotting library: the SVG is written by hand.
@@ -48,6 +72,10 @@ from vortex.rowspec import is_data_line  # noqa: E402
 
 OUT_DIR = os.path.join(ROOT, "Docs", "drag")
 RULE = {"smooth_s": 1.0, "min_r2_test": 0.5, "max_k_rel_change": 0.3}
+RULE_V2 = {"smooth_s": 1.0, "k_fixed": 0.20, "min_r2": 0.5, "max_k_rel_dev": 0.3, "min_pass": 2,
+           "rest_speed": 0.05, "rest_min_s": 5.0,
+           "decision_sequences": ["V1_01_easy", "V1_02_medium", "V1_03_difficult"]}
+REST_SPEED, REST_MIN_S = 0.05, 5.0   # exploratory --after-rest only
 AXES = "xyz"
 
 
@@ -75,7 +103,7 @@ def gt_path(seq):
     raise FileNotFoundError("no ground truth under %s" % seq)
 
 
-def load(seq, use_bias=True):
+def load(seq, use_bias=True, after_rest=False):
     raw = euroc.read_imu_csv(euroc.imu_path(seq))
     ok = raw.valid
     t_imu = raw.t_ns[ok] / 1e9
@@ -92,6 +120,10 @@ def load(seq, use_bias=True):
     v_b = np.einsum("nji,nj->ni", R, v_w)
     v_b_diff = np.einsum("nji,nj->ni", R, v_w_diff)
     inside = (t_imu >= t_gt[0]) & (t_imu <= t_gt[-1])
+    rest_end = None
+    if after_rest:                        # EXPLORATORY: keep only data after the longest GT rest
+        rest_end = longest_rest_end(t_gt, v_w)
+        inside &= t_imu >= rest_end
     t = t_imu[inside]
     f = acc[inside].copy()
     interp = lambda x: np.column_stack([np.interp(t, t_gt, x[:, i]) for i in range(3)])  # noqa: E731
@@ -99,7 +131,8 @@ def load(seq, use_bias=True):
         f -= interp(ba)
     return {"t": t, "f": f, "v": interp(v_b), "v_diff": interp(v_b_diff), "acc_all": acc,
             "vel_src": vel_src, "bias_removed": ba is not None, "rows_imu": int(len(raw)),
-            "rows_valid": int(ok.sum())}
+            "rows_valid": int(ok.sum()), "after_rest": after_rest,
+            "rest_end_s": None if rest_end is None else float(rest_end - t_gt[0])}
 
 
 # ---------- fitting ----------
@@ -123,6 +156,22 @@ def fit(v, f):
 def r2(y, yhat):
     ss = float(np.sum((y - np.mean(y)) ** 2))
     return 1.0 - float(np.sum((y - yhat) ** 2)) / ss if ss > 0 else float("nan")
+
+
+def longest_rest_end(t, v_w, speed=REST_SPEED, min_s=REST_MIN_S):
+    """End time of the longest interval with ground-truth speed below `speed` (at least min_s long).
+    On EuRoC MH the drone is hand-carried, then set down, then flies; this marks rotors-on flight."""
+    still = np.linalg.norm(v_w, axis=1) < speed
+    best, best_len, start = t[0], 0.0, None
+    for i, s_ in enumerate(still):
+        if s_ and start is None:
+            start = i
+        if (not s_ or i == len(still) - 1) and start is not None:
+            ln = t[i] - t[start]
+            if ln > best_len:
+                best, best_len = t[i], ln
+            start = None
+    return best if best_len >= min_s else t[0]
 
 
 def analyse(d, win_s=RULE["smooth_s"]):
@@ -158,10 +207,54 @@ def analyse(d, win_s=RULE["smooth_s"]):
         ax["pass"] = all(checks.values())
         res["axes"][AXES[i]] = ax
         ax["_plot"] = (vs, fs)
-    rule_applies = win_s == RULE["smooth_s"] and d["bias_removed"]
+    res["after_rest"], res["rest_end_s"] = d.get("after_rest", False), d.get("rest_end_s")
+    rule_applies = win_s == RULE["smooth_s"] and d["bias_removed"] and not res["after_rest"]
     res["decision"] = ("GO" if all(a["pass"] for a in res["axes"].values()) else "NO-GO") \
-        if rule_applies else "n/a (settings differ from the pre-registered rule)"
+        if rule_applies else ("n/a (EXPLORATORY post-hoc airborne-only fit, not the pre-registered rule)"
+                              if res["after_rest"] else "n/a (settings differ from the pre-registered rule)")
     return res
+
+
+def perp_axes(u):
+    """Rule v2 axes: two unit vectors perpendicular to the specific-force direction u (body frame)."""
+    u = np.asarray(u, float) / np.linalg.norm(u)
+    a = np.cross(u, [0.0, 0.0, 1.0])
+    if np.linalg.norm(a) < 1e-3:
+        a = np.array([1.0, 0.0, 0.0]) - u[0] * u
+    a /= np.linalg.norm(a)
+    return a, np.cross(u, a)
+
+
+def analyse_v2(d, rule=RULE_V2):
+    """Stage A of rule v2 on load(seq, use_bias=True, after_rest=True)."""
+    t = d["t"]
+    rate = (len(t) - 1) / (t[-1] - t[0])
+    n = max(1, int(round(rule["smooth_s"] * rate)))
+    u = np.mean(d["f"], axis=0)
+    u = u / np.linalg.norm(u)
+    kf = rule["k_fixed"]
+    res = {"rule": "v2", "rows_used": int(len(t)), "airborne_s": float(t[-1] - t[0]),
+           "rest_end_s": d.get("rest_end_s"), "thrust_dir": [float(x) for x in u], "axes": {}}
+    for name, e in zip(("a", "b"), perp_axes(u)):
+        fs, vs = smooth(d["f"] @ e, n), smooth(d["v"] @ e, n)
+        k_free, _, r2_free = fit(vs, fs)
+        c = float(np.mean(fs + kf * vs))
+        r2_fixed = r2(fs, -kf * vs + c)
+        dev = abs(k_free - kf) / kf
+        ok = {"r2_fixed_ok": r2_fixed >= rule["min_r2"], "k_close": dev <= rule["max_k_rel_dev"]}
+        res["axes"][name] = {"dir": [float(x) for x in e], "k_free": k_free, "r2_free": r2_free,
+                             "r2_fixed_k": r2_fixed, "k_rel_dev": dev, "checks": ok, "pass": all(ok.values()),
+                             "_plot": (vs, fs)}
+    res["pass"] = all(a["pass"] for a in res["axes"].values())
+    return res
+
+
+def decide_v2(results, rule=RULE_V2):
+    """results: {sequence name: analyse_v2 output}. GO / NO-GO over the decision sequences only."""
+    named = [results[s] for s in rule["decision_sequences"] if s in results]
+    if len(named) < len(rule["decision_sequences"]):
+        return "INCOMPLETE (needs %s)" % ", ".join(rule["decision_sequences"])
+    return "GO" if sum(r["pass"] for r in named) >= rule["min_pass"] else "NO-GO"
 
 
 # ---------- outputs ----------
@@ -215,9 +308,51 @@ def save(res, seq_name, out_dir=OUT_DIR):
     return clean
 
 
+def save_v2(res, seq_name, out_dir=OUT_DIR):
+    os.makedirs(out_dir, exist_ok=True)
+    clean = {k: v for k, v in res.items() if k != "axes"}
+    clean["axes"] = {n: {k: v for k, v in a.items() if k != "_plot"} for n, a in res["axes"].items()}
+    clean.update(sequence=seq_name, date=time.strftime("%Y-%m-%d"), rule_v2=RULE_V2,
+                 role="DECISION" if seq_name in RULE_V2["decision_sequences"] else "tuning set (exploratory)")
+    with open(os.path.join(out_dir, "v2_" + seq_name + ".json"), "w", encoding="utf-8", newline="\n") as f:
+        json.dump(clean, f, indent=1, sort_keys=True)
+        f.write("\n")
+    plot = {"smooth_s": RULE_V2["smooth_s"], "axes": {n: {"k_full": RULE_V2["k_fixed"], "c_full": float(
+        np.mean(a["_plot"][1] + RULE_V2["k_fixed"] * a["_plot"][0])), "r2_test": a["r2_fixed_k"],
+        "pass": a["pass"], "_plot": a["_plot"]} for n, a in res["axes"].items()}}
+    with open(os.path.join(out_dir, "v2_" + seq_name + ".svg"), "w", encoding="utf-8", newline="\n") as f:
+        f.write(svg(plot, "%s (rule v2, %s): thrust-perpendicular specific force vs body velocity, line = fixed k"
+                    % (seq_name, clean["role"])))
+    return clean
+
+
+def render_v2(out_dir=OUT_DIR):
+    data = [json.load(open(p, encoding="utf-8")) for p in sorted(glob.glob(os.path.join(out_dir, "v2_*.json")))]
+    r = RULE_V2
+    L = ["## Rule v2 (pre-registered 16 Nov 2026 after exploring MH, before any Vicon Room data)", "",
+         "Airborne part only (after the longest ground-truth rest), ground-truth accel bias removed, %.0f s "
+         "smoothing, axes perpendicular to the mean airborne specific force. Per axis: R^2 with the FIXED "
+         "k = %.2f /s (offset refitted) and the free-fit k. A sequence passes if both axes have R^2 >= %.1f "
+         "and k within %.0f %% of %.2f. GO if at least %d of %s pass. Stage B (estimator gain on the same "
+         "sequences, V3 frozen on MH) decides whether V3 is switched on; see `tools/drag_fit.py`."
+         % (r["smooth_s"], r["k_fixed"], r["min_r2"], 100 * r["max_k_rel_dev"], r["k_fixed"], r["min_pass"],
+            ", ".join(r["decision_sequences"])), "",
+         "| Sequence | Role | Date | Airborne s | Axis | k free 1/s | R^2 fixed k | R^2 free | Axis result | Sequence |",
+         "|---|---|---|---|---|---|---|---|---|---|"]
+    for d in data:
+        for name, a in d["axes"].items():
+            L.append("| %s | %s | %s | %.0f | %s | %.4f | %.3f | %.3f | %s | %s |" % (
+                d["sequence"], d["role"], d["date"], d["airborne_s"], name, a["k_free"], a["r2_fixed_k"],
+                a["r2_free"], "pass" if a["pass"] else "fail (%s)" % ", ".join(k for k, v in a["checks"].items() if not v),
+                "pass" if d["pass"] else "fail"))
+    L += ["", "**Stage A decision: %s**" % decide_v2({d["sequence"]: d for d in data}), ""]
+    return L
+
+
 def render(out_dir=OUT_DIR, md_path=None):
     md_path = md_path or os.path.join(ROOT, "Docs", "DRAG.md")
-    data = [json.load(open(p, encoding="utf-8")) for p in sorted(glob.glob(os.path.join(out_dir, "*.json")))]
+    data = [json.load(open(p, encoding="utf-8")) for p in sorted(glob.glob(os.path.join(out_dir, "*.json")))
+            if not os.path.basename(p).startswith("v2_")]
     L = ["# Rotor-drag go/no-go (Q6; generated by `python tools/drag_fit.py --render`; do not edit by hand)", "",
          "Model: horizontal body specific force f = -k v + c, v = ground-truth body velocity. "
          "OFFLINE analysis; the estimator never reads ground truth.", "",
@@ -235,7 +370,11 @@ def render(out_dir=OUT_DIR, md_path=None):
                 a["k_second_half"], a["k_full"], a["r2_test"], a["r2_full"], a["r2_raw"], a["k_diff_velocity"],
                 "pass" if a["pass"] else "fail (%s)" % ", ".join(k for k, v in a["checks"].items() if not v),
                 d["decision"]))
-    L += ["", "Plots: `Docs/drag/<sequence>.svg`.", ""]
+    L += ["", "Rows named `*_after_rest` are EXPLORATORY (option added 16 Nov 2026 after MH_01 showed a "
+          "hand-carried start, then a ground rest, then flight): they fit only data after the longest "
+          "ground-truth rest, so rotors are on. They never change the pre-registered decision; switching V3 "
+          "on would need a new rule fixed in advance and tested on sequences not used here.", "",
+          "Plots: `Docs/drag/<sequence>.svg`.", ""] + render_v2(out_dir)
     with open(md_path, "w", encoding="utf-8", newline="\n") as f:
         f.write("\n".join(L))
     return md_path
@@ -286,6 +425,7 @@ def main(argv=None):
     get = lambda key, d: argv[argv.index(key) + 1] if key in argv else d  # noqa: E731
     win = float(get("--win", RULE["smooth_s"]))
     use_bias = "--no-bias" not in argv
+    after_rest = "--after-rest" in argv
     if "--synthetic" in argv:
         k = float(get("--k", 0.3))
         seq = synth_sequence(tempfile.mkdtemp(prefix="vortex_drag_"), k=k)
@@ -296,7 +436,20 @@ def main(argv=None):
                   % (n, a["k_first_half"], a["k_second_half"], a["r2_test"], "pass" if a["pass"] else "fail"))
         print("decision:", res["decision"])
         return 0
-    flags_with_value = {"--win"}
+    flags_with_value = {"--win", "--rule"}
+    if get("--rule", None) == "v2":
+        seqs = [a for i, a in enumerate(argv) if not a.startswith("--") and argv[i - 1] not in flags_with_value]
+        for seq in seqs:
+            name = os.path.basename(os.path.normpath(seq))
+            res = analyse_v2(load(seq, use_bias=True, after_rest=True))
+            clean = save_v2(res, name)
+            print("%s (%s): airborne %.0f s, thrust dir %s" % (name, clean["role"], res["airborne_s"],
+                                                               np.round(res["thrust_dir"], 3)))
+            for n, a in res["axes"].items():
+                print("  axis %s: k free %.4f, R2 fixed k %.3f -> %s" % (n, a["k_free"], a["r2_fixed_k"],
+                                                                        "pass" if a["pass"] else "fail"))
+        print("wrote", os.path.relpath(render(), ROOT))
+        return 0
     seqs = [a for i, a in enumerate(argv) if not a.startswith("--") and (i == 0 or argv[i - 1] not in flags_with_value)]
     if not seqs:
         print(__doc__)
@@ -305,7 +458,9 @@ def main(argv=None):
         name = os.path.basename(os.path.normpath(seq))
         if win != RULE["smooth_s"] or not use_bias:
             name += "_win%g%s" % (win, "_nobias" if not use_bias else "")
-        res = save(analyse(load(seq, use_bias), win), name)
+        if after_rest:
+            name += "_after_rest"
+        res = save(analyse(load(seq, use_bias, after_rest), win), name)
         print("%s: thrust axis %s, overlap %.0f s, velocity from %s" % (
             name, res["thrust_axis"], res["overlap_s"], res["velocity_source"]))
         for n, a in res["axes"].items():
