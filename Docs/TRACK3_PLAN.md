@@ -7,7 +7,33 @@ same commit as the work it describes. The full PRD, day-by-day plan and risk tab
 Status vocabulary: **Done (verified)** = run with the stated result; **Done (unverified)** = written but
 not run on its real input; **Blocked**; **Not started**.
 
-## Direction (revised 15 Nov 2026, evening)
+## Organisers' FAQ (17 Nov 2026): what is settled
+
+Source: `Track3_FAQ_Responses.txt` and the student package's `degrade_imu.py` (both from the organisers;
+kept outside the repository). Where they conflict with older text in this file, they win.
+
+| Topic | Answer | Consequence for Vortex |
+|---|---|---|
+| Language | Python only; `main.cpp` is not accepted; `main.py` is the only entry point | C core (step 9b) becomes a recorded experiment: kept with tests and results, removed from the bundle and the PR gates (Step 1, 17 Nov) |
+| 8 MB limit | Measured at algorithm / heap level, not process RSS | Memory gate is now the tracemalloc peak (design target 4 MB, limit 8 MB); RSS reported only |
+| Processing order | Offline: whole file in memory allowed (within 8 MB); non-causal / batch smoothing allowed | A forward-backward smoother is in scope (Step 6) |
+| Alignment | SE(3) Umeyama, then ATE (evo) | Primary metric: APE with SE(3) fitted on the run being scored, beside the never-moving floor scored the same way |
+| Waypoints | Hidden; used only for scoring | Never an input |
+| Blind 5 s | Timestamps present, sensor values invalid; exactly one pose per row, never append | `degrade_imu.py` writes exact zeros for the last 5 s |
+| Dropouts | Physically missing rows (timestamp jumps) | |
+| Test data | Any EuRoC MAV or TUM-VI sequence, degraded with `degrade_imu.py` | All earlier degraded results used our own `vortex/degrade.py`, which does not match: they are history, not evidence |
+| Deadline | 22 Nov 2026 (11:59 PM IST) | Freeze a checked zip by Fri 20 Nov, 9 PM |
+| Demo video | 2 to 3 minutes, strict maximum 3 | |
+
+What `degrade_imu.py` does (read 17 Nov): columns 2-4 are treated as accelerometer and 5-7 as gyro
+(EuRoC files are gyro first; what the organisers feed in is unknown, so both readings are tested); white
+noise, bias random walk and scale-factor random walk on all six axes; spikes on all six axes at once (up
+to 9 m/s^2 and 1.5 rad/s); stuck runs of 2-10 identical rows; single missing rows (up to 6 %) and missing
+bursts of 5-50 rows; duplicated rows anywhere (same timestamp twice); exact zeros for the last 5 s;
+values rounded to 6 decimals. Severity ramps from 0.02 at the start to 1.0 at the end (gamma 1.7); only
+the first 2 s are protected. The seed is fixed at 42 inside the script.
+
+## Direction (revised 15 Nov 2026, evening; budget, language and alignment superseded by the FAQ above)
 
 The official Track 3 slides define the task: estimate a 6-DoF trajectory from a **degraded IMU only**
 (EuRoC MAV and TUM-VI, EuRoC `imu0/data.csv` format, gravity alignment unknown), write
@@ -37,8 +63,7 @@ meter sets the trust of each:
 No witness is load-bearing: V1 + V2 alone must bound drift. Every switchable feature stays on only if
 `score.py` shows a gain on sequences we did not tune on.
 
-Deadline **22 Nov 2026, 11:59 PM** per the timeline slide; two other slides say 18 Nov (asked the
-organisers, see Q1). Full-time work starts **20 Nov**.
+Deadline **22 Nov 2026, 11:59 PM IST**, confirmed by the FAQ (Q1 closed). Full-time work starts **20 Nov**.
 
 ## Steps
 
@@ -55,17 +80,21 @@ organisers, see Q1). Full-time work starts **20 Nov**.
 | 7 | Velocity witnesses (W1): V1, V2 core; V3 after go/no-go; V4, V5 switchable; platform detection (W4) | 7a error-state filter + V1 + V2: **Done (verified on SYNTHETIC data and MH_01..05)** 16 Nov; reference and `main.py` bit-identical. Result: drift bounded (APE 249..1,288 m -> 3.5..6.6 m) but **not better than a never-moving trajectory** (mean APE 5.29 vs 5.25 m). V3: rule v2 pre-registered 16 Nov (commit c1b594c), waiting for Vicon Room 1. 7b denoised V1 (`ZUPT_DEN_ON`): built in the reference, **off** (pre-registered rule failed on held-out MH_03..05: APE +0.2 %, needed -2 %) 16 Nov; not in `main.py`. V4, V5, W4: Not started | Ablation table, each witness on and off, on held-out sequences |
 | 8 | Blind 5 s forecaster (W5), dead-sensor detection, per-row confidence (W6) | 8a dead-sensor detection (`DEAD_ON`, **on**) and velocity-decay forecaster (`FC_ON`, **on**, FC_TAU 0.5 s chosen on MH_01/02): **Done (verified on SYNTHETIC data and seeded degraded MH copies)** 16 Nov; both pass the pre-registered rule on held-out MH_03..05; reference and `main.py` bit-identical. Held-out blind growth -49.5 % (study A); zero failures 27.0 -> 4.4 m. 8b W6 per-row sigma from the filter covariance: built in the reference (`witness.row_sigma`, `tools/coverage.py`, `Docs/COVERAGE.md`) 16 Nov; **not informative** on MH_01/02 (rank correlation with the error -0.07), so no confidence is claimed; not in `main.py` | Blind error below constant velocity; coverage table |
 | 9 | Efficiency pass (C core if whole-process RAM counts); submission bundle, Dockerfile, deck, video | 9a `main.py` is a stub importing `pathfinder.py`, and the bundle ships its bytecode: **Done (verified on MH_01..05 clean and degraded, Win 3.13/3.14, WSL2 3.12)** 16 Nov; outputs byte-identical, peak RSS -3.5 to -3.8 MB (MH_01: 11.95 MB Win 3.14, 10.27 MB Linux 3.12), still above 8 MB. Bundle builder `tools/make_bundle.py`, README, Dockerfile: zip verified on all three Pythons; Docker image built and its output identical on all 65 inputs. 9b C core `main.cpp` (Q4 unanswered, so the strict reading is assumed): **Done (verified on MH_01..05 clean and degraded, Windows and WSL2 Linux)** 16 Nov; peak RSS 2.7 MB Linux / 4.8 MB Windows on MH_01, bit-identical to `pathfinder.py` on Linux; bundle in the PRD layout. C-core Dockerfile not built yet. Deck, video: Not started | Valid `team_name.zip` by 21 Nov 6 PM; submitted 3 h before cutoff |
+| R1 | FAQ re-plan, Step 1: C core retired from the submission; memory gate moved from RSS to the heap (tracemalloc) | **Done (verified)** 17 Nov: gate PASS on Win 3.14 synthetic + MH_01 and Win 3.13 synthetic; bundle verified on 3.13/3.14; Python Docker image built, MH_01 output identical | Python-only zip verified |
 
 ## Open questions (Q1 to Q5 are in the email drafted for prism@samsung.com on 15 Nov)
 
 | Q | Question | Owner |
 |---|---|---|
-| Q1 | Final deadline: 18 Nov or 22 Nov; Google Form link | Arnav |
-| Q2 | Track 3 student package: degradation script, sample data, evaluator | Arnav |
-| Q3 | Are waypoint positions or times given as input? | Arnav |
-| Q4 | Is 8 MB peak RAM measured for the whole process or the algorithm only? Is `main.cpp` accepted? **Now urgent:** a bare `python -S -c pass` already peaks at 8.4 MB RSS (WSL2 Linux, 3.12) and 9.5 to 9.7 MB (Windows 3.13/3.14), so CPython cannot meet 8 MB whole-process RSS; a C++ parse + write floor peaks at 4.3 MB (Windows). See `Docs/FLOOR.md`. Step 6a: compiling the larger `main.py` source adds about 1.1 MB peak RSS (11.8 vs 10.7 MB compile-only, Win 3.14); a 3-line stub importing a cached `.pyc` peaks at 10.3 MB, but a `.pyc` only works on the matching Python version (decide in step 9). Step 6b: compile-only is now 13.07 MB vs a bare 9.80 MB (+3.3 MB, Win 3.14); the run itself from a cached `.pyc` peaks at 11.92 MB on MH_01. Splitting the source into separately compiled modules may also lower the compile peak (not measured). Step 7a: compile-only 14.91 MB vs 13.15 MB for 6b and 9.80 MB bare (Win 3.14); the MH_01 run from a cached `.pyc` peaks at 12.05 MB (6b: 11.92), from source at 15.43 MB. The filter itself costs about 0.1 MB; compiling costs about 3.4 MB. Step 9a: `main.py` is now a stub and the bundle ships the estimator's bytecode; MH_01 peaks at 11.95 MB (Win 3.14), 11.83 MB (Win 3.13), 10.27 MB (WSL2 3.12), against a 9.3 to 10.7 MB floor for the interpreter with `math` and `array`. **No answer by 16 Nov: we assume whole-process RSS.** Step 9b: the C core `main.cpp` (allowed by slide 17) peaks at 2.7 MB (Linux) / 4.8 MB (Windows) on MH_01 with the same output | Arnav |
-| Q5 | Demo video length: 2 to 3, 3, or 5 minutes? | Arnav |
+| Q1 | Final deadline: 18 Nov or 22 Nov; Google Form link. **Closed (FAQ, 17 Nov): 22 Nov 2026**; the form link comes in the announcements channel | Arnav |
+| Q2 | Track 3 student package: degradation script, sample data, evaluator. **Mostly answered 17 Nov**: `degrade_imu.py` received; sample data = any EuRoC/TUM-VI sequence; the evaluator is evo with SE(3) alignment (not shipped) | Arnav |
+| Q3 | Are waypoint positions or times given as input? **Closed (FAQ): no**, hidden, scoring only | Arnav |
+| Q4 | Is 8 MB peak RAM measured for the whole process or the algorithm only? Is `main.cpp` accepted? **Closed (FAQ, 17 Nov): algorithm / heap level, not process RSS; Python only, `main.cpp` not accepted.** The history (RSS floor 8.4 to 9.7 MB, bytecode stub, C core at 2.7 / 4.8 MB) is in steps 2e, 9a and 9b below | Arnav |
+| Q5 | Demo video length: 2 to 3, 3, or 5 minutes? **Closed (FAQ): 2 to 3 minutes, strict maximum 3** | Arnav |
 | Q6 | Is the rotor-drag signal visible in EuRoC's IMU (offline fit on clean MH_01)? **Answered 16 Nov: NO-GO under the pre-registered rule** (whole sequence; the hand-carried start breaks it). Exploratory in-flight fit: visible, k 0.14 to 0.25 /s. See `Docs/DRAG.md`. **Rule v2** pre-registered 16 Nov (commit c1b594c): **NO-GO on Vicon Room 1, 17 Nov** (only V1_02 passes; second axis fails on V1_01 and V1_03). Closed | Arnav + Claude, before 20 Nov |
+| Q7 | May future samples refine earlier poses (smoothing)? **Closed (FAQ): yes**, offline batch / non-causal processing is allowed within 8 MB | - |
+| Q8 | Which alignment does evo use? **Closed (FAQ): SE(3) Umeyama**, then ATE | - |
+| Q9 | Column order fed to `degrade_imu.py`: raw EuRoC (gyro first; the script then puts accelerometer-sized faults on the gyro) or reordered accel first? **Open**; both readings are built and tested (Step 2) | Arnav |
 
 ## Results so far (15 Nov 2026, branch `track3/python-pipeline`)
 
@@ -114,7 +143,7 @@ organisers, see Q1). Full-time work starts **20 Nov**.
 | `pytest` | 116 passed (100 earlier + 16 scoring) | Windows, Python 3.14.7 |
 | Cross-check against pip-installed evo (separate venv), 8 cases: APE none, -a, -as, --align_origin, --n_to_align; RPE delta 1 and 200 frames with -a and -as | Worst difference 4.2e-7 m, inside evo's 6-digit print rounding (`Docs/EVO_CROSSCHECK.md`) | SYNTHETIC pair, seed 0; Windows |
 
-Which alignment the organisers use with evo is still unknown; `score.py` reports ATE under all four.
+Which alignment the organisers use with evo was unknown here; the FAQ (17 Nov) settles it: SE(3) Umeyama.
 
 ## Estimator step 6a: init + strapdown integrator (16 Nov 2026, branch `track3/step6-integrator`, commit a4f25e3; SYNTHETIC)
 
@@ -829,3 +858,49 @@ Per-sequence fits and plots: `Docs/DRAG.md`, `Docs/drag/v2_V1_0*.{json,svg}`.
 
 No estimator, `main.py` or `main.cpp` change: output and budget are those of step A (`Docs/BUDGET.md`
 `stepA-*`).
+
+
+## Step 1 (FAQ re-plan): Python only, heap-level memory gate (17 Nov 2026, branch `track3/step1-faq`)
+
+**Why.** The organisers' FAQ (17 Nov, section "Organisers' FAQ" at the top) rejects `main.cpp` and
+measures the 8 MB at algorithm / heap level. No estimator change in this step: `pathfinder.py` and the
+reference are untouched, so every accuracy number stays as it was.
+
+**Changes.**
+- `tools/make_bundle.py`: the zip carries `src/main.py`, `src/pathfinder.py`, bytecode, `README.md`,
+  `Dockerfile`, `LICENSE`, `MANIFEST.txt` and the evaluation files; `main.cpp` is no longer shipped
+  (a stage or zip that still holds it is refused); `eval` measures `python -S src/main.py` only and
+  writes the whole-run heap peak to `metadata.json` (RSS kept, labelled as the record only).
+- `Dockerfile`, `bundle/Dockerfile`: Python only (`python:3.12.7-slim-bookworm`, bytecode compiled at
+  build time, entry `python -S /app/main.py`). The C-core Dockerfile is kept as `Dockerfile.ccore`.
+- `benchmark.py --gate`: memory is gated on the heap. Two tracemalloc readings, the larger gated at the
+  4 MB design target: `pathfinder.run` in-process, and the whole `python -S main.py` run in a fresh
+  interpreter with tracing started before `main.py` (import from the shipped bytecode included). A
+  third reading, the whole run with no cached bytecode, is held to the 8 MB limit only. Peak RSS is
+  still measured and shown, not gated. `--cbin` still times the C core for the record; it is not gated.
+- `main.cpp`, `tests/test_ccore.py`, `tests/ccore_selftest.cpp` and every C-core result stay in the
+  repository as a recorded experiment.
+
+**Found.** Compiling `pathfinder.py` happens on the traced heap: without matching bytecode the whole-run
+heap peak is 4.40 MB (Win 3.14) and 6.31 MB (Win 3.13), against 0.76 to 1.19 MB from the shipped
+bytecode. Under 8 MB either way, but close on 3.13. If the evaluator's Python has no matching `.pyc`
+and traces from start-up, this is the number it sees. Splitting the estimator into smaller modules
+should lower the compile peak (not measured).
+
+| Run (`python -S benchmark.py --runs 15 --gate`) | us per row | ms per IMU-s | Heap KB in-process / whole run / no bytecode | Peak RSS MiB (not gated) | Gate |
+|---|---|---|---|---|---|
+| Win 3.14, SYNTHETIC 36,000 rows | 13.47 | 2.69 | 289 / 763 / 4,400 | 11.52 | PASS |
+| Win 3.14, MH_01 | 11.69 | 2.34 | 587 / 1,061 / 4,400 | 11.86 | PASS |
+| Win 3.13, SYNTHETIC 36,000 rows | 9.40 | 1.88 | 234 / 1,190 / 6,310 | 11.10 | PASS |
+
+The 3.14 runs ran beside the full pytest suite, so their timing is pessimistic.
+
+| Item | Result | Where |
+|---|---|---|
+| `pytest` | 230 passed (227 + 3 net new gate tests; `test_ccore.py` included, g++ on PATH) | Windows, Python 3.14.7 |
+| Bundle | `stage` on 3.14 and 3.13, `eval` on MH_01 (heap 1,080,825 bytes, checker PASS), `zip`, `verify` PASS on 3.14 and 3.13 (output identical to `pathfinder.py`, estimator loaded from the shipped bytecode) | `dist/` (git-ignored) |
+| Docker | Python image built from the stage (Docker 29.6.2); its MH_01 output is byte-identical to the staged `estimated_trajectory.txt` | Windows |
+
+Not checked: WSL2 Linux 3.12 (no stage, benchmark or verify run there this step, so the zip carries
+bytecode for 3.13 and 3.14 only); the Docker image on the degraded copies; how exactly the organisers
+start tracemalloc (we assume before `main.py` runs, the stricter reading).

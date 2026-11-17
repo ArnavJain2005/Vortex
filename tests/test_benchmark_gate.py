@@ -1,4 +1,4 @@
-"""benchmark.py: IMU seconds from timestamps, and the gate's RSS / time limits (no processes run here)."""
+"""benchmark.py: IMU seconds from timestamps, the gate's heap / time limits, and the whole-run heap probe."""
 
 import benchmark
 
@@ -35,30 +35,53 @@ def test_imu_seconds_falls_back_to_rows(tmp_path):
     assert s == 2.0 and src.startswith("rows / 200")
 
 
-def _res(rss_max, wall_ms_per_s=2.0, us=10.0):
-    return {"process": [{"us_per_row": us, "wall_ms_per_imu_s": wall_ms_per_s,
-                         "peak_rss_mb_median": rss_max - 0.1, "peak_rss_mb_max": rss_max}],
-            "tracemalloc_peak_kb": 500.0, "output_check": "PASS"}
+def _res(rss_max=11.9, wall_ms_per_s=2.0, us=10.0, heap_kb=500.0, heap_proc_kb=None):
+    r = {"process": [{"us_per_row": us, "wall_ms_per_imu_s": wall_ms_per_s,
+                      "peak_rss_mb_median": rss_max - 0.1, "peak_rss_mb_max": rss_max}],
+         "tracemalloc_peak_kb": heap_kb, "output_check": "PASS"}
+    if heap_proc_kb is not None:
+        r["tracemalloc_process_peak_kb"] = heap_proc_kb
+    return r
 
 
-def test_gate_rss_uses_decimal_8mb_on_the_worst_run():
-    assert benchmark.gate(_res(7.6)) == []                     # 7.97e6 bytes
-    fails = benchmark.gate(_res(7.65))                         # 8.02e6 bytes: over 8,000,000
-    assert len(fails) == 1 and "peak RSS" in fails[0]
-    assert benchmark.gate(_res(11.95), rss=False) == []        # --allow-rss skips only RSS
+def test_gate_ignores_process_rss_since_the_faq():
+    # FAQ 17 Nov 2026: 8 MB is measured at heap level, the interpreter's RSS does not count
+    assert benchmark.gate(_res(rss_max=15.0)) == []
+    assert benchmark.gate(_res(rss_max=15.0), rss=True) == []        # old keyword accepted, ignored
+
+
+def test_gate_heap_target_and_limit_use_the_larger_reading():
+    assert benchmark.gate(_res(heap_kb=3000.0, heap_proc_kb=3500.0)) == []
+    fails = benchmark.gate(_res(heap_kb=3000.0, heap_proc_kb=4200.0))        # whole run above 4 MB target
+    assert len(fails) == 1 and "design target" in fails[0]
+    fails = benchmark.gate(_res(heap_kb=7900.0))                             # 8,089,600 bytes > 8,000,000
+    assert len(fails) == 1 and "8 MB limit" in fails[0]
 
 
 def test_gate_compute_budget_per_imu_second():
-    fails = benchmark.gate(_res(7.0, wall_ms_per_s=21.0))
+    fails = benchmark.gate(_res(wall_ms_per_s=21.0))
     assert len(fails) == 1 and "ms per IMU-s" in fails[0]
 
 
-def test_gate_c_core_uses_the_same_rss_rule_and_allow_rss_does_not_skip_it():
-    res = _res(7.0)
+def test_gate_does_not_judge_the_c_core():
+    res = _res()
     res["ccore"] = {"us_per_row": 1.0, "wall_ms_per_imu_s": 0.5, "peak_rss_mb_median": 7.5,
-                    "peak_rss_mb_max": 7.65, "output_identical_to_main_py": True, "output_check": "PASS"}
-    for rss in (True, False):
-        fails = benchmark.gate(res, rss=rss)
-        assert len(fails) == 1 and fails[0].startswith("C core peak RSS")
-    res["ccore"]["peak_rss_mb_max"] = 4.3
+                    "peak_rss_mb_max": 9.0, "output_identical_to_main_py": False, "output_check": "FAIL"}
     assert benchmark.gate(res) == []
+
+
+def test_gate_holds_the_no_bytecode_reading_to_8mb_only():
+    assert benchmark.gate(_res(heap_proc_kb=600.0) | {"tracemalloc_process_nocache_peak_kb": 4500.0}) == []
+    fails = benchmark.gate(_res(heap_proc_kb=600.0) | {"tracemalloc_process_nocache_peak_kb": 7900.0})
+    assert len(fails) == 1 and "without cached bytecode" in fails[0]
+
+
+def test_heap_probe_runs_main_py_whole(tmp_path):
+    """The probe traces the whole run: the output is complete, and compiling pathfinder.py while traced
+    (no cached bytecode) costs heap that loading its bytecode does not."""
+    imu = _imu(tmp_path, [10 ** 18 + 5_000_000 * i for i in range(2000)])
+    out = tmp_path / "out.txt"
+    stub = benchmark.os.path.join(benchmark.ROOT, "main.py")
+    cold, code_c = benchmark.heap_peak_process(stub, imu, str(out), no_cache_dir=str(tmp_path / "nocache"))
+    assert code_c == 0 and len(out.read_text().splitlines()) == 2000
+    assert 0 < cold < 8_000_000

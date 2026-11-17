@@ -23,7 +23,9 @@ An aircraft must navigate without GPS or cameras while its IMU becomes less reli
 
 | Input → output | Operating limits | Evaluation |
 |---|---|---|
-| Gyroscope + accelerometer → `timestamp tx ty tz qx qy qz qw`; one pose per input row, in order | Offline, one thread; **8 MB peak RAM** and **20 ms compute per second of IMU** | 60 points for trajectory (waypoints 30, blind prediction 20, dropouts 10); 40 for efficiency |
+| Gyroscope + accelerometer → `timestamp tx ty tz qx qy qz qw`; one pose per input row, in order, never appended | Python only; offline (batch smoothing allowed), one thread; **8 MB peak at heap level** and **20 ms compute per second of IMU** | SE(3)-aligned ATE (evo) against hidden ground truth: 60 points for trajectory (waypoints 30, blind prediction 20, dropouts 10); 40 for efficiency (memory 20, runtime 20) |
+
+The organisers' FAQ (17 Nov 2026) settled the open points: Python only (`main.py`; `main.cpp` is not accepted), the 8 MB limit is measured at algorithm / heap level rather than process RSS, non-causal smoothing is allowed, scoring uses SE(3) Umeyama alignment, dropouts are physically missing rows, and test data is any EuRoC or TUM-VI sequence degraded with their `degrade_imu.py`.
 
 Small attitude and bias errors grow rapidly under inertial integration. Vortex anchors calibration on a detected still interval, then combines inertial integration with a detected-stillness constraint (V1) and a flight-envelope **motion prior** (V2), which on every tick pulls velocity toward zero and position toward a slow-moving centre of the estimate's own recent track. V2 bounds drift; it is an assumption about the platform, not an independent measurement of motion. The current build also handles dropouts, detects zero or stuck IMU failure, and forecasts through missing data. On five **clean** EuRoC Machine Hall sequences, the mean of the five per-sequence SE(3)-aligned translational APE RMSEs is **4.84 m**, against 5.25 m for a never-moving trajectory; the per-sequence results below show this is not evidence of useful motion recovery, which remains an open problem. The estimator uses no camera, GPS, barometer, ground truth, or pretrained model.
 
@@ -67,17 +69,17 @@ After-rest MH rotor-drag fits are exploratory; the revised, pre-registered rule 
 
 Current per-sequence APE: **MH_01 3.91 m · MH_02 3.85 m · MH_03 3.53 m · MH_04 6.38 m · MH_05 6.55 m**. Holding position before the anchor improves MH_02, a tuning sequence, from 5.97 to 3.85 m (95% of that change's gain). On MH_03–05 the effect is within about 0.6%, so the mean's small edge over the stationary floor is **not evidence of general motion reconstruction**. V2 drives the large gain over dead reckoning; V1 adds little during MH flight because it mainly fires at the ground rest. The [generated results ledger](Docs/RESULTS.md) includes the per-sequence scores and ablations.
 
-**Seeded degradation, with placeholder fault levels:** the current entry point passed the output contract on **60 degraded MH copies**; their recorded mean APE is **6.223 m**, 1 s RPE **1.084 m**, and five-second blind-window error growth **5.057 m**. These copies mix seeds and healthy-window lengths; the figures are not official challenge scores. In a separate held-out study of **54 seeded failure windows** on MH_03–05, with dead detection enabled in both readings, the 0.5 s velocity-decay forecast reduced mean blind growth from **8.643 to 4.368 m (49.5%)** against constant-velocity coasting; the blind RMSE fell from 8.380 to 7.137 m. This forecast primarily limits *new* error during failure; error already accumulated before failure remains. See the [degraded results](Docs/RESULTS.md) and [blind study](Docs/BLIND.md).
+**Seeded degradation with our own placeholder fault model (history, not evidence: it does not match the organisers' `degrade_imu.py`; re-baselining on the official script is under way):** the current entry point passed the output contract on **60 degraded MH copies**; their recorded mean APE is **6.223 m**, 1 s RPE **1.084 m**, and five-second blind-window error growth **5.057 m**. These copies mix seeds and healthy-window lengths; the figures are not official challenge scores. In a separate held-out study of **54 seeded failure windows** on MH_03–05, with dead detection enabled in both readings, the 0.5 s velocity-decay forecast reduced mean blind growth from **8.643 to 4.368 m (49.5%)** against constant-velocity coasting; the blind RMSE fell from 8.380 to 7.137 m. This forecast primarily limits *new* error during failure; error already accumulated before failure remains. See the [degraded results](Docs/RESULTS.md) and [blind study](Docs/BLIND.md).
 
 | Other check | Recorded outcome |
 |---|---|
 | Output and equivalence | All five MH runs pass the row contract; optimized `main.py` matches the reference on those sequences and synthetic cases ([tests](tests/test_core_equivalence.py)) |
-| Latest automated suite | **194 passing tests**, Windows/Python 3.14 ([plan](Docs/TRACK3_PLAN.md)) |
-| Real MH_01 efficiency | **1.89 ms per IMU-second**, 9.46 µs/row, **11.80 MB peak process RSS** with cached bytecode on Windows/Python 3.14 ([budget ledger](Docs/BUDGET.md)) |
-| Submission packaging | Same output bytes on all **65** clean and degraded MH inputs; bundle verified on Python 3.12/3.13/3.14 and Docker image checked on those inputs ([bundle guide](bundle/README.md)) |
+| Latest automated suite | **230 passing tests**, Windows/Python 3.14 (17 Nov) ([plan](Docs/TRACK3_PLAN.md)) |
+| Real MH_01 efficiency | **2.34 ms per IMU-second**, 11.7 µs/row, **1.06 MB heap peak** (tracemalloc over the whole run) on Windows/Python 3.14 ([budget ledger](Docs/BUDGET.md)) |
+| Submission packaging | Python-only bundle verified on Python 3.13/3.14 and its Docker image checked on MH_01 (17 Nov); earlier: same output bytes on all 65 clean and degraded MH inputs ([bundle guide](bundle/README.md)) |
 | Synthetic scoring cross-check | Worst reported difference **4.2 × 10⁻⁷ m** from independently installed evo ([ledger](Docs/EVO_CROSSCHECK.md)) |
 
-The launcher loads matching, hash-checked bytecode shipped in the bundle, reducing measured MH_01 peak RSS by **3.5–3.8 MiB** versus compiling the estimator from source across the tested Python versions. Without matching bytecode, Python compiles the source and this saving disappears; output stays identical. Compute is within the 20 ms/IMU-second limit on the measured laptop. The **8 MB whole-process RAM limit is still not met** on our machines (`python benchmark.py --gate` checks the strict reading, 8,000,000 bytes); there even bare CPython exceeds it, though other Python builds can have a lower floor, and the evaluator's accounting definition is unresolved. The organiser's fault levels and evaluator are unknown; a plausible-noise or slowly freezing failure can evade the current dead-sensor detector. TUM-VI accuracy and real Galaxy S24 operation remain unverified.
+The launcher loads matching, hash-checked bytecode shipped in the bundle. That matters for the heap too: without matching bytecode Python compiles the estimator first, and the parser and compiler add 4.4 to 6.3 MB to the traced heap (still under 8 MB); output stays identical. Compute is within the 20 ms/IMU-second limit on the measured laptop. Whole-process RSS (11 to 12 MiB, the interpreter included) is reported for the record but is not what the organisers measure. A plausible-noise or slowly freezing failure can evade the current dead-sensor detector. TUM-VI accuracy and real Galaxy S24 operation remain unverified. An earlier C core (`main.cpp`, 2.7 MB RSS) is kept in the repository as a recorded experiment and is not submitted.
 
 **Confidence study:** a per-row position sigma exists in the reference analysis, but it did not rank error on the MH_01/02 tuning set (Spearman correlation **−0.07** over 344,494 scored rows). It is not in the submission entry point, and no calibrated per-row confidence is claimed ([coverage ledger](Docs/COVERAGE.md)).
 
@@ -122,7 +124,7 @@ python -m vortex.degrade data/euroc/MH_01_easy data/degraded/MH_01_easy_s1 --see
 python tools/eval_euroc.py --tag my-current-degraded --degraded --seqs MH_01_easy_s1
 ```
 
-The evaluator checks row coverage and fits alignment once on the clean run so a fault cannot be hidden by realignment. These fault levels are project placeholders; they are not the organiser's unpublished degradation script.
+The evaluator checks row coverage. These fault levels are project placeholders and do not match the organisers' `degrade_imu.py`; the official-script harness replaces them.
 
 ## Research notes
 
@@ -131,7 +133,7 @@ The evaluator checks row coverage and fits alignment once on the clean run so a 
 - [Blind-window study](Docs/BLIND.md) — dead-sensor detection and five-second forecast comparisons.
 - [Confidence coverage](Docs/COVERAGE.md) — why the experimental per-row sigma is not reported as calibrated confidence.
 - [Submission bundle](bundle/README.md) — launcher, bytecode, manifest, Docker, and verification.
-- [Budget ledger](Docs/BUDGET.md) and [efficiency floor](Docs/FLOOR.md) — synthetic and real timing, memory, and interpreter cost.
+- [Budget ledger](Docs/BUDGET.md) and [efficiency floor](Docs/FLOOR.md) — synthetic and real timing, heap and process memory, and interpreter cost.
 - [Rotor-drag study](Docs/DRAG.md) — pre-registered NO-GO result and explicitly labeled exploratory fits.
 - [Scorer cross-check](Docs/EVO_CROSSCHECK.md) — evo comparison on synthetic trajectories.
 - [Data instructions](Docs/DATA.md) and [third-party notices](THIRD_PARTY.md) — datasets stay outside the repository.

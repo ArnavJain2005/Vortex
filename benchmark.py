@@ -13,19 +13,18 @@ Results go to Docs/budget/<tag>.json; --render rebuilds Docs/BUDGET.md from all 
 
 Usage:
   python -S benchmark.py [--rows 36000] [--runs 9] [--input FILE] [--tag NAME] [--commit SHA] [--gate]
-                         [--cbin PATH]    # also the C core (main.cpp built to PATH): process, RSS, output
-                         [--allow-rss]
+                         [--cbin PATH]    # RECORDED EXPERIMENT ONLY: also time the old C core; never gated
   python benchmark.py --render
 --gate exits 1 if a limit or design target is missed, for `python -S main.py` (bytecode cached):
-  - peak RSS of the worst run (max, not median) <= 8,000,000 bytes: the stricter reading of "8 MB"
-    (7.63 MiB), whole process (open question Q4);
+  - heap peak (tracemalloc) <= 4 MB design target (organisers' limit 8 MB, measured at algorithm / heap
+    level per the FAQ of 17 Nov 2026), taking the larger of two readings: pathfinder.run in-process,
+    and the whole `main.py` run (import included, shipped bytecode cached) under tracemalloc in a fresh
+    interpreter; and the same whole run WITHOUT cached bytecode (pathfinder.py compiled while traced,
+    about 4 MB of parser/compiler heap) <= the 8 MB limit;
   - wall ms per IMU-second <= 20, IMU seconds taken from the input's timestamps (not rows / 200);
-  - process <= 50 us per row with -S (design target); tracemalloc <= 4 MB; output passes the checker.
-With --cbin, the C core is gated the same way (worst-run RSS <= 8,000,000 bytes, <= 20 ms per IMU-s,
-<= 50 us per row) and its output must be identical to main.py's and pass the checker.
---allow-rss skips only the RSS check of `python -S main.py` (never the C core's), for tracking the
-Python fallback's timing; it prints "RSS NOT CHECKED", and that result is not a budget pass for
-main.py. Timing gates are flaky: run on a quiet machine.
+  - process <= 50 us per row with -S (design target); output passes the checker.
+Peak RSS is still measured and reported, but not gated: the FAQ says the interpreter is not counted.
+--allow-rss is accepted and ignored (older command lines). Timing gates are flaky: run on a quiet machine.
 RSS is measured in MiB (2^20 bytes); the JSON keys say "mb" for history, the ledger says MiB.
 """
 import importlib.util
@@ -52,8 +51,9 @@ OUT_DIR = os.path.join(ROOT, "Docs", "budget")
 IMU_HZ = 200.0                # nominal rate; used only when the input has fewer than two timestamps
 BUDGET_US_ROW, TARGET_US_ROW = 100.0, 50.0
 BUDGET_MS_PER_S = 20.0
-TARGET_TRACE_MB = 4.0
-BUDGET_RSS_BYTES = 8_000_000  # "8 MB" read as decimal (stricter than 8 MiB); see the docstring
+TARGET_TRACE_MB = 4.0          # design target (2x margin) on the heap peak
+BUDGET_HEAP_BYTES = 8_000_000  # organisers' 8 MB, algorithm / heap level (FAQ, 17 Nov), read as decimal
+BUDGET_RSS_BYTES = 8_000_000   # reported only (the old whole-process reading); not gated since the FAQ
 MIB = 2 ** 20                 # measure_floor reports peak RSS in MiB
 
 # Stage switches passed to main.run, cumulative. Each new filter stage or witness adds a row here.
@@ -109,6 +109,37 @@ def imu_seconds(src):
     return (hi - lo) * 1e-9 * n / (n - 1), "timestamps"
 
 
+HEAP_PROBE = (
+    "import runpy, sys, tracemalloc\n"
+    "tracemalloc.start()\n"
+    "sys.argv = sys.argv[1:]\n"
+    "try:\n"
+    "    runpy.run_path(sys.argv[0], run_name='__main__')\n"
+    "except SystemExit as e:\n"
+    "    code = e.code\n"
+    "else:\n"
+    "    code = 0\n"
+    "peak = tracemalloc.get_traced_memory()[1]\n"
+    "tracemalloc.stop()\n"
+    "print('HEAP_PEAK', peak, code)\n")
+
+
+def heap_peak_process(stub, src, dst, no_cache_dir=None):
+    """tracemalloc peak in bytes of a whole `python -S main.py SRC DST` run in a fresh interpreter,
+    tracing from before main.py runs (so importing pathfinder, the file buffers and every list count).
+    With no_cache_dir (an empty folder) no cached bytecode is found or written, so pathfinder.py is
+    compiled inside the traced run: the parser and compiler allocate on the traced heap (about 4 MB).
+    Returns (peak_bytes, exit_code)."""
+    extra = ["-B", "-X", "pycache_prefix=" + no_cache_dir] if no_cache_dir else []
+    p = subprocess.run([sys.executable, "-S"] + extra + ["-c", HEAP_PROBE, stub, src, dst],
+                       capture_output=True, text=True, timeout=600)
+    for line in p.stdout.splitlines():
+        if line.startswith("HEAP_PEAK "):
+            _, peak, code = line.split()
+            return int(peak), (0 if code == "None" else int(code))
+    raise RuntimeError("heap probe failed: %s" % p.stderr[-500:])
+
+
 def measure(a):
     rows, runs = a["rows"], a["runs"]
     tmp = tempfile.gettempdir()
@@ -160,6 +191,12 @@ def measure(a):
     py_compile.compile(core, cfile=importlib.util.cache_from_source(core), doraise=True,
                        invalidation_mode=py_compile.PycInvalidationMode.CHECKED_HASH)
     cold = tempfile.mkdtemp(prefix="vortex_nocache_")                     # empty: nothing cached, -B: none written
+    peak, code = heap_peak_process(stub, src, dst)
+    res["tracemalloc_process_peak_kb"] = peak / 1024.0
+    peak_c, code_c = heap_peak_process(stub, src, dst, no_cache_dir=cold)
+    res["tracemalloc_process_nocache_peak_kb"] = peak_c / 1024.0
+    print("  tracemalloc peak, whole main.py run: %.1f KB with the shipped bytecode, %.1f KB compiling "
+          "pathfinder.py (exit %d, %d)" % (peak / 1024.0, peak_c / 1024.0, code, code_c))
     for label_p, cmd in [("python -S main.py", [sys.executable, "-S", stub, src, dst]),
                          ("python main.py", [sys.executable, stub, src, dst]),
                          ("python -S main.py, no cached bytecode",
@@ -203,43 +240,32 @@ def _worst_rss(s):
     return s.get("peak_rss_mb_max", s.get("peak_rss_mb_median"))
 
 
-def _rss_fail(s, who):
-    worst = _worst_rss(s)
-    if worst is None:
-        return "%s peak RSS not measured" % who
-    if worst * MIB > BUDGET_RSS_BYTES:
-        return "%s peak RSS %.0f bytes (%.2f MiB) > %d bytes" % (who, worst * MIB, worst, BUDGET_RSS_BYTES)
-    return None
+def heap_kb(res):
+    """The gated heap peak: the larger of the in-process and whole-run tracemalloc readings (KB)."""
+    return max(res["tracemalloc_peak_kb"], res.get("tracemalloc_process_peak_kb") or 0.0)
 
 
-def gate(res, rss=True):
-    """Failures of `python -S main.py` (process[0]) and, if measured, the C core against the limits
-    and design targets. rss=False skips only main.py's peak-RSS limit (see --allow-rss)."""
+def gate(res, rss=None):
+    """Failures of `python -S main.py` (process[0]) against the limits and design targets. Memory is
+    gated at heap level (tracemalloc), as the organisers measure it (FAQ, 17 Nov 2026); peak RSS and the
+    old C core (--cbin) are reported only. `rss` is accepted for old callers and ignored."""
     fails = []
     p = res["process"][0]
-    if rss:
-        f = _rss_fail(p, "main.py")
-        if f:
-            fails.append(f)
+    heap = heap_kb(res)
+    cold = res.get("tracemalloc_process_nocache_peak_kb")
+    if heap * 1024 > BUDGET_HEAP_BYTES:
+        fails.append("heap peak %.0f bytes > %d bytes (8 MB limit)" % (heap * 1024, BUDGET_HEAP_BYTES))
+    elif heap > TARGET_TRACE_MB * 1024:
+        fails.append("heap peak %.0f KB > %.0f MB design target" % (heap, TARGET_TRACE_MB))
+    if cold is not None and cold * 1024 > BUDGET_HEAP_BYTES:
+        fails.append("heap peak without cached bytecode %.0f bytes > %d bytes (8 MB limit)"
+                     % (cold * 1024, BUDGET_HEAP_BYTES))
     if p["wall_ms_per_imu_s"] > BUDGET_MS_PER_S:
         fails.append("process %.2f ms per IMU-s > %.0f" % (p["wall_ms_per_imu_s"], BUDGET_MS_PER_S))
     if p["us_per_row"] > TARGET_US_ROW:
         fails.append("process %.2f us/row > %.0f" % (p["us_per_row"], TARGET_US_ROW))
-    if res["tracemalloc_peak_kb"] > TARGET_TRACE_MB * 1024:
-        fails.append("tracemalloc %.0f KB > %.0f MB" % (res["tracemalloc_peak_kb"], TARGET_TRACE_MB))
     if res["output_check"] != "PASS":
         fails.append("output check failed")
-    c = res.get("ccore")
-    if c:
-        f = _rss_fail(c, "C core")
-        if f:
-            fails.append(f)
-        if c["wall_ms_per_imu_s"] > BUDGET_MS_PER_S:
-            fails.append("C core %.2f ms per IMU-s > %.0f" % (c["wall_ms_per_imu_s"], BUDGET_MS_PER_S))
-        if c["us_per_row"] > TARGET_US_ROW:
-            fails.append("C core %.2f us/row > %.0f" % (c["us_per_row"], TARGET_US_ROW))
-        if not c["output_identical_to_main_py"] or c["output_check"] != "PASS":
-            fails.append("C core output differs from main.py or fails the checker")
     return fails
 
 
@@ -254,16 +280,21 @@ def render():
     L = ["# Budget ledger (generated by `python benchmark.py --render`; do not edit by hand)", "",
          "Organisers' limits: peak RAM 8 MB; 20 ms compute per 1 s of IMU (100 us per row at 200 Hz); "
          "single thread; offline.",
-         "Our design targets (2x margin for an unknown evaluator CPU): 50 us per row; 4 MB tracemalloc peak.",
+         "Our design targets (2x margin for an unknown evaluator CPU): 50 us per row; 4 MB heap peak.",
          "",
-         "Peak RSS is whole-process and in MiB (2^20 bytes). It includes the CPython interpreter: on our "
-         "machines a bare `python -S` peaks at 8.4 MiB (WSL2, Python 3.12) and 9.5 MiB (Windows) before any "
-         "work (`Docs/FLOOR.md`); other Python builds and OSes differ, so this floor is not universal. "
-         "Whether the 8 MB limit means whole-process RSS, and MB or MiB, is open question Q4.",
-         "`--gate` uses the strictest reading: the worst run's peak RSS <= 8,000,000 bytes (7.63 MiB). "
-         "IMU seconds come from the input's timestamps (runs recorded before this change used rows / 200).",
+         "**Memory is gated at heap level** (organisers' FAQ, 17 Nov 2026: the 8 MB is measured at algorithm "
+         "/ heap level, not process RSS). The gated number is the larger of two tracemalloc peaks: "
+         "`pathfinder.run` in-process, and the whole `python -S main.py` run in a fresh interpreter with "
+         "tracing started before `main.py` runs (import of the estimator from its shipped bytecode "
+         "included). The same whole run with no cached bytecode compiles `pathfinder.py` while traced; "
+         "the parser and compiler then add about 4 MB, so that reading is held to the 8 MB limit only. "
+         "Runs recorded before 17 Nov have only the first reading.",
+         "Peak RSS (whole process, MiB = 2^20 bytes) is still reported for the record; it includes the "
+         "CPython interpreter (8.4 to 9.7 MiB bare on our machines, `Docs/FLOOR.md`) and is not gated.",
          "`main.py` is a stub that imports `pathfinder.py`, so Python loads its cached bytecode instead of "
          "compiling it (step 9a); the process table also shows a run with no cached bytecode.",
+         "The C core (`main.cpp`, step 9b) is a recorded experiment: the organisers accept Python only. Its "
+         "rows below are history.",
          "Timing varies about +-15% between reruns on the same laptop.", "",
          "## Runs", "",
          "| Run | Commit | Date | OS | CPU | Python | Input | Rows |",
@@ -274,21 +305,21 @@ def render():
             d["python"], d["input"], d["rows"], d["imu_seconds"]))
     L += ["", "## Summary: `python -S main.py` against the budget", "",
           "| Run | us per row | Left of 100 (of 50 target) | Wall ms per IMU-s | CPU ms per IMU-s | Left of 20 ms "
-          "| Peak RSS MiB (median / max) | Under 8,000,000 B | Peak private MiB | tracemalloc KB | Left of 4 MB "
-          "| Output |",
+          "| Heap peak KB in-process / whole run | Left of 4 MB target | Heap KB, whole run, no cached bytecode "
+          "| Peak RSS MiB (median / max, not gated) | Peak private MiB | Output |",
           "|---|---|---|---|---|---|---|---|---|---|---|---|"]
     for tag, d in data:
         p = d["process"][0]
         worst = _worst_rss(p)
-        under = "-" if worst is None else ("yes" if worst * MIB <= BUDGET_RSS_BYTES else "**NO**")
-        L.append("| %s | %s | %s (%s) | %s | %s | %s | %s / %s | %s | %s | %s | %s KB | %s |" % (
+        L.append("| %s | %s | %s (%s) | %s | %s | %s | %s / %s | %s KB | %s | %s / %s | %s | %s |" % (
             tag, _f(p["us_per_row"]), _f(BUDGET_US_ROW - p["us_per_row"], 1),
             _f(TARGET_US_ROW - p["us_per_row"], 1), _f(p["wall_ms_per_imu_s"]), _f(p["cpu_ms_per_imu_s"]),
-            _f(BUDGET_MS_PER_S - p["wall_ms_per_imu_s"], 1), _f(p["peak_rss_mb_median"]), _f(worst), under,
-            _f(p["peak_private_mb_median"]), _f(d["tracemalloc_peak_kb"], 1),
-            _f(TARGET_TRACE_MB * 1024 - d["tracemalloc_peak_kb"], 0), d["output_check"]))
-    L += ["", "## Summary: the C core (`main.cpp`) against the budget", "",
-          "Runs measured with `--cbin`. Its output is compared byte for byte with `python -S main.py`'s.", "",
+            _f(BUDGET_MS_PER_S - p["wall_ms_per_imu_s"], 1), _f(d["tracemalloc_peak_kb"], 1),
+            _f(d.get("tracemalloc_process_peak_kb"), 1), _f(TARGET_TRACE_MB * 1024 - heap_kb(d), 0),
+            _f(d.get("tracemalloc_process_nocache_peak_kb"), 1), _f(p["peak_rss_mb_median"]), _f(worst), _f(p["peak_private_mb_median"]), d["output_check"]))
+    L += ["", "## Recorded experiment: the C core (`main.cpp`), not submitted", "",
+          "Runs measured with `--cbin` (step 9b, step A). Its output is compared byte for byte with "
+          "`python -S main.py`'s. Not part of the gate since the FAQ of 17 Nov 2026 (Python only).", "",
           "| Run | us per row | Wall ms per IMU-s | CPU ms per IMU-s | Peak RSS MiB (median / max) "
           "| Under 8,000,000 B | Peak private MiB | Same bytes as main.py | Output |",
           "|---|---|---|---|---|---|---|---|---|"]
@@ -353,10 +384,10 @@ def main(argv):
         f.write("\n")
     print("wrote Docs/budget/%s.json" % tag)
     if "--gate" in argv:
-        rss = "--allow-rss" not in argv
-        fails = gate(res, rss=rss)
+        fails = gate(res)
         verdict = "PASS" if not fails else "FAIL: " + "; ".join(fails)
-        print("GATE:", verdict + ("" if rss else "  (RSS NOT CHECKED: not a budget pass)"))
+        print("GATE:", verdict + "  (memory gated at heap level; peak RSS %.2f MiB reported, not gated)"
+              % (_worst_rss(res["process"][0]) or -1))
         return 1 if fails else 0
     return 0
 

@@ -1,25 +1,25 @@
-"""Build the submission zip (step 9). Stdlib only. Layout (PRD, "Deliverables"):
+"""Build the submission zip (step 9). Stdlib only. Layout (PRD, "Deliverables"; Python only per the
+organisers' FAQ of 17 Nov 2026, so the C core main.cpp is not shipped):
 
     estimated_trajectory.txt   our output for the organisers' evaluation input (from `eval`)
     metadata.json              runtime, memory and compute specs of that run (from `eval`)
     src/main.py, src/pathfinder.py, src/__pycache__/pathfinder.cpython-3XX.pyc   Python entry point
-    src/main.cpp               C core (same output; the one that fits 8 MB)
     README.md, Dockerfile, LICENSE, MANIFEST.txt
 
     python tools/make_bundle.py stage [--dir dist/stage]
         Copies the files into the stage folder and compiles pathfinder.py to a hash-checked .pyc for
         THIS Python (valid whatever the file times are after unzipping). Run it once with each Python
         the bundle should carry bytecode for, e.g. py -3.13, py -3.14, and python3 in WSL.
-    python tools/make_bundle.py eval IMU.csv --cbin PATH [--dir dist/stage] [--runs 5]
-        Runs the C core (built to PATH) on the evaluation input: writes estimated_trajectory.txt and
-        metadata.json into the stage (peak RSS and time measured as benchmark.py does). Without
-        --cbin, `python -S src/main.py` is the entry point measured.
+    python tools/make_bundle.py eval IMU.csv [--dir dist/stage] [--runs 5]
+        Runs `python -S src/main.py` on the evaluation input: writes estimated_trajectory.txt and
+        metadata.json into the stage (time and peak RSS measured as benchmark.py does, and the heap
+        peak with tracemalloc, the level the organisers measure).
     python tools/make_bundle.py zip --name NAME [--dir dist/stage] [--out dist]
         Writes dist/NAME.zip (sorted, fixed entry times) and MANIFEST.txt.
     python tools/make_bundle.py verify dist/NAME.zip
         Extracts it and, on a SYNTHETIC file: `python -I -S src/main.py` twice (output equal to the
-        repo's pathfinder.py, checker PASS, shipped bytecode loaded if there is one for this Python);
-        if g++ is on PATH, also builds src/main.cpp and requires the same bytes.
+        repo's pathfinder.py, checker PASS, shipped bytecode loaded if there is one for this Python), and
+        a zip that still carries src/main.cpp is refused.
 
 A stage folder whose sources differ from the repo's is refused (delete it and stage again).
 """
@@ -40,10 +40,10 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, os.path.join(ROOT, "tools"))
 sys.path.insert(0, ROOT)
 
-FILES = [("main.py", "src/main.py"), ("pathfinder.py", "src/pathfinder.py"), ("main.cpp", "src/main.cpp"),
+FILES = [("main.py", "src/main.py"), ("pathfinder.py", "src/pathfinder.py"),
          ("bundle/README.md", "README.md"), ("bundle/Dockerfile", "Dockerfile"), ("LICENSE", "LICENSE")]
 EVAL_FILES = ["estimated_trajectory.txt", "metadata.json"]
-CXXFLAGS = ["-O2", "-std=c++17", "-ffp-contract=off"] + (["-static"] if os.name == "nt" else [])
+NOT_SHIPPED = ["src/main.cpp"]   # the C core is a recorded experiment (FAQ: Python only)
 ZIP_TIME = (2026, 11, 20, 0, 0, 0)
 
 
@@ -79,48 +79,57 @@ def stage(d):
     print("staged %s, bytecode %s" % (d, os.path.relpath(pyc, d)))
 
 
-def evaluate(d, imu, cbin, runs):
+def evaluate(d, imu, runs):
+    import benchmark
     import measure_floor
     from vortex import check_output
     out = os.path.join(d, "estimated_trajectory.txt")
-    if cbin:
-        cmd = [os.path.abspath(cbin), imu, out]
-        entry = "C core: src/main.cpp built with g++ %s" % " ".join(CXXFLAGS)
-        try:
-            compiler = subprocess.run(["g++", "--version"], capture_output=True, text=True).stdout.splitlines()[0]
-        except (OSError, IndexError):
-            compiler = "?"
-    else:
-        cmd = [sys.executable, "-S", os.path.join(d, "src", "main.py"), imu, out]
-        entry = "python -S src/main.py"
-        compiler = None
+    stale = [p for p in NOT_SHIPPED if os.path.exists(os.path.join(d, p))]
+    if stale:
+        raise SystemExit("stage %s still holds %s (C core, not shipped); delete the stage and stage again"
+                         % (d, ", ".join(stale)))
+    main_py = os.path.join(d, "src", "main.py")
+    cmd = [sys.executable, "-S", main_py, imu, out]
+    entry = "python -S src/main.py"
     s = measure_floor.summarise(measure_floor.repeat(cmd, runs))
+    heap, code = benchmark.heap_peak_process(main_py, imu, out)
+    if code != 0:
+        raise SystemExit("main.py exited %d under the heap probe" % code)
     chk = check_output.check(imu, out)
     if not chk["ok"]:
         raise SystemExit("output fails the checker: %s" % "; ".join(chk["errors"][:3]))
     with open(out, "rb") as f:
         rows = sum(1 for _ in f)
-    imu_s = rows / 200.0
+    imu_s, imu_src = benchmark.imu_seconds(imu)
     meta = {"input": os.path.basename(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(imu)))))
             or os.path.basename(imu),
-            "input_sha256": _sha(imu), "rows": rows, "imu_seconds_at_200hz": imu_s, "entry_point": entry,
+            "input_sha256": _sha(imu), "rows": rows, "imu_seconds": imu_s, "imu_seconds_source": imu_src,
+            "entry_point": entry,
             "runs": runs, "wall_s_median": s["wall_ms_median"] / 1e3,
             "ms_compute_per_imu_second": s["wall_ms_median"] / imu_s, "cpu_s_median": s["cpu_ms_median"] / 1e3,
-            "peak_rss_mb_median": s["peak_rss_mb_median"], "peak_rss_mb_max": s["peak_rss_mb_max"],
-            "rss_measured_with": "Windows GetProcessMemoryInfo PeakWorkingSetSize" if os.name == "nt"
-            else "GNU time %M (peak resident set size)",
+            "heap_peak_bytes": heap,
+            "heap_measured_with": "tracemalloc peak over the whole `python -S src/main.py` run, started "
+                                  "before main.py runs (algorithm / heap level, as in the organisers' FAQ)",
+            "peak_rss_mib_median": s["peak_rss_mb_median"], "peak_rss_mib_max": s["peak_rss_mb_max"],
+            "rss_measured_with": ("Windows GetProcessMemoryInfo PeakWorkingSetSize" if os.name == "nt"
+                                  else "GNU time %M (peak resident set size)")
+            + "; whole process including the CPython interpreter; for the record only",
             "single_thread": True, "network": False,
             "os": "%s %s" % (platform.system(), platform.release()), "cpu": measure_floor._cpu_name(),
-            "python": platform.python_version(), "compiler": compiler, "source_commit": _commit(),
+            "python": platform.python_version(), "source_commit": _commit(),
             "date": datetime.date.today().isoformat()}
     with open(os.path.join(d, "metadata.json"), "w", encoding="utf-8", newline="\n") as f:
         json.dump(meta, f, indent=1)
         f.write("\n")
-    print("wrote %s and metadata.json: %d rows, %.2f ms per IMU-second, peak RSS %.2f MB"
-          % (out, rows, meta["ms_compute_per_imu_second"], meta["peak_rss_mb_median"]))
+    print("wrote %s and metadata.json: %d rows, %.2f ms per IMU-second, heap peak %.0f KB (peak RSS %.2f MiB)"
+          % (out, rows, meta["ms_compute_per_imu_second"], heap / 1024.0, meta["peak_rss_mib_median"]))
 
 
 def make_zip(d, name, out):
+    stale = [p for p in NOT_SHIPPED if os.path.exists(os.path.join(d, p))]
+    if stale:
+        raise SystemExit("stage %s still holds %s (C core, not shipped); delete the stage and stage again"
+                         % (d, ", ".join(stale)))
     for src, dst in FILES:
         if _sha(os.path.join(d, dst)) != _sha(os.path.join(ROOT, src)):
             raise SystemExit("%s differs from the repo's %s; stage again" % (dst, src))
@@ -154,13 +163,18 @@ def verify(zpath):
     tmp = tempfile.mkdtemp(prefix="vortex_bundle_")
     app = os.path.join(tmp, "app")
     with zipfile.ZipFile(zpath) as z:
+        names = z.namelist()
         z.extractall(app)
+    ok = True
+    for p in NOT_SHIPPED:
+        if p in names:
+            print("%s is in the zip: the C core is not accepted (FAQ); stage again" % p)
+            ok = False
     imu = os.path.join(tmp, "imu.csv")
     synth_euroc.write(imu, rows=6000, seed=0)
     ref = os.path.join(tmp, "ref.txt")
     subprocess.run([sys.executable, "-S", os.path.join(ROOT, "pathfinder.py"), imu, ref], check=True)
     shipped = os.path.exists(os.path.join(app, "src", "__pycache__", "pathfinder.%s.pyc" % _tag()))
-    ok = True
     for i in (1, 2):
         est = os.path.join(tmp, "est%d.txt" % i)
         p = subprocess.run([sys.executable, "-I", "-S", "-v", os.path.join(app, "src", "main.py"), imu, est],
@@ -174,18 +188,6 @@ def verify(zpath):
             "bytecode" if from_pyc else "source"))
         ok &= same and chk and (from_pyc or not shipped)
     print("bytecode for %s %s in the zip" % (_tag(), "is" if shipped else "is NOT"))
-    if shutil.which("g++"):
-        exe = os.path.join(tmp, "vortex.exe")
-        b = subprocess.run(["g++"] + CXXFLAGS + ["-o", exe, os.path.join(app, "src", "main.cpp")],
-                           capture_output=True, text=True)
-        est = os.path.join(tmp, "estc.txt")
-        r = subprocess.run([exe, imu, est], capture_output=True, text=True) if b.returncode == 0 else None
-        same = r is not None and r.returncode == 0 and _sha(est) == _sha(ref)
-        print("C core: build %s, output %s" % ("ok" if b.returncode == 0 else "FAILED",
-                                               "identical" if same else "DIFFERS"))
-        ok &= same
-    else:
-        print("C core: not checked (no g++ on PATH)")
     for e in EVAL_FILES:
         print("%s %s" % (e, "included" if os.path.exists(os.path.join(app, e)) else "NOT included"))
     print("VERIFY:", "PASS" if ok else "FAIL")
@@ -200,7 +202,6 @@ def main(argv=None):
     ap.add_argument("--dir", default=os.path.join(ROOT, "dist", "stage"))
     ap.add_argument("--name")
     ap.add_argument("--out", default=os.path.join(ROOT, "dist"))
-    ap.add_argument("--cbin")
     ap.add_argument("--runs", type=int, default=5)
     a = ap.parse_args(argv)
     if a.cmd == "stage":
@@ -208,7 +209,7 @@ def main(argv=None):
     elif a.cmd == "eval":
         if not a.path:
             ap.error("eval needs the IMU csv")
-        evaluate(a.dir, a.path, a.cbin, a.runs)
+        evaluate(a.dir, a.path, a.runs)
     elif a.cmd == "zip":
         if not a.name:
             ap.error("zip needs --name")
