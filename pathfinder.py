@@ -60,7 +60,7 @@ TRIM_S = 0.5
 PRE_MAX_ROWS = 15000
 CAL_NOISE_ON = True
 BG_MAX = 0.15
-BGCAP_ON = False
+BGCAP_ON = True
 # step 7a filter and witnesses: identical to vortex/core/witness.py (a test checks), sources noted there
 TICK_S = BLOCK_S
 GYRO_NOISE = 1.7e-3
@@ -95,8 +95,8 @@ FC_TAU = 0.5
 FC_ON = True
 PRE_HOLD = True
 RESET_ON = False
-REFRESH_ON = False
-P0V_ON = False
+REFRESH_ON = True
+P0V_ON = True
 N = 15
 
 LAST = {"pre_rows": 0, "calibrated": False, "zupt_ticks": 0, "ba": (0.0, 0.0, 0.0), "jam": (-1.0, -1.0),

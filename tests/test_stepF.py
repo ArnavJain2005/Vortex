@@ -55,12 +55,13 @@ def _yaw(path):
     return math.atan2(2.0 * (qw * qz + qx * qy), 1.0 - 2.0 * (qy * qy + qz * qz))
 
 
-def test_parameters_identical_and_off():
+def test_parameters_identical_and_shipped_state():
     for name in ("BG_MAX", "BGCAP_ON"):
         assert getattr(pf, name) == getattr(sd, name), name
     for name in ("RESET_ON", "REFRESH_ON", "P0V_ON"):
         assert getattr(pf, name) == getattr(wx, name), name
-    assert not (sd.BGCAP_ON or wx.RESET_ON or wx.REFRESH_ON or wx.P0V_ON)
+    # judged 17 Nov 2026 (tools/judge_stepF.py): BGCAP, P0V, REFRESH on; RESET off
+    assert sd.BGCAP_ON and wx.P0V_ON and wx.REFRESH_ON and not wx.RESET_ON
 
 
 # ---- bias cap ----

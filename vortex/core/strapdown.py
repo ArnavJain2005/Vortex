@@ -74,12 +74,12 @@ STEADY_ACC = 0.05          # m/s^2, bin-to-bin change of mean specific force (~1
 TRIM_S = 0.5               # s cut from each end of a long still run before averaging
 PRE_MAX_ROWS = 15000       # rows stored for the backward pass (memory cap: 64 bytes per row in pathfinder.py)
 CAL_NOISE_ON = True        # step 6e (rule passed 16 Nov): if no strict still run, retry with the white noise removed (see calibrate)
-# Step F (switch default off; rule in Docs/TRACK3_PLAN.md, Step F). A steady rotation has low variance and
+# Step F (rule in Docs/TRACK3_PLAN.md, Step F; passed, ships on). A steady rotation has low variance and
 # steady bin means, so the still tests alone take it for rest and its rate for gyro bias (a constant 0.3 rad/s
 # yaw at the start was erased completely). With BGCAP_ON a bin or init window whose mean gyro norm exceeds
 # BG_MAX is not still: in bin_is_still (calibration and V1), bin_is_still_denoised (6e, 7b) and initialise.
 BG_MAX = 0.15              # rad/s: 1.8x the largest calibrated |bg| on MH_01/02 (clean and official copies a/b s1-3: 0.080-0.083); TUM-VI not checked
-BGCAP_ON = False
+BGCAP_ON = True               # Step F: ships on (held-out rule passed, 17 Nov 2026)
 # 6b thresholds measured afterwards on clean MH_01..05 (0.25 s bins, longest still run in 60 s):
 # in-run gyro std max 0.003..0.017 rad/s, accel std max 0.061..0.094 m/s^2.
 MAX_SUMSQ = 1e8            # a row whose six values' sum of squares reaches this is invalid (values of

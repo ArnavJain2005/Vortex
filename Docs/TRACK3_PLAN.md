@@ -83,7 +83,7 @@ Deadline **22 Nov 2026, 11:59 PM IST**, confirmed by the FAQ (Q1 closed). Full-t
 | R1 | FAQ re-plan, Step 1: C core retired from the submission; memory gate moved from RSS to the heap (tracemalloc) | **Done (verified)** 17 Nov: gate PASS on Win 3.14 synthetic + MH_01 and Win 3.13 synthetic; bundle verified on 3.13/3.14; Python Docker image built, MH_01 output identical | Python-only zip verified |
 | R2 | Official-script harness (both column readings), input front end, new baseline | **Done (verified)** 17 Nov: 64 copies (8 sequences x readings a, b x seeds 1, 2, 3, 42), front end correct on all 72 files; baseline in `Docs/STEP2_BASELINE.md` | Table shown to Arnav before Step 3 |
 | R3 | Fault front end: stuck rows, spikes, bridging of missing samples (three switches), blind-window protection | **Done (verified): all three switches OFF** by the pre-registered rule (17 Nov, rule at 99bf25b); shipped output unchanged | Each switch judged on 36 held-out copies |
-| F | Filter fixes from the 16-17 Nov reviews: gyro-bias cap on every still test (`BGCAP_ON`), covariance reset after injection (`RESET_ON`), refresh of the cached previous sample (`REFRESH_ON`), fallback velocity uncertainty (`P0V_ON`); four switches | **Rule committed, held-out run pending** (17 Nov) | Each switch judged on 36 fresh held-out copies (seeds 4-6) by the no-harm rule |
+| F | Filter fixes from the 16-17 Nov reviews: gyro-bias cap on every still test (`BGCAP_ON`), covariance reset after injection (`RESET_ON`), refresh of the cached previous sample (`REFRESH_ON`), fallback velocity uncertainty (`P0V_ON`); four switches | **Done** (17 Nov): BGCAP, P0V, REFRESH pass and ship on; RESET fails (reading a APE +1.8 %) and ships off. Held-out mean APE 4.972 -> 4.962 m; floor 3.745 m | Each switch judged on 36 fresh held-out copies (seeds 4-6) by the no-harm rule |
 
 ## Open questions (Q1 to Q5 are in the email drafted for prism@samsung.com on 15 Nov)
 
@@ -1183,3 +1183,36 @@ and add no new hint, so the rule is no-harm. A switch ships on only if all hold:
 Otherwise it ships off and is recorded as a measured experiment. No constant changes after this commit.
 Expected from the tuning set (a prediction, not part of the rule): BGCAP and P0V change little or nothing on
 EuRoC (their targets, moving starts, are rare there); RESET may fail condition 3 on the blind RMSE.
+
+**Outcome (17 Nov 2026; rule commit cba34e3, judged with `tools/judge_stepF.py`).** Held-out H = 36 copies
+(MH_03..05, V1_01..03 x a, b x seeds 4-6), clean C = MH_01..05, V1_01..03. Mean APE SE3 m over H (reading a /
+reading b), gap RMSE, blind RMSE; clean mean APE; tags `stepF-H-*`, `stepF-C-*`:
+
+| state | H APE | a | b | gap | blind | C APE | verdict |
+|---|---|---|---|---|---|---|---|
+| never-moving floor (`stepF-H-floor`) | 3.745 | 3.745 | 3.745 | 3.626 | 2.504 | - | - |
+| all off (`stepF-H-off`) | 4.972 | 6.193 | 3.752 | 5.011 | 6.964 | 3.6633 | - |
+| + BGCAP (`stepF-H-bgcap`) | 4.972 | 6.193 | 3.752 | 5.011 | 6.964 | 3.6633 | on (no run changed; condition 6: 23/23 tests pass) |
+| + P0V (`stepF-H-p0v`) | 4.962 | 6.181 | 3.744 | 5.036 | 6.992 | 3.6548 | on (changed only V1_01 and V1_02, which start moving) |
+| + REFRESH (`stepF-H-p0v-refresh`) | 4.962 | 6.181 | 3.744 | 5.036 | 6.992 | 3.6548 | on (changes below 0.01 %) |
+| + RESET (`stepF-H-reset`) | 5.020 | 6.293 | 3.746 | 5.095 | 7.004 | 3.6543 | **off**: conditions 1 (+1.15 %) and 2 on reading a (+1.81 %) fail |
+
+`stepF-H-refresh` / `stepF-C-refresh` (REFRESH without P0V) were run in parallel in case P0V failed; unused.
+Shipped: `BGCAP_ON`, `P0V_ON`, `REFRESH_ON` on; `RESET_ON` off (kept, tested, recorded as a measured
+experiment: the textbook reset is correct to second order but costs accuracy on reading a; not investigated
+further). The prediction held for BGCAP and RESET (RESET failed, though on APE rather than condition 3); P0V
+was not "identical": V1_01 and V1_02 have no still run in their first 60 s on the official copies.
+
+**Plain reading.** Step F moves the held-out mean APE by -0.2 %. The estimator is still worse than the
+never-moving floor on H (4.962 against 3.745 m); on reading b it is level with it (3.744 against 3.745), on
+reading a it is far worse (6.181), driven by V1_01 a (8.5 m against 1.9) and MH_03..05 a. The blind 5 s is
+worse than the floor in both readings (6.99 against 2.50 m). These are the problems to work on next; Step F
+does not address them.
+
+Gates (Windows, Python 3.14): `pytest` 284 passed (g++ on PATH, so `test_ccore.py` ran); `benchmark.py --gate` PASS on the synthetic file (`stepF-win-py314`: heap
+1012.6 KB with the shipped bytecode, 13.05 us/row) and on MH_01_easy_b_s1 (`stepF-win-py314-mh01-b-s1`: heap
+1100.0 KB, 11.43 us/row); checker PASS on all 36 + 36 + 8 runs of every tag.
+`tests/test_ccore.py` now compares the frozen C core (`main.cpp`, never extended) with a private copy of
+`pathfinder.py` whose Step F switches are set back off; without that its 11 pose tests fail, as expected.
+The no-cached-bytecode reading (compiling `pathfinder.py` while traced) rose from 5278 KB (Step 3) to 5512 KB
+with the added code: under the 8 MB limit it is held to, and above the 4 MB design target, as before.

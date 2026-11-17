@@ -126,11 +126,12 @@ PRE_HOLD = True              # rule passed 16 Nov; rows before the anchor keep t
 SMOOTH_ON = False            # fixed-interval (RTS) smoother at the filter tick; non-causal (offline)
 SMOOTH_MAX_BLOCKS = 1024     # blocks stored (fixed cap): 256 s at one tick per block; longer files merge
                              # adjacent blocks pairwise. Single precision: 4 x (225 + 15 + 15) bytes + 8 per block
-# Step F (switches default off; rule in Docs/TRACK3_PLAN.md, Step F). strapdown.BGCAP_ON is the third switch.
-RESET_ON = False             # after each injection: covariance reset P <- G P G^T (kf_reset)
-REFRESH_ON = False           # after each injection: the cached previous sample re-expressed with the corrected
+# Step F (rule in Docs/TRACK3_PLAN.md, Step F; judged 17 Nov 2026 on held-out seeds 4-6): REFRESH, P0V and
+# strapdown.BGCAP_ON passed and ship on; RESET failed (reading a mean APE +1.8 %) and ships off.
+RESET_ON = False            # OFF (failed the rule). After each injection: covariance reset P <- G P G^T (kf_reset)
+REFRESH_ON = True            # after each injection: the cached previous sample re-expressed with the corrected
                              # attitude and biases (refresh_prev)
-P0V_ON = False               # no still run (fallback init): initial velocity sigma = the V2 envelope, not P0_VEL
+P0V_ON = True                 # no still run (fallback init): initial velocity sigma = the V2 envelope, not P0_VEL
 N = 15
 
 
