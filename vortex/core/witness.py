@@ -126,6 +126,12 @@ PRE_HOLD = True              # rule passed 16 Nov; rows before the anchor keep t
 SMOOTH_ON = False            # fixed-interval (RTS) smoother at the filter tick; non-causal (offline)
 SMOOTH_MAX_BLOCKS = 1024     # blocks stored (fixed cap): 256 s at one tick per block; longer files merge
                              # adjacent blocks pairwise. Single precision: 4 x (225 + 15 + 15) bytes + 8 per block
+# Step F (rule in Docs/TRACK3_PLAN.md, Step F; judged 17 Nov 2026 on held-out seeds 4-6): REFRESH, P0V and
+# strapdown.BGCAP_ON passed and ship on; RESET failed (reading a mean APE +1.8 %) and ships off.
+RESET_ON = False            # OFF (failed the rule). After each injection: covariance reset P <- G P G^T (kf_reset)
+REFRESH_ON = True            # after each injection: the cached previous sample re-expressed with the corrected
+                             # attitude and biases (refresh_prev)
+P0V_ON = True                 # no still run (fallback init): initial velocity sigma = the V2 envelope, not P0_VEL
 N = 15
 
 
@@ -142,6 +148,8 @@ def kf_init(still):
     tilt = P0_TILT if still else P0_TILT_FALLBACK
     bg = P0_BG if still else P0_BG_FALLBACK
     sig = (0.0, 0.0, 0.0, P0_VEL, P0_VEL, P0_VEL, tilt, tilt, P0_YAW, bg, bg, bg, P0_BA, P0_BA, P0_BA)
+    if P0V_ON and not still:      # Step F: nothing says the sensor was at rest; the envelope is all we know
+        sig = (0.0, 0.0, 0.0, V2_SIGMA_H, V2_SIGMA_H, V2_SIGMA_V) + sig[6:]
     P = [0.0] * (N * N)
     for i in range(N):
         P[i * N + i] = sig[i] * sig[i]
@@ -222,6 +230,35 @@ def inject(q, p, v, bg, ba, dx):
     nq = sd.qmul_normalised(sd.exp_step(dx[6], dx[7], dx[8], 1.0), q)
     return (nq,[p[0] + dx[0], p[1] + dx[1], p[2] + dx[2]], [v[0] + dx[3], v[1] + dx[4], v[2] + dx[5]],
             (bg[0] + dx[9], bg[1] + dx[10], bg[2] + dx[11]), (ba[0] + dx[12], ba[1] + dx[13], ba[2] + dx[14]))
+
+
+def kf_reset(P, ex, ey, ez):
+    """Step F: covariance reset after injecting the attitude error (ex, ey, ez). With the global error
+    q_true = Exp(dth) q and q+ = Exp(dth_hat) q, the new error is dth+ = Log(Exp(dth) Exp(-dth_hat)),
+    whose Jacobian at dth = dth_hat is G = I + [dth_hat / 2]x to first order (Sola 2017, "Quaternion
+    kinematics for the error-state Kalman filter", ESKF reset, global angular error). P <- G P G^T; G is
+    the identity outside the attitude block, so only rows and columns 6..8 change."""
+    hx, hy, hz = 0.5 * ex, 0.5 * ey, 0.5 * ez
+    o6, o7, o8 = 6 * N, 7 * N, 8 * N
+    for c in range(N):                         # rows: G P
+        a, b, d = P[o6 + c], P[o7 + c], P[o8 + c]
+        P[o6 + c] = a - hz * b + hy * d
+        P[o7 + c] = b + hz * a - hx * d
+        P[o8 + c] = d - hy * a + hx * b
+    for rr in range(0, N * N, N):              # columns: (G P) G^T
+        a, b, d = P[rr + 6], P[rr + 7], P[rr + 8]
+        P[rr + 6] = a - hz * b + hy * d
+        P[rr + 7] = b + hz * a - hx * d
+        P[rr + 8] = d - hy * a + hx * b
+
+
+def refresh_prev(prev, qo, qn, dx):
+    """Step F: the cached previous sample (bias-corrected gyro, world specific force; see strapdown._sample)
+    re-expressed after an injection from attitude qo to qn and biases + dx[9..14], so the next trapezoid
+    step does not mix the old and the corrected state. Body force = R(qo)^T f_w, minus the accel bias
+    change, rotated by R(qn)."""
+    bx, by, bz = sd.rotate((qo[0], -qo[1], -qo[2], -qo[3]), prev[3], prev[4], prev[5])
+    return (prev[0] - dx[9], prev[1] - dx[10], prev[2] - dx[11]) + sd.rotate(qn, bx - dx[12], by - dx[13], bz - dx[14])
 
 
 def coast(p, v, dt, tau):
@@ -429,6 +466,9 @@ def estimate(rows, v1=None, v2=None, v2p=None, log=None, jam=None, gap_on=None, 
     dv2 = [0.0, 0.0, 0.0]
     sg = sa = 0                         # length of the current run of identical gyro / accel triples
     lg = la = None
+    interp = INTERP_ON
+    max_dt = INTERP_MAX_S if interp else sd.MAX_DT
+    reset, refresh = RESET_ON, REFRESH_ON
     for t, vals in rows[anchor:]:
         if t is not None:
             ok = sd.is_valid(vals)
@@ -520,7 +560,17 @@ def estimate(rows, v1=None, v2=None, v2p=None, log=None, jam=None, gap_on=None, 
                         sdx = None
                         if zupt or v2 or v2p:
                             sdx = dx
+                            qo = q
                             q, p, v, bg, ba = inject(q, p, v, bg, ba, dx)
+                            if reset or refresh:
+                                chk = 0.0
+                                for e in dx:
+                                    chk += e
+                                if chk - chk == 0.0:        # inject applied it (a non-finite dx is discarded)
+                                    if reset:
+                                        kf_reset(P, dx[6], dx[7], dx[8])
+                                    if refresh and prev is not None:
+                                        prev = refresh_prev(prev, qo, q, dx)
                             dx = [0.0] * N
                         r0 = rot_matrix(q)
                         if gap_on:
@@ -569,7 +619,7 @@ def estimate(rows, v1=None, v2=None, v2p=None, log=None, jam=None, gap_on=None, 
                     if dt is None:
                         prev = sd._sample(q, vc, bg[0], bg[1], bg[2])
                         h1 = vals
-                    elif dt <= sd.MAX_DT and prev is not None:
+                    elif dt <= max_dt and prev is not None:
                         q, p, v, prev = sd._step(q, p, v, prev, vc, bg[0], bg[1], bg[2], g, dt)
                         if prev is not None:
                             fs[0] += prev[3]
@@ -603,7 +653,7 @@ def estimate(rows, v1=None, v2=None, v2p=None, log=None, jam=None, gap_on=None, 
                         gap += dt
                         h1, h2 = vals, None
                     t_last = t
-            elif t_last is not None:
+            elif t_last is not None and not (interp and type(vals) is MissingRow):
                 dt = (t - t_last) * 1e-9
                 if 0 < dt <= sd.MAX_JUMP_S:
                     p, v = coast(p, v, dt, tau)
@@ -624,23 +674,56 @@ def estimate(rows, v1=None, v2=None, v2p=None, log=None, jam=None, gap_on=None, 
 
 
 FRONT_ON = True              # Step 2 (17 Nov): input front end (vortex/core/frontend.py); no-op on canonical files
+# Step 3 (reference first; decision rules in Docs/TRACK3_PLAN.md, Step 3). STUCK6_ON / SPIKE_ON live in
+# faults.py. INTERP_ON: rows the fault pass marked missing are skipped (no coasting; the next good row
+# integrates across with the real timestamp step, i.e. the trapezoid between the good neighbours), and a
+# step up to INTERP_MAX_S (missing rows and bursts: the script's bursts are 5-50 rows, <= 0.25 s at
+# 200 Hz) is integrated instead of coasted. Longer steps coast as before.
+INTERP_ON = False
+INTERP_MAX_S = 0.3
 
 
-def estimate_file(path):
-    """The estimator on an IMU csv. With FRONT_ON, a file that is not canonical (accelerometer first,
-    timestamps not integer ns, accelerometer in g) is first rewritten canonically (frontend.py)."""
-    import os
-    import tempfile
-    from ..data import euroc
-    from . import frontend
+class MissingRow(tuple):
+    """Six NaNs for a row the fault pass marked missing (invalid everywhere; skipped with INTERP_ON)."""
+
+
+def prepare_lines(path):
+    """The file's lines after the input front end (FRONT_ON) and the fault pass (faults.STUCK6_ON /
+    SPIKE_ON), or None when neither changes anything (the file is read as it is)."""
+    from . import faults, frontend
+    lines = None
     if FRONT_ON:
         lay = frontend.detect(path)
         if not lay["canonical"]:
-            fd, tmp = tempfile.mkstemp(suffix=".csv")
-            try:
-                with os.fdopen(fd, "wb") as f:
-                    f.writelines(frontend.canonical_lines(path, lay))
-                return estimate(sd.rows_from_raw(euroc.read_imu_csv(tmp)))
-            finally:
-                os.remove(tmp)
-    return estimate(sd.rows_from_raw(euroc.read_imu_csv(path)))
+            lines = frontend.canonical_lines(path, lay)
+    if faults.STUCK6_ON or faults.SPIKE_ON:
+        if lines is None:
+            lines = open(path, "rb")
+        lines = faults.filter_lines(lines)
+    return lines
+
+
+def estimate_file(path):
+    """The estimator on an IMU csv, after prepare_lines(); rows marked missing become MissingRow."""
+    import os
+    import tempfile
+    from ..data import euroc
+    lines = prepare_lines(path)
+    if lines is None:
+        return estimate(sd.rows_from_raw(euroc.read_imu_csv(path)))
+    fd, tmp = tempfile.mkstemp(suffix=".csv")
+    miss = []
+    try:
+        with os.fdopen(fd, "wb") as f:
+            for line in lines:
+                s = line.strip()
+                if s and s[0] != 35:
+                    miss.append(s.endswith(b",m"))
+                f.write(line)
+        rows = sd.rows_from_raw(euroc.read_imu_csv(tmp))
+    finally:
+        if hasattr(lines, "close"):
+            lines.close()
+        os.remove(tmp)
+    rows = [(t, MissingRow(v)) if m else (t, v) for (t, v), m in zip(rows, miss)]
+    return estimate(rows)

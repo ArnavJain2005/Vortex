@@ -9,6 +9,10 @@ Clean (undegraded) IMU input. APE = absolute position error after Umeyama alignm
 | floor-still | 4.31 / 0.499 | 4.65 / 0.537 | 3.58 / 1.188 | 6.82 / 1.129 | 6.88 / 1.034 | - | - | - | - | - |
 | step2-clean | 3.91 / 0.480 | 3.85 / 0.591 | 3.53 / 0.983 | 6.38 / 1.193 | 6.55 / 1.023 | 1.77 / 0.409 | 1.77 / 0.669 | 1.55 / 0.469 | 3.66 | 0.727 |
 | step2-floor-clean | 4.31 / 0.499 | 4.65 / 0.537 | 3.58 / 1.188 | 6.82 / 1.129 | 6.88 / 1.034 | 1.85 / 0.439 | 1.78 / 0.964 | 1.57 / 0.716 | 3.93 | 0.813 |
+| step3-C-interp | 3.91 / 0.480 | 3.85 / 0.591 | 3.53 / 0.983 | 6.38 / 1.193 | 6.55 / 1.023 | 1.77 / 0.409 | 1.77 / 0.669 | 1.55 / 0.469 | 3.66 | 0.727 |
+| step3-C-off | 3.91 / 0.480 | 3.85 / 0.591 | 3.53 / 0.983 | 6.38 / 1.193 | 6.55 / 1.023 | 1.77 / 0.409 | 1.77 / 0.669 | 1.55 / 0.469 | 3.66 | 0.727 |
+| step3-C-spike | 3.91 / 0.480 | 3.84 / 0.592 | 3.53 / 0.983 | 6.38 / 1.193 | 6.57 / 1.022 | 1.77 / 0.409 | 1.77 / 0.669 | 1.55 / 0.469 | 3.67 | 0.727 |
+| step3-C-stuck | 3.91 / 0.480 | 3.85 / 0.591 | 3.53 / 0.983 | 6.38 / 1.193 | 6.55 / 1.023 | 1.77 / 0.409 | 1.77 / 0.669 | 1.55 / 0.469 | 3.66 | 0.727 |
 | step6a | 51303.92 / 1132.918 | 34197.60 / 919.509 | 18192.52 / 554.725 | 17687.41 / 687.304 | 593.57 / 25.035 | - | - | - | - | - |
 | step6b | 1288.50 / 40.053 | 941.41 / 33.634 | 676.70 / 25.476 | 248.88 / 13.122 | 508.41 / 21.554 | - | - | - | - | - |
 | step6c-clean-both | 4.06 / 0.507 | 5.97 / 0.966 | 3.51 / 1.031 | 6.60 / 1.178 | 6.74 / 1.025 | - | - | - | - | - |
@@ -26,6 +30,18 @@ Clean (undegraded) IMU input. APE = absolute position error after Umeyama alignm
 | stepA-v1-c | - | - | - | - | - | 1.77 / 0.409 | 1.77 / 0.669 | 1.55 / 0.469 | - | - |
 | stepA-v1-floor | - | - | - | - | - | 1.85 / 0.439 | 1.78 / 0.964 | 1.57 / 0.716 | - | - |
 | stepA-v1-py | - | - | - | - | - | 1.77 / 0.409 | 1.77 / 0.669 | 1.55 / 0.469 | - | - |
+| stepF-C-bgcap | 3.91 / 0.480 | 3.85 / 0.591 | 3.53 / 0.983 | 6.38 / 1.193 | 6.55 / 1.023 | 1.77 / 0.409 | 1.77 / 0.669 | 1.55 / 0.469 | 3.66 | 0.727 |
+| stepF-C-off | 3.91 / 0.480 | 3.85 / 0.591 | 3.53 / 0.983 | 6.38 / 1.193 | 6.55 / 1.023 | 1.77 / 0.409 | 1.77 / 0.669 | 1.55 / 0.469 | 3.66 | 0.727 |
+| stepF-C-p0v-refresh | 3.91 / 0.480 | 3.85 / 0.591 | 3.53 / 0.983 | 6.38 / 1.193 | 6.55 / 1.023 | 1.76 / 0.408 | 1.72 / 0.677 | 1.55 / 0.469 | 3.65 | 0.728 |
+| stepF-C-p0v | 3.91 / 0.480 | 3.85 / 0.591 | 3.53 / 0.983 | 6.38 / 1.193 | 6.55 / 1.023 | 1.76 / 0.408 | 1.72 / 0.677 | 1.55 / 0.469 | 3.65 | 0.728 |
+| stepF-C-refresh | 3.91 / 0.480 | 3.85 / 0.591 | 3.53 / 0.983 | 6.38 / 1.193 | 6.55 / 1.023 | 1.77 / 0.409 | 1.77 / 0.669 | 1.55 / 0.469 | 3.66 | 0.727 |
+| stepF-C-reset | 3.91 / 0.480 | 3.85 / 0.591 | 3.53 / 0.983 | 6.38 / 1.193 | 6.54 / 1.023 | 1.75 / 0.408 | 1.72 / 0.677 | 1.55 / 0.469 | 3.65 | 0.728 |
+| stepF-tune-bgcap-clean | 3.91 / 0.480 | 3.85 / 0.591 | - | - | - | - | - | - | - | - |
+| stepF-tune-both-clean | 3.91 / 0.480 | 3.85 / 0.591 | - | - | - | - | - | - | - | - |
+| stepF-tune-off-clean | 3.91 / 0.480 | 3.85 / 0.591 | - | - | - | - | - | - | - | - |
+| stepF-tune-p0v-clean | 3.91 / 0.480 | 3.85 / 0.591 | - | - | - | - | - | - | - | - |
+| stepF-tune-refresh-clean | 3.91 / 0.480 | 3.85 / 0.591 | - | - | - | - | - | - | - | - |
+| stepF-tune-reset-clean | 3.91 / 0.480 | 3.85 / 0.591 | - | - | - | - | - | - | - | - |
 
 ## APE RMSE m under every alignment (runs from step A on)
 
@@ -47,6 +63,38 @@ Clean (undegraded) IMU input. APE = absolute position error after Umeyama alignm
 | step2-floor-clean | V1_01_easy | 2.38 | 2.70 | 1.85 | nan | 0.439 |
 | step2-floor-clean | V1_02_medium | 2.60 | 2.16 | 1.78 | nan | 0.964 |
 | step2-floor-clean | V1_03_difficult | 2.50 | 2.21 | 1.57 | nan | 0.716 |
+| step3-C-interp | MH_01_easy | 6.46 | 7.83 | 3.91 | 3.73 | 0.480 |
+| step3-C-interp | MH_02_easy | 7.05 | 8.95 | 3.85 | 3.02 | 0.591 |
+| step3-C-interp | MH_03_medium | 8.18 | 5.10 | 3.53 | 3.48 | 0.983 |
+| step3-C-interp | MH_04_difficult | 10.63 | 7.65 | 6.38 | 6.27 | 1.193 |
+| step3-C-interp | MH_05_difficult | 10.24 | 7.90 | 6.55 | 6.40 | 1.023 |
+| step3-C-interp | V1_01_easy | 2.82 | 2.38 | 1.77 | 1.77 | 0.409 |
+| step3-C-interp | V1_02_medium | 3.55 | 2.95 | 1.77 | 1.71 | 0.669 |
+| step3-C-interp | V1_03_difficult | 2.93 | 2.28 | 1.55 | 1.51 | 0.469 |
+| step3-C-off | MH_01_easy | 6.46 | 7.83 | 3.91 | 3.73 | 0.480 |
+| step3-C-off | MH_02_easy | 7.05 | 8.95 | 3.85 | 3.02 | 0.591 |
+| step3-C-off | MH_03_medium | 8.18 | 5.10 | 3.53 | 3.48 | 0.983 |
+| step3-C-off | MH_04_difficult | 10.63 | 7.65 | 6.38 | 6.27 | 1.193 |
+| step3-C-off | MH_05_difficult | 10.24 | 7.90 | 6.55 | 6.40 | 1.023 |
+| step3-C-off | V1_01_easy | 2.82 | 2.38 | 1.77 | 1.77 | 0.409 |
+| step3-C-off | V1_02_medium | 3.55 | 2.95 | 1.77 | 1.71 | 0.669 |
+| step3-C-off | V1_03_difficult | 2.93 | 2.28 | 1.55 | 1.51 | 0.469 |
+| step3-C-spike | MH_01_easy | 6.47 | 7.84 | 3.91 | 3.73 | 0.480 |
+| step3-C-spike | MH_02_easy | 7.08 | 8.97 | 3.84 | 3.03 | 0.592 |
+| step3-C-spike | MH_03_medium | 8.18 | 5.10 | 3.53 | 3.48 | 0.983 |
+| step3-C-spike | MH_04_difficult | 10.63 | 7.66 | 6.38 | 6.27 | 1.193 |
+| step3-C-spike | MH_05_difficult | 10.51 | 7.71 | 6.57 | 6.47 | 1.022 |
+| step3-C-spike | V1_01_easy | 2.82 | 2.38 | 1.77 | 1.77 | 0.409 |
+| step3-C-spike | V1_02_medium | 3.55 | 2.95 | 1.77 | 1.71 | 0.669 |
+| step3-C-spike | V1_03_difficult | 2.93 | 2.28 | 1.55 | 1.51 | 0.469 |
+| step3-C-stuck | MH_01_easy | 6.46 | 7.83 | 3.91 | 3.73 | 0.480 |
+| step3-C-stuck | MH_02_easy | 7.05 | 8.95 | 3.85 | 3.02 | 0.591 |
+| step3-C-stuck | MH_03_medium | 8.18 | 5.10 | 3.53 | 3.48 | 0.983 |
+| step3-C-stuck | MH_04_difficult | 10.63 | 7.65 | 6.38 | 6.27 | 1.193 |
+| step3-C-stuck | MH_05_difficult | 10.24 | 7.90 | 6.55 | 6.40 | 1.023 |
+| step3-C-stuck | V1_01_easy | 2.82 | 2.38 | 1.77 | 1.77 | 0.409 |
+| step3-C-stuck | V1_02_medium | 3.55 | 2.95 | 1.77 | 1.71 | 0.669 |
+| step3-C-stuck | V1_03_difficult | 2.93 | 2.28 | 1.55 | 1.51 | 0.469 |
 | stepA-v1-c | V1_01_easy | 2.82 | 2.38 | 1.77 | 1.77 | 0.409 |
 | stepA-v1-c | V1_02_medium | 3.55 | 2.95 | 1.77 | 1.71 | 0.669 |
 | stepA-v1-c | V1_03_difficult | 2.93 | 2.28 | 1.55 | 1.51 | 0.469 |
@@ -56,6 +104,66 @@ Clean (undegraded) IMU input. APE = absolute position error after Umeyama alignm
 | stepA-v1-py | V1_01_easy | 2.82 | 2.38 | 1.77 | 1.77 | 0.409 |
 | stepA-v1-py | V1_02_medium | 3.55 | 2.95 | 1.77 | 1.71 | 0.669 |
 | stepA-v1-py | V1_03_difficult | 2.93 | 2.28 | 1.55 | 1.51 | 0.469 |
+| stepF-C-bgcap | MH_01_easy | 6.46 | 7.83 | 3.91 | 3.73 | 0.480 |
+| stepF-C-bgcap | MH_02_easy | 7.05 | 8.95 | 3.85 | 3.02 | 0.591 |
+| stepF-C-bgcap | MH_03_medium | 8.18 | 5.10 | 3.53 | 3.48 | 0.983 |
+| stepF-C-bgcap | MH_04_difficult | 10.63 | 7.65 | 6.38 | 6.27 | 1.193 |
+| stepF-C-bgcap | MH_05_difficult | 10.24 | 7.90 | 6.55 | 6.40 | 1.023 |
+| stepF-C-bgcap | V1_01_easy | 2.82 | 2.38 | 1.77 | 1.77 | 0.409 |
+| stepF-C-bgcap | V1_02_medium | 3.55 | 2.95 | 1.77 | 1.71 | 0.669 |
+| stepF-C-bgcap | V1_03_difficult | 2.93 | 2.28 | 1.55 | 1.51 | 0.469 |
+| stepF-C-off | MH_01_easy | 6.46 | 7.83 | 3.91 | 3.73 | 0.480 |
+| stepF-C-off | MH_02_easy | 7.05 | 8.95 | 3.85 | 3.02 | 0.591 |
+| stepF-C-off | MH_03_medium | 8.18 | 5.10 | 3.53 | 3.48 | 0.983 |
+| stepF-C-off | MH_04_difficult | 10.63 | 7.65 | 6.38 | 6.27 | 1.193 |
+| stepF-C-off | MH_05_difficult | 10.24 | 7.90 | 6.55 | 6.40 | 1.023 |
+| stepF-C-off | V1_01_easy | 2.82 | 2.38 | 1.77 | 1.77 | 0.409 |
+| stepF-C-off | V1_02_medium | 3.55 | 2.95 | 1.77 | 1.71 | 0.669 |
+| stepF-C-off | V1_03_difficult | 2.93 | 2.28 | 1.55 | 1.51 | 0.469 |
+| stepF-C-p0v-refresh | MH_01_easy | 6.46 | 7.83 | 3.91 | 3.73 | 0.480 |
+| stepF-C-p0v-refresh | MH_02_easy | 7.05 | 8.95 | 3.85 | 3.02 | 0.591 |
+| stepF-C-p0v-refresh | MH_03_medium | 8.18 | 5.10 | 3.53 | 3.48 | 0.983 |
+| stepF-C-p0v-refresh | MH_04_difficult | 10.63 | 7.65 | 6.38 | 6.27 | 1.193 |
+| stepF-C-p0v-refresh | MH_05_difficult | 10.24 | 7.90 | 6.55 | 6.40 | 1.023 |
+| stepF-C-p0v-refresh | V1_01_easy | 2.81 | 2.24 | 1.76 | 1.76 | 0.408 |
+| stepF-C-p0v-refresh | V1_02_medium | 3.16 | 2.43 | 1.72 | 1.68 | 0.677 |
+| stepF-C-p0v-refresh | V1_03_difficult | 2.93 | 2.28 | 1.55 | 1.51 | 0.469 |
+| stepF-C-p0v | MH_01_easy | 6.46 | 7.83 | 3.91 | 3.73 | 0.480 |
+| stepF-C-p0v | MH_02_easy | 7.05 | 8.95 | 3.85 | 3.02 | 0.591 |
+| stepF-C-p0v | MH_03_medium | 8.18 | 5.10 | 3.53 | 3.48 | 0.983 |
+| stepF-C-p0v | MH_04_difficult | 10.63 | 7.65 | 6.38 | 6.27 | 1.193 |
+| stepF-C-p0v | MH_05_difficult | 10.24 | 7.90 | 6.55 | 6.40 | 1.023 |
+| stepF-C-p0v | V1_01_easy | 2.81 | 2.24 | 1.76 | 1.76 | 0.408 |
+| stepF-C-p0v | V1_02_medium | 3.16 | 2.43 | 1.72 | 1.68 | 0.677 |
+| stepF-C-p0v | V1_03_difficult | 2.93 | 2.28 | 1.55 | 1.51 | 0.469 |
+| stepF-C-refresh | MH_01_easy | 6.46 | 7.83 | 3.91 | 3.73 | 0.480 |
+| stepF-C-refresh | MH_02_easy | 7.05 | 8.95 | 3.85 | 3.02 | 0.591 |
+| stepF-C-refresh | MH_03_medium | 8.18 | 5.10 | 3.53 | 3.48 | 0.983 |
+| stepF-C-refresh | MH_04_difficult | 10.63 | 7.65 | 6.38 | 6.27 | 1.193 |
+| stepF-C-refresh | MH_05_difficult | 10.24 | 7.90 | 6.55 | 6.40 | 1.023 |
+| stepF-C-refresh | V1_01_easy | 2.82 | 2.38 | 1.77 | 1.77 | 0.409 |
+| stepF-C-refresh | V1_02_medium | 3.55 | 2.95 | 1.77 | 1.71 | 0.669 |
+| stepF-C-refresh | V1_03_difficult | 2.93 | 2.28 | 1.55 | 1.51 | 0.469 |
+| stepF-C-reset | MH_01_easy | 6.46 | 7.83 | 3.91 | 3.74 | 0.480 |
+| stepF-C-reset | MH_02_easy | 7.05 | 8.95 | 3.85 | 3.02 | 0.591 |
+| stepF-C-reset | MH_03_medium | 8.18 | 5.10 | 3.53 | 3.48 | 0.983 |
+| stepF-C-reset | MH_04_difficult | 10.64 | 7.66 | 6.38 | 6.28 | 1.193 |
+| stepF-C-reset | MH_05_difficult | 10.24 | 7.90 | 6.54 | 6.40 | 1.023 |
+| stepF-C-reset | V1_01_easy | 2.79 | 2.32 | 1.75 | 1.75 | 0.408 |
+| stepF-C-reset | V1_02_medium | 3.16 | 2.43 | 1.72 | 1.68 | 0.677 |
+| stepF-C-reset | V1_03_difficult | 2.93 | 2.27 | 1.55 | 1.51 | 0.469 |
+| stepF-tune-bgcap-clean | MH_01_easy | 6.46 | 7.83 | 3.91 | 3.73 | 0.480 |
+| stepF-tune-bgcap-clean | MH_02_easy | 7.05 | 8.95 | 3.85 | 3.02 | 0.591 |
+| stepF-tune-both-clean | MH_01_easy | 6.46 | 7.83 | 3.91 | 3.74 | 0.480 |
+| stepF-tune-both-clean | MH_02_easy | 7.05 | 8.95 | 3.85 | 3.02 | 0.591 |
+| stepF-tune-off-clean | MH_01_easy | 6.46 | 7.83 | 3.91 | 3.73 | 0.480 |
+| stepF-tune-off-clean | MH_02_easy | 7.05 | 8.95 | 3.85 | 3.02 | 0.591 |
+| stepF-tune-p0v-clean | MH_01_easy | 6.46 | 7.83 | 3.91 | 3.73 | 0.480 |
+| stepF-tune-p0v-clean | MH_02_easy | 7.05 | 8.95 | 3.85 | 3.02 | 0.591 |
+| stepF-tune-refresh-clean | MH_01_easy | 6.46 | 7.83 | 3.91 | 3.73 | 0.480 |
+| stepF-tune-refresh-clean | MH_02_easy | 7.05 | 8.95 | 3.85 | 3.02 | 0.591 |
+| stepF-tune-reset-clean | MH_01_easy | 6.46 | 7.83 | 3.91 | 3.74 | 0.480 |
+| stepF-tune-reset-clean | MH_02_easy | 7.05 | 8.95 | 3.85 | 3.02 | 0.591 |
 
 ## Every run
 
@@ -82,6 +190,38 @@ Clean (undegraded) IMU input. APE = absolute position error after Umeyama alignm
 | step2-floor-clean | tools\baseline_still.py | 5699f6e | 2026-11-17 | V1_01_easy | PASS | 1.85 | 1.73 | nan | nan | 0.439 | 0.41 |
 | step2-floor-clean | tools\baseline_still.py | 5699f6e | 2026-11-17 | V1_02_medium | PASS | 1.78 | 1.23 | nan | nan | 0.964 | 0.32 |
 | step2-floor-clean | tools\baseline_still.py | 5699f6e | 2026-11-17 | V1_03_difficult | PASS | 1.57 | 1.34 | nan | nan | 0.716 | 0.37 |
+| step3-C-interp | main.py INTERP_ON=True | 99bf25b | 2026-11-17 | MH_01_easy | PASS | 3.91 | 5.84 | 3.73 | 2.18 | 0.480 | 0.38 |
+| step3-C-interp | main.py INTERP_ON=True | 99bf25b | 2026-11-17 | MH_02_easy | PASS | 3.85 | 5.29 | 3.02 | 3.07 | 0.591 | 0.36 |
+| step3-C-interp | main.py INTERP_ON=True | 99bf25b | 2026-11-17 | MH_03_medium | PASS | 3.53 | 4.15 | 3.48 | 0.581 | 0.983 | 0.28 |
+| step3-C-interp | main.py INTERP_ON=True | 99bf25b | 2026-11-17 | MH_04_difficult | PASS | 6.38 | 3.66 | 6.27 | 1.75 | 1.193 | 0.23 |
+| step3-C-interp | main.py INTERP_ON=True | 99bf25b | 2026-11-17 | MH_05_difficult | PASS | 6.55 | 4.73 | 6.40 | 2.18 | 1.023 | 0.26 |
+| step3-C-interp | main.py INTERP_ON=True | 99bf25b | 2026-11-17 | V1_01_easy | PASS | 1.77 | 1.92 | 1.77 | 0.847 | 0.409 | 0.38 |
+| step3-C-interp | main.py INTERP_ON=True | 99bf25b | 2026-11-17 | V1_02_medium | PASS | 1.77 | 1.69 | 1.71 | 0.508 | 0.669 | 0.28 |
+| step3-C-interp | main.py INTERP_ON=True | 99bf25b | 2026-11-17 | V1_03_difficult | PASS | 1.55 | 1.62 | 1.51 | 0.571 | 0.469 | 0.27 |
+| step3-C-off | main.py | 99bf25b | 2026-11-17 | MH_01_easy | PASS | 3.91 | 5.84 | 3.73 | 2.18 | 0.480 | 0.49 |
+| step3-C-off | main.py | 99bf25b | 2026-11-17 | MH_02_easy | PASS | 3.85 | 5.29 | 3.02 | 3.07 | 0.591 | 0.46 |
+| step3-C-off | main.py | 99bf25b | 2026-11-17 | MH_03_medium | PASS | 3.53 | 4.15 | 3.48 | 0.581 | 0.983 | 0.37 |
+| step3-C-off | main.py | 99bf25b | 2026-11-17 | MH_04_difficult | PASS | 6.38 | 3.66 | 6.27 | 1.75 | 1.193 | 0.29 |
+| step3-C-off | main.py | 99bf25b | 2026-11-17 | MH_05_difficult | PASS | 6.55 | 4.73 | 6.40 | 2.18 | 1.023 | 0.25 |
+| step3-C-off | main.py | 99bf25b | 2026-11-17 | V1_01_easy | PASS | 1.77 | 1.92 | 1.77 | 0.847 | 0.409 | 0.35 |
+| step3-C-off | main.py | 99bf25b | 2026-11-17 | V1_02_medium | PASS | 1.77 | 1.69 | 1.71 | 0.508 | 0.669 | 0.25 |
+| step3-C-off | main.py | 99bf25b | 2026-11-17 | V1_03_difficult | PASS | 1.55 | 1.62 | 1.51 | 0.571 | 0.469 | 0.27 |
+| step3-C-spike | main.py FF_SPIKE_ON=True | 99bf25b | 2026-11-17 | MH_01_easy | PASS | 3.91 | 5.84 | 3.73 | 2.18 | 0.480 | 0.69 |
+| step3-C-spike | main.py FF_SPIKE_ON=True | 99bf25b | 2026-11-17 | MH_02_easy | PASS | 3.84 | 5.31 | 3.03 | 3.05 | 0.592 | 0.54 |
+| step3-C-spike | main.py FF_SPIKE_ON=True | 99bf25b | 2026-11-17 | MH_03_medium | PASS | 3.53 | 4.16 | 3.48 | 0.581 | 0.983 | 0.43 |
+| step3-C-spike | main.py FF_SPIKE_ON=True | 99bf25b | 2026-11-17 | MH_04_difficult | PASS | 6.38 | 3.66 | 6.27 | 1.75 | 1.193 | 0.48 |
+| step3-C-spike | main.py FF_SPIKE_ON=True | 99bf25b | 2026-11-17 | MH_05_difficult | PASS | 6.57 | 4.78 | 6.47 | 1.89 | 1.022 | 0.47 |
+| step3-C-spike | main.py FF_SPIKE_ON=True | 99bf25b | 2026-11-17 | V1_01_easy | PASS | 1.77 | 1.92 | 1.77 | 0.847 | 0.409 | 0.60 |
+| step3-C-spike | main.py FF_SPIKE_ON=True | 99bf25b | 2026-11-17 | V1_02_medium | PASS | 1.77 | 1.69 | 1.71 | 0.508 | 0.669 | 0.49 |
+| step3-C-spike | main.py FF_SPIKE_ON=True | 99bf25b | 2026-11-17 | V1_03_difficult | PASS | 1.55 | 1.62 | 1.51 | 0.567 | 0.469 | 0.52 |
+| step3-C-stuck | main.py FF_STUCK6_ON=True | 99bf25b | 2026-11-17 | MH_01_easy | PASS | 3.91 | 5.84 | 3.73 | 2.18 | 0.480 | 0.56 |
+| step3-C-stuck | main.py FF_STUCK6_ON=True | 99bf25b | 2026-11-17 | MH_02_easy | PASS | 3.85 | 5.29 | 3.02 | 3.07 | 0.591 | 0.44 |
+| step3-C-stuck | main.py FF_STUCK6_ON=True | 99bf25b | 2026-11-17 | MH_03_medium | PASS | 3.53 | 4.15 | 3.48 | 0.581 | 0.983 | 0.37 |
+| step3-C-stuck | main.py FF_STUCK6_ON=True | 99bf25b | 2026-11-17 | MH_04_difficult | PASS | 6.38 | 3.66 | 6.27 | 1.75 | 1.193 | 0.30 |
+| step3-C-stuck | main.py FF_STUCK6_ON=True | 99bf25b | 2026-11-17 | MH_05_difficult | PASS | 6.55 | 4.73 | 6.40 | 2.18 | 1.023 | 0.35 |
+| step3-C-stuck | main.py FF_STUCK6_ON=True | 99bf25b | 2026-11-17 | V1_01_easy | PASS | 1.77 | 1.92 | 1.77 | 0.847 | 0.409 | 0.42 |
+| step3-C-stuck | main.py FF_STUCK6_ON=True | 99bf25b | 2026-11-17 | V1_02_medium | PASS | 1.77 | 1.69 | 1.71 | 0.508 | 0.669 | 0.38 |
+| step3-C-stuck | main.py FF_STUCK6_ON=True | 99bf25b | 2026-11-17 | V1_03_difficult | PASS | 1.55 | 1.62 | 1.51 | 0.571 | 0.469 | 0.38 |
 | step6a | main_6a.py | a4f25e3 | 2026-11-16 | MH_01_easy | PASS | 51303.92 | 118423.21 | 4.24 | 1.52e-05 | 1132.918 | 0.19 |
 | step6a | main_6a.py | a4f25e3 | 2026-11-16 | MH_02_easy | PASS | 34197.60 | 79084.89 | 4.40 | 4.33e-05 | 919.509 | 0.20 |
 | step6a | main_6a.py | a4f25e3 | 2026-11-16 | MH_03_medium | PASS | 18192.52 | 39321.97 | 3.56 | 2.25e-05 | 554.725 | 0.16 |
@@ -157,6 +297,66 @@ Clean (undegraded) IMU input. APE = absolute position error after Umeyama alignm
 | stepA-v1-py | main.py | ea4258c | 2026-11-17 | V1_01_easy | PASS | 1.77 | 1.92 | 1.77 | 0.847 | 0.409 | 0.38 |
 | stepA-v1-py | main.py | ea4258c | 2026-11-17 | V1_02_medium | PASS | 1.77 | 1.69 | 1.71 | 0.508 | 0.669 | 0.27 |
 | stepA-v1-py | main.py | ea4258c | 2026-11-17 | V1_03_difficult | PASS | 1.55 | 1.62 | 1.51 | 0.571 | 0.469 | 0.29 |
+| stepF-C-bgcap | main.py BGCAP_ON=True | cba34e3 | 2026-11-17 | MH_01_easy | PASS | 3.91 | 5.84 | 3.73 | 2.18 | 0.480 | 0.50 |
+| stepF-C-bgcap | main.py BGCAP_ON=True | cba34e3 | 2026-11-17 | MH_02_easy | PASS | 3.85 | 5.29 | 3.02 | 3.07 | 0.591 | 0.46 |
+| stepF-C-bgcap | main.py BGCAP_ON=True | cba34e3 | 2026-11-17 | MH_03_medium | PASS | 3.53 | 4.15 | 3.48 | 0.581 | 0.983 | 0.55 |
+| stepF-C-bgcap | main.py BGCAP_ON=True | cba34e3 | 2026-11-17 | MH_04_difficult | PASS | 6.38 | 3.66 | 6.27 | 1.75 | 1.193 | 0.39 |
+| stepF-C-bgcap | main.py BGCAP_ON=True | cba34e3 | 2026-11-17 | MH_05_difficult | PASS | 6.55 | 4.73 | 6.40 | 2.18 | 1.023 | 0.44 |
+| stepF-C-bgcap | main.py BGCAP_ON=True | cba34e3 | 2026-11-17 | V1_01_easy | PASS | 1.77 | 1.92 | 1.77 | 0.847 | 0.409 | 0.53 |
+| stepF-C-bgcap | main.py BGCAP_ON=True | cba34e3 | 2026-11-17 | V1_02_medium | PASS | 1.77 | 1.69 | 1.71 | 0.508 | 0.669 | 0.49 |
+| stepF-C-bgcap | main.py BGCAP_ON=True | cba34e3 | 2026-11-17 | V1_03_difficult | PASS | 1.55 | 1.62 | 1.51 | 0.571 | 0.469 | 0.45 |
+| stepF-C-off | main.py | cba34e3 | 2026-11-17 | MH_01_easy | PASS | 3.91 | 5.84 | 3.73 | 2.18 | 0.480 | 0.53 |
+| stepF-C-off | main.py | cba34e3 | 2026-11-17 | MH_02_easy | PASS | 3.85 | 5.29 | 3.02 | 3.07 | 0.591 | 0.48 |
+| stepF-C-off | main.py | cba34e3 | 2026-11-17 | MH_03_medium | PASS | 3.53 | 4.15 | 3.48 | 0.581 | 0.983 | 0.48 |
+| stepF-C-off | main.py | cba34e3 | 2026-11-17 | MH_04_difficult | PASS | 6.38 | 3.66 | 6.27 | 1.75 | 1.193 | 0.35 |
+| stepF-C-off | main.py | cba34e3 | 2026-11-17 | MH_05_difficult | PASS | 6.55 | 4.73 | 6.40 | 2.18 | 1.023 | 0.41 |
+| stepF-C-off | main.py | cba34e3 | 2026-11-17 | V1_01_easy | PASS | 1.77 | 1.92 | 1.77 | 0.847 | 0.409 | 0.54 |
+| stepF-C-off | main.py | cba34e3 | 2026-11-17 | V1_02_medium | PASS | 1.77 | 1.69 | 1.71 | 0.508 | 0.669 | 0.43 |
+| stepF-C-off | main.py | cba34e3 | 2026-11-17 | V1_03_difficult | PASS | 1.55 | 1.62 | 1.51 | 0.571 | 0.469 | 0.48 |
+| stepF-C-p0v-refresh | main.py BGCAP_ON=True P0V_ON=True REFRESH_ON=True | cba34e3 | 2026-11-17 | MH_01_easy | PASS | 3.91 | 5.84 | 3.73 | 2.18 | 0.480 | 0.72 |
+| stepF-C-p0v-refresh | main.py BGCAP_ON=True P0V_ON=True REFRESH_ON=True | cba34e3 | 2026-11-17 | MH_02_easy | PASS | 3.85 | 5.29 | 3.02 | 3.07 | 0.591 | 0.62 |
+| stepF-C-p0v-refresh | main.py BGCAP_ON=True P0V_ON=True REFRESH_ON=True | cba34e3 | 2026-11-17 | MH_03_medium | PASS | 3.53 | 4.15 | 3.48 | 0.581 | 0.983 | 0.67 |
+| stepF-C-p0v-refresh | main.py BGCAP_ON=True P0V_ON=True REFRESH_ON=True | cba34e3 | 2026-11-17 | MH_04_difficult | PASS | 6.38 | 3.66 | 6.27 | 1.75 | 1.193 | 0.43 |
+| stepF-C-p0v-refresh | main.py BGCAP_ON=True P0V_ON=True REFRESH_ON=True | cba34e3 | 2026-11-17 | MH_05_difficult | PASS | 6.55 | 4.73 | 6.40 | 2.18 | 1.023 | 0.42 |
+| stepF-C-p0v-refresh | main.py BGCAP_ON=True P0V_ON=True REFRESH_ON=True | cba34e3 | 2026-11-17 | V1_01_easy | PASS | 1.76 | 1.90 | 1.76 | 0.934 | 0.408 | 0.71 |
+| stepF-C-p0v-refresh | main.py BGCAP_ON=True P0V_ON=True REFRESH_ON=True | cba34e3 | 2026-11-17 | V1_02_medium | PASS | 1.72 | 1.67 | 1.68 | 0.616 | 0.677 | 0.57 |
+| stepF-C-p0v-refresh | main.py BGCAP_ON=True P0V_ON=True REFRESH_ON=True | cba34e3 | 2026-11-17 | V1_03_difficult | PASS | 1.55 | 1.62 | 1.51 | 0.571 | 0.469 | 0.49 |
+| stepF-C-p0v | main.py BGCAP_ON=True P0V_ON=True | cba34e3 | 2026-11-17 | MH_01_easy | PASS | 3.91 | 5.84 | 3.73 | 2.18 | 0.480 | 0.67 |
+| stepF-C-p0v | main.py BGCAP_ON=True P0V_ON=True | cba34e3 | 2026-11-17 | MH_02_easy | PASS | 3.85 | 5.29 | 3.02 | 3.07 | 0.591 | 0.65 |
+| stepF-C-p0v | main.py BGCAP_ON=True P0V_ON=True | cba34e3 | 2026-11-17 | MH_03_medium | PASS | 3.53 | 4.15 | 3.48 | 0.581 | 0.983 | 0.60 |
+| stepF-C-p0v | main.py BGCAP_ON=True P0V_ON=True | cba34e3 | 2026-11-17 | MH_04_difficult | PASS | 6.38 | 3.66 | 6.27 | 1.75 | 1.193 | 0.46 |
+| stepF-C-p0v | main.py BGCAP_ON=True P0V_ON=True | cba34e3 | 2026-11-17 | MH_05_difficult | PASS | 6.55 | 4.73 | 6.40 | 2.18 | 1.023 | 0.50 |
+| stepF-C-p0v | main.py BGCAP_ON=True P0V_ON=True | cba34e3 | 2026-11-17 | V1_01_easy | PASS | 1.76 | 1.90 | 1.76 | 0.934 | 0.408 | 0.70 |
+| stepF-C-p0v | main.py BGCAP_ON=True P0V_ON=True | cba34e3 | 2026-11-17 | V1_02_medium | PASS | 1.72 | 1.67 | 1.68 | 0.615 | 0.677 | 0.55 |
+| stepF-C-p0v | main.py BGCAP_ON=True P0V_ON=True | cba34e3 | 2026-11-17 | V1_03_difficult | PASS | 1.55 | 1.62 | 1.51 | 0.571 | 0.469 | 0.50 |
+| stepF-C-refresh | main.py BGCAP_ON=True REFRESH_ON=True | cba34e3 | 2026-11-17 | MH_01_easy | PASS | 3.91 | 5.84 | 3.73 | 2.18 | 0.480 | 0.68 |
+| stepF-C-refresh | main.py BGCAP_ON=True REFRESH_ON=True | cba34e3 | 2026-11-17 | MH_02_easy | PASS | 3.85 | 5.29 | 3.02 | 3.07 | 0.591 | 0.65 |
+| stepF-C-refresh | main.py BGCAP_ON=True REFRESH_ON=True | cba34e3 | 2026-11-17 | MH_03_medium | PASS | 3.53 | 4.15 | 3.48 | 0.581 | 0.983 | 0.64 |
+| stepF-C-refresh | main.py BGCAP_ON=True REFRESH_ON=True | cba34e3 | 2026-11-17 | MH_04_difficult | PASS | 6.38 | 3.66 | 6.27 | 1.75 | 1.193 | 0.47 |
+| stepF-C-refresh | main.py BGCAP_ON=True REFRESH_ON=True | cba34e3 | 2026-11-17 | MH_05_difficult | PASS | 6.55 | 4.73 | 6.40 | 2.18 | 1.023 | 0.45 |
+| stepF-C-refresh | main.py BGCAP_ON=True REFRESH_ON=True | cba34e3 | 2026-11-17 | V1_01_easy | PASS | 1.77 | 1.93 | 1.77 | 0.847 | 0.409 | 0.71 |
+| stepF-C-refresh | main.py BGCAP_ON=True REFRESH_ON=True | cba34e3 | 2026-11-17 | V1_02_medium | PASS | 1.77 | 1.69 | 1.71 | 0.508 | 0.669 | 0.50 |
+| stepF-C-refresh | main.py BGCAP_ON=True REFRESH_ON=True | cba34e3 | 2026-11-17 | V1_03_difficult | PASS | 1.55 | 1.62 | 1.51 | 0.571 | 0.469 | 0.54 |
+| stepF-C-reset | main.py BGCAP_ON=True P0V_ON=True REFRESH_ON=True RESET_ON=True | cba34e3 | 2026-11-17 | MH_01_easy | PASS | 3.91 | 5.87 | 3.74 | 2.17 | 0.480 | 0.50 |
+| stepF-C-reset | main.py BGCAP_ON=True P0V_ON=True REFRESH_ON=True RESET_ON=True | cba34e3 | 2026-11-17 | MH_02_easy | PASS | 3.85 | 5.28 | 3.02 | 3.06 | 0.591 | 0.39 |
+| stepF-C-reset | main.py BGCAP_ON=True P0V_ON=True REFRESH_ON=True RESET_ON=True | cba34e3 | 2026-11-17 | MH_03_medium | PASS | 3.53 | 4.15 | 3.48 | 0.58 | 0.983 | 0.40 |
+| stepF-C-reset | main.py BGCAP_ON=True P0V_ON=True REFRESH_ON=True RESET_ON=True | cba34e3 | 2026-11-17 | MH_04_difficult | PASS | 6.38 | 3.66 | 6.28 | 1.73 | 1.193 | 0.34 |
+| stepF-C-reset | main.py BGCAP_ON=True P0V_ON=True REFRESH_ON=True RESET_ON=True | cba34e3 | 2026-11-17 | MH_05_difficult | PASS | 6.54 | 4.71 | 6.40 | 2.19 | 1.023 | 0.42 |
+| stepF-C-reset | main.py BGCAP_ON=True P0V_ON=True REFRESH_ON=True RESET_ON=True | cba34e3 | 2026-11-17 | V1_01_easy | PASS | 1.75 | 1.86 | 1.75 | 0.923 | 0.408 | 0.61 |
+| stepF-C-reset | main.py BGCAP_ON=True P0V_ON=True REFRESH_ON=True RESET_ON=True | cba34e3 | 2026-11-17 | V1_02_medium | PASS | 1.72 | 1.67 | 1.68 | 0.616 | 0.677 | 0.37 |
+| stepF-C-reset | main.py BGCAP_ON=True P0V_ON=True REFRESH_ON=True RESET_ON=True | cba34e3 | 2026-11-17 | V1_03_difficult | PASS | 1.55 | 1.62 | 1.51 | 0.57 | 0.469 | 0.41 |
+| stepF-tune-bgcap-clean | main.py BGCAP_ON=True | 8cb550f | 2026-11-17 | MH_01_easy | PASS | 3.91 | 5.84 | 3.73 | 2.18 | 0.480 | 0.46 |
+| stepF-tune-bgcap-clean | main.py BGCAP_ON=True | 8cb550f | 2026-11-17 | MH_02_easy | PASS | 3.85 | 5.29 | 3.02 | 3.07 | 0.591 | 0.36 |
+| stepF-tune-both-clean | main.py REFRESH_ON=True RESET_ON=True | 8cb550f | 2026-11-17 | MH_01_easy | PASS | 3.91 | 5.87 | 3.74 | 2.17 | 0.480 | 0.59 |
+| stepF-tune-both-clean | main.py REFRESH_ON=True RESET_ON=True | 8cb550f | 2026-11-17 | MH_02_easy | PASS | 3.85 | 5.28 | 3.02 | 3.06 | 0.591 | 0.42 |
+| stepF-tune-off-clean | main.py | 8cb550f | 2026-11-17 | MH_01_easy | PASS | 3.91 | 5.84 | 3.73 | 2.18 | 0.480 | 0.38 |
+| stepF-tune-off-clean | main.py | 8cb550f | 2026-11-17 | MH_02_easy | PASS | 3.85 | 5.29 | 3.02 | 3.07 | 0.591 | 0.35 |
+| stepF-tune-p0v-clean | main.py P0V_ON=True | 8cb550f | 2026-11-17 | MH_01_easy | PASS | 3.91 | 5.84 | 3.73 | 2.18 | 0.480 | 0.40 |
+| stepF-tune-p0v-clean | main.py P0V_ON=True | 8cb550f | 2026-11-17 | MH_02_easy | PASS | 3.85 | 5.29 | 3.02 | 3.07 | 0.591 | 0.35 |
+| stepF-tune-refresh-clean | main.py REFRESH_ON=True | 8cb550f | 2026-11-17 | MH_01_easy | PASS | 3.91 | 5.84 | 3.73 | 2.18 | 0.480 | 0.42 |
+| stepF-tune-refresh-clean | main.py REFRESH_ON=True | 8cb550f | 2026-11-17 | MH_02_easy | PASS | 3.85 | 5.29 | 3.02 | 3.07 | 0.591 | 0.36 |
+| stepF-tune-reset-clean | main.py RESET_ON=True | 8cb550f | 2026-11-17 | MH_01_easy | PASS | 3.91 | 5.87 | 3.74 | 2.17 | 0.480 | 0.46 |
+| stepF-tune-reset-clean | main.py RESET_ON=True | 8cb550f | 2026-11-17 | MH_02_easy | PASS | 3.85 | 5.28 | 3.02 | 3.06 | 0.591 | 0.45 |
 
 # Official-script degraded input (from 17 Nov 2026; replaces every earlier degraded baseline)
 
@@ -174,6 +374,56 @@ Copies made by `python tools/official_degrade.py --all` with the organisers' `de
 | step2-off | a | 42 | 8 | 8.101 | 1.049 | 7.735 | 0.081 | 16.420 | 2.253 | 8/8 PASS |
 | step2-off | b | 1..3 | 24 | 3.889 | 0.770 | 3.563 | 0.045 | 4.498 | 0.615 | 24/24 PASS |
 | step2-off | b | 42 | 8 | 3.865 | 0.775 | 3.784 | 0.042 | 3.164 | 0.586 | 8/8 PASS |
+| step3-H-interp | a | 1..3 | 18 | 7.027 | 1.088 | 6.856 | 0.105 | 12.986 | 1.764 | 18/18 PASS |
+| step3-H-interp | b | 1..3 | 18 | 3.798 | 0.831 | 3.381 | 0.050 | 3.326 | 0.638 | 18/18 PASS |
+| step3-H-off | a | 1..3 | 18 | 6.311 | 1.016 | 6.244 | 0.097 | 10.667 | 1.437 | 18/18 PASS |
+| step3-H-off | b | 1..3 | 18 | 3.861 | 0.840 | 3.499 | 0.051 | 3.485 | 0.609 | 18/18 PASS |
+| step3-H-spike | a | 1..3 | 18 | 6.316 | 1.015 | 6.232 | 0.095 | 10.624 | 1.438 | 18/18 PASS |
+| step3-H-spike | b | 1..3 | 18 | 3.861 | 0.840 | 3.505 | 0.051 | 3.603 | 0.657 | 18/18 PASS |
+| step3-H-stuck | a | 1..3 | 18 | 6.190 | 0.989 | 6.097 | 0.088 | 10.471 | 1.300 | 18/18 PASS |
+| step3-H-stuck | b | 1..3 | 18 | 3.961 | 0.850 | 3.504 | 0.053 | 3.881 | 0.578 | 18/18 PASS |
+| step3-tune-all-100-2 | a | 1..3 | 6 | 14.277 | 1.370 | 15.798 | 0.157 | 34.016 | 3.568 | 6/6 PASS |
+| step3-tune-all-100-2 | b | 1..3 | 6 | 3.963 | 0.563 | 3.645 | 0.027 | 6.977 | 0.617 | 6/6 PASS |
+| step3-tune-all-100-3 | a | 1..3 | 6 | 14.367 | 1.378 | 15.886 | 0.155 | 35.291 | 3.621 | 6/6 PASS |
+| step3-tune-all-100-3 | b | 1..3 | 6 | 3.963 | 0.562 | 3.645 | 0.027 | 6.977 | 0.617 | 6/6 PASS |
+| step3-tune-all-30-3 | a | 1..3 | 6 | 14.273 | 1.369 | 15.772 | 0.154 | 35.017 | 3.598 | 6/6 PASS |
+| step3-tune-all-30-3 | b | 1..3 | 6 | 4.016 | 0.566 | 3.695 | 0.028 | 6.923 | 0.628 | 6/6 PASS |
+| step3-tune-interp | a | 1..3 | 6 | 13.349 | 1.270 | 14.611 | 0.140 | 31.389 | 3.484 | 6/6 PASS |
+| step3-tune-interp | b | 1..3 | 6 | 3.949 | 0.560 | 3.672 | 0.027 | 7.419 | 0.791 | 6/6 PASS |
+| step3-tune-off | a | 1..3 | 6 | 12.282 | 1.204 | 13.832 | 0.146 | 27.762 | 3.181 | 6/6 PASS |
+| step3-tune-off | b | 1..3 | 6 | 3.973 | 0.558 | 3.754 | 0.026 | 7.537 | 0.634 | 6/6 PASS |
+| step3-tune-spike-100-3 | a | 1..3 | 6 | 12.300 | 1.203 | 13.887 | 0.147 | 27.806 | 3.215 | 6/6 PASS |
+| step3-tune-spike-100-3 | b | 1..3 | 6 | 3.977 | 0.555 | 3.737 | 0.026 | 7.553 | 0.551 | 6/6 PASS |
+| step3-tune-stuck-interp | a | 1..3 | 6 | 14.253 | 1.367 | 15.615 | 0.153 | 34.708 | 3.597 | 6/6 PASS |
+| step3-tune-stuck-interp | b | 1..3 | 6 | 3.949 | 0.566 | 3.680 | 0.028 | 7.203 | 0.781 | 6/6 PASS |
+| step3-tune-stuck | a | 1..3 | 6 | 11.642 | 1.124 | 13.075 | 0.135 | 26.477 | 3.009 | 6/6 PASS |
+| step3-tune-stuck | b | 1..3 | 6 | 3.982 | 0.558 | 3.735 | 0.025 | 7.212 | 0.604 | 6/6 PASS |
+| stepF-H-bgcap | a | 1..3 | 18 | 6.193 | 0.977 | 6.500 | 0.076 | 11.196 | 1.591 | 18/18 PASS |
+| stepF-H-bgcap | b | 1..3 | 18 | 3.752 | 0.836 | 3.523 | 0.032 | 2.733 | 0.505 | 18/18 PASS |
+| stepF-H-floor | a | 1..3 | 18 | 3.745 | 0.941 | 3.626 | 0.024 | 2.504 | 0.461 | 18/18 PASS |
+| stepF-H-floor | b | 1..3 | 18 | 3.745 | 0.941 | 3.626 | 0.024 | 2.504 | 0.461 | 18/18 PASS |
+| stepF-H-off | a | 1..3 | 18 | 6.193 | 0.977 | 6.500 | 0.076 | 11.196 | 1.591 | 18/18 PASS |
+| stepF-H-off | b | 1..3 | 18 | 3.752 | 0.836 | 3.523 | 0.032 | 2.733 | 0.505 | 18/18 PASS |
+| stepF-H-p0v-refresh | a | 1..3 | 18 | 6.181 | 0.978 | 6.525 | 0.075 | 11.148 | 1.593 | 18/18 PASS |
+| stepF-H-p0v-refresh | b | 1..3 | 18 | 3.744 | 0.836 | 3.548 | 0.032 | 2.836 | 0.511 | 18/18 PASS |
+| stepF-H-p0v | a | 1..3 | 18 | 6.181 | 0.978 | 6.525 | 0.075 | 11.149 | 1.593 | 18/18 PASS |
+| stepF-H-p0v | b | 1..3 | 18 | 3.744 | 0.836 | 3.548 | 0.032 | 2.836 | 0.511 | 18/18 PASS |
+| stepF-H-refresh | a | 1..3 | 18 | 6.192 | 0.977 | 6.499 | 0.076 | 11.196 | 1.591 | 18/18 PASS |
+| stepF-H-refresh | b | 1..3 | 18 | 3.752 | 0.836 | 3.523 | 0.032 | 2.732 | 0.505 | 18/18 PASS |
+| stepF-H-reset | a | 1..3 | 18 | 6.293 | 0.981 | 6.648 | 0.076 | 11.248 | 1.622 | 18/18 PASS |
+| stepF-H-reset | b | 1..3 | 18 | 3.746 | 0.836 | 3.542 | 0.032 | 2.761 | 0.509 | 18/18 PASS |
+| stepF-tune-bgcap | a | 1..3 | 6 | 12.282 | 1.204 | 13.832 | 0.146 | 27.762 | 3.181 | 6/6 PASS |
+| stepF-tune-bgcap | b | 1..3 | 6 | 3.973 | 0.558 | 3.754 | 0.026 | 7.537 | 0.634 | 6/6 PASS |
+| stepF-tune-both | a | 1..3 | 6 | 12.272 | 1.210 | 14.065 | 0.140 | 29.041 | 3.204 | 6/6 PASS |
+| stepF-tune-both | b | 1..3 | 6 | 3.974 | 0.558 | 3.761 | 0.026 | 7.557 | 0.636 | 6/6 PASS |
+| stepF-tune-off | a | 1..3 | 6 | 12.282 | 1.204 | 13.832 | 0.146 | 27.762 | 3.181 | 6/6 PASS |
+| stepF-tune-off | b | 1..3 | 6 | 3.973 | 0.558 | 3.754 | 0.026 | 7.537 | 0.634 | 6/6 PASS |
+| stepF-tune-p0v | a | 1..3 | 6 | 12.282 | 1.204 | 13.832 | 0.146 | 27.762 | 3.181 | 6/6 PASS |
+| stepF-tune-p0v | b | 1..3 | 6 | 3.973 | 0.558 | 3.754 | 0.026 | 7.537 | 0.634 | 6/6 PASS |
+| stepF-tune-refresh | a | 1..3 | 6 | 12.282 | 1.204 | 13.832 | 0.146 | 27.763 | 3.180 | 6/6 PASS |
+| stepF-tune-refresh | b | 1..3 | 6 | 3.973 | 0.558 | 3.754 | 0.026 | 7.536 | 0.634 | 6/6 PASS |
+| stepF-tune-reset | a | 1..3 | 6 | 12.272 | 1.210 | 14.065 | 0.140 | 29.041 | 3.205 | 6/6 PASS |
+| stepF-tune-reset | b | 1..3 | 6 | 3.974 | 0.558 | 3.761 | 0.026 | 7.558 | 0.636 | 6/6 PASS |
 
 ## Every official-copy run
 
@@ -307,6 +557,570 @@ Copies made by `python tools/official_degrade.py --all` with the organisers' `de
 | step2-off | main.py | 5699f6e | V1_03_difficult_b_s2 | PASS | 2.730 | 0.549 | 2.673 | 0.063 | 3.143 | 0.357 | 0.96 |
 | step2-off | main.py | 5699f6e | V1_03_difficult_b_s3 | PASS | 1.811 | 0.545 | 1.211 | 0.043 | 0.830 | 0.409 | 0.94 |
 | step2-off | main.py | 5699f6e | V1_03_difficult_b_s42 | PASS | 2.574 | 0.607 | 2.591 | 0.120 | 3.189 | 0.410 | 0.94 |
+| step3-H-interp | main.py INTERP_ON=True | 99bf25b | MH_03_medium_a_s1 | PASS | 7.651 | 1.339 | 6.483 | 0.051 | 21.470 | 2.337 | 0.27 |
+| step3-H-interp | main.py INTERP_ON=True | 99bf25b | MH_03_medium_a_s2 | PASS | 13.031 | 1.316 | 12.407 | 0.061 | 22.884 | 1.200 | 0.29 |
+| step3-H-interp | main.py INTERP_ON=True | 99bf25b | MH_03_medium_a_s3 | PASS | 7.472 | 1.232 | 8.739 | 0.240 | 9.742 | 3.289 | 0.31 |
+| step3-H-interp | main.py INTERP_ON=True | 99bf25b | MH_03_medium_b_s1 | PASS | 4.185 | 1.057 | 4.202 | 0.024 | 5.072 | 0.708 | 0.44 |
+| step3-H-interp | main.py INTERP_ON=True | 99bf25b | MH_03_medium_b_s2 | PASS | 3.679 | 1.026 | 3.870 | 0.018 | 3.472 | 0.487 | 0.41 |
+| step3-H-interp | main.py INTERP_ON=True | 99bf25b | MH_03_medium_b_s3 | PASS | 3.898 | 1.019 | 3.005 | 0.118 | 4.598 | 0.563 | 0.47 |
+| step3-H-interp | main.py INTERP_ON=True | 99bf25b | MH_04_difficult_a_s1 | PASS | 9.612 | 1.464 | 7.966 | 0.214 | 15.799 | 1.341 | 0.22 |
+| step3-H-interp | main.py INTERP_ON=True | 99bf25b | MH_04_difficult_a_s2 | PASS | 6.660 | 1.702 | 6.926 | 0.023 | 8.660 | 3.392 | 0.26 |
+| step3-H-interp | main.py INTERP_ON=True | 99bf25b | MH_04_difficult_a_s3 | PASS | 8.137 | 1.575 | 8.413 | 0.349 | 13.312 | 3.248 | 0.23 |
+| step3-H-interp | main.py INTERP_ON=True | 99bf25b | MH_04_difficult_b_s1 | PASS | 6.697 | 1.205 | 7.538 | 0.122 | 5.034 | 0.466 | 0.25 |
+| step3-H-interp | main.py INTERP_ON=True | 99bf25b | MH_04_difficult_b_s2 | PASS | 6.200 | 1.251 | 5.770 | 0.038 | 0.729 | 0.203 | 0.23 |
+| step3-H-interp | main.py INTERP_ON=True | 99bf25b | MH_04_difficult_b_s3 | PASS | 6.296 | 1.204 | 5.659 | 0.155 | 1.914 | 0.851 | 0.28 |
+| step3-H-interp | main.py INTERP_ON=True | 99bf25b | MH_05_difficult_a_s1 | PASS | 9.133 | 1.314 | 5.663 | 0.145 | 24.936 | 2.783 | 0.25 |
+| step3-H-interp | main.py INTERP_ON=True | 99bf25b | MH_05_difficult_a_s2 | PASS | 11.327 | 1.144 | 14.387 | 0.057 | 30.257 | 2.935 | 0.22 |
+| step3-H-interp | main.py INTERP_ON=True | 99bf25b | MH_05_difficult_a_s3 | PASS | 8.694 | 1.155 | 6.135 | 0.051 | 15.445 | 1.182 | 0.21 |
+| step3-H-interp | main.py INTERP_ON=True | 99bf25b | MH_05_difficult_b_s1 | PASS | 6.636 | 1.066 | 6.206 | 0.084 | 5.374 | 1.288 | 0.26 |
+| step3-H-interp | main.py INTERP_ON=True | 99bf25b | MH_05_difficult_b_s2 | PASS | 6.676 | 1.076 | 5.327 | 0.004 | 5.669 | 0.939 | 0.27 |
+| step3-H-interp | main.py INTERP_ON=True | 99bf25b | MH_05_difficult_b_s3 | PASS | 6.577 | 1.044 | 4.681 | 0.006 | 5.258 | 0.971 | 0.28 |
+| step3-H-interp | main.py INTERP_ON=True | 99bf25b | V1_01_easy_a_s1 | PASS | 4.866 | 0.785 | 5.965 | 0.061 | 1.341 | 2.341 | 0.29 |
+| step3-H-interp | main.py INTERP_ON=True | 99bf25b | V1_01_easy_a_s2 | PASS | 6.285 | 1.067 | 6.507 | 0.238 | 18.116 | 1.710 | 0.35 |
+| step3-H-interp | main.py INTERP_ON=True | 99bf25b | V1_01_easy_a_s3 | PASS | 21.306 | 1.855 | 23.850 | 0.174 | 33.936 | 2.234 | 0.35 |
+| step3-H-interp | main.py INTERP_ON=True | 99bf25b | V1_01_easy_b_s1 | PASS | 2.002 | 0.436 | 1.454 | 0.046 | 3.562 | 0.386 | 0.38 |
+| step3-H-interp | main.py INTERP_ON=True | 99bf25b | V1_01_easy_b_s2 | PASS | 1.761 | 0.444 | 1.824 | 0.029 | 0.764 | 0.268 | 0.40 |
+| step3-H-interp | main.py INTERP_ON=True | 99bf25b | V1_01_easy_b_s3 | PASS | 1.826 | 0.485 | 1.538 | 0.026 | 1.603 | 0.070 | 0.42 |
+| step3-H-interp | main.py INTERP_ON=True | 99bf25b | V1_02_medium_a_s1 | PASS | 2.186 | 0.664 | 1.689 | 0.000 | 2.994 | 0.579 | 0.24 |
+| step3-H-interp | main.py INTERP_ON=True | 99bf25b | V1_02_medium_a_s2 | PASS | 2.522 | 0.699 | 2.029 | 0.000 | 6.064 | 1.154 | 0.31 |
+| step3-H-interp | main.py INTERP_ON=True | 99bf25b | V1_02_medium_a_s3 | PASS | 2.165 | 0.663 | 1.963 | 0.083 | 3.851 | 0.829 | 0.27 |
+| step3-H-interp | main.py INTERP_ON=True | 99bf25b | V1_02_medium_b_s1 | PASS | 1.998 | 0.677 | 1.594 | 0.000 | 2.966 | 0.867 | 0.25 |
+| step3-H-interp | main.py INTERP_ON=True | 99bf25b | V1_02_medium_b_s2 | PASS | 2.325 | 0.676 | 1.744 | 0.000 | 5.488 | 1.358 | 0.27 |
+| step3-H-interp | main.py INTERP_ON=True | 99bf25b | V1_02_medium_b_s3 | PASS | 1.974 | 0.681 | 1.840 | 0.088 | 3.528 | 0.800 | 0.31 |
+| step3-H-interp | main.py INTERP_ON=True | 99bf25b | V1_03_difficult_a_s1 | PASS | 1.849 | 0.534 | 1.521 | 0.040 | 1.993 | 0.354 | 0.26 |
+| step3-H-interp | main.py INTERP_ON=True | 99bf25b | V1_03_difficult_a_s2 | PASS | 1.982 | 0.548 | 1.685 | 0.059 | 0.943 | 0.372 | 0.22 |
+| step3-H-interp | main.py INTERP_ON=True | 99bf25b | V1_03_difficult_a_s3 | PASS | 1.603 | 0.538 | 1.077 | 0.036 | 2.005 | 0.481 | 0.21 |
+| step3-H-interp | main.py INTERP_ON=True | 99bf25b | V1_03_difficult_b_s1 | PASS | 1.649 | 0.528 | 1.535 | 0.038 | 2.076 | 0.409 | 0.27 |
+| step3-H-interp | main.py INTERP_ON=True | 99bf25b | V1_03_difficult_b_s2 | PASS | 2.179 | 0.539 | 1.810 | 0.060 | 2.132 | 0.501 | 0.25 |
+| step3-H-interp | main.py INTERP_ON=True | 99bf25b | V1_03_difficult_b_s3 | PASS | 1.809 | 0.538 | 1.267 | 0.046 | 0.625 | 0.348 | 0.25 |
+| step3-H-off | main.py | 99bf25b | MH_03_medium_a_s1 | PASS | 6.171 | 1.218 | 5.856 | 0.050 | 14.390 | 1.602 | 0.29 |
+| step3-H-off | main.py | 99bf25b | MH_03_medium_a_s2 | PASS | 11.869 | 1.235 | 11.628 | 0.060 | 20.334 | 0.619 | 0.28 |
+| step3-H-off | main.py | 99bf25b | MH_03_medium_a_s3 | PASS | 6.763 | 1.211 | 7.995 | 0.248 | 7.511 | 3.071 | 0.25 |
+| step3-H-off | main.py | 99bf25b | MH_03_medium_b_s1 | PASS | 3.686 | 1.099 | 3.274 | 0.033 | 3.261 | 0.442 | 0.28 |
+| step3-H-off | main.py | 99bf25b | MH_03_medium_b_s2 | PASS | 3.664 | 1.024 | 3.955 | 0.018 | 0.999 | 0.494 | 0.31 |
+| step3-H-off | main.py | 99bf25b | MH_03_medium_b_s3 | PASS | 3.634 | 1.017 | 2.717 | 0.129 | 4.120 | 0.444 | 0.30 |
+| step3-H-off | main.py | 99bf25b | MH_04_difficult_a_s1 | PASS | 9.350 | 1.425 | 7.762 | 0.236 | 14.944 | 0.842 | 0.22 |
+| step3-H-off | main.py | 99bf25b | MH_04_difficult_a_s2 | PASS | 6.967 | 1.537 | 7.406 | 0.036 | 6.425 | 2.078 | 0.24 |
+| step3-H-off | main.py | 99bf25b | MH_04_difficult_a_s3 | PASS | 7.875 | 1.508 | 8.214 | 0.318 | 11.784 | 2.221 | 0.20 |
+| step3-H-off | main.py | 99bf25b | MH_04_difficult_b_s1 | PASS | 6.742 | 1.203 | 7.631 | 0.128 | 5.177 | 0.454 | 0.26 |
+| step3-H-off | main.py | 99bf25b | MH_04_difficult_b_s2 | PASS | 6.272 | 1.242 | 6.152 | 0.043 | 3.034 | 0.270 | 0.24 |
+| step3-H-off | main.py | 99bf25b | MH_04_difficult_b_s3 | PASS | 6.236 | 1.203 | 5.519 | 0.131 | 1.309 | 0.540 | 0.25 |
+| step3-H-off | main.py | 99bf25b | MH_05_difficult_a_s1 | PASS | 8.111 | 1.257 | 5.733 | 0.129 | 17.457 | 1.869 | 0.24 |
+| step3-H-off | main.py | 99bf25b | MH_05_difficult_a_s2 | PASS | 9.514 | 1.078 | 12.232 | 0.046 | 23.474 | 2.358 | 0.22 |
+| step3-H-off | main.py | 99bf25b | MH_05_difficult_a_s3 | PASS | 8.694 | 1.155 | 6.135 | 0.051 | 15.445 | 1.182 | 0.22 |
+| step3-H-off | main.py | 99bf25b | MH_05_difficult_b_s1 | PASS | 7.049 | 1.062 | 6.678 | 0.088 | 5.436 | 0.749 | 0.25 |
+| step3-H-off | main.py | 99bf25b | MH_05_difficult_b_s2 | PASS | 6.626 | 1.090 | 5.536 | 0.003 | 6.383 | 0.990 | 0.25 |
+| step3-H-off | main.py | 99bf25b | MH_05_difficult_b_s3 | PASS | 6.577 | 1.044 | 4.681 | 0.006 | 5.258 | 0.971 | 0.27 |
+| step3-H-off | main.py | 99bf25b | V1_01_easy_a_s1 | PASS | 4.918 | 0.746 | 5.378 | 0.054 | 1.919 | 1.923 | 0.28 |
+| step3-H-off | main.py | 99bf25b | V1_01_easy_a_s2 | PASS | 4.287 | 0.906 | 4.718 | 0.157 | 9.763 | 2.077 | 0.29 |
+| step3-H-off | main.py | 99bf25b | V1_01_easy_a_s3 | PASS | 15.649 | 1.208 | 17.685 | 0.121 | 30.050 | 1.529 | 0.28 |
+| step3-H-off | main.py | 99bf25b | V1_01_easy_b_s1 | PASS | 2.005 | 0.434 | 1.544 | 0.041 | 3.575 | 0.510 | 0.32 |
+| step3-H-off | main.py | 99bf25b | V1_01_easy_b_s2 | PASS | 1.848 | 0.442 | 1.888 | 0.031 | 2.450 | 0.270 | 0.38 |
+| step3-H-off | main.py | 99bf25b | V1_01_easy_b_s3 | PASS | 2.006 | 0.464 | 1.786 | 0.029 | 2.833 | 0.463 | 0.34 |
+| step3-H-off | main.py | 99bf25b | V1_02_medium_a_s1 | PASS | 2.142 | 0.682 | 1.873 | 0.000 | 2.445 | 0.289 | 0.23 |
+| step3-H-off | main.py | 99bf25b | V1_02_medium_a_s2 | PASS | 3.094 | 0.796 | 2.503 | 0.000 | 8.531 | 1.587 | 0.21 |
+| step3-H-off | main.py | 99bf25b | V1_02_medium_a_s3 | PASS | 1.999 | 0.675 | 1.952 | 0.095 | 2.658 | 0.899 | 0.21 |
+| step3-H-off | main.py | 99bf25b | V1_02_medium_b_s1 | PASS | 1.849 | 0.695 | 1.707 | 0.000 | 1.416 | 0.504 | 0.24 |
+| step3-H-off | main.py | 99bf25b | V1_02_medium_b_s2 | PASS | 3.225 | 0.795 | 2.522 | 0.000 | 9.085 | 1.800 | 0.23 |
+| step3-H-off | main.py | 99bf25b | V1_02_medium_b_s3 | PASS | 1.909 | 0.690 | 1.937 | 0.099 | 2.787 | 0.867 | 0.25 |
+| step3-H-off | main.py | 99bf25b | V1_03_difficult_a_s1 | PASS | 1.808 | 0.536 | 1.585 | 0.040 | 1.047 | 0.515 | 0.21 |
+| step3-H-off | main.py | 99bf25b | V1_03_difficult_a_s2 | PASS | 2.813 | 0.565 | 2.663 | 0.064 | 1.995 | 0.643 | 0.22 |
+| step3-H-off | main.py | 99bf25b | V1_03_difficult_a_s3 | PASS | 1.574 | 0.545 | 1.074 | 0.035 | 1.834 | 0.555 | 0.20 |
+| step3-H-off | main.py | 99bf25b | V1_03_difficult_b_s1 | PASS | 1.624 | 0.526 | 1.572 | 0.038 | 1.639 | 0.431 | 0.25 |
+| step3-H-off | main.py | 99bf25b | V1_03_difficult_b_s2 | PASS | 2.730 | 0.549 | 2.673 | 0.063 | 3.143 | 0.357 | 0.26 |
+| step3-H-off | main.py | 99bf25b | V1_03_difficult_b_s3 | PASS | 1.811 | 0.545 | 1.211 | 0.043 | 0.830 | 0.409 | 0.27 |
+| step3-H-spike | main.py FF_SPIKE_ON=True | 99bf25b | MH_03_medium_a_s1 | PASS | 6.263 | 1.213 | 6.014 | 0.049 | 14.560 | 1.468 | 0.43 |
+| step3-H-spike | main.py FF_SPIKE_ON=True | 99bf25b | MH_03_medium_a_s2 | PASS | 12.015 | 1.245 | 11.717 | 0.060 | 20.610 | 0.690 | 0.33 |
+| step3-H-spike | main.py FF_SPIKE_ON=True | 99bf25b | MH_03_medium_a_s3 | PASS | 6.697 | 1.226 | 7.894 | 0.246 | 6.401 | 3.348 | 0.36 |
+| step3-H-spike | main.py FF_SPIKE_ON=True | 99bf25b | MH_03_medium_b_s1 | PASS | 3.672 | 1.100 | 3.259 | 0.033 | 3.128 | 0.484 | 0.45 |
+| step3-H-spike | main.py FF_SPIKE_ON=True | 99bf25b | MH_03_medium_b_s2 | PASS | 3.680 | 1.030 | 3.936 | 0.020 | 1.128 | 0.545 | 0.44 |
+| step3-H-spike | main.py FF_SPIKE_ON=True | 99bf25b | MH_03_medium_b_s3 | PASS | 3.624 | 1.020 | 2.794 | 0.130 | 3.675 | 0.437 | 0.42 |
+| step3-H-spike | main.py FF_SPIKE_ON=True | 99bf25b | MH_04_difficult_a_s1 | PASS | 9.185 | 1.425 | 7.676 | 0.232 | 14.436 | 0.814 | 0.27 |
+| step3-H-spike | main.py FF_SPIKE_ON=True | 99bf25b | MH_04_difficult_a_s2 | PASS | 6.975 | 1.538 | 7.404 | 0.036 | 6.404 | 2.058 | 0.29 |
+| step3-H-spike | main.py FF_SPIKE_ON=True | 99bf25b | MH_04_difficult_a_s3 | PASS | 7.938 | 1.507 | 8.266 | 0.318 | 11.740 | 2.212 | 0.26 |
+| step3-H-spike | main.py FF_SPIKE_ON=True | 99bf25b | MH_04_difficult_b_s1 | PASS | 6.720 | 1.199 | 7.572 | 0.126 | 5.010 | 0.454 | 0.28 |
+| step3-H-spike | main.py FF_SPIKE_ON=True | 99bf25b | MH_04_difficult_b_s2 | PASS | 6.313 | 1.241 | 6.238 | 0.043 | 3.252 | 0.293 | 0.35 |
+| step3-H-spike | main.py FF_SPIKE_ON=True | 99bf25b | MH_04_difficult_b_s3 | PASS | 6.304 | 1.192 | 5.645 | 0.130 | 2.447 | 0.398 | 0.28 |
+| step3-H-spike | main.py FF_SPIKE_ON=True | 99bf25b | MH_05_difficult_a_s1 | PASS | 8.143 | 1.268 | 5.880 | 0.134 | 17.590 | 2.048 | 0.34 |
+| step3-H-spike | main.py FF_SPIKE_ON=True | 99bf25b | MH_05_difficult_a_s2 | PASS | 9.222 | 1.071 | 12.000 | 0.044 | 21.595 | 2.072 | 0.28 |
+| step3-H-spike | main.py FF_SPIKE_ON=True | 99bf25b | MH_05_difficult_a_s3 | PASS | 8.691 | 1.155 | 6.115 | 0.051 | 15.371 | 1.162 | 0.29 |
+| step3-H-spike | main.py FF_SPIKE_ON=True | 99bf25b | MH_05_difficult_b_s1 | PASS | 7.028 | 1.068 | 6.937 | 0.086 | 7.165 | 0.902 | 0.30 |
+| step3-H-spike | main.py FF_SPIKE_ON=True | 99bf25b | MH_05_difficult_b_s2 | PASS | 6.646 | 1.095 | 5.547 | 0.002 | 6.411 | 1.101 | 0.38 |
+| step3-H-spike | main.py FF_SPIKE_ON=True | 99bf25b | MH_05_difficult_b_s3 | PASS | 6.650 | 1.042 | 4.732 | 0.007 | 5.021 | 0.987 | 0.40 |
+| step3-H-spike | main.py FF_SPIKE_ON=True | 99bf25b | V1_01_easy_a_s1 | PASS | 5.473 | 0.745 | 5.474 | 0.023 | 4.518 | 1.829 | 0.58 |
+| step3-H-spike | main.py FF_SPIKE_ON=True | 99bf25b | V1_01_easy_a_s2 | PASS | 4.453 | 0.911 | 4.912 | 0.158 | 9.972 | 2.114 | 0.67 |
+| step3-H-spike | main.py FF_SPIKE_ON=True | 99bf25b | V1_01_easy_a_s3 | PASS | 15.196 | 1.170 | 17.184 | 0.121 | 29.513 | 1.586 | 0.60 |
+| step3-H-spike | main.py FF_SPIKE_ON=True | 99bf25b | V1_01_easy_b_s1 | PASS | 1.962 | 0.435 | 1.393 | 0.037 | 3.395 | 0.599 | 0.62 |
+| step3-H-spike | main.py FF_SPIKE_ON=True | 99bf25b | V1_01_easy_b_s2 | PASS | 1.782 | 0.436 | 1.620 | 0.028 | 2.410 | 0.398 | 0.58 |
+| step3-H-spike | main.py FF_SPIKE_ON=True | 99bf25b | V1_01_easy_b_s3 | PASS | 1.918 | 0.455 | 1.708 | 0.027 | 2.554 | 0.689 | 0.44 |
+| step3-H-spike | main.py FF_SPIKE_ON=True | 99bf25b | V1_02_medium_a_s1 | PASS | 2.142 | 0.682 | 1.871 | 0.000 | 2.444 | 0.289 | 0.32 |
+| step3-H-spike | main.py FF_SPIKE_ON=True | 99bf25b | V1_02_medium_a_s2 | PASS | 3.094 | 0.796 | 2.503 | 0.000 | 8.531 | 1.588 | 0.37 |
+| step3-H-spike | main.py FF_SPIKE_ON=True | 99bf25b | V1_02_medium_a_s3 | PASS | 1.999 | 0.675 | 1.952 | 0.095 | 2.658 | 0.899 | 0.33 |
+| step3-H-spike | main.py FF_SPIKE_ON=True | 99bf25b | V1_02_medium_b_s1 | PASS | 1.800 | 0.699 | 1.718 | 0.000 | 0.873 | 0.556 | 0.32 |
+| step3-H-spike | main.py FF_SPIKE_ON=True | 99bf25b | V1_02_medium_b_s2 | PASS | 3.223 | 0.790 | 2.548 | 0.000 | 9.012 | 1.791 | 0.33 |
+| step3-H-spike | main.py FF_SPIKE_ON=True | 99bf25b | V1_02_medium_b_s3 | PASS | 1.953 | 0.692 | 1.909 | 0.099 | 3.357 | 0.978 | 0.35 |
+| step3-H-spike | main.py FF_SPIKE_ON=True | 99bf25b | V1_03_difficult_a_s1 | PASS | 1.811 | 0.536 | 1.584 | 0.040 | 1.050 | 0.515 | 0.31 |
+| step3-H-spike | main.py FF_SPIKE_ON=True | 99bf25b | V1_03_difficult_a_s2 | PASS | 2.814 | 0.565 | 2.662 | 0.064 | 1.991 | 0.642 | 0.36 |
+| step3-H-spike | main.py FF_SPIKE_ON=True | 99bf25b | V1_03_difficult_a_s3 | PASS | 1.576 | 0.545 | 1.075 | 0.035 | 1.841 | 0.555 | 0.35 |
+| step3-H-spike | main.py FF_SPIKE_ON=True | 99bf25b | V1_03_difficult_b_s1 | PASS | 1.662 | 0.527 | 1.620 | 0.039 | 1.987 | 0.453 | 0.43 |
+| step3-H-spike | main.py FF_SPIKE_ON=True | 99bf25b | V1_03_difficult_b_s2 | PASS | 2.750 | 0.548 | 2.695 | 0.063 | 3.289 | 0.338 | 0.37 |
+| step3-H-spike | main.py FF_SPIKE_ON=True | 99bf25b | V1_03_difficult_b_s3 | PASS | 1.806 | 0.544 | 1.212 | 0.041 | 0.738 | 0.430 | 0.40 |
+| step3-H-stuck | main.py FF_STUCK6_ON=True | 99bf25b | MH_03_medium_a_s1 | PASS | 5.833 | 1.203 | 5.482 | 0.050 | 12.938 | 1.537 | 0.36 |
+| step3-H-stuck | main.py FF_STUCK6_ON=True | 99bf25b | MH_03_medium_a_s2 | PASS | 11.315 | 1.196 | 11.219 | 0.057 | 18.825 | 0.457 | 0.30 |
+| step3-H-stuck | main.py FF_STUCK6_ON=True | 99bf25b | MH_03_medium_a_s3 | PASS | 6.703 | 1.189 | 7.698 | 0.240 | 8.790 | 2.514 | 0.30 |
+| step3-H-stuck | main.py FF_STUCK6_ON=True | 99bf25b | MH_03_medium_b_s1 | PASS | 3.570 | 1.108 | 2.782 | 0.035 | 4.654 | 0.617 | 0.34 |
+| step3-H-stuck | main.py FF_STUCK6_ON=True | 99bf25b | MH_03_medium_b_s2 | PASS | 3.564 | 1.055 | 3.495 | 0.024 | 2.511 | 0.158 | 0.34 |
+| step3-H-stuck | main.py FF_STUCK6_ON=True | 99bf25b | MH_03_medium_b_s3 | PASS | 3.517 | 1.044 | 2.367 | 0.124 | 4.449 | 0.458 | 0.37 |
+| step3-H-stuck | main.py FF_STUCK6_ON=True | 99bf25b | MH_04_difficult_a_s1 | PASS | 8.591 | 1.414 | 7.020 | 0.219 | 13.277 | 0.914 | 0.25 |
+| step3-H-stuck | main.py FF_STUCK6_ON=True | 99bf25b | MH_04_difficult_a_s2 | PASS | 7.113 | 1.472 | 7.483 | 0.037 | 7.822 | 1.461 | 0.25 |
+| step3-H-stuck | main.py FF_STUCK6_ON=True | 99bf25b | MH_04_difficult_a_s3 | PASS | 8.024 | 1.410 | 8.588 | 0.297 | 11.862 | 1.769 | 0.29 |
+| step3-H-stuck | main.py FF_STUCK6_ON=True | 99bf25b | MH_04_difficult_b_s1 | PASS | 6.809 | 1.210 | 7.721 | 0.127 | 4.786 | 0.412 | 0.32 |
+| step3-H-stuck | main.py FF_STUCK6_ON=True | 99bf25b | MH_04_difficult_b_s2 | PASS | 6.198 | 1.240 | 6.152 | 0.042 | 3.714 | 0.450 | 0.30 |
+| step3-H-stuck | main.py FF_STUCK6_ON=True | 99bf25b | MH_04_difficult_b_s3 | PASS | 6.374 | 1.189 | 5.774 | 0.131 | 1.533 | 0.462 | 0.29 |
+| step3-H-stuck | main.py FF_STUCK6_ON=True | 99bf25b | MH_05_difficult_a_s1 | PASS | 7.339 | 1.171 | 5.025 | 0.113 | 12.605 | 1.441 | 0.28 |
+| step3-H-stuck | main.py FF_STUCK6_ON=True | 99bf25b | MH_05_difficult_a_s2 | PASS | 9.438 | 1.068 | 11.939 | 0.046 | 23.119 | 2.362 | 0.32 |
+| step3-H-stuck | main.py FF_STUCK6_ON=True | 99bf25b | MH_05_difficult_a_s3 | PASS | 8.417 | 1.153 | 5.951 | 0.048 | 15.631 | 1.339 | 0.31 |
+| step3-H-stuck | main.py FF_STUCK6_ON=True | 99bf25b | MH_05_difficult_b_s1 | PASS | 7.048 | 1.059 | 6.549 | 0.091 | 5.313 | 0.777 | 0.32 |
+| step3-H-stuck | main.py FF_STUCK6_ON=True | 99bf25b | MH_05_difficult_b_s2 | PASS | 6.530 | 1.100 | 5.133 | 0.005 | 5.577 | 0.889 | 0.33 |
+| step3-H-stuck | main.py FF_STUCK6_ON=True | 99bf25b | MH_05_difficult_b_s3 | PASS | 6.628 | 1.043 | 4.748 | 0.008 | 4.897 | 0.915 | 0.34 |
+| step3-H-stuck | main.py FF_STUCK6_ON=True | 99bf25b | V1_01_easy_a_s1 | PASS | 4.816 | 0.684 | 5.236 | 0.055 | 1.973 | 1.637 | 0.35 |
+| step3-H-stuck | main.py FF_STUCK6_ON=True | 99bf25b | V1_01_easy_a_s2 | PASS | 3.855 | 0.840 | 3.988 | 0.026 | 9.021 | 2.067 | 0.35 |
+| step3-H-stuck | main.py FF_STUCK6_ON=True | 99bf25b | V1_01_easy_a_s3 | PASS | 14.305 | 1.103 | 16.184 | 0.115 | 28.788 | 1.746 | 0.34 |
+| step3-H-stuck | main.py FF_STUCK6_ON=True | 99bf25b | V1_01_easy_b_s1 | PASS | 2.015 | 0.436 | 1.487 | 0.041 | 3.098 | 0.436 | 0.40 |
+| step3-H-stuck | main.py FF_STUCK6_ON=True | 99bf25b | V1_01_easy_b_s2 | PASS | 1.831 | 0.445 | 1.764 | 0.008 | 2.423 | 0.330 | 0.39 |
+| step3-H-stuck | main.py FF_STUCK6_ON=True | 99bf25b | V1_01_easy_b_s3 | PASS | 1.956 | 0.464 | 1.679 | 0.029 | 2.772 | 0.499 | 0.57 |
+| step3-H-stuck | main.py FF_STUCK6_ON=True | 99bf25b | V1_02_medium_a_s1 | PASS | 2.204 | 0.702 | 2.163 | 0.000 | 3.594 | 0.542 | 0.39 |
+| step3-H-stuck | main.py FF_STUCK6_ON=True | 99bf25b | V1_02_medium_a_s2 | PASS | 2.893 | 0.776 | 2.394 | 0.000 | 7.592 | 1.386 | 0.34 |
+| step3-H-stuck | main.py FF_STUCK6_ON=True | 99bf25b | V1_02_medium_a_s3 | PASS | 2.194 | 0.697 | 2.080 | 0.108 | 3.289 | 0.959 | 0.47 |
+| step3-H-stuck | main.py FF_STUCK6_ON=True | 99bf25b | V1_02_medium_b_s1 | PASS | 1.934 | 0.713 | 1.793 | 0.000 | 1.954 | 0.458 | 0.37 |
+| step3-H-stuck | main.py FF_STUCK6_ON=True | 99bf25b | V1_02_medium_b_s2 | PASS | 2.987 | 0.772 | 2.333 | 0.000 | 8.158 | 1.585 | 0.39 |
+| step3-H-stuck | main.py FF_STUCK6_ON=True | 99bf25b | V1_02_medium_b_s3 | PASS | 2.031 | 0.709 | 1.916 | 0.111 | 3.120 | 0.990 | 0.34 |
+| step3-H-stuck | main.py FF_STUCK6_ON=True | 99bf25b | V1_03_difficult_a_s1 | PASS | 2.285 | 0.561 | 1.967 | 0.048 | 2.153 | 0.432 | 0.30 |
+| step3-H-stuck | main.py FF_STUCK6_ON=True | 99bf25b | V1_03_difficult_a_s2 | PASS | 4.102 | 0.610 | 3.658 | 0.076 | 4.665 | 0.543 | 0.32 |
+| step3-H-stuck | main.py FF_STUCK6_ON=True | 99bf25b | V1_03_difficult_a_s3 | PASS | 1.989 | 0.557 | 1.663 | 0.056 | 2.530 | 0.290 | 0.28 |
+| step3-H-stuck | main.py FF_STUCK6_ON=True | 99bf25b | V1_03_difficult_b_s1 | PASS | 1.984 | 0.552 | 1.858 | 0.044 | 2.190 | 0.377 | 0.31 |
+| step3-H-stuck | main.py FF_STUCK6_ON=True | 99bf25b | V1_03_difficult_b_s2 | PASS | 4.034 | 0.600 | 3.637 | 0.077 | 5.572 | 0.330 | 0.28 |
+| step3-H-stuck | main.py FF_STUCK6_ON=True | 99bf25b | V1_03_difficult_b_s3 | PASS | 2.293 | 0.557 | 1.894 | 0.056 | 3.145 | 0.257 | 0.29 |
+| step3-tune-all-100-2 | main.py FF_SPIKE_ON=True FF_SPIKE_ZHI=100.0 FF_SPIKE_ZLO=2.0 FF_STUCK6_ON=True INTERP_ON=True | 44a61c6 | MH_01_easy_a_s1 | PASS | 15.846 | 1.447 | 17.610 | 0.212 | 35.950 | 1.315 | 0.53 |
+| step3-tune-all-100-2 | main.py FF_SPIKE_ON=True FF_SPIKE_ZHI=100.0 FF_SPIKE_ZLO=2.0 FF_STUCK6_ON=True INTERP_ON=True | 44a61c6 | MH_01_easy_a_s2 | PASS | 17.911 | 1.405 | 21.604 | 0.220 | 33.309 | 4.116 | 0.51 |
+| step3-tune-all-100-2 | main.py FF_SPIKE_ON=True FF_SPIKE_ZHI=100.0 FF_SPIKE_ZLO=2.0 FF_STUCK6_ON=True INTERP_ON=True | 44a61c6 | MH_01_easy_a_s3 | PASS | 9.414 | 1.004 | 9.891 | 0.035 | 27.956 | 4.782 | 0.51 |
+| step3-tune-all-100-2 | main.py FF_SPIKE_ON=True FF_SPIKE_ZHI=100.0 FF_SPIKE_ZLO=2.0 FF_STUCK6_ON=True INTERP_ON=True | 44a61c6 | MH_01_easy_b_s1 | PASS | 4.246 | 0.497 | 4.024 | 0.035 | 8.806 | 0.738 | 0.57 |
+| step3-tune-all-100-2 | main.py FF_SPIKE_ON=True FF_SPIKE_ZHI=100.0 FF_SPIKE_ZLO=2.0 FF_STUCK6_ON=True INTERP_ON=True | 44a61c6 | MH_01_easy_b_s2 | PASS | 4.020 | 0.501 | 3.526 | 0.037 | 7.105 | 0.667 | 0.54 |
+| step3-tune-all-100-2 | main.py FF_SPIKE_ON=True FF_SPIKE_ZHI=100.0 FF_SPIKE_ZLO=2.0 FF_STUCK6_ON=True INTERP_ON=True | 44a61c6 | MH_01_easy_b_s3 | PASS | 3.757 | 0.494 | 3.491 | 0.015 | 6.419 | 0.605 | 0.58 |
+| step3-tune-all-100-2 | main.py FF_SPIKE_ON=True FF_SPIKE_ZHI=100.0 FF_SPIKE_ZLO=2.0 FF_STUCK6_ON=True INTERP_ON=True | 44a61c6 | MH_02_easy_a_s1 | PASS | 12.312 | 1.523 | 10.733 | 0.082 | 40.028 | 3.945 | 0.43 |
+| step3-tune-all-100-2 | main.py FF_SPIKE_ON=True FF_SPIKE_ZHI=100.0 FF_SPIKE_ZLO=2.0 FF_STUCK6_ON=True INTERP_ON=True | 44a61c6 | MH_02_easy_a_s2 | PASS | 9.990 | 1.354 | 10.782 | 0.008 | 28.073 | 4.682 | 0.47 |
+| step3-tune-all-100-2 | main.py FF_SPIKE_ON=True FF_SPIKE_ZHI=100.0 FF_SPIKE_ZLO=2.0 FF_STUCK6_ON=True INTERP_ON=True | 44a61c6 | MH_02_easy_a_s3 | PASS | 20.185 | 1.488 | 24.166 | 0.388 | 38.779 | 2.565 | 0.41 |
+| step3-tune-all-100-2 | main.py FF_SPIKE_ON=True FF_SPIKE_ZHI=100.0 FF_SPIKE_ZLO=2.0 FF_STUCK6_ON=True INTERP_ON=True | 44a61c6 | MH_02_easy_b_s1 | PASS | 3.812 | 0.646 | 4.516 | 0.028 | 6.657 | 0.488 | 0.49 |
+| step3-tune-all-100-2 | main.py FF_SPIKE_ON=True FF_SPIKE_ZHI=100.0 FF_SPIKE_ZLO=2.0 FF_STUCK6_ON=True INTERP_ON=True | 44a61c6 | MH_02_easy_b_s2 | PASS | 3.772 | 0.620 | 3.249 | 0.009 | 4.825 | 0.420 | 0.52 |
+| step3-tune-all-100-2 | main.py FF_SPIKE_ON=True FF_SPIKE_ZHI=100.0 FF_SPIKE_ZLO=2.0 FF_STUCK6_ON=True INTERP_ON=True | 44a61c6 | MH_02_easy_b_s3 | PASS | 4.169 | 0.616 | 3.062 | 0.041 | 8.047 | 0.783 | 0.46 |
+| step3-tune-all-100-3 | main.py FF_SPIKE_ON=True FF_SPIKE_ZHI=100.0 FF_STUCK6_ON=True INTERP_ON=True | 44a61c6 | MH_01_easy_a_s1 | PASS | 15.262 | 1.408 | 17.138 | 0.206 | 34.561 | 1.477 | 0.49 |
+| step3-tune-all-100-3 | main.py FF_SPIKE_ON=True FF_SPIKE_ZHI=100.0 FF_STUCK6_ON=True INTERP_ON=True | 44a61c6 | MH_01_easy_a_s2 | PASS | 18.352 | 1.408 | 22.581 | 0.220 | 38.156 | 3.547 | 0.48 |
+| step3-tune-all-100-3 | main.py FF_SPIKE_ON=True FF_SPIKE_ZHI=100.0 FF_STUCK6_ON=True INTERP_ON=True | 44a61c6 | MH_01_easy_a_s3 | PASS | 9.767 | 1.049 | 9.911 | 0.031 | 30.938 | 5.367 | 0.47 |
+| step3-tune-all-100-3 | main.py FF_SPIKE_ON=True FF_SPIKE_ZHI=100.0 FF_STUCK6_ON=True INTERP_ON=True | 44a61c6 | MH_01_easy_b_s1 | PASS | 4.246 | 0.497 | 4.024 | 0.035 | 8.806 | 0.738 | 0.57 |
+| step3-tune-all-100-3 | main.py FF_SPIKE_ON=True FF_SPIKE_ZHI=100.0 FF_STUCK6_ON=True INTERP_ON=True | 44a61c6 | MH_01_easy_b_s2 | PASS | 4.020 | 0.501 | 3.526 | 0.037 | 7.105 | 0.667 | 0.53 |
+| step3-tune-all-100-3 | main.py FF_SPIKE_ON=True FF_SPIKE_ZHI=100.0 FF_STUCK6_ON=True INTERP_ON=True | 44a61c6 | MH_01_easy_b_s3 | PASS | 3.757 | 0.494 | 3.491 | 0.015 | 6.419 | 0.605 | 0.53 |
+| step3-tune-all-100-3 | main.py FF_SPIKE_ON=True FF_SPIKE_ZHI=100.0 FF_STUCK6_ON=True INTERP_ON=True | 44a61c6 | MH_02_easy_a_s1 | PASS | 12.506 | 1.550 | 10.840 | 0.080 | 41.358 | 4.095 | 0.42 |
+| step3-tune-all-100-3 | main.py FF_SPIKE_ON=True FF_SPIKE_ZHI=100.0 FF_STUCK6_ON=True INTERP_ON=True | 44a61c6 | MH_02_easy_a_s2 | PASS | 10.018 | 1.363 | 10.608 | 0.008 | 27.310 | 4.806 | 0.44 |
+| step3-tune-all-100-3 | main.py FF_SPIKE_ON=True FF_SPIKE_ZHI=100.0 FF_STUCK6_ON=True INTERP_ON=True | 44a61c6 | MH_02_easy_a_s3 | PASS | 20.298 | 1.492 | 24.240 | 0.384 | 39.422 | 2.431 | 0.41 |
+| step3-tune-all-100-3 | main.py FF_SPIKE_ON=True FF_SPIKE_ZHI=100.0 FF_STUCK6_ON=True INTERP_ON=True | 44a61c6 | MH_02_easy_b_s1 | PASS | 3.812 | 0.646 | 4.516 | 0.028 | 6.657 | 0.488 | 0.47 |
+| step3-tune-all-100-3 | main.py FF_SPIKE_ON=True FF_SPIKE_ZHI=100.0 FF_STUCK6_ON=True INTERP_ON=True | 44a61c6 | MH_02_easy_b_s2 | PASS | 3.772 | 0.620 | 3.249 | 0.009 | 4.826 | 0.419 | 0.45 |
+| step3-tune-all-100-3 | main.py FF_SPIKE_ON=True FF_SPIKE_ZHI=100.0 FF_STUCK6_ON=True INTERP_ON=True | 44a61c6 | MH_02_easy_b_s3 | PASS | 4.169 | 0.616 | 3.062 | 0.041 | 8.047 | 0.783 | 0.44 |
+| step3-tune-all-30-3 | main.py FF_SPIKE_ON=True FF_STUCK6_ON=True INTERP_ON=True | 44a61c6 | MH_01_easy_a_s1 | PASS | 15.234 | 1.407 | 17.140 | 0.206 | 34.338 | 1.459 | 0.52 |
+| step3-tune-all-30-3 | main.py FF_SPIKE_ON=True FF_STUCK6_ON=True INTERP_ON=True | 44a61c6 | MH_01_easy_a_s2 | PASS | 18.328 | 1.407 | 22.565 | 0.220 | 38.015 | 3.546 | 0.47 |
+| step3-tune-all-30-3 | main.py FF_SPIKE_ON=True FF_STUCK6_ON=True INTERP_ON=True | 44a61c6 | MH_01_easy_a_s3 | PASS | 9.793 | 1.047 | 9.920 | 0.031 | 30.982 | 5.370 | 0.49 |
+| step3-tune-all-30-3 | main.py FF_SPIKE_ON=True FF_STUCK6_ON=True INTERP_ON=True | 44a61c6 | MH_01_easy_b_s1 | PASS | 4.252 | 0.501 | 4.089 | 0.036 | 9.061 | 0.767 | 0.54 |
+| step3-tune-all-30-3 | main.py FF_SPIKE_ON=True FF_STUCK6_ON=True INTERP_ON=True | 44a61c6 | MH_01_easy_b_s2 | PASS | 4.010 | 0.504 | 3.644 | 0.036 | 7.514 | 0.672 | 0.55 |
+| step3-tune-all-30-3 | main.py FF_SPIKE_ON=True FF_STUCK6_ON=True INTERP_ON=True | 44a61c6 | MH_01_easy_b_s3 | PASS | 3.844 | 0.498 | 3.587 | 0.016 | 6.555 | 0.620 | 0.52 |
+| step3-tune-all-30-3 | main.py FF_SPIKE_ON=True FF_STUCK6_ON=True INTERP_ON=True | 44a61c6 | MH_02_easy_a_s1 | PASS | 12.448 | 1.542 | 10.827 | 0.081 | 40.961 | 4.043 | 0.40 |
+| step3-tune-all-30-3 | main.py FF_SPIKE_ON=True FF_STUCK6_ON=True INTERP_ON=True | 44a61c6 | MH_02_easy_a_s2 | PASS | 9.959 | 1.363 | 10.570 | 0.009 | 26.966 | 4.792 | 0.44 |
+| step3-tune-all-30-3 | main.py FF_SPIKE_ON=True FF_STUCK6_ON=True INTERP_ON=True | 44a61c6 | MH_02_easy_a_s3 | PASS | 19.877 | 1.448 | 23.611 | 0.376 | 38.839 | 2.381 | 0.40 |
+| step3-tune-all-30-3 | main.py FF_SPIKE_ON=True FF_STUCK6_ON=True INTERP_ON=True | 44a61c6 | MH_02_easy_b_s1 | PASS | 3.899 | 0.659 | 4.678 | 0.029 | 5.445 | 0.407 | 0.47 |
+| step3-tune-all-30-3 | main.py FF_SPIKE_ON=True FF_STUCK6_ON=True INTERP_ON=True | 44a61c6 | MH_02_easy_b_s2 | PASS | 4.051 | 0.618 | 3.212 | 0.010 | 4.517 | 0.495 | 0.46 |
+| step3-tune-all-30-3 | main.py FF_SPIKE_ON=True FF_STUCK6_ON=True INTERP_ON=True | 44a61c6 | MH_02_easy_b_s3 | PASS | 4.042 | 0.618 | 2.960 | 0.042 | 8.444 | 0.804 | 0.46 |
+| step3-tune-interp | main.py INTERP_ON=True | 44a61c6 | MH_01_easy_a_s1 | PASS | 13.573 | 1.271 | 14.930 | 0.185 | 31.739 | 1.319 | 0.41 |
+| step3-tune-interp | main.py INTERP_ON=True | 44a61c6 | MH_01_easy_a_s2 | PASS | 18.684 | 1.343 | 21.634 | 0.190 | 32.486 | 3.361 | 0.40 |
+| step3-tune-interp | main.py INTERP_ON=True | 44a61c6 | MH_01_easy_a_s3 | PASS | 8.576 | 0.978 | 9.290 | 0.040 | 23.984 | 4.491 | 0.35 |
+| step3-tune-interp | main.py INTERP_ON=True | 44a61c6 | MH_01_easy_b_s1 | PASS | 4.109 | 0.490 | 3.966 | 0.035 | 8.096 | 0.742 | 0.43 |
+| step3-tune-interp | main.py INTERP_ON=True | 44a61c6 | MH_01_easy_b_s2 | PASS | 4.012 | 0.493 | 3.593 | 0.039 | 7.764 | 1.065 | 0.47 |
+| step3-tune-interp | main.py INTERP_ON=True | 44a61c6 | MH_01_easy_b_s3 | PASS | 3.731 | 0.497 | 3.437 | 0.016 | 7.024 | 0.662 | 0.46 |
+| step3-tune-interp | main.py INTERP_ON=True | 44a61c6 | MH_02_easy_a_s1 | PASS | 11.505 | 1.394 | 9.927 | 0.066 | 37.772 | 4.274 | 0.31 |
+| step3-tune-interp | main.py INTERP_ON=True | 44a61c6 | MH_02_easy_a_s2 | PASS | 9.117 | 1.278 | 9.974 | 0.008 | 24.381 | 5.137 | 0.34 |
+| step3-tune-interp | main.py INTERP_ON=True | 44a61c6 | MH_02_easy_a_s3 | PASS | 18.641 | 1.354 | 21.914 | 0.351 | 37.973 | 2.322 | 0.30 |
+| step3-tune-interp | main.py INTERP_ON=True | 44a61c6 | MH_02_easy_b_s1 | PASS | 3.958 | 0.630 | 4.708 | 0.025 | 8.438 | 0.747 | 0.37 |
+| step3-tune-interp | main.py INTERP_ON=True | 44a61c6 | MH_02_easy_b_s2 | PASS | 3.724 | 0.637 | 3.210 | 0.009 | 4.702 | 0.668 | 0.37 |
+| step3-tune-interp | main.py INTERP_ON=True | 44a61c6 | MH_02_easy_b_s3 | PASS | 4.160 | 0.613 | 3.121 | 0.040 | 8.493 | 0.862 | 0.37 |
+| step3-tune-off | main.py | 44a61c6 | MH_01_easy_a_s1 | PASS | 12.403 | 1.268 | 14.152 | 0.199 | 22.407 | 1.063 | 0.38 |
+| step3-tune-off | main.py | 44a61c6 | MH_01_easy_a_s2 | PASS | 17.496 | 1.268 | 20.713 | 0.178 | 31.852 | 2.714 | 0.36 |
+| step3-tune-off | main.py | 44a61c6 | MH_01_easy_a_s3 | PASS | 8.572 | 0.974 | 9.255 | 0.035 | 24.284 | 4.494 | 0.37 |
+| step3-tune-off | main.py | 44a61c6 | MH_01_easy_b_s1 | PASS | 4.091 | 0.494 | 4.041 | 0.036 | 8.189 | 0.938 | 0.43 |
+| step3-tune-off | main.py | 44a61c6 | MH_01_easy_b_s2 | PASS | 4.019 | 0.510 | 3.572 | 0.038 | 7.737 | 0.788 | 0.43 |
+| step3-tune-off | main.py | 44a61c6 | MH_01_easy_b_s3 | PASS | 3.779 | 0.505 | 3.515 | 0.016 | 7.306 | 0.706 | 0.44 |
+| step3-tune-off | main.py | 44a61c6 | MH_02_easy_a_s1 | PASS | 11.463 | 1.388 | 9.947 | 0.102 | 37.225 | 4.427 | 0.30 |
+| step3-tune-off | main.py | 44a61c6 | MH_02_easy_a_s2 | PASS | 7.357 | 1.082 | 9.396 | 0.008 | 16.919 | 3.641 | 0.35 |
+| step3-tune-off | main.py | 44a61c6 | MH_02_easy_a_s3 | PASS | 16.404 | 1.245 | 19.528 | 0.354 | 33.888 | 2.746 | 0.30 |
+| step3-tune-off | main.py | 44a61c6 | MH_02_easy_b_s1 | PASS | 3.995 | 0.623 | 4.793 | 0.018 | 8.138 | 0.215 | 0.37 |
+| step3-tune-off | main.py | 44a61c6 | MH_02_easy_b_s2 | PASS | 3.901 | 0.609 | 3.605 | 0.009 | 6.427 | 0.455 | 0.37 |
+| step3-tune-off | main.py | 44a61c6 | MH_02_easy_b_s3 | PASS | 4.052 | 0.608 | 2.999 | 0.038 | 7.424 | 0.702 | 0.37 |
+| step3-tune-spike-100-3 | main.py FF_SPIKE_ON=True FF_SPIKE_ZHI=100.0 | 44a61c6 | MH_01_easy_a_s1 | PASS | 12.469 | 1.265 | 14.336 | 0.201 | 23.113 | 1.107 | 0.52 |
+| step3-tune-spike-100-3 | main.py FF_SPIKE_ON=True FF_SPIKE_ZHI=100.0 | 44a61c6 | MH_01_easy_a_s2 | PASS | 17.646 | 1.246 | 20.713 | 0.180 | 31.788 | 2.770 | 0.53 |
+| step3-tune-spike-100-3 | main.py FF_SPIKE_ON=True FF_SPIKE_ZHI=100.0 | 44a61c6 | MH_01_easy_a_s3 | PASS | 8.427 | 0.960 | 9.027 | 0.035 | 23.925 | 4.580 | 0.51 |
+| step3-tune-spike-100-3 | main.py FF_SPIKE_ON=True FF_SPIKE_ZHI=100.0 | 44a61c6 | MH_01_easy_b_s1 | PASS | 4.063 | 0.497 | 3.950 | 0.036 | 8.392 | 0.911 | 0.56 |
+| step3-tune-spike-100-3 | main.py FF_SPIKE_ON=True FF_SPIKE_ZHI=100.0 | 44a61c6 | MH_01_easy_b_s2 | PASS | 3.994 | 0.509 | 3.546 | 0.036 | 7.759 | 0.659 | 0.57 |
+| step3-tune-spike-100-3 | main.py FF_SPIKE_ON=True FF_SPIKE_ZHI=100.0 | 44a61c6 | MH_01_easy_b_s3 | PASS | 3.802 | 0.502 | 3.565 | 0.017 | 7.138 | 0.695 | 0.56 |
+| step3-tune-spike-100-3 | main.py FF_SPIKE_ON=True FF_SPIKE_ZHI=100.0 | 44a61c6 | MH_02_easy_a_s1 | PASS | 11.325 | 1.397 | 10.012 | 0.102 | 36.744 | 4.416 | 0.42 |
+| step3-tune-spike-100-3 | main.py FF_SPIKE_ON=True FF_SPIKE_ZHI=100.0 | 44a61c6 | MH_02_easy_a_s2 | PASS | 7.362 | 1.084 | 9.483 | 0.008 | 17.081 | 3.642 | 0.45 |
+| step3-tune-spike-100-3 | main.py FF_SPIKE_ON=True FF_SPIKE_ZHI=100.0 | 44a61c6 | MH_02_easy_a_s3 | PASS | 16.568 | 1.266 | 19.754 | 0.356 | 34.188 | 2.772 | 0.43 |
+| step3-tune-spike-100-3 | main.py FF_SPIKE_ON=True FF_SPIKE_ZHI=100.0 | 44a61c6 | MH_02_easy_b_s1 | PASS | 3.977 | 0.627 | 4.754 | 0.019 | 7.724 | 0.157 | 0.48 |
+| step3-tune-spike-100-3 | main.py FF_SPIKE_ON=True FF_SPIKE_ZHI=100.0 | 44a61c6 | MH_02_easy_b_s2 | PASS | 3.948 | 0.597 | 3.626 | 0.009 | 6.878 | 0.302 | 0.47 |
+| step3-tune-spike-100-3 | main.py FF_SPIKE_ON=True FF_SPIKE_ZHI=100.0 | 44a61c6 | MH_02_easy_b_s3 | PASS | 4.077 | 0.599 | 2.981 | 0.037 | 7.426 | 0.581 | 0.48 |
+| step3-tune-stuck-interp | main.py FF_STUCK6_ON=True INTERP_ON=True | 44a61c6 | MH_01_easy_a_s1 | PASS | 15.204 | 1.408 | 16.940 | 0.205 | 33.800 | 1.335 | 0.48 |
+| step3-tune-stuck-interp | main.py FF_STUCK6_ON=True INTERP_ON=True | 44a61c6 | MH_01_easy_a_s2 | PASS | 17.954 | 1.400 | 21.755 | 0.214 | 34.439 | 3.624 | 0.45 |
+| step3-tune-stuck-interp | main.py FF_STUCK6_ON=True INTERP_ON=True | 44a61c6 | MH_01_easy_a_s3 | PASS | 9.840 | 1.048 | 9.981 | 0.031 | 31.859 | 5.223 | 0.50 |
+| step3-tune-stuck-interp | main.py FF_STUCK6_ON=True INTERP_ON=True | 44a61c6 | MH_01_easy_b_s1 | PASS | 4.195 | 0.498 | 4.139 | 0.036 | 8.354 | 0.832 | 0.53 |
+| step3-tune-stuck-interp | main.py FF_STUCK6_ON=True INTERP_ON=True | 44a61c6 | MH_01_easy_b_s2 | PASS | 4.025 | 0.504 | 3.625 | 0.038 | 7.697 | 0.962 | 0.51 |
+| step3-tune-stuck-interp | main.py FF_STUCK6_ON=True INTERP_ON=True | 44a61c6 | MH_01_easy_b_s3 | PASS | 3.750 | 0.493 | 3.458 | 0.015 | 7.070 | 0.679 | 0.50 |
+| step3-tune-stuck-interp | main.py FF_STUCK6_ON=True INTERP_ON=True | 44a61c6 | MH_02_easy_a_s1 | PASS | 12.608 | 1.523 | 10.632 | 0.080 | 41.736 | 4.201 | 0.39 |
+| step3-tune-stuck-interp | main.py FF_STUCK6_ON=True INTERP_ON=True | 44a61c6 | MH_02_easy_a_s2 | PASS | 9.888 | 1.360 | 10.533 | 0.008 | 27.392 | 4.796 | 0.42 |
+| step3-tune-stuck-interp | main.py FF_STUCK6_ON=True INTERP_ON=True | 44a61c6 | MH_02_easy_a_s3 | PASS | 20.025 | 1.463 | 23.852 | 0.379 | 39.020 | 2.400 | 0.41 |
+| step3-tune-stuck-interp | main.py FF_STUCK6_ON=True INTERP_ON=True | 44a61c6 | MH_02_easy_b_s1 | PASS | 3.835 | 0.640 | 4.571 | 0.026 | 7.310 | 0.646 | 0.44 |
+| step3-tune-stuck-interp | main.py FF_STUCK6_ON=True INTERP_ON=True | 44a61c6 | MH_02_easy_b_s2 | PASS | 3.722 | 0.637 | 3.188 | 0.009 | 4.338 | 0.620 | 0.49 |
+| step3-tune-stuck-interp | main.py FF_STUCK6_ON=True INTERP_ON=True | 44a61c6 | MH_02_easy_b_s3 | PASS | 4.166 | 0.624 | 3.099 | 0.042 | 8.450 | 0.949 | 0.46 |
+| step3-tune-stuck | main.py FF_STUCK6_ON=True | 44a61c6 | MH_01_easy_a_s1 | PASS | 10.904 | 1.121 | 12.228 | 0.177 | 20.011 | 0.971 | 0.48 |
+| step3-tune-stuck | main.py FF_STUCK6_ON=True | 44a61c6 | MH_01_easy_a_s2 | PASS | 17.313 | 1.181 | 20.542 | 0.168 | 33.034 | 2.260 | 0.44 |
+| step3-tune-stuck | main.py FF_STUCK6_ON=True | 44a61c6 | MH_01_easy_a_s3 | PASS | 7.968 | 0.933 | 8.693 | 0.028 | 21.894 | 4.078 | 0.45 |
+| step3-tune-stuck | main.py FF_STUCK6_ON=True | 44a61c6 | MH_01_easy_b_s1 | PASS | 4.066 | 0.496 | 3.915 | 0.035 | 7.966 | 0.870 | 0.57 |
+| step3-tune-stuck | main.py FF_STUCK6_ON=True | 44a61c6 | MH_01_easy_b_s2 | PASS | 4.006 | 0.510 | 3.499 | 0.038 | 7.230 | 0.803 | 0.52 |
+| step3-tune-stuck | main.py FF_STUCK6_ON=True | 44a61c6 | MH_01_easy_b_s3 | PASS | 3.710 | 0.519 | 3.469 | 0.015 | 6.960 | 0.658 | 0.50 |
+| step3-tune-stuck | main.py FF_STUCK6_ON=True | 44a61c6 | MH_02_easy_a_s1 | PASS | 10.636 | 1.299 | 9.413 | 0.091 | 33.483 | 4.385 | 0.38 |
+| step3-tune-stuck | main.py FF_STUCK6_ON=True | 44a61c6 | MH_02_easy_a_s2 | PASS | 7.139 | 1.033 | 8.904 | 0.008 | 16.841 | 3.769 | 0.43 |
+| step3-tune-stuck | main.py FF_STUCK6_ON=True | 44a61c6 | MH_02_easy_a_s3 | PASS | 15.889 | 1.173 | 18.672 | 0.341 | 33.599 | 2.589 | 0.39 |
+| step3-tune-stuck | main.py FF_STUCK6_ON=True | 44a61c6 | MH_02_easy_b_s1 | PASS | 4.050 | 0.618 | 4.867 | 0.018 | 8.034 | 0.244 | 0.47 |
+| step3-tune-stuck | main.py FF_STUCK6_ON=True | 44a61c6 | MH_02_easy_b_s2 | PASS | 3.890 | 0.604 | 3.528 | 0.008 | 6.522 | 0.421 | 0.43 |
+| step3-tune-stuck | main.py FF_STUCK6_ON=True | 44a61c6 | MH_02_easy_b_s3 | PASS | 4.168 | 0.600 | 3.132 | 0.034 | 6.562 | 0.626 | 0.43 |
+| stepF-H-bgcap | main.py BGCAP_ON=True | cba34e3 | MH_03_medium_a_s4 | PASS | 9.788 | 1.282 | 7.504 | 0.134 | 18.792 | 0.590 | 0.38 |
+| stepF-H-bgcap | main.py BGCAP_ON=True | cba34e3 | MH_03_medium_a_s5 | PASS | 6.701 | 1.120 | 8.246 | 0.083 | 12.165 | 1.955 | 0.39 |
+| stepF-H-bgcap | main.py BGCAP_ON=True | cba34e3 | MH_03_medium_a_s6 | PASS | 7.218 | 1.285 | 10.621 | 0.115 | 13.495 | 1.123 | 0.36 |
+| stepF-H-bgcap | main.py BGCAP_ON=True | cba34e3 | MH_03_medium_b_s4 | PASS | 3.405 | 1.066 | 2.918 | 0.071 | 2.296 | 0.506 | 0.56 |
+| stepF-H-bgcap | main.py BGCAP_ON=True | cba34e3 | MH_03_medium_b_s5 | PASS | 3.556 | 1.015 | 3.213 | 0.016 | 3.829 | 0.381 | 0.47 |
+| stepF-H-bgcap | main.py BGCAP_ON=True | cba34e3 | MH_03_medium_b_s6 | PASS | 3.672 | 1.019 | 3.137 | 0.023 | 4.523 | 0.454 | 0.45 |
+| stepF-H-bgcap | main.py BGCAP_ON=True | cba34e3 | MH_04_difficult_a_s4 | PASS | 5.537 | 1.085 | 4.833 | 0.366 | 7.123 | 2.720 | 0.31 |
+| stepF-H-bgcap | main.py BGCAP_ON=True | cba34e3 | MH_04_difficult_a_s5 | PASS | 8.702 | 1.300 | 6.710 | 0.088 | 22.858 | 3.671 | 0.41 |
+| stepF-H-bgcap | main.py BGCAP_ON=True | cba34e3 | MH_04_difficult_a_s6 | PASS | 10.131 | 1.330 | 10.872 | 0.042 | 22.415 | 2.907 | 0.40 |
+| stepF-H-bgcap | main.py BGCAP_ON=True | cba34e3 | MH_04_difficult_b_s4 | PASS | 6.599 | 1.185 | 6.042 | 0.110 | 3.784 | 0.398 | 0.38 |
+| stepF-H-bgcap | main.py BGCAP_ON=True | cba34e3 | MH_04_difficult_b_s5 | PASS | 6.522 | 1.229 | 6.936 | 0.012 | 4.551 | 0.535 | 0.33 |
+| stepF-H-bgcap | main.py BGCAP_ON=True | cba34e3 | MH_04_difficult_b_s6 | PASS | 6.240 | 1.239 | 6.666 | 0.023 | 1.463 | 0.613 | 0.41 |
+| stepF-H-bgcap | main.py BGCAP_ON=True | cba34e3 | MH_05_difficult_a_s4 | PASS | 7.922 | 1.154 | 8.583 | 0.030 | 12.802 | 3.173 | 0.29 |
+| stepF-H-bgcap | main.py BGCAP_ON=True | cba34e3 | MH_05_difficult_a_s5 | PASS | 11.049 | 1.491 | 12.138 | 0.000 | 16.417 | 3.237 | 0.40 |
+| stepF-H-bgcap | main.py BGCAP_ON=True | cba34e3 | MH_05_difficult_a_s6 | PASS | 6.443 | 1.516 | 4.815 | 0.023 | 15.020 | 3.052 | 0.31 |
+| stepF-H-bgcap | main.py BGCAP_ON=True | cba34e3 | MH_05_difficult_b_s4 | PASS | 6.754 | 1.057 | 7.136 | 0.008 | 4.672 | 1.029 | 0.41 |
+| stepF-H-bgcap | main.py BGCAP_ON=True | cba34e3 | MH_05_difficult_b_s5 | PASS | 6.280 | 1.059 | 6.652 | 0.000 | 4.654 | 0.661 | 0.42 |
+| stepF-H-bgcap | main.py BGCAP_ON=True | cba34e3 | MH_05_difficult_b_s6 | PASS | 6.575 | 1.065 | 5.621 | 0.026 | 3.608 | 0.367 | 0.45 |
+| stepF-H-bgcap | main.py BGCAP_ON=True | cba34e3 | V1_01_easy_a_s4 | PASS | 9.395 | 0.707 | 10.068 | 0.038 | 17.632 | 0.283 | 0.40 |
+| stepF-H-bgcap | main.py BGCAP_ON=True | cba34e3 | V1_01_easy_a_s5 | PASS | 9.915 | 0.666 | 14.779 | 0.044 | 19.179 | 0.550 | 0.43 |
+| stepF-H-bgcap | main.py BGCAP_ON=True | cba34e3 | V1_01_easy_a_s6 | PASS | 6.352 | 0.901 | 7.117 | 0.182 | 10.631 | 1.886 | 0.44 |
+| stepF-H-bgcap | main.py BGCAP_ON=True | cba34e3 | V1_01_easy_b_s4 | PASS | 2.118 | 0.422 | 2.144 | 0.018 | 2.838 | 0.091 | 0.52 |
+| stepF-H-bgcap | main.py BGCAP_ON=True | cba34e3 | V1_01_easy_b_s5 | PASS | 2.186 | 0.472 | 1.774 | 0.015 | 2.016 | 0.360 | 0.53 |
+| stepF-H-bgcap | main.py BGCAP_ON=True | cba34e3 | V1_01_easy_b_s6 | PASS | 1.928 | 0.445 | 1.727 | 0.040 | 1.535 | 0.401 | 0.45 |
+| stepF-H-bgcap | main.py BGCAP_ON=True | cba34e3 | V1_02_medium_a_s4 | PASS | 1.908 | 0.690 | 1.939 | 0.019 | 2.546 | 1.082 | 0.34 |
+| stepF-H-bgcap | main.py BGCAP_ON=True | cba34e3 | V1_02_medium_a_s5 | PASS | 1.952 | 0.677 | 1.880 | 0.062 | 1.896 | 0.519 | 0.29 |
+| stepF-H-bgcap | main.py BGCAP_ON=True | cba34e3 | V1_02_medium_a_s6 | PASS | 1.958 | 0.681 | 1.749 | 0.000 | 2.287 | 0.931 | 0.32 |
+| stepF-H-bgcap | main.py BGCAP_ON=True | cba34e3 | V1_02_medium_b_s4 | PASS | 1.729 | 0.674 | 1.878 | 0.020 | 0.598 | 0.884 | 0.32 |
+| stepF-H-bgcap | main.py BGCAP_ON=True | cba34e3 | V1_02_medium_b_s5 | PASS | 1.912 | 0.675 | 1.308 | 0.053 | 1.684 | 0.435 | 0.32 |
+| stepF-H-bgcap | main.py BGCAP_ON=True | cba34e3 | V1_02_medium_b_s6 | PASS | 1.831 | 0.694 | 1.284 | 0.000 | 1.268 | 0.910 | 0.33 |
+| stepF-H-bgcap | main.py BGCAP_ON=True | cba34e3 | V1_03_difficult_a_s4 | PASS | 2.013 | 0.593 | 1.967 | 0.021 | 2.322 | 0.421 | 0.29 |
+| stepF-H-bgcap | main.py BGCAP_ON=True | cba34e3 | V1_03_difficult_a_s5 | PASS | 2.009 | 0.542 | 1.282 | 0.049 | 1.283 | 0.301 | 0.28 |
+| stepF-H-bgcap | main.py BGCAP_ON=True | cba34e3 | V1_03_difficult_a_s6 | PASS | 2.474 | 0.562 | 1.898 | 0.067 | 2.665 | 0.236 | 0.29 |
+| stepF-H-bgcap | main.py BGCAP_ON=True | cba34e3 | V1_03_difficult_b_s4 | PASS | 2.094 | 0.604 | 2.024 | 0.023 | 2.799 | 0.603 | 0.36 |
+| stepF-H-bgcap | main.py BGCAP_ON=True | cba34e3 | V1_03_difficult_b_s5 | PASS | 1.957 | 0.559 | 1.423 | 0.052 | 1.020 | 0.207 | 0.36 |
+| stepF-H-bgcap | main.py BGCAP_ON=True | cba34e3 | V1_03_difficult_b_s6 | PASS | 2.174 | 0.562 | 1.526 | 0.063 | 2.052 | 0.256 | 0.38 |
+| stepF-H-floor | tools\baseline_still.py | cba34e3 | MH_03_medium_a_s4 | PASS | 3.579 | 1.224 | 3.179 | 0.044 | 3.079 | 0.319 | 0.09 |
+| stepF-H-floor | tools\baseline_still.py | cba34e3 | MH_03_medium_a_s5 | PASS | 3.578 | 1.222 | 3.703 | 0.016 | 3.086 | 0.319 | 0.09 |
+| stepF-H-floor | tools\baseline_still.py | cba34e3 | MH_03_medium_a_s6 | PASS | 3.581 | 1.225 | 3.386 | 0.014 | 3.089 | 0.319 | 0.10 |
+| stepF-H-floor | tools\baseline_still.py | cba34e3 | MH_03_medium_b_s4 | PASS | 3.579 | 1.224 | 3.179 | 0.044 | 3.079 | 0.319 | 0.15 |
+| stepF-H-floor | tools\baseline_still.py | cba34e3 | MH_03_medium_b_s5 | PASS | 3.578 | 1.222 | 3.703 | 0.016 | 3.086 | 0.319 | 0.18 |
+| stepF-H-floor | tools\baseline_still.py | cba34e3 | MH_03_medium_b_s6 | PASS | 3.581 | 1.225 | 3.386 | 0.014 | 3.089 | 0.319 | 0.17 |
+| stepF-H-floor | tools\baseline_still.py | cba34e3 | MH_04_difficult_a_s4 | PASS | 6.829 | 1.132 | 6.141 | 0.088 | 3.876 | 0.272 | 0.08 |
+| stepF-H-floor | tools\baseline_still.py | cba34e3 | MH_04_difficult_a_s5 | PASS | 6.799 | 1.168 | 7.411 | 0.008 | 3.850 | 0.272 | 0.09 |
+| stepF-H-floor | tools\baseline_still.py | cba34e3 | MH_04_difficult_a_s6 | PASS | 6.811 | 1.175 | 7.059 | 0.010 | 3.819 | 0.272 | 0.08 |
+| stepF-H-floor | tools\baseline_still.py | cba34e3 | MH_04_difficult_b_s4 | PASS | 6.829 | 1.132 | 6.141 | 0.088 | 3.876 | 0.272 | 0.15 |
+| stepF-H-floor | tools\baseline_still.py | cba34e3 | MH_04_difficult_b_s5 | PASS | 6.799 | 1.168 | 7.411 | 0.008 | 3.850 | 0.272 | 0.16 |
+| stepF-H-floor | tools\baseline_still.py | cba34e3 | MH_04_difficult_b_s6 | PASS | 6.811 | 1.175 | 7.059 | 0.010 | 3.819 | 0.272 | 0.13 |
+| stepF-H-floor | tools\baseline_still.py | cba34e3 | MH_05_difficult_a_s4 | PASS | 6.868 | 1.075 | 6.997 | 0.011 | 4.047 | 0.854 | 0.09 |
+| stepF-H-floor | tools\baseline_still.py | cba34e3 | MH_05_difficult_a_s5 | PASS | 6.865 | 1.065 | 7.415 | 0.000 | 4.066 | 0.854 | 0.10 |
+| stepF-H-floor | tools\baseline_still.py | cba34e3 | MH_05_difficult_a_s6 | PASS | 6.863 | 1.076 | 5.851 | 0.021 | 4.064 | 0.854 | 0.08 |
+| stepF-H-floor | tools\baseline_still.py | cba34e3 | MH_05_difficult_b_s4 | PASS | 6.868 | 1.075 | 6.997 | 0.011 | 4.047 | 0.854 | 0.15 |
+| stepF-H-floor | tools\baseline_still.py | cba34e3 | MH_05_difficult_b_s5 | PASS | 6.865 | 1.065 | 7.415 | 0.000 | 4.066 | 0.854 | 0.14 |
+| stepF-H-floor | tools\baseline_still.py | cba34e3 | MH_05_difficult_b_s6 | PASS | 6.863 | 1.076 | 5.851 | 0.021 | 4.064 | 0.854 | 0.13 |
+| stepF-H-floor | tools\baseline_still.py | cba34e3 | V1_01_easy_a_s4 | PASS | 1.855 | 0.457 | 1.580 | 0.012 | 1.726 | 0.205 | 0.09 |
+| stepF-H-floor | tools\baseline_still.py | cba34e3 | V1_01_easy_a_s5 | PASS | 1.855 | 0.455 | 1.638 | 0.009 | 1.717 | 0.205 | 0.11 |
+| stepF-H-floor | tools\baseline_still.py | cba34e3 | V1_01_easy_a_s6 | PASS | 1.853 | 0.457 | 1.690 | 0.021 | 1.718 | 0.205 | 0.10 |
+| stepF-H-floor | tools\baseline_still.py | cba34e3 | V1_01_easy_b_s4 | PASS | 1.855 | 0.457 | 1.580 | 0.012 | 1.726 | 0.205 | 0.16 |
+| stepF-H-floor | tools\baseline_still.py | cba34e3 | V1_01_easy_b_s5 | PASS | 1.855 | 0.455 | 1.638 | 0.009 | 1.717 | 0.205 | 0.17 |
+| stepF-H-floor | tools\baseline_still.py | cba34e3 | V1_01_easy_b_s6 | PASS | 1.853 | 0.457 | 1.690 | 0.021 | 1.718 | 0.205 | 0.24 |
+| stepF-H-floor | tools\baseline_still.py | cba34e3 | V1_02_medium_a_s4 | PASS | 1.779 | 0.979 | 1.925 | 0.014 | 1.035 | 0.809 | 0.07 |
+| stepF-H-floor | tools\baseline_still.py | cba34e3 | V1_02_medium_a_s5 | PASS | 1.777 | 0.967 | 1.409 | 0.098 | 1.048 | 0.809 | 0.11 |
+| stepF-H-floor | tools\baseline_still.py | cba34e3 | V1_02_medium_a_s6 | PASS | 1.779 | 0.979 | 1.478 | 0.000 | 1.047 | 0.809 | 0.07 |
+| stepF-H-floor | tools\baseline_still.py | cba34e3 | V1_02_medium_b_s4 | PASS | 1.779 | 0.979 | 1.925 | 0.014 | 1.035 | 0.809 | 0.12 |
+| stepF-H-floor | tools\baseline_still.py | cba34e3 | V1_02_medium_b_s5 | PASS | 1.777 | 0.967 | 1.409 | 0.098 | 1.048 | 0.809 | 0.12 |
+| stepF-H-floor | tools\baseline_still.py | cba34e3 | V1_02_medium_b_s6 | PASS | 1.779 | 0.979 | 1.478 | 0.000 | 1.047 | 0.809 | 0.13 |
+| stepF-H-floor | tools\baseline_still.py | cba34e3 | V1_03_difficult_a_s4 | PASS | 1.580 | 0.762 | 1.706 | 0.014 | 1.273 | 0.308 | 0.09 |
+| stepF-H-floor | tools\baseline_still.py | cba34e3 | V1_03_difficult_a_s5 | PASS | 1.581 | 0.758 | 1.358 | 0.025 | 1.269 | 0.308 | 0.09 |
+| stepF-H-floor | tools\baseline_still.py | cba34e3 | V1_03_difficult_a_s6 | PASS | 1.582 | 0.756 | 1.338 | 0.034 | 1.270 | 0.308 | 0.09 |
+| stepF-H-floor | tools\baseline_still.py | cba34e3 | V1_03_difficult_b_s4 | PASS | 1.580 | 0.762 | 1.706 | 0.014 | 1.273 | 0.308 | 0.13 |
+| stepF-H-floor | tools\baseline_still.py | cba34e3 | V1_03_difficult_b_s5 | PASS | 1.581 | 0.758 | 1.358 | 0.025 | 1.269 | 0.308 | 0.13 |
+| stepF-H-floor | tools\baseline_still.py | cba34e3 | V1_03_difficult_b_s6 | PASS | 1.582 | 0.756 | 1.338 | 0.034 | 1.270 | 0.308 | 0.13 |
+| stepF-H-off | main.py | cba34e3 | MH_03_medium_a_s4 | PASS | 9.788 | 1.282 | 7.504 | 0.134 | 18.792 | 0.590 | 0.38 |
+| stepF-H-off | main.py | cba34e3 | MH_03_medium_a_s5 | PASS | 6.701 | 1.120 | 8.246 | 0.083 | 12.165 | 1.955 | 0.34 |
+| stepF-H-off | main.py | cba34e3 | MH_03_medium_a_s6 | PASS | 7.218 | 1.285 | 10.621 | 0.115 | 13.495 | 1.123 | 0.40 |
+| stepF-H-off | main.py | cba34e3 | MH_03_medium_b_s4 | PASS | 3.405 | 1.066 | 2.918 | 0.071 | 2.296 | 0.506 | 0.53 |
+| stepF-H-off | main.py | cba34e3 | MH_03_medium_b_s5 | PASS | 3.556 | 1.015 | 3.213 | 0.016 | 3.829 | 0.381 | 0.51 |
+| stepF-H-off | main.py | cba34e3 | MH_03_medium_b_s6 | PASS | 3.672 | 1.019 | 3.137 | 0.023 | 4.523 | 0.454 | 0.51 |
+| stepF-H-off | main.py | cba34e3 | MH_04_difficult_a_s4 | PASS | 5.537 | 1.085 | 4.833 | 0.366 | 7.123 | 2.720 | 0.26 |
+| stepF-H-off | main.py | cba34e3 | MH_04_difficult_a_s5 | PASS | 8.702 | 1.300 | 6.710 | 0.088 | 22.858 | 3.671 | 0.45 |
+| stepF-H-off | main.py | cba34e3 | MH_04_difficult_a_s6 | PASS | 10.131 | 1.330 | 10.872 | 0.042 | 22.415 | 2.907 | 0.33 |
+| stepF-H-off | main.py | cba34e3 | MH_04_difficult_b_s4 | PASS | 6.599 | 1.185 | 6.042 | 0.110 | 3.784 | 0.398 | 0.46 |
+| stepF-H-off | main.py | cba34e3 | MH_04_difficult_b_s5 | PASS | 6.522 | 1.229 | 6.936 | 0.012 | 4.551 | 0.535 | 0.32 |
+| stepF-H-off | main.py | cba34e3 | MH_04_difficult_b_s6 | PASS | 6.240 | 1.239 | 6.666 | 0.023 | 1.463 | 0.613 | 0.43 |
+| stepF-H-off | main.py | cba34e3 | MH_05_difficult_a_s4 | PASS | 7.922 | 1.154 | 8.583 | 0.030 | 12.802 | 3.173 | 0.27 |
+| stepF-H-off | main.py | cba34e3 | MH_05_difficult_a_s5 | PASS | 11.049 | 1.491 | 12.138 | 0.000 | 16.417 | 3.237 | 0.31 |
+| stepF-H-off | main.py | cba34e3 | MH_05_difficult_a_s6 | PASS | 6.443 | 1.516 | 4.815 | 0.023 | 15.020 | 3.052 | 0.32 |
+| stepF-H-off | main.py | cba34e3 | MH_05_difficult_b_s4 | PASS | 6.754 | 1.057 | 7.136 | 0.008 | 4.672 | 1.029 | 0.38 |
+| stepF-H-off | main.py | cba34e3 | MH_05_difficult_b_s5 | PASS | 6.280 | 1.059 | 6.652 | 0.000 | 4.654 | 0.661 | 0.42 |
+| stepF-H-off | main.py | cba34e3 | MH_05_difficult_b_s6 | PASS | 6.575 | 1.065 | 5.621 | 0.026 | 3.608 | 0.367 | 0.44 |
+| stepF-H-off | main.py | cba34e3 | V1_01_easy_a_s4 | PASS | 9.395 | 0.707 | 10.068 | 0.038 | 17.632 | 0.283 | 0.44 |
+| stepF-H-off | main.py | cba34e3 | V1_01_easy_a_s5 | PASS | 9.915 | 0.666 | 14.779 | 0.044 | 19.179 | 0.550 | 0.40 |
+| stepF-H-off | main.py | cba34e3 | V1_01_easy_a_s6 | PASS | 6.352 | 0.901 | 7.117 | 0.182 | 10.631 | 1.886 | 0.43 |
+| stepF-H-off | main.py | cba34e3 | V1_01_easy_b_s4 | PASS | 2.118 | 0.422 | 2.144 | 0.018 | 2.838 | 0.091 | 0.53 |
+| stepF-H-off | main.py | cba34e3 | V1_01_easy_b_s5 | PASS | 2.186 | 0.472 | 1.774 | 0.015 | 2.016 | 0.360 | 0.50 |
+| stepF-H-off | main.py | cba34e3 | V1_01_easy_b_s6 | PASS | 1.928 | 0.445 | 1.727 | 0.040 | 1.535 | 0.401 | 0.49 |
+| stepF-H-off | main.py | cba34e3 | V1_02_medium_a_s4 | PASS | 1.908 | 0.690 | 1.939 | 0.019 | 2.546 | 1.082 | 0.31 |
+| stepF-H-off | main.py | cba34e3 | V1_02_medium_a_s5 | PASS | 1.952 | 0.677 | 1.880 | 0.062 | 1.896 | 0.519 | 0.30 |
+| stepF-H-off | main.py | cba34e3 | V1_02_medium_a_s6 | PASS | 1.958 | 0.681 | 1.749 | 0.000 | 2.287 | 0.931 | 0.31 |
+| stepF-H-off | main.py | cba34e3 | V1_02_medium_b_s4 | PASS | 1.729 | 0.674 | 1.878 | 0.020 | 0.598 | 0.884 | 0.33 |
+| stepF-H-off | main.py | cba34e3 | V1_02_medium_b_s5 | PASS | 1.912 | 0.675 | 1.308 | 0.053 | 1.684 | 0.435 | 0.37 |
+| stepF-H-off | main.py | cba34e3 | V1_02_medium_b_s6 | PASS | 1.831 | 0.694 | 1.284 | 0.000 | 1.268 | 0.910 | 0.32 |
+| stepF-H-off | main.py | cba34e3 | V1_03_difficult_a_s4 | PASS | 2.013 | 0.593 | 1.967 | 0.021 | 2.322 | 0.421 | 0.30 |
+| stepF-H-off | main.py | cba34e3 | V1_03_difficult_a_s5 | PASS | 2.009 | 0.542 | 1.282 | 0.049 | 1.283 | 0.301 | 0.35 |
+| stepF-H-off | main.py | cba34e3 | V1_03_difficult_a_s6 | PASS | 2.474 | 0.562 | 1.898 | 0.067 | 2.665 | 0.236 | 0.28 |
+| stepF-H-off | main.py | cba34e3 | V1_03_difficult_b_s4 | PASS | 2.094 | 0.604 | 2.024 | 0.023 | 2.799 | 0.603 | 0.36 |
+| stepF-H-off | main.py | cba34e3 | V1_03_difficult_b_s5 | PASS | 1.957 | 0.559 | 1.423 | 0.052 | 1.020 | 0.207 | 0.38 |
+| stepF-H-off | main.py | cba34e3 | V1_03_difficult_b_s6 | PASS | 2.174 | 0.562 | 1.526 | 0.063 | 2.052 | 0.256 | 0.39 |
+| stepF-H-p0v-refresh | main.py BGCAP_ON=True P0V_ON=True REFRESH_ON=True | cba34e3 | MH_03_medium_a_s4 | PASS | 9.787 | 1.282 | 7.503 | 0.134 | 18.795 | 0.589 | 0.46 |
+| stepF-H-p0v-refresh | main.py BGCAP_ON=True P0V_ON=True REFRESH_ON=True | cba34e3 | MH_03_medium_a_s5 | PASS | 6.701 | 1.120 | 8.245 | 0.083 | 12.166 | 1.954 | 0.47 |
+| stepF-H-p0v-refresh | main.py BGCAP_ON=True P0V_ON=True REFRESH_ON=True | cba34e3 | MH_03_medium_a_s6 | PASS | 7.216 | 1.285 | 10.618 | 0.115 | 13.491 | 1.124 | 0.46 |
+| stepF-H-p0v-refresh | main.py BGCAP_ON=True P0V_ON=True REFRESH_ON=True | cba34e3 | MH_03_medium_b_s4 | PASS | 3.405 | 1.066 | 2.918 | 0.071 | 2.297 | 0.506 | 0.73 |
+| stepF-H-p0v-refresh | main.py BGCAP_ON=True P0V_ON=True REFRESH_ON=True | cba34e3 | MH_03_medium_b_s5 | PASS | 3.556 | 1.015 | 3.213 | 0.016 | 3.829 | 0.381 | 0.51 |
+| stepF-H-p0v-refresh | main.py BGCAP_ON=True P0V_ON=True REFRESH_ON=True | cba34e3 | MH_03_medium_b_s6 | PASS | 3.672 | 1.019 | 3.137 | 0.023 | 4.522 | 0.454 | 0.53 |
+| stepF-H-p0v-refresh | main.py BGCAP_ON=True P0V_ON=True REFRESH_ON=True | cba34e3 | MH_04_difficult_a_s4 | PASS | 5.537 | 1.085 | 4.834 | 0.366 | 7.123 | 2.720 | 0.39 |
+| stepF-H-p0v-refresh | main.py BGCAP_ON=True P0V_ON=True REFRESH_ON=True | cba34e3 | MH_04_difficult_a_s5 | PASS | 8.701 | 1.300 | 6.710 | 0.088 | 22.857 | 3.671 | 0.39 |
+| stepF-H-p0v-refresh | main.py BGCAP_ON=True P0V_ON=True REFRESH_ON=True | cba34e3 | MH_04_difficult_a_s6 | PASS | 10.131 | 1.330 | 10.872 | 0.042 | 22.414 | 2.907 | 0.38 |
+| stepF-H-p0v-refresh | main.py BGCAP_ON=True P0V_ON=True REFRESH_ON=True | cba34e3 | MH_04_difficult_b_s4 | PASS | 6.600 | 1.185 | 6.043 | 0.110 | 3.784 | 0.398 | 0.49 |
+| stepF-H-p0v-refresh | main.py BGCAP_ON=True P0V_ON=True REFRESH_ON=True | cba34e3 | MH_04_difficult_b_s5 | PASS | 6.522 | 1.229 | 6.936 | 0.012 | 4.553 | 0.534 | 0.43 |
+| stepF-H-p0v-refresh | main.py BGCAP_ON=True P0V_ON=True REFRESH_ON=True | cba34e3 | MH_04_difficult_b_s6 | PASS | 6.240 | 1.239 | 6.666 | 0.023 | 1.464 | 0.613 | 0.42 |
+| stepF-H-p0v-refresh | main.py BGCAP_ON=True P0V_ON=True REFRESH_ON=True | cba34e3 | MH_05_difficult_a_s4 | PASS | 7.922 | 1.154 | 8.582 | 0.030 | 12.803 | 3.173 | 0.37 |
+| stepF-H-p0v-refresh | main.py BGCAP_ON=True P0V_ON=True REFRESH_ON=True | cba34e3 | MH_05_difficult_a_s5 | PASS | 11.049 | 1.491 | 12.137 | 0.000 | 16.414 | 3.236 | 0.35 |
+| stepF-H-p0v-refresh | main.py BGCAP_ON=True P0V_ON=True REFRESH_ON=True | cba34e3 | MH_05_difficult_a_s6 | PASS | 6.443 | 1.516 | 4.815 | 0.023 | 15.020 | 3.052 | 0.34 |
+| stepF-H-p0v-refresh | main.py BGCAP_ON=True P0V_ON=True REFRESH_ON=True | cba34e3 | MH_05_difficult_b_s4 | PASS | 6.754 | 1.057 | 7.136 | 0.008 | 4.672 | 1.029 | 0.41 |
+| stepF-H-p0v-refresh | main.py BGCAP_ON=True P0V_ON=True REFRESH_ON=True | cba34e3 | MH_05_difficult_b_s5 | PASS | 6.280 | 1.059 | 6.652 | 0.000 | 4.654 | 0.661 | 0.38 |
+| stepF-H-p0v-refresh | main.py BGCAP_ON=True P0V_ON=True REFRESH_ON=True | cba34e3 | MH_05_difficult_b_s6 | PASS | 6.575 | 1.065 | 5.621 | 0.026 | 3.608 | 0.367 | 0.38 |
+| stepF-H-p0v-refresh | main.py BGCAP_ON=True P0V_ON=True REFRESH_ON=True | cba34e3 | V1_01_easy_a_s4 | PASS | 9.415 | 0.710 | 10.087 | 0.038 | 17.638 | 0.274 | 0.43 |
+| stepF-H-p0v-refresh | main.py BGCAP_ON=True P0V_ON=True REFRESH_ON=True | cba34e3 | V1_01_easy_a_s5 | PASS | 9.697 | 0.662 | 14.659 | 0.046 | 18.420 | 0.551 | 0.49 |
+| stepF-H-p0v-refresh | main.py BGCAP_ON=True P0V_ON=True REFRESH_ON=True | cba34e3 | V1_01_easy_a_s6 | PASS | 6.464 | 0.900 | 7.356 | 0.174 | 10.407 | 1.928 | 0.49 |
+| stepF-H-p0v-refresh | main.py BGCAP_ON=True P0V_ON=True REFRESH_ON=True | cba34e3 | V1_01_easy_b_s4 | PASS | 2.113 | 0.421 | 2.097 | 0.018 | 2.826 | 0.090 | 0.56 |
+| stepF-H-p0v-refresh | main.py BGCAP_ON=True P0V_ON=True REFRESH_ON=True | cba34e3 | V1_01_easy_b_s5 | PASS | 2.183 | 0.470 | 1.912 | 0.013 | 3.680 | 0.440 | 0.57 |
+| stepF-H-p0v-refresh | main.py BGCAP_ON=True P0V_ON=True REFRESH_ON=True | cba34e3 | V1_01_easy_b_s6 | PASS | 1.889 | 0.443 | 1.711 | 0.039 | 1.486 | 0.433 | 0.49 |
+| stepF-H-p0v-refresh | main.py BGCAP_ON=True P0V_ON=True REFRESH_ON=True | cba34e3 | V1_02_medium_a_s4 | PASS | 1.883 | 0.695 | 2.253 | 0.019 | 2.435 | 1.043 | 0.29 |
+| stepF-H-p0v-refresh | main.py BGCAP_ON=True P0V_ON=True REFRESH_ON=True | cba34e3 | V1_02_medium_a_s5 | PASS | 1.903 | 0.684 | 1.829 | 0.064 | 1.997 | 0.573 | 0.29 |
+| stepF-H-p0v-refresh | main.py BGCAP_ON=True P0V_ON=True REFRESH_ON=True | cba34e3 | V1_02_medium_a_s6 | PASS | 1.909 | 0.689 | 1.803 | 0.000 | 2.413 | 0.922 | 0.32 |
+| stepF-H-p0v-refresh | main.py BGCAP_ON=True P0V_ON=True REFRESH_ON=True | cba34e3 | V1_02_medium_b_s4 | PASS | 1.698 | 0.681 | 2.092 | 0.021 | 0.573 | 0.862 | 0.41 |
+| stepF-H-p0v-refresh | main.py BGCAP_ON=True P0V_ON=True REFRESH_ON=True | cba34e3 | V1_02_medium_b_s5 | PASS | 1.882 | 0.682 | 1.309 | 0.060 | 1.795 | 0.493 | 0.36 |
+| stepF-H-p0v-refresh | main.py BGCAP_ON=True P0V_ON=True REFRESH_ON=True | cba34e3 | V1_02_medium_b_s6 | PASS | 1.793 | 0.701 | 1.447 | 0.000 | 1.427 | 0.880 | 0.39 |
+| stepF-H-p0v-refresh | main.py BGCAP_ON=True P0V_ON=True REFRESH_ON=True | cba34e3 | V1_03_difficult_a_s4 | PASS | 2.013 | 0.593 | 1.967 | 0.021 | 2.321 | 0.421 | 0.39 |
+| stepF-H-p0v-refresh | main.py BGCAP_ON=True P0V_ON=True REFRESH_ON=True | cba34e3 | V1_03_difficult_a_s5 | PASS | 2.009 | 0.542 | 1.281 | 0.049 | 1.283 | 0.301 | 0.35 |
+| stepF-H-p0v-refresh | main.py BGCAP_ON=True P0V_ON=True REFRESH_ON=True | cba34e3 | V1_03_difficult_a_s6 | PASS | 2.473 | 0.562 | 1.898 | 0.067 | 2.665 | 0.236 | 0.38 |
+| stepF-H-p0v-refresh | main.py BGCAP_ON=True P0V_ON=True REFRESH_ON=True | cba34e3 | V1_03_difficult_b_s4 | PASS | 2.094 | 0.604 | 2.024 | 0.023 | 2.798 | 0.603 | 0.41 |
+| stepF-H-p0v-refresh | main.py BGCAP_ON=True P0V_ON=True REFRESH_ON=True | cba34e3 | V1_03_difficult_b_s5 | PASS | 1.957 | 0.559 | 1.423 | 0.052 | 1.020 | 0.207 | 0.40 |
+| stepF-H-p0v-refresh | main.py BGCAP_ON=True P0V_ON=True REFRESH_ON=True | cba34e3 | V1_03_difficult_b_s6 | PASS | 2.174 | 0.562 | 1.526 | 0.063 | 2.052 | 0.256 | 0.36 |
+| stepF-H-p0v | main.py BGCAP_ON=True P0V_ON=True | cba34e3 | MH_03_medium_a_s4 | PASS | 9.788 | 1.282 | 7.504 | 0.134 | 18.792 | 0.590 | 0.48 |
+| stepF-H-p0v | main.py BGCAP_ON=True P0V_ON=True | cba34e3 | MH_03_medium_a_s5 | PASS | 6.701 | 1.120 | 8.246 | 0.083 | 12.165 | 1.955 | 0.45 |
+| stepF-H-p0v | main.py BGCAP_ON=True P0V_ON=True | cba34e3 | MH_03_medium_a_s6 | PASS | 7.218 | 1.285 | 10.621 | 0.115 | 13.495 | 1.123 | 0.51 |
+| stepF-H-p0v | main.py BGCAP_ON=True P0V_ON=True | cba34e3 | MH_03_medium_b_s4 | PASS | 3.405 | 1.066 | 2.918 | 0.071 | 2.296 | 0.506 | 0.74 |
+| stepF-H-p0v | main.py BGCAP_ON=True P0V_ON=True | cba34e3 | MH_03_medium_b_s5 | PASS | 3.556 | 1.015 | 3.213 | 0.016 | 3.829 | 0.381 | 0.49 |
+| stepF-H-p0v | main.py BGCAP_ON=True P0V_ON=True | cba34e3 | MH_03_medium_b_s6 | PASS | 3.672 | 1.019 | 3.137 | 0.023 | 4.523 | 0.454 | 0.56 |
+| stepF-H-p0v | main.py BGCAP_ON=True P0V_ON=True | cba34e3 | MH_04_difficult_a_s4 | PASS | 5.537 | 1.085 | 4.833 | 0.366 | 7.123 | 2.720 | 0.39 |
+| stepF-H-p0v | main.py BGCAP_ON=True P0V_ON=True | cba34e3 | MH_04_difficult_a_s5 | PASS | 8.702 | 1.300 | 6.710 | 0.088 | 22.858 | 3.671 | 0.36 |
+| stepF-H-p0v | main.py BGCAP_ON=True P0V_ON=True | cba34e3 | MH_04_difficult_a_s6 | PASS | 10.131 | 1.330 | 10.872 | 0.042 | 22.415 | 2.907 | 0.39 |
+| stepF-H-p0v | main.py BGCAP_ON=True P0V_ON=True | cba34e3 | MH_04_difficult_b_s4 | PASS | 6.599 | 1.185 | 6.042 | 0.110 | 3.784 | 0.398 | 0.50 |
+| stepF-H-p0v | main.py BGCAP_ON=True P0V_ON=True | cba34e3 | MH_04_difficult_b_s5 | PASS | 6.522 | 1.229 | 6.936 | 0.012 | 4.551 | 0.535 | 0.44 |
+| stepF-H-p0v | main.py BGCAP_ON=True P0V_ON=True | cba34e3 | MH_04_difficult_b_s6 | PASS | 6.240 | 1.239 | 6.666 | 0.023 | 1.463 | 0.613 | 0.43 |
+| stepF-H-p0v | main.py BGCAP_ON=True P0V_ON=True | cba34e3 | MH_05_difficult_a_s4 | PASS | 7.922 | 1.154 | 8.583 | 0.030 | 12.802 | 3.173 | 0.36 |
+| stepF-H-p0v | main.py BGCAP_ON=True P0V_ON=True | cba34e3 | MH_05_difficult_a_s5 | PASS | 11.049 | 1.491 | 12.138 | 0.000 | 16.417 | 3.237 | 0.31 |
+| stepF-H-p0v | main.py BGCAP_ON=True P0V_ON=True | cba34e3 | MH_05_difficult_a_s6 | PASS | 6.443 | 1.516 | 4.815 | 0.023 | 15.020 | 3.052 | 0.31 |
+| stepF-H-p0v | main.py BGCAP_ON=True P0V_ON=True | cba34e3 | MH_05_difficult_b_s4 | PASS | 6.754 | 1.057 | 7.136 | 0.008 | 4.672 | 1.029 | 0.34 |
+| stepF-H-p0v | main.py BGCAP_ON=True P0V_ON=True | cba34e3 | MH_05_difficult_b_s5 | PASS | 6.280 | 1.059 | 6.652 | 0.000 | 4.654 | 0.661 | 0.45 |
+| stepF-H-p0v | main.py BGCAP_ON=True P0V_ON=True | cba34e3 | MH_05_difficult_b_s6 | PASS | 6.575 | 1.065 | 5.621 | 0.026 | 3.608 | 0.367 | 0.44 |
+| stepF-H-p0v | main.py BGCAP_ON=True P0V_ON=True | cba34e3 | V1_01_easy_a_s4 | PASS | 9.417 | 0.710 | 10.089 | 0.038 | 17.640 | 0.274 | 0.46 |
+| stepF-H-p0v | main.py BGCAP_ON=True P0V_ON=True | cba34e3 | V1_01_easy_a_s5 | PASS | 9.697 | 0.662 | 14.659 | 0.046 | 18.420 | 0.551 | 0.45 |
+| stepF-H-p0v | main.py BGCAP_ON=True P0V_ON=True | cba34e3 | V1_01_easy_a_s6 | PASS | 6.466 | 0.900 | 7.358 | 0.174 | 10.414 | 1.928 | 0.43 |
+| stepF-H-p0v | main.py BGCAP_ON=True P0V_ON=True | cba34e3 | V1_01_easy_b_s4 | PASS | 2.112 | 0.421 | 2.097 | 0.018 | 2.824 | 0.090 | 0.55 |
+| stepF-H-p0v | main.py BGCAP_ON=True P0V_ON=True | cba34e3 | V1_01_easy_b_s5 | PASS | 2.183 | 0.470 | 1.908 | 0.013 | 3.684 | 0.437 | 0.50 |
+| stepF-H-p0v | main.py BGCAP_ON=True P0V_ON=True | cba34e3 | V1_01_easy_b_s6 | PASS | 1.889 | 0.443 | 1.711 | 0.039 | 1.488 | 0.433 | 0.58 |
+| stepF-H-p0v | main.py BGCAP_ON=True P0V_ON=True | cba34e3 | V1_02_medium_a_s4 | PASS | 1.883 | 0.695 | 2.250 | 0.019 | 2.437 | 1.044 | 0.29 |
+| stepF-H-p0v | main.py BGCAP_ON=True P0V_ON=True | cba34e3 | V1_02_medium_a_s5 | PASS | 1.904 | 0.684 | 1.830 | 0.064 | 1.997 | 0.572 | 0.31 |
+| stepF-H-p0v | main.py BGCAP_ON=True P0V_ON=True | cba34e3 | V1_02_medium_a_s6 | PASS | 1.909 | 0.689 | 1.803 | 0.000 | 2.413 | 0.923 | 0.32 |
+| stepF-H-p0v | main.py BGCAP_ON=True P0V_ON=True | cba34e3 | V1_02_medium_b_s4 | PASS | 1.698 | 0.681 | 2.091 | 0.021 | 0.573 | 0.862 | 0.36 |
+| stepF-H-p0v | main.py BGCAP_ON=True P0V_ON=True | cba34e3 | V1_02_medium_b_s5 | PASS | 1.882 | 0.682 | 1.310 | 0.060 | 1.794 | 0.492 | 0.34 |
+| stepF-H-p0v | main.py BGCAP_ON=True P0V_ON=True | cba34e3 | V1_02_medium_b_s6 | PASS | 1.793 | 0.701 | 1.446 | 0.000 | 1.427 | 0.880 | 0.37 |
+| stepF-H-p0v | main.py BGCAP_ON=True P0V_ON=True | cba34e3 | V1_03_difficult_a_s4 | PASS | 2.013 | 0.593 | 1.967 | 0.021 | 2.322 | 0.421 | 0.35 |
+| stepF-H-p0v | main.py BGCAP_ON=True P0V_ON=True | cba34e3 | V1_03_difficult_a_s5 | PASS | 2.009 | 0.542 | 1.282 | 0.049 | 1.283 | 0.301 | 0.38 |
+| stepF-H-p0v | main.py BGCAP_ON=True P0V_ON=True | cba34e3 | V1_03_difficult_a_s6 | PASS | 2.474 | 0.562 | 1.898 | 0.067 | 2.665 | 0.236 | 0.35 |
+| stepF-H-p0v | main.py BGCAP_ON=True P0V_ON=True | cba34e3 | V1_03_difficult_b_s4 | PASS | 2.094 | 0.604 | 2.024 | 0.023 | 2.799 | 0.603 | 0.40 |
+| stepF-H-p0v | main.py BGCAP_ON=True P0V_ON=True | cba34e3 | V1_03_difficult_b_s5 | PASS | 1.957 | 0.559 | 1.423 | 0.052 | 1.020 | 0.207 | 0.38 |
+| stepF-H-p0v | main.py BGCAP_ON=True P0V_ON=True | cba34e3 | V1_03_difficult_b_s6 | PASS | 2.174 | 0.562 | 1.526 | 0.063 | 2.052 | 0.256 | 0.36 |
+| stepF-H-refresh | main.py BGCAP_ON=True REFRESH_ON=True | cba34e3 | MH_03_medium_a_s4 | PASS | 9.787 | 1.282 | 7.503 | 0.134 | 18.795 | 0.589 | 0.49 |
+| stepF-H-refresh | main.py BGCAP_ON=True REFRESH_ON=True | cba34e3 | MH_03_medium_a_s5 | PASS | 6.701 | 1.120 | 8.245 | 0.083 | 12.166 | 1.954 | 0.50 |
+| stepF-H-refresh | main.py BGCAP_ON=True REFRESH_ON=True | cba34e3 | MH_03_medium_a_s6 | PASS | 7.216 | 1.285 | 10.618 | 0.115 | 13.491 | 1.124 | 0.46 |
+| stepF-H-refresh | main.py BGCAP_ON=True REFRESH_ON=True | cba34e3 | MH_03_medium_b_s4 | PASS | 3.405 | 1.066 | 2.918 | 0.071 | 2.297 | 0.506 | 0.66 |
+| stepF-H-refresh | main.py BGCAP_ON=True REFRESH_ON=True | cba34e3 | MH_03_medium_b_s5 | PASS | 3.556 | 1.015 | 3.213 | 0.016 | 3.829 | 0.381 | 0.54 |
+| stepF-H-refresh | main.py BGCAP_ON=True REFRESH_ON=True | cba34e3 | MH_03_medium_b_s6 | PASS | 3.672 | 1.019 | 3.137 | 0.023 | 4.522 | 0.454 | 0.59 |
+| stepF-H-refresh | main.py BGCAP_ON=True REFRESH_ON=True | cba34e3 | MH_04_difficult_a_s4 | PASS | 5.537 | 1.085 | 4.834 | 0.366 | 7.123 | 2.720 | 0.40 |
+| stepF-H-refresh | main.py BGCAP_ON=True REFRESH_ON=True | cba34e3 | MH_04_difficult_a_s5 | PASS | 8.701 | 1.300 | 6.710 | 0.088 | 22.857 | 3.671 | 0.36 |
+| stepF-H-refresh | main.py BGCAP_ON=True REFRESH_ON=True | cba34e3 | MH_04_difficult_a_s6 | PASS | 10.131 | 1.330 | 10.872 | 0.042 | 22.414 | 2.907 | 0.43 |
+| stepF-H-refresh | main.py BGCAP_ON=True REFRESH_ON=True | cba34e3 | MH_04_difficult_b_s4 | PASS | 6.600 | 1.185 | 6.043 | 0.110 | 3.784 | 0.398 | 0.48 |
+| stepF-H-refresh | main.py BGCAP_ON=True REFRESH_ON=True | cba34e3 | MH_04_difficult_b_s5 | PASS | 6.522 | 1.229 | 6.936 | 0.012 | 4.553 | 0.534 | 0.42 |
+| stepF-H-refresh | main.py BGCAP_ON=True REFRESH_ON=True | cba34e3 | MH_04_difficult_b_s6 | PASS | 6.240 | 1.239 | 6.666 | 0.023 | 1.464 | 0.613 | 0.45 |
+| stepF-H-refresh | main.py BGCAP_ON=True REFRESH_ON=True | cba34e3 | MH_05_difficult_a_s4 | PASS | 7.922 | 1.154 | 8.582 | 0.030 | 12.803 | 3.173 | 0.38 |
+| stepF-H-refresh | main.py BGCAP_ON=True REFRESH_ON=True | cba34e3 | MH_05_difficult_a_s5 | PASS | 11.049 | 1.491 | 12.137 | 0.000 | 16.414 | 3.236 | 0.31 |
+| stepF-H-refresh | main.py BGCAP_ON=True REFRESH_ON=True | cba34e3 | MH_05_difficult_a_s6 | PASS | 6.443 | 1.516 | 4.815 | 0.023 | 15.020 | 3.052 | 0.34 |
+| stepF-H-refresh | main.py BGCAP_ON=True REFRESH_ON=True | cba34e3 | MH_05_difficult_b_s4 | PASS | 6.754 | 1.057 | 7.136 | 0.008 | 4.672 | 1.029 | 0.41 |
+| stepF-H-refresh | main.py BGCAP_ON=True REFRESH_ON=True | cba34e3 | MH_05_difficult_b_s5 | PASS | 6.280 | 1.059 | 6.652 | 0.000 | 4.654 | 0.661 | 0.34 |
+| stepF-H-refresh | main.py BGCAP_ON=True REFRESH_ON=True | cba34e3 | MH_05_difficult_b_s6 | PASS | 6.575 | 1.065 | 5.621 | 0.026 | 3.608 | 0.367 | 0.39 |
+| stepF-H-refresh | main.py BGCAP_ON=True REFRESH_ON=True | cba34e3 | V1_01_easy_a_s4 | PASS | 9.395 | 0.707 | 10.068 | 0.038 | 17.635 | 0.283 | 0.48 |
+| stepF-H-refresh | main.py BGCAP_ON=True REFRESH_ON=True | cba34e3 | V1_01_easy_a_s5 | PASS | 9.915 | 0.666 | 14.778 | 0.044 | 19.179 | 0.550 | 0.47 |
+| stepF-H-refresh | main.py BGCAP_ON=True REFRESH_ON=True | cba34e3 | V1_01_easy_a_s6 | PASS | 6.352 | 0.901 | 7.114 | 0.182 | 10.634 | 1.886 | 0.41 |
+| stepF-H-refresh | main.py BGCAP_ON=True REFRESH_ON=True | cba34e3 | V1_01_easy_b_s4 | PASS | 2.118 | 0.422 | 2.145 | 0.018 | 2.840 | 0.091 | 0.58 |
+| stepF-H-refresh | main.py BGCAP_ON=True REFRESH_ON=True | cba34e3 | V1_01_easy_b_s5 | PASS | 2.186 | 0.472 | 1.771 | 0.015 | 2.004 | 0.359 | 0.57 |
+| stepF-H-refresh | main.py BGCAP_ON=True REFRESH_ON=True | cba34e3 | V1_01_easy_b_s6 | PASS | 1.928 | 0.445 | 1.727 | 0.040 | 1.533 | 0.400 | 0.55 |
+| stepF-H-refresh | main.py BGCAP_ON=True REFRESH_ON=True | cba34e3 | V1_02_medium_a_s4 | PASS | 1.907 | 0.690 | 1.938 | 0.019 | 2.545 | 1.082 | 0.28 |
+| stepF-H-refresh | main.py BGCAP_ON=True REFRESH_ON=True | cba34e3 | V1_02_medium_a_s5 | PASS | 1.952 | 0.678 | 1.880 | 0.062 | 1.895 | 0.519 | 0.33 |
+| stepF-H-refresh | main.py BGCAP_ON=True REFRESH_ON=True | cba34e3 | V1_02_medium_a_s6 | PASS | 1.958 | 0.681 | 1.749 | 0.000 | 2.286 | 0.931 | 0.29 |
+| stepF-H-refresh | main.py BGCAP_ON=True REFRESH_ON=True | cba34e3 | V1_02_medium_b_s4 | PASS | 1.729 | 0.675 | 1.878 | 0.020 | 0.599 | 0.884 | 0.39 |
+| stepF-H-refresh | main.py BGCAP_ON=True REFRESH_ON=True | cba34e3 | V1_02_medium_b_s5 | PASS | 1.912 | 0.675 | 1.308 | 0.053 | 1.683 | 0.435 | 0.40 |
+| stepF-H-refresh | main.py BGCAP_ON=True REFRESH_ON=True | cba34e3 | V1_02_medium_b_s6 | PASS | 1.831 | 0.694 | 1.283 | 0.000 | 1.267 | 0.910 | 0.41 |
+| stepF-H-refresh | main.py BGCAP_ON=True REFRESH_ON=True | cba34e3 | V1_03_difficult_a_s4 | PASS | 2.013 | 0.593 | 1.967 | 0.021 | 2.321 | 0.421 | 0.33 |
+| stepF-H-refresh | main.py BGCAP_ON=True REFRESH_ON=True | cba34e3 | V1_03_difficult_a_s5 | PASS | 2.009 | 0.542 | 1.281 | 0.049 | 1.283 | 0.301 | 0.32 |
+| stepF-H-refresh | main.py BGCAP_ON=True REFRESH_ON=True | cba34e3 | V1_03_difficult_a_s6 | PASS | 2.473 | 0.562 | 1.898 | 0.067 | 2.665 | 0.236 | 0.31 |
+| stepF-H-refresh | main.py BGCAP_ON=True REFRESH_ON=True | cba34e3 | V1_03_difficult_b_s4 | PASS | 2.094 | 0.604 | 2.024 | 0.023 | 2.798 | 0.603 | 0.35 |
+| stepF-H-refresh | main.py BGCAP_ON=True REFRESH_ON=True | cba34e3 | V1_03_difficult_b_s5 | PASS | 1.957 | 0.559 | 1.423 | 0.052 | 1.020 | 0.207 | 0.39 |
+| stepF-H-refresh | main.py BGCAP_ON=True REFRESH_ON=True | cba34e3 | V1_03_difficult_b_s6 | PASS | 2.174 | 0.562 | 1.526 | 0.063 | 2.052 | 0.256 | 0.37 |
+| stepF-H-reset | main.py BGCAP_ON=True P0V_ON=True REFRESH_ON=True RESET_ON=True | cba34e3 | MH_03_medium_a_s4 | PASS | 10.154 | 1.295 | 7.636 | 0.137 | 20.385 | 1.154 | 0.36 |
+| stepF-H-reset | main.py BGCAP_ON=True P0V_ON=True REFRESH_ON=True RESET_ON=True | cba34e3 | MH_03_medium_a_s5 | PASS | 6.842 | 1.126 | 8.388 | 0.084 | 12.750 | 2.160 | 0.41 |
+| stepF-H-reset | main.py BGCAP_ON=True P0V_ON=True REFRESH_ON=True RESET_ON=True | cba34e3 | MH_03_medium_a_s6 | PASS | 7.170 | 1.279 | 10.477 | 0.113 | 13.110 | 0.818 | 0.30 |
+| stepF-H-reset | main.py BGCAP_ON=True P0V_ON=True REFRESH_ON=True RESET_ON=True | cba34e3 | MH_03_medium_b_s4 | PASS | 3.406 | 1.066 | 2.917 | 0.071 | 2.312 | 0.509 | 0.44 |
+| stepF-H-reset | main.py BGCAP_ON=True P0V_ON=True REFRESH_ON=True RESET_ON=True | cba34e3 | MH_03_medium_b_s5 | PASS | 3.557 | 1.015 | 3.213 | 0.016 | 3.825 | 0.381 | 0.48 |
+| stepF-H-reset | main.py BGCAP_ON=True P0V_ON=True REFRESH_ON=True RESET_ON=True | cba34e3 | MH_03_medium_b_s6 | PASS | 3.673 | 1.019 | 3.136 | 0.023 | 4.528 | 0.455 | 0.56 |
+| stepF-H-reset | main.py BGCAP_ON=True P0V_ON=True REFRESH_ON=True RESET_ON=True | cba34e3 | MH_04_difficult_a_s4 | PASS | 5.622 | 1.067 | 5.080 | 0.374 | 7.803 | 2.708 | 0.32 |
+| stepF-H-reset | main.py BGCAP_ON=True P0V_ON=True REFRESH_ON=True RESET_ON=True | cba34e3 | MH_04_difficult_a_s5 | PASS | 8.642 | 1.300 | 6.684 | 0.090 | 22.805 | 3.603 | 0.29 |
+| stepF-H-reset | main.py BGCAP_ON=True P0V_ON=True REFRESH_ON=True RESET_ON=True | cba34e3 | MH_04_difficult_a_s6 | PASS | 10.242 | 1.329 | 10.913 | 0.042 | 22.979 | 2.900 | 0.31 |
+| stepF-H-reset | main.py BGCAP_ON=True P0V_ON=True REFRESH_ON=True RESET_ON=True | cba34e3 | MH_04_difficult_b_s4 | PASS | 6.600 | 1.185 | 6.051 | 0.110 | 3.807 | 0.397 | 0.32 |
+| stepF-H-reset | main.py BGCAP_ON=True P0V_ON=True REFRESH_ON=True RESET_ON=True | cba34e3 | MH_04_difficult_b_s5 | PASS | 6.522 | 1.230 | 6.929 | 0.012 | 4.603 | 0.539 | 0.30 |
+| stepF-H-reset | main.py BGCAP_ON=True P0V_ON=True REFRESH_ON=True RESET_ON=True | cba34e3 | MH_04_difficult_b_s6 | PASS | 6.239 | 1.240 | 6.664 | 0.023 | 1.493 | 0.615 | 0.31 |
+| stepF-H-reset | main.py BGCAP_ON=True P0V_ON=True REFRESH_ON=True RESET_ON=True | cba34e3 | MH_05_difficult_a_s4 | PASS | 7.962 | 1.154 | 8.605 | 0.029 | 12.713 | 3.138 | 0.31 |
+| stepF-H-reset | main.py BGCAP_ON=True P0V_ON=True REFRESH_ON=True RESET_ON=True | cba34e3 | MH_05_difficult_a_s5 | PASS | 11.398 | 1.507 | 11.892 | 0.000 | 14.614 | 3.181 | 0.31 |
+| stepF-H-reset | main.py BGCAP_ON=True P0V_ON=True REFRESH_ON=True RESET_ON=True | cba34e3 | MH_05_difficult_a_s6 | PASS | 6.763 | 1.540 | 4.929 | 0.024 | 16.204 | 3.101 | 0.31 |
+| stepF-H-reset | main.py BGCAP_ON=True P0V_ON=True REFRESH_ON=True RESET_ON=True | cba34e3 | MH_05_difficult_b_s4 | PASS | 6.753 | 1.057 | 7.136 | 0.008 | 4.643 | 1.019 | 0.37 |
+| stepF-H-reset | main.py BGCAP_ON=True P0V_ON=True REFRESH_ON=True RESET_ON=True | cba34e3 | MH_05_difficult_b_s5 | PASS | 6.282 | 1.059 | 6.662 | 0.000 | 4.706 | 0.670 | 0.37 |
+| stepF-H-reset | main.py BGCAP_ON=True P0V_ON=True REFRESH_ON=True RESET_ON=True | cba34e3 | MH_05_difficult_b_s6 | PASS | 6.573 | 1.065 | 5.619 | 0.027 | 3.543 | 0.359 | 0.38 |
+| stepF-H-reset | main.py BGCAP_ON=True P0V_ON=True REFRESH_ON=True RESET_ON=True | cba34e3 | V1_01_easy_a_s4 | PASS | 8.603 | 0.708 | 9.315 | 0.037 | 16.054 | 0.296 | 0.45 |
+| stepF-H-reset | main.py BGCAP_ON=True P0V_ON=True REFRESH_ON=True RESET_ON=True | cba34e3 | V1_01_easy_a_s5 | PASS | 10.128 | 0.696 | 15.151 | 0.044 | 19.414 | 0.603 | 0.40 |
+| stepF-H-reset | main.py BGCAP_ON=True P0V_ON=True REFRESH_ON=True RESET_ON=True | cba34e3 | V1_01_easy_a_s6 | PASS | 7.537 | 0.886 | 9.552 | 0.169 | 10.438 | 2.046 | 0.38 |
+| stepF-H-reset | main.py BGCAP_ON=True P0V_ON=True REFRESH_ON=True RESET_ON=True | cba34e3 | V1_01_easy_b_s4 | PASS | 2.128 | 0.421 | 2.111 | 0.018 | 2.756 | 0.095 | 0.45 |
+| stepF-H-reset | main.py BGCAP_ON=True P0V_ON=True REFRESH_ON=True RESET_ON=True | cba34e3 | V1_01_easy_b_s5 | PASS | 2.197 | 0.467 | 1.776 | 0.015 | 2.221 | 0.369 | 0.46 |
+| stepF-H-reset | main.py BGCAP_ON=True P0V_ON=True REFRESH_ON=True RESET_ON=True | cba34e3 | V1_01_easy_b_s6 | PASS | 1.901 | 0.442 | 1.703 | 0.039 | 1.597 | 0.456 | 0.48 |
+| stepF-H-reset | main.py BGCAP_ON=True P0V_ON=True REFRESH_ON=True RESET_ON=True | cba34e3 | V1_02_medium_a_s4 | PASS | 1.885 | 0.695 | 2.254 | 0.019 | 2.461 | 1.039 | 0.31 |
+| stepF-H-reset | main.py BGCAP_ON=True P0V_ON=True REFRESH_ON=True RESET_ON=True | cba34e3 | V1_02_medium_a_s5 | PASS | 1.904 | 0.684 | 1.831 | 0.064 | 2.008 | 0.576 | 0.34 |
+| stepF-H-reset | main.py BGCAP_ON=True P0V_ON=True REFRESH_ON=True RESET_ON=True | cba34e3 | V1_02_medium_a_s6 | PASS | 1.909 | 0.689 | 1.803 | 0.000 | 2.416 | 0.922 | 0.28 |
+| stepF-H-reset | main.py BGCAP_ON=True P0V_ON=True REFRESH_ON=True RESET_ON=True | cba34e3 | V1_02_medium_b_s4 | PASS | 1.698 | 0.681 | 2.092 | 0.020 | 0.572 | 0.861 | 0.34 |
+| stepF-H-reset | main.py BGCAP_ON=True P0V_ON=True REFRESH_ON=True RESET_ON=True | cba34e3 | V1_02_medium_b_s5 | PASS | 1.883 | 0.682 | 1.312 | 0.060 | 1.804 | 0.495 | 0.32 |
+| stepF-H-reset | main.py BGCAP_ON=True P0V_ON=True REFRESH_ON=True RESET_ON=True | cba34e3 | V1_02_medium_b_s6 | PASS | 1.793 | 0.701 | 1.446 | 0.000 | 1.426 | 0.881 | 0.31 |
+| stepF-H-reset | main.py BGCAP_ON=True P0V_ON=True REFRESH_ON=True RESET_ON=True | cba34e3 | V1_03_difficult_a_s4 | PASS | 2.020 | 0.594 | 1.975 | 0.021 | 2.349 | 0.420 | 0.26 |
+| stepF-H-reset | main.py BGCAP_ON=True P0V_ON=True REFRESH_ON=True RESET_ON=True | cba34e3 | V1_03_difficult_a_s5 | PASS | 2.009 | 0.542 | 1.279 | 0.049 | 1.276 | 0.299 | 0.25 |
+| stepF-H-reset | main.py BGCAP_ON=True P0V_ON=True REFRESH_ON=True RESET_ON=True | cba34e3 | V1_03_difficult_a_s6 | PASS | 2.480 | 0.563 | 1.903 | 0.067 | 2.686 | 0.229 | 0.28 |
+| stepF-H-reset | main.py BGCAP_ON=True P0V_ON=True REFRESH_ON=True RESET_ON=True | cba34e3 | V1_03_difficult_b_s4 | PASS | 2.095 | 0.605 | 2.025 | 0.023 | 2.786 | 0.601 | 0.33 |
+| stepF-H-reset | main.py BGCAP_ON=True P0V_ON=True REFRESH_ON=True RESET_ON=True | cba34e3 | V1_03_difficult_b_s5 | PASS | 1.959 | 0.559 | 1.429 | 0.052 | 1.018 | 0.205 | 0.35 |
+| stepF-H-reset | main.py BGCAP_ON=True P0V_ON=True REFRESH_ON=True RESET_ON=True | cba34e3 | V1_03_difficult_b_s6 | PASS | 2.177 | 0.562 | 1.528 | 0.063 | 2.051 | 0.257 | 0.35 |
+| stepF-tune-bgcap | main.py BGCAP_ON=True | 8cb550f | MH_01_easy_a_s1 | PASS | 12.403 | 1.268 | 14.152 | 0.199 | 22.407 | 1.063 | 0.39 |
+| stepF-tune-bgcap | main.py BGCAP_ON=True | 8cb550f | MH_01_easy_a_s2 | PASS | 17.496 | 1.268 | 20.713 | 0.178 | 31.852 | 2.714 | 0.36 |
+| stepF-tune-bgcap | main.py BGCAP_ON=True | 8cb550f | MH_01_easy_a_s3 | PASS | 8.572 | 0.974 | 9.255 | 0.035 | 24.284 | 4.494 | 0.36 |
+| stepF-tune-bgcap | main.py BGCAP_ON=True | 8cb550f | MH_01_easy_b_s1 | PASS | 4.091 | 0.494 | 4.041 | 0.036 | 8.189 | 0.938 | 0.42 |
+| stepF-tune-bgcap | main.py BGCAP_ON=True | 8cb550f | MH_01_easy_b_s2 | PASS | 4.019 | 0.510 | 3.572 | 0.038 | 7.737 | 0.788 | 0.43 |
+| stepF-tune-bgcap | main.py BGCAP_ON=True | 8cb550f | MH_01_easy_b_s3 | PASS | 3.779 | 0.505 | 3.515 | 0.016 | 7.306 | 0.706 | 0.41 |
+| stepF-tune-bgcap | main.py BGCAP_ON=True | 8cb550f | MH_02_easy_a_s1 | PASS | 11.463 | 1.388 | 9.947 | 0.102 | 37.225 | 4.427 | 0.30 |
+| stepF-tune-bgcap | main.py BGCAP_ON=True | 8cb550f | MH_02_easy_a_s2 | PASS | 7.357 | 1.082 | 9.396 | 0.008 | 16.919 | 3.641 | 0.30 |
+| stepF-tune-bgcap | main.py BGCAP_ON=True | 8cb550f | MH_02_easy_a_s3 | PASS | 16.404 | 1.245 | 19.528 | 0.354 | 33.888 | 2.746 | 0.31 |
+| stepF-tune-bgcap | main.py BGCAP_ON=True | 8cb550f | MH_02_easy_b_s1 | PASS | 3.995 | 0.623 | 4.793 | 0.018 | 8.138 | 0.215 | 0.38 |
+| stepF-tune-bgcap | main.py BGCAP_ON=True | 8cb550f | MH_02_easy_b_s2 | PASS | 3.901 | 0.609 | 3.605 | 0.009 | 6.427 | 0.455 | 0.36 |
+| stepF-tune-bgcap | main.py BGCAP_ON=True | 8cb550f | MH_02_easy_b_s3 | PASS | 4.052 | 0.608 | 2.999 | 0.038 | 7.424 | 0.702 | 0.35 |
+| stepF-tune-both | main.py REFRESH_ON=True RESET_ON=True | 8cb550f | MH_01_easy_a_s1 | PASS | 11.647 | 1.198 | 13.180 | 0.188 | 19.825 | 1.111 | 0.34 |
+| stepF-tune-both | main.py REFRESH_ON=True RESET_ON=True | 8cb550f | MH_01_easy_a_s2 | PASS | 20.388 | 1.269 | 24.379 | 0.176 | 45.796 | 2.548 | 0.36 |
+| stepF-tune-both | main.py REFRESH_ON=True RESET_ON=True | 8cb550f | MH_01_easy_a_s3 | PASS | 8.563 | 0.984 | 9.249 | 0.036 | 26.022 | 4.438 | 0.36 |
+| stepF-tune-both | main.py REFRESH_ON=True RESET_ON=True | 8cb550f | MH_01_easy_b_s1 | PASS | 4.092 | 0.494 | 4.041 | 0.036 | 8.210 | 0.941 | 0.45 |
+| stepF-tune-both | main.py REFRESH_ON=True RESET_ON=True | 8cb550f | MH_01_easy_b_s2 | PASS | 4.026 | 0.510 | 3.604 | 0.038 | 7.890 | 0.807 | 0.43 |
+| stepF-tune-both | main.py REFRESH_ON=True RESET_ON=True | 8cb550f | MH_01_easy_b_s3 | PASS | 3.779 | 0.505 | 3.515 | 0.016 | 7.300 | 0.704 | 0.59 |
+| stepF-tune-both | main.py REFRESH_ON=True RESET_ON=True | 8cb550f | MH_02_easy_a_s1 | PASS | 11.064 | 1.407 | 9.666 | 0.101 | 36.395 | 4.544 | 0.30 |
+| stepF-tune-both | main.py REFRESH_ON=True RESET_ON=True | 8cb550f | MH_02_easy_a_s2 | PASS | 8.262 | 1.144 | 10.163 | 0.008 | 19.972 | 3.935 | 0.31 |
+| stepF-tune-both | main.py REFRESH_ON=True RESET_ON=True | 8cb550f | MH_02_easy_a_s3 | PASS | 13.710 | 1.258 | 17.752 | 0.334 | 26.238 | 2.650 | 0.30 |
+| stepF-tune-both | main.py REFRESH_ON=True RESET_ON=True | 8cb550f | MH_02_easy_b_s1 | PASS | 3.998 | 0.623 | 4.795 | 0.018 | 8.166 | 0.214 | 0.37 |
+| stepF-tune-both | main.py REFRESH_ON=True RESET_ON=True | 8cb550f | MH_02_easy_b_s2 | PASS | 3.898 | 0.610 | 3.615 | 0.009 | 6.380 | 0.449 | 0.44 |
+| stepF-tune-both | main.py REFRESH_ON=True RESET_ON=True | 8cb550f | MH_02_easy_b_s3 | PASS | 4.050 | 0.608 | 2.995 | 0.038 | 7.395 | 0.700 | 0.43 |
+| stepF-tune-off | main.py | 8cb550f | MH_01_easy_a_s1 | PASS | 12.403 | 1.268 | 14.152 | 0.199 | 22.407 | 1.063 | 0.29 |
+| stepF-tune-off | main.py | 8cb550f | MH_01_easy_a_s2 | PASS | 17.496 | 1.268 | 20.713 | 0.178 | 31.852 | 2.714 | 0.38 |
+| stepF-tune-off | main.py | 8cb550f | MH_01_easy_a_s3 | PASS | 8.572 | 0.974 | 9.255 | 0.035 | 24.284 | 4.494 | 0.35 |
+| stepF-tune-off | main.py | 8cb550f | MH_01_easy_b_s1 | PASS | 4.091 | 0.494 | 4.041 | 0.036 | 8.189 | 0.938 | 0.41 |
+| stepF-tune-off | main.py | 8cb550f | MH_01_easy_b_s2 | PASS | 4.019 | 0.510 | 3.572 | 0.038 | 7.737 | 0.788 | 0.41 |
+| stepF-tune-off | main.py | 8cb550f | MH_01_easy_b_s3 | PASS | 3.779 | 0.505 | 3.515 | 0.016 | 7.306 | 0.706 | 0.42 |
+| stepF-tune-off | main.py | 8cb550f | MH_02_easy_a_s1 | PASS | 11.463 | 1.388 | 9.947 | 0.102 | 37.225 | 4.427 | 0.32 |
+| stepF-tune-off | main.py | 8cb550f | MH_02_easy_a_s2 | PASS | 7.357 | 1.082 | 9.396 | 0.008 | 16.919 | 3.641 | 0.33 |
+| stepF-tune-off | main.py | 8cb550f | MH_02_easy_a_s3 | PASS | 16.404 | 1.245 | 19.528 | 0.354 | 33.888 | 2.746 | 0.33 |
+| stepF-tune-off | main.py | 8cb550f | MH_02_easy_b_s1 | PASS | 3.995 | 0.623 | 4.793 | 0.018 | 8.138 | 0.215 | 0.35 |
+| stepF-tune-off | main.py | 8cb550f | MH_02_easy_b_s2 | PASS | 3.901 | 0.609 | 3.605 | 0.009 | 6.427 | 0.455 | 0.36 |
+| stepF-tune-off | main.py | 8cb550f | MH_02_easy_b_s3 | PASS | 4.052 | 0.608 | 2.999 | 0.038 | 7.424 | 0.702 | 0.43 |
+| stepF-tune-p0v | main.py P0V_ON=True | 8cb550f | MH_01_easy_a_s1 | PASS | 12.403 | 1.268 | 14.152 | 0.199 | 22.407 | 1.063 | 0.38 |
+| stepF-tune-p0v | main.py P0V_ON=True | 8cb550f | MH_01_easy_a_s2 | PASS | 17.496 | 1.268 | 20.713 | 0.178 | 31.852 | 2.714 | 0.35 |
+| stepF-tune-p0v | main.py P0V_ON=True | 8cb550f | MH_01_easy_a_s3 | PASS | 8.572 | 0.974 | 9.255 | 0.035 | 24.284 | 4.494 | 0.39 |
+| stepF-tune-p0v | main.py P0V_ON=True | 8cb550f | MH_01_easy_b_s1 | PASS | 4.091 | 0.494 | 4.041 | 0.036 | 8.189 | 0.938 | 0.42 |
+| stepF-tune-p0v | main.py P0V_ON=True | 8cb550f | MH_01_easy_b_s2 | PASS | 4.019 | 0.510 | 3.572 | 0.038 | 7.737 | 0.788 | 0.44 |
+| stepF-tune-p0v | main.py P0V_ON=True | 8cb550f | MH_01_easy_b_s3 | PASS | 3.779 | 0.505 | 3.515 | 0.016 | 7.306 | 0.706 | 0.44 |
+| stepF-tune-p0v | main.py P0V_ON=True | 8cb550f | MH_02_easy_a_s1 | PASS | 11.463 | 1.388 | 9.947 | 0.102 | 37.225 | 4.427 | 0.28 |
+| stepF-tune-p0v | main.py P0V_ON=True | 8cb550f | MH_02_easy_a_s2 | PASS | 7.357 | 1.082 | 9.396 | 0.008 | 16.919 | 3.641 | 0.32 |
+| stepF-tune-p0v | main.py P0V_ON=True | 8cb550f | MH_02_easy_a_s3 | PASS | 16.404 | 1.245 | 19.528 | 0.354 | 33.888 | 2.746 | 0.27 |
+| stepF-tune-p0v | main.py P0V_ON=True | 8cb550f | MH_02_easy_b_s1 | PASS | 3.995 | 0.623 | 4.793 | 0.018 | 8.138 | 0.215 | 0.33 |
+| stepF-tune-p0v | main.py P0V_ON=True | 8cb550f | MH_02_easy_b_s2 | PASS | 3.901 | 0.609 | 3.605 | 0.009 | 6.427 | 0.455 | 0.31 |
+| stepF-tune-p0v | main.py P0V_ON=True | 8cb550f | MH_02_easy_b_s3 | PASS | 4.052 | 0.608 | 2.999 | 0.038 | 7.424 | 0.702 | 0.44 |
+| stepF-tune-refresh | main.py REFRESH_ON=True | 8cb550f | MH_01_easy_a_s1 | PASS | 12.402 | 1.268 | 14.151 | 0.199 | 22.405 | 1.063 | 0.31 |
+| stepF-tune-refresh | main.py REFRESH_ON=True | 8cb550f | MH_01_easy_a_s2 | PASS | 17.500 | 1.268 | 20.718 | 0.178 | 31.866 | 2.713 | 0.33 |
+| stepF-tune-refresh | main.py REFRESH_ON=True | 8cb550f | MH_01_easy_a_s3 | PASS | 8.571 | 0.974 | 9.254 | 0.035 | 24.280 | 4.492 | 0.33 |
+| stepF-tune-refresh | main.py REFRESH_ON=True | 8cb550f | MH_01_easy_b_s1 | PASS | 4.090 | 0.494 | 4.040 | 0.036 | 8.188 | 0.938 | 0.40 |
+| stepF-tune-refresh | main.py REFRESH_ON=True | 8cb550f | MH_01_easy_b_s2 | PASS | 4.019 | 0.510 | 3.572 | 0.038 | 7.737 | 0.788 | 0.43 |
+| stepF-tune-refresh | main.py REFRESH_ON=True | 8cb550f | MH_01_easy_b_s3 | PASS | 3.779 | 0.505 | 3.515 | 0.016 | 7.305 | 0.706 | 0.38 |
+| stepF-tune-refresh | main.py REFRESH_ON=True | 8cb550f | MH_02_easy_a_s1 | PASS | 11.463 | 1.388 | 9.947 | 0.102 | 37.226 | 4.427 | 0.29 |
+| stepF-tune-refresh | main.py REFRESH_ON=True | 8cb550f | MH_02_easy_a_s2 | PASS | 7.357 | 1.082 | 9.396 | 0.008 | 16.922 | 3.640 | 0.35 |
+| stepF-tune-refresh | main.py REFRESH_ON=True | 8cb550f | MH_02_easy_a_s3 | PASS | 16.402 | 1.245 | 19.528 | 0.354 | 33.880 | 2.744 | 0.26 |
+| stepF-tune-refresh | main.py REFRESH_ON=True | 8cb550f | MH_02_easy_b_s1 | PASS | 3.995 | 0.623 | 4.793 | 0.018 | 8.137 | 0.215 | 0.36 |
+| stepF-tune-refresh | main.py REFRESH_ON=True | 8cb550f | MH_02_easy_b_s2 | PASS | 3.901 | 0.609 | 3.605 | 0.009 | 6.426 | 0.455 | 0.37 |
+| stepF-tune-refresh | main.py REFRESH_ON=True | 8cb550f | MH_02_easy_b_s3 | PASS | 4.052 | 0.608 | 2.999 | 0.038 | 7.424 | 0.702 | 0.39 |
+| stepF-tune-reset | main.py RESET_ON=True | 8cb550f | MH_01_easy_a_s1 | PASS | 11.647 | 1.198 | 13.181 | 0.188 | 19.826 | 1.111 | 0.34 |
+| stepF-tune-reset | main.py RESET_ON=True | 8cb550f | MH_01_easy_a_s2 | PASS | 20.386 | 1.270 | 24.377 | 0.176 | 45.789 | 2.548 | 0.33 |
+| stepF-tune-reset | main.py RESET_ON=True | 8cb550f | MH_01_easy_a_s3 | PASS | 8.564 | 0.984 | 9.250 | 0.036 | 26.026 | 4.439 | 0.33 |
+| stepF-tune-reset | main.py RESET_ON=True | 8cb550f | MH_01_easy_b_s1 | PASS | 4.092 | 0.494 | 4.041 | 0.036 | 8.211 | 0.941 | 0.47 |
+| stepF-tune-reset | main.py RESET_ON=True | 8cb550f | MH_01_easy_b_s2 | PASS | 4.026 | 0.510 | 3.605 | 0.038 | 7.891 | 0.807 | 0.38 |
+| stepF-tune-reset | main.py RESET_ON=True | 8cb550f | MH_01_easy_b_s3 | PASS | 3.779 | 0.505 | 3.515 | 0.016 | 7.301 | 0.704 | 0.41 |
+| stepF-tune-reset | main.py RESET_ON=True | 8cb550f | MH_02_easy_a_s1 | PASS | 11.065 | 1.407 | 9.667 | 0.101 | 36.395 | 4.545 | 0.32 |
+| stepF-tune-reset | main.py RESET_ON=True | 8cb550f | MH_02_easy_a_s2 | PASS | 8.261 | 1.144 | 10.163 | 0.008 | 19.964 | 3.935 | 0.34 |
+| stepF-tune-reset | main.py RESET_ON=True | 8cb550f | MH_02_easy_a_s3 | PASS | 13.711 | 1.258 | 17.752 | 0.334 | 26.247 | 2.652 | 0.30 |
+| stepF-tune-reset | main.py RESET_ON=True | 8cb550f | MH_02_easy_b_s1 | PASS | 3.998 | 0.623 | 4.795 | 0.018 | 8.166 | 0.214 | 0.39 |
+| stepF-tune-reset | main.py RESET_ON=True | 8cb550f | MH_02_easy_b_s2 | PASS | 3.898 | 0.610 | 3.616 | 0.009 | 6.381 | 0.449 | 0.39 |
+| stepF-tune-reset | main.py RESET_ON=True | 8cb550f | MH_02_easy_b_s3 | PASS | 4.050 | 0.608 | 2.995 | 0.038 | 7.396 | 0.700 | 0.36 |
 
 # Degraded input
 

@@ -82,6 +82,8 @@ Deadline **22 Nov 2026, 11:59 PM IST**, confirmed by the FAQ (Q1 closed). Full-t
 | 9 | Efficiency pass (C core if whole-process RAM counts); submission bundle, Dockerfile, deck, video | 9a `main.py` is a stub importing `pathfinder.py`, and the bundle ships its bytecode: **Done (verified on MH_01..05 clean and degraded, Win 3.13/3.14, WSL2 3.12)** 16 Nov; outputs byte-identical, peak RSS -3.5 to -3.8 MB (MH_01: 11.95 MB Win 3.14, 10.27 MB Linux 3.12), still above 8 MB. Bundle builder `tools/make_bundle.py`, README, Dockerfile: zip verified on all three Pythons; Docker image built and its output identical on all 65 inputs. 9b C core `main.cpp` (Q4 unanswered, so the strict reading is assumed): **Done (verified on MH_01..05 clean and degraded, Windows and WSL2 Linux)** 16 Nov; peak RSS 2.7 MB Linux / 4.8 MB Windows on MH_01, bit-identical to `pathfinder.py` on Linux; bundle in the PRD layout. C-core Dockerfile not built yet. Deck, video: Not started | Valid `team_name.zip` by 21 Nov 6 PM; submitted 3 h before cutoff |
 | R1 | FAQ re-plan, Step 1: C core retired from the submission; memory gate moved from RSS to the heap (tracemalloc) | **Done (verified)** 17 Nov: gate PASS on Win 3.14 synthetic + MH_01 and Win 3.13 synthetic; bundle verified on 3.13/3.14; Python Docker image built, MH_01 output identical | Python-only zip verified |
 | R2 | Official-script harness (both column readings), input front end, new baseline | **Done (verified)** 17 Nov: 64 copies (8 sequences x readings a, b x seeds 1, 2, 3, 42), front end correct on all 72 files; baseline in `Docs/STEP2_BASELINE.md` | Table shown to Arnav before Step 3 |
+| R3 | Fault front end: stuck rows, spikes, bridging of missing samples (three switches), blind-window protection | **Done (verified): all three switches OFF** by the pre-registered rule (17 Nov, rule at 99bf25b); shipped output unchanged | Each switch judged on 36 held-out copies |
+| F | Filter fixes from the 16-17 Nov reviews: gyro-bias cap on every still test (`BGCAP_ON`), covariance reset after injection (`RESET_ON`), refresh of the cached previous sample (`REFRESH_ON`), fallback velocity uncertainty (`P0V_ON`); four switches | **Done** (17 Nov): BGCAP, P0V, REFRESH pass and ship on; RESET fails (reading a APE +1.8 %) and ships off. Held-out mean APE 4.972 -> 4.962 m; floor 3.745 m | Each switch judged on 36 fresh held-out copies (seeds 4-6) by the no-harm rule |
 
 ## Open questions (Q1 to Q5 are in the email drafted for prism@samsung.com on 15 Nov)
 
@@ -963,6 +965,84 @@ a non-canonical file, one extra pass that writes the canonical copy to disk.
 Not checked: TUM-VI (not downloaded); what the organisers actually feed the script (Q9); the
 `degrade_imu.py` licence and whether to commit it (Arnav); timing on a quiet machine (rerun the
 benchmark); the cost of the conversion pass in isolation.
+
+
+## Step 3: fault front end (17 Nov 2026, branch `track3/step3-faults`)
+
+**What the faults do to the shipped estimator** (Step 2 state): spikes and the first 4 rows of a stuck
+run are integrated as real data; a dead or NaN row makes the filter coast (velocity decays, attitude held)
+and also drops the next good row's integration step; steps longer than 0.1 s (most missing-row bursts:
+5-50 rows) coast instead of being bridged; duplicated rows (step 0) are skipped.
+
+**Pieces** (each a switch, default off; reference `vortex/core/faults.py` + `witness.INTERP_ON`, copied
+into `pathfinder.py` bit-identically, `tests/test_faults.py`):
+- `STUCK6_ON`: a row whose six values equal the previous row's exactly is a missing sample (stuck runs,
+  duplicated rows). Clean EuRoC has none (MH_01..05, V1_01..03 checked), so clean output cannot change.
+- `SPIKE_ON`: joint outlier test against the last accepted row and the next distinct row; one triple far
+  out (z > SPIKE_ZHI = 100) and the other out (z > SPIKE_ZLO = 3), z = squared deviation over its clipped
+  running mean. Chosen on MH_01/02.
+- `INTERP_ON`: rows marked missing are skipped (no coasting) and steps up to INTERP_MAX_S = 0.3 s (the
+  script's longest burst is 50 rows = 0.25 s; not tuned) are integrated with the trapezoid between the good
+  neighbours instead of coasted.
+- Blind window: the trailing all-zero run is never marked; it is detected exactly (no threshold). Checked
+  on all 64 copies: it equals the script's failure frames plus duplicates, and no all-zero row occurs
+  anywhere else. It has no switch: it only stops `STUCK6_ON` from touching the blind rows.
+- Calibration under faults (diagnostic, switches off): on every reading-a copy the anchor is the clean
+  file's still run (within 0.9 s); V1_01 and V1_02 have no still run even clean (first-second fallback).
+
+**Tuning (MH_01/02 x readings a, b x seeds 1..3, 12 copies; `Docs/RESULTS.md` tags `step3-tune-*`), mean
+APE SE3 m, reading a / reading b:** off 12.282 / 3.973; INTERP 13.349 / 3.949; STUCK 11.642 / 3.982;
+STUCK + INTERP 14.253 / 3.949; SPIKE (100/3) 12.300 / 3.977; all three with spike thresholds 30/3
+14.273 / 4.016, 100/3 14.367 / 3.963, 100/2 14.277 / 3.963. Spike detection against the script's own
+spike rows (rerun with zero spike magnitude, MH_01/02 only): at 100/3 about 40 % of the spikes are found,
+with about two false marks per true one (rotor vibration is heavy-tailed); clean MH_01/02 get 71 / 28 marks.
+
+**Decision rule, committed before any held-out run of these switches.** Held-out set H: MH_03..05,
+V1_01..03 x readings a, b x seeds 1, 2, 3 (36 copies; the seed-42 copies are reported, never decide).
+Clean set C: MH_01..05, V1_01..03. Switches are judged in the order STUCK6, SPIKE, INTERP, each with the
+earlier ones at their decided state. A switch ships on only if all hold:
+1. mean APE (SE3 on the run) over H improves by at least 1 %;
+2. in each reading separately, mean APE over its 18 copies is not worse by more than 1 %;
+3. mean gap RMSE and mean blind RMSE over H are each not worse by more than 2 %;
+4. mean APE over C is not worse by more than 0.5 %;
+5. output contract PASS on every run.
+Otherwise it ships off and is recorded as a measured experiment. No constant changes after this commit.
+
+**Outcome** (17 Nov; `python tools/judge_step3.py`, tags `step3-H-*` (36 held-out copies) and `step3-C-*`
+(8 clean sequences), `main.py` with `--set`; contract PASS on all 88 runs of each comparison):
+
+| Switch (judged with the earlier ones off) | Mean APE H | Reading a | Reading b | Gap RMSE | Blind RMSE | Clean APE | Verdict |
+|---|---|---|---|---|---|---|---|
+| STUCK6 | 5.086 -> 5.075 (-0.20 %) | 6.311 -> 6.190 (-1.92 %) | 3.861 -> 3.961 (**+2.60 %**) | -1.46 % | +1.41 % | +0.000 % | **off** (fails 1 and 2) |
+| SPIKE (100/3) | 5.086 -> 5.088 (+0.05 %) | +0.08 % | -0.00 % | -0.06 % | +0.52 % | +0.053 % | **off** (fails 1) |
+| INTERP (0.3 s) | 5.086 -> 5.412 (+6.42 %) | 6.311 -> 7.027 (**+11.34 %**) | 3.861 -> 3.798 (-1.62 %) | +5.07 % | +15.26 % | +0.000 % | **off** (fails 1, 2, 3) |
+
+**Reading.** None of the three pieces earns its place on the held-out copies. The two column readings
+pull in opposite directions: under reading b (sane gyro) bridging gaps helps a little (-1.6 %), under
+reading a (accelerometer-sized faults on the gyro) every extra gyro integration step hurts and coasting
+with the attitude held is better; removing stuck rows helps reading a and hurts reading b. Spike removal
+does nothing measurable: at 100/3 it finds about 40 % of the spikes, and the remaining ones plus the
+gyro noise dominate. The error is not in the isolated faults but in the attitude under the noise and bias
+walk the script adds (reading a), and in the never-moving-level offset (both readings).
+
+Shipped: `STUCK6_ON = SPIKE_ON = INTERP_ON = False` (reference and `pathfinder.py`); the code stays as a
+recorded experiment. Not retried on the same held-out copies: any reading-aware variant (for example
+bridging only when the gyro noise level is low) would need a new rule and copies never seen (new seeds).
+
+| Item | Result | Where |
+|---|---|---|
+| `pytest` | 256 passed (245 + 11 `tests/test_faults.py`) | Windows, Python 3.14.7 |
+| Reference vs `pathfinder.py` with switches on | max difference within the equivalence criterion on a SYNTHETIC degraded file (spikes, stuck runs, a 40-row burst, duplicates, zero tail) for four switch combinations; the fault pass emits identical lines | `tests/test_faults.py` |
+| Budget, `python -S benchmark.py --runs 15 --gate` (shipped settings, switches off) | PASS: synthetic 10.48 us/row, heap 506 / 1,005 / 5,278 KB (in-process / whole run / no bytecode); MH_01_easy_b_s1 10.24 us/row, 588 / 1,092 / 5,278 KB. No-bytecode heap on Win 3.13 (MH_01): 6,310 KB | `Docs/BUDGET.md` `step3-*` |
+
+The no-bytecode compile peak on 3.14 rose from 4.89 MB (Step 2) to 5.28 MB: the switched-off fault code is
+compiled too. Still under 8 MB; if it grows further, moving switched-off experiments out of
+`pathfinder.py` (they live in the reference anyway) is the cheapest fix.
+
+Not checked: TUM-VI (not downloaded); the seed-42 copies with the switches on (the switches ship off, so
+the Step 2 seed-42 numbers stand); a reading-aware variant (would need a new rule and new seeds).
+
+
 ## Step E: forward-backward smoother (17 Nov 2026, branch `track3/stepE-smoother`; time-boxed, one session)
 
 Started before Step C because C is blocked (no TUM-VI) and V3 was dropped (so Step D does not apply).
@@ -1051,3 +1131,88 @@ in-flight witness, with a rule written before any held-out copy is run. Nothing 
 `pytest`: 250 passed (245 after Step 2 + 5 smoother), Windows, Python 3.14.7. Budget not rerun: `pathfinder.py` and
 `main.py` unchanged.
 
+
+
+## Step F: filter fixes from the reviews (17 Nov 2026, branch `track3/stepF-bias-reset`)
+
+**Why.** Two external reviews (16 and 17 Nov) found four defects in the shipped filter, all confirmed in the
+code and present in both `pathfinder.py` and the reference:
+- The still tests bound the spread of the gyro, not its mean. A steady rotation is low-variance and steady,
+  so it is taken for rest and its rate for gyro bias. SYNTHETIC check: 8 s of 0.3 rad/s yaw from the first
+  row, calibrated as rest with a 0.300 rad/s z bias; the final yaw was 0.005 deg against a true 137 deg.
+  Only a bias prior can tell the two apart (the IMU readings are identical), so this is damage limitation:
+  a rotation slower than the cap still passes.
+- No covariance reset after the attitude correction is injected (`P <- G P G^T`).
+- The cached previous sample (bias-corrected gyro, world specific force) keeps the pre-injection attitude
+  and biases for the next trapezoid step.
+- With no still run (first-second fallback) the initial velocity sigma is still 0.01 m/s.
+
+**Pieces** (each a switch, default off; reference `vortex/core/strapdown.py` + `witness.py`, copied into
+`pathfinder.py`; `tests/test_stepF.py`, 23 tests):
+- `BGCAP_ON`: a bin or init window whose mean gyro norm exceeds `BG_MAX = 0.15` rad/s is not still, in every
+  still test: strict calibration and V1 (`bin_is_still`), the denoised calibration and V1 (`bin_is_still_denoised`)
+  and the first-second fallback (`initialise`). `BG_MAX` is 1.8x the largest calibrated |bg| on MH_01/02 (clean and
+  the 12 official copies: 0.080 to 0.083 rad/s); not tuned on anything else; TUM-VI not checked.
+- `RESET_ON`: `kf_reset`, G = I + [dth/2]x on the attitude block (global attitude error; Sola 2017, ESKF reset).
+  Checked against a finite-difference Jacobian of dth+ = Log(Exp(dth) Exp(-dth_hat)): second-order agreement,
+  and the opposite sign is visibly wrong.
+- `REFRESH_ON`: `refresh_prev`, the cached sample re-expressed with the corrected attitude and biases; equals a
+  fresh `_sample` with the corrected state to 1e-12.
+- `P0V_ON`: with no still run, the initial velocity sigma is the V2 envelope (2.0, 2.0, 0.3 m/s).
+- The smoother (Step E, reference only, off) does not apply the reset to its stored covariances; if it is ever
+  switched on together with `RESET_ON` that needs adding.
+
+**Tuning set (MH_01/02 x readings a, b x seeds 1-3, 12 copies; clean MH_01/02), mean APE SE3 m, reading a /
+reading b; gap and blind RMSE m; tags `stepF-tune-*`:** off 12.282 / 3.973, gap 8.793, blind 17.650, clean 3.8782;
+BGCAP identical to off (every MH calibration is under the cap); P0V identical (MH always calibrates); REFRESH
+12.282 / 3.973, identical gap and blind, clean 3.8783; RESET 12.272 / 3.974, gap 8.913 (+1.4 %), blind 18.299
+(+3.7 %), clean 3.8787; RESET + REFRESH as RESET. Nothing was tuned on these runs: `BG_MAX` and the P0V sigmas
+are set from the calibrated MH bias and the envelope, not from accuracy.
+
+**Decision rule, committed before any held-out run of these switches** (`tools/judge_stepF.py`). Held-out set
+H: MH_03..05, V1_01..03 x readings a, b x seeds **4, 5, 6** (36 copies made with the organisers' script for this
+step; the seed 1-3 copies already decided Step 3). Clean set C: MH_01..05, V1_01..03. Judged in the order
+BGCAP, P0V, REFRESH, RESET, each with the earlier ones at their decided state. These fix demonstrated defects
+and add no new hint, so the rule is no-harm. A switch ships on only if all hold:
+1. mean APE (SE3 on the run) over H is not worse by more than 0.5 %;
+2. in each reading separately, mean APE over its 18 copies is not worse by more than 1 %;
+3. mean gap RMSE and mean blind RMSE over H are each not worse by more than 2 %;
+4. mean APE over C is not worse by more than 0.5 %;
+5. output contract PASS on every run;
+6. BGCAP only: the SYNTHETIC steady-rotation test in `tests/test_stepF.py` passes.
+Otherwise it ships off and is recorded as a measured experiment. No constant changes after this commit.
+Expected from the tuning set (a prediction, not part of the rule): BGCAP and P0V change little or nothing on
+EuRoC (their targets, moving starts, are rare there); RESET may fail condition 3 on the blind RMSE.
+
+**Outcome (17 Nov 2026; rule commit cba34e3, judged with `tools/judge_stepF.py`).** Held-out H = 36 copies
+(MH_03..05, V1_01..03 x a, b x seeds 4-6), clean C = MH_01..05, V1_01..03. Mean APE SE3 m over H (reading a /
+reading b), gap RMSE, blind RMSE; clean mean APE; tags `stepF-H-*`, `stepF-C-*`:
+
+| state | H APE | a | b | gap | blind | C APE | verdict |
+|---|---|---|---|---|---|---|---|
+| never-moving floor (`stepF-H-floor`) | 3.745 | 3.745 | 3.745 | 3.626 | 2.504 | - | - |
+| all off (`stepF-H-off`) | 4.972 | 6.193 | 3.752 | 5.011 | 6.964 | 3.6633 | - |
+| + BGCAP (`stepF-H-bgcap`) | 4.972 | 6.193 | 3.752 | 5.011 | 6.964 | 3.6633 | on (no run changed; condition 6: 23/23 tests pass) |
+| + P0V (`stepF-H-p0v`) | 4.962 | 6.181 | 3.744 | 5.036 | 6.992 | 3.6548 | on (changed only V1_01 and V1_02, which start moving) |
+| + REFRESH (`stepF-H-p0v-refresh`) | 4.962 | 6.181 | 3.744 | 5.036 | 6.992 | 3.6548 | on (changes below 0.01 %) |
+| + RESET (`stepF-H-reset`) | 5.020 | 6.293 | 3.746 | 5.095 | 7.004 | 3.6543 | **off**: conditions 1 (+1.15 %) and 2 on reading a (+1.81 %) fail |
+
+`stepF-H-refresh` / `stepF-C-refresh` (REFRESH without P0V) were run in parallel in case P0V failed; unused.
+Shipped: `BGCAP_ON`, `P0V_ON`, `REFRESH_ON` on; `RESET_ON` off (kept, tested, recorded as a measured
+experiment: the textbook reset is correct to second order but costs accuracy on reading a; not investigated
+further). The prediction held for BGCAP and RESET (RESET failed, though on APE rather than condition 3); P0V
+was not "identical": V1_01 and V1_02 have no still run in their first 60 s on the official copies.
+
+**Plain reading.** Step F moves the held-out mean APE by -0.2 %. The estimator is still worse than the
+never-moving floor on H (4.962 against 3.745 m); on reading b it is level with it (3.744 against 3.745), on
+reading a it is far worse (6.181), driven by V1_01 a (8.5 m against 1.9) and MH_03..05 a. The blind 5 s is
+worse than the floor in both readings (6.99 against 2.50 m). These are the problems to work on next; Step F
+does not address them.
+
+Gates (Windows, Python 3.14): `pytest` 284 passed (g++ on PATH, so `test_ccore.py` ran); `benchmark.py --gate` PASS on the synthetic file (`stepF-win-py314`: heap
+1012.6 KB with the shipped bytecode, 13.05 us/row) and on MH_01_easy_b_s1 (`stepF-win-py314-mh01-b-s1`: heap
+1100.0 KB, 11.43 us/row); checker PASS on all 36 + 36 + 8 runs of every tag.
+`tests/test_ccore.py` now compares the frozen C core (`main.cpp`, never extended) with a private copy of
+`pathfinder.py` whose Step F switches are set back off; without that its 11 pose tests fail, as expected.
+The no-cached-bytecode reading (compiling `pathfinder.py` while traced) rose from 5278 KB (Step 3) to 5512 KB
+with the added code: under the 8 MB limit it is held to, and above the 4 MB design target, as before.
