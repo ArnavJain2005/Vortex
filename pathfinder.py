@@ -79,6 +79,12 @@ V2_SIGMA_V = 0.3
 V2P_SIGMA_H = 5.0
 V2P_SIGMA_V = 2.0
 V2P_TAU = 10.0
+LEARN_ON = False             # Step 4: envelope learned per file (vortex/core/witness.py learn_env)
+LEARN_FRAC = 0.3
+LEARN_ITERS = 2
+LEARN_K = 1.0
+LEARN_MIN = (0.1, 0.05, 0.3, 0.1)
+LEARN_MAX = (4.0, 1.0, 10.0, 4.0)
 V1_ON = True
 V2_ON = True
 V2P_ON = True
@@ -916,6 +922,61 @@ def _ff_filter_lines(lines, stuck=None, spike=None, stats=None):
         stats.update(st)
 
 
+def _learn_env(acc, t0, t1):
+    """Copy of witness.learn_env: acc holds 5 numbers per tick (t_ns, vh2, vv2, ph2, pv2)."""
+    lim = t0 + LEARN_FRAC * (t1 - t0)
+    n = 0
+    s = [0.0, 0.0, 0.0, 0.0]
+    for i in range(0, len(acc), 5):
+        if acc[i] <= lim:
+            n += 1
+            s[0] += acc[i + 1]
+            s[1] += acc[i + 2]
+            s[2] += acc[i + 3]
+            s[3] += acc[i + 4]
+    if n == 0:
+        return (V2_SIGMA_H, V2_SIGMA_V, V2P_SIGMA_H, V2P_SIGMA_V)
+    out = []
+    for k in range(4):
+        x = LEARN_K * math.sqrt(s[k] / n)
+        out.append(LEARN_MIN[k] if x < LEARN_MIN[k] else LEARN_MAX[k] if x > LEARN_MAX[k] else x)
+    return tuple(out)
+
+
+def _ts_span(src):
+    """First and last integer timestamp (ns) of the data rows, in file order (None if none)."""
+    t0 = t1 = None
+    with _open_rows(src) as f:
+        for line in f:
+            if line[0] < 48:
+                line = line.strip()
+                if not line or line[0] == 35:
+                    continue
+            ts = line.split(b",", 1)[0]
+            if not ts.isdigit():
+                ts = ts.strip()
+                if not ts.isdigit():
+                    continue
+            t1 = int(ts)
+            if t0 is None:
+                t0 = t1
+    return t0, t1
+
+
+def _run_learned(src, dst, write, integrate):
+    """_run, with the envelope learned per file first when LEARN_ON (LEARN_ITERS passes)."""
+    if not (LEARN_ON and integrate):
+        return _run(src, dst, write, integrate)
+    t0, t1 = _ts_span(src)
+    env = None
+    for _ in range(LEARN_ITERS):
+        acc = array("d")
+        _run(src, dst, False, True, env=env, collect=acc)
+        env = _learn_env(acc, t0, t1) if t0 is not None else None
+    LAST["env"] = env
+    return _run(src, dst, write, integrate, env=env)
+
+
 INTERP_ON = False            # Step 3: skip rows marked missing and integrate steps up to INTERP_MAX_S
 INTERP_MAX_S = 0.3           # s; the script's bursts are 5-50 rows (<= 0.25 s at 200 Hz)
 
@@ -940,8 +1001,9 @@ def run(src, dst, write=True, integrate=True):
         st = {}
         LAST["faults"] = st
         lines = _ff_filter_lines(lines, stats=st)
+    LAST["env"] = None
     if lines is None:
-        return _run(src, dst, write, integrate)
+        return _run_learned(src, dst, write, integrate)
     tmp = dst + ".vortex_in.csv"
     try:
         with open(tmp, "wb") as g:
@@ -950,12 +1012,12 @@ def run(src, dst, write=True, integrate=True):
         if f is not None:
             f.close()
     try:
-        return _run(tmp, dst, write, integrate)
+        return _run_learned(tmp, dst, write, integrate)
     finally:
         os.remove(tmp)
 
 
-def _run(src, dst, write=True, integrate=True):
+def _run(src, dst, write=True, integrate=True, env=None, collect=None):
     """Stream src -> dst. Returns the number of data rows.
     write=False: no output (benchmarks); integrate=False: identity poses (benchmarks)."""
     fl = float
@@ -967,6 +1029,8 @@ def _run(src, dst, write=True, integrate=True):
     exp = math.exp
     interp = INTERP_ON
     max_dt = INTERP_MAX_S if interp else MAX_DT
+    e = env if env is not None else (V2_SIGMA_H, V2_SIGMA_V, V2P_SIGMA_H, V2P_SIGMA_V)
+    s2vh, s2vv, s2ph, s2pv = e[0] * e[0], e[1] * e[1], e[2] * e[2], e[3] * e[3]
     max_jump = MAX_JUMP_S
     max_ss = MAX_SUMSQ
     n = 0
@@ -1157,22 +1221,29 @@ def _run(src, dst, write=True, integrate=True):
                                             var = zm2
                                         kf_update(P, dx, 9 + i, m - bgl[i], var)
                                 elif v2:
-                                    kf_update(P, dx, 3, -vx, V2_SIGMA_H * V2_SIGMA_H)
-                                    kf_update(P, dx, 4, -vy, V2_SIGMA_H * V2_SIGMA_H)
-                                    kf_update(P, dx, 5, -vz, V2_SIGMA_V * V2_SIGMA_V)
+                                    kf_update(P, dx, 3, -vx, s2vh)
+                                    kf_update(P, dx, 4, -vy, s2vh)
+                                    kf_update(P, dx, 5, -vz, s2vv)
                                 if v2p and not zupt and T > 0.0:
                                     a = T / V2P_TAU if T < V2P_TAU else 1.0
                                     ccx += (px - ccx) * a
                                     ccy += (py - ccy) * a
                                     ccz += (pz - ccz) * a
-                                    kf_update(P, dx, 0, ccx - px, V2P_SIGMA_H * V2P_SIGMA_H)
-                                    kf_update(P, dx, 1, ccy - py, V2P_SIGMA_H * V2P_SIGMA_H)
-                                    kf_update(P, dx, 2, ccz - pz, V2P_SIGMA_V * V2P_SIGMA_V)
+                                    kf_update(P, dx, 0, ccx - px, s2ph)
+                                    kf_update(P, dx, 1, ccy - py, s2ph)
+                                    kf_update(P, dx, 2, ccz - pz, s2pv)
                                 if zupt or v2 or v2p:
                                     (qw, qx, qy, qz, px, py, pz, vx, vy, vz, bgx, bgy, bgz, bax, bay,
                                      baz) = _inject(qw, qx, qy, qz, px, py, pz, vx, vy, vz, bgx, bgy, bgz,
                                                     bax, bay, baz, dx)
                                     dx = [0.0] * N
+                                if collect is not None:
+                                    d0 = px - ccx
+                                    d1 = py - ccy
+                                    d2 = pz - ccz
+                                    collect.extend((tl, 0.5 * (vx * vx + P[48] + vy * vy + P[64]),
+                                                    vz * vz + P[80], 0.5 * (d0 * d0 + P[0] + d1 * d1 + P[16]),
+                                                    d2 * d2 + P[32]))
                                 r0 = _rot_matrix(qw, qx, qy, qz)
                                 if gap_on:
                                     if len(ring) == GAP_H_TICKS:

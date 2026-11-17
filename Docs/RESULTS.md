@@ -13,6 +13,21 @@ Clean (undegraded) IMU input. APE = absolute position error after Umeyama alignm
 | step3-C-off | 3.91 / 0.480 | 3.85 / 0.591 | 3.53 / 0.983 | 6.38 / 1.193 | 6.55 / 1.023 | 1.77 / 0.409 | 1.77 / 0.669 | 1.55 / 0.469 | 3.66 | 0.727 |
 | step3-C-spike | 3.91 / 0.480 | 3.84 / 0.592 | 3.53 / 0.983 | 6.38 / 1.193 | 6.57 / 1.022 | 1.77 / 0.409 | 1.77 / 0.669 | 1.55 / 0.469 | 3.67 | 0.727 |
 | step3-C-stuck | 3.91 / 0.480 | 3.85 / 0.591 | 3.53 / 0.983 | 6.38 / 1.193 | 6.55 / 1.023 | 1.77 / 0.409 | 1.77 / 0.669 | 1.55 / 0.469 | 3.66 | 0.727 |
+| step4-abl-h-clean | 4.21 / 0.496 | 4.61 / 0.536 | - | - | - | - | - | - | - | - |
+| step4-abl-speed-clean | 4.27 / 0.497 | 4.61 / 0.537 | - | - | - | - | - | - | - | - |
+| step4-abl-vol-clean | 4.21 / 0.568 | 4.50 / 0.579 | - | - | - | - | - | - | - | - |
+| step4-tune-f0.3-i1-clean | 4.27 / 0.497 | 4.58 / 0.539 | - | - | - | - | - | - | - | - |
+| step4-tune-f0.3-i2-clean | 4.29 / 0.500 | 4.63 / 0.537 | - | - | - | - | - | - | - | - |
+| step4-tune-f0.3-i2-k1.5-clean | 4.28 / 0.505 | 4.60 / 0.541 | - | - | - | - | - | - | - | - |
+| step4-tune-f0.3-i2-k2.0-clean | 4.27 / 0.504 | 4.56 / 0.543 | - | - | - | - | - | - | - | - |
+| step4-tune-f0.3-i2-k3.0-clean | 4.25 / 0.497 | 4.46 / 0.551 | - | - | - | - | - | - | - | - |
+| step4-tune-f0.5-i1-clean | 4.22 / 0.497 | 4.47 / 0.551 | - | - | - | - | - | - | - | - |
+| step4-tune-f0.5-i2-clean | 4.25 / 0.525 | 4.58 / 0.548 | - | - | - | - | - | - | - | - |
+| step4-tune-f0.5-i2-k1.5-clean | 4.22 / 0.519 | 4.49 / 0.555 | - | - | - | - | - | - | - | - |
+| step4-tune-f0.5-i2-k2.0-clean | 4.18 / 0.506 | 4.37 / 0.565 | - | - | - | - | - | - | - | - |
+| step4-tune-f0.5-i2-k3.0-clean | 4.08 / 0.486 | 4.14 / 0.581 | - | - | - | - | - | - | - | - |
+| step4-tune-f1.0-i1-clean | 4.22 / 0.495 | 4.41 / 0.558 | - | - | - | - | - | - | - | - |
+| step4-tune-f1.0-i2-clean | 4.25 / 0.523 | 4.54 / 0.552 | - | - | - | - | - | - | - | - |
 | step6a | 51303.92 / 1132.918 | 34197.60 / 919.509 | 18192.52 / 554.725 | 17687.41 / 687.304 | 593.57 / 25.035 | - | - | - | - | - |
 | step6b | 1288.50 / 40.053 | 941.41 / 33.634 | 676.70 / 25.476 | 248.88 / 13.122 | 508.41 / 21.554 | - | - | - | - | - |
 | step6c-clean-both | 4.06 / 0.507 | 5.97 / 0.966 | 3.51 / 1.031 | 6.60 / 1.178 | 6.74 / 1.025 | - | - | - | - | - |
@@ -83,6 +98,36 @@ Clean (undegraded) IMU input. APE = absolute position error after Umeyama alignm
 | step3-C-stuck | V1_01_easy | 2.82 | 2.38 | 1.77 | 1.77 | 0.409 |
 | step3-C-stuck | V1_02_medium | 3.55 | 2.95 | 1.77 | 1.71 | 0.669 |
 | step3-C-stuck | V1_03_difficult | 2.93 | 2.28 | 1.55 | 1.51 | 0.469 |
+| step4-abl-h-clean | MH_01_easy | 5.57 | 6.76 | 4.21 | 3.89 | 0.496 |
+| step4-abl-h-clean | MH_02_easy | 5.84 | 7.34 | 4.61 | 4.37 | 0.536 |
+| step4-abl-speed-clean | MH_01_easy | 5.57 | 6.82 | 4.27 | 3.92 | 0.497 |
+| step4-abl-speed-clean | MH_02_easy | 5.84 | 7.37 | 4.61 | 3.70 | 0.537 |
+| step4-abl-vol-clean | MH_01_easy | 5.72 | 6.98 | 4.21 | 4.13 | 0.568 |
+| step4-abl-vol-clean | MH_02_easy | 5.98 | 7.55 | 4.50 | 4.11 | 0.579 |
+| step4-tune-f0.3-i1-clean | MH_01_easy | 5.59 | 6.83 | 4.27 | 4.14 | 0.497 |
+| step4-tune-f0.3-i1-clean | MH_02_easy | 5.90 | 7.43 | 4.58 | 3.72 | 0.539 |
+| step4-tune-f0.3-i2-clean | MH_01_easy | 5.56 | 6.79 | 4.29 | 4.19 | 0.500 |
+| step4-tune-f0.3-i2-clean | MH_02_easy | 5.84 | 7.35 | 4.63 | 4.38 | 0.537 |
+| step4-tune-f0.3-i2-k1.5-clean | MH_01_easy | 5.58 | 6.81 | 4.28 | 4.21 | 0.505 |
+| step4-tune-f0.3-i2-k1.5-clean | MH_02_easy | 5.87 | 7.40 | 4.60 | 4.17 | 0.541 |
+| step4-tune-f0.3-i2-k2.0-clean | MH_01_easy | 5.60 | 6.83 | 4.27 | 4.21 | 0.504 |
+| step4-tune-f0.3-i2-k2.0-clean | MH_02_easy | 5.92 | 7.46 | 4.56 | 3.89 | 0.543 |
+| step4-tune-f0.3-i2-k3.0-clean | MH_01_easy | 5.66 | 6.88 | 4.25 | 4.18 | 0.497 |
+| step4-tune-f0.3-i2-k3.0-clean | MH_02_easy | 6.05 | 7.63 | 4.46 | 3.46 | 0.551 |
+| step4-tune-f0.5-i1-clean | MH_01_easy | 5.71 | 6.95 | 4.22 | 4.07 | 0.497 |
+| step4-tune-f0.5-i1-clean | MH_02_easy | 6.04 | 7.63 | 4.47 | 3.34 | 0.551 |
+| step4-tune-f0.5-i2-clean | MH_01_easy | 5.64 | 6.88 | 4.25 | 4.15 | 0.525 |
+| step4-tune-f0.5-i2-clean | MH_02_easy | 5.89 | 7.43 | 4.58 | 4.10 | 0.548 |
+| step4-tune-f0.5-i2-k1.5-clean | MH_01_easy | 5.72 | 6.96 | 4.22 | 4.12 | 0.519 |
+| step4-tune-f0.5-i2-k1.5-clean | MH_02_easy | 6.01 | 7.59 | 4.49 | 3.64 | 0.555 |
+| step4-tune-f0.5-i2-k2.0-clean | MH_01_easy | 5.81 | 7.04 | 4.18 | 4.08 | 0.506 |
+| step4-tune-f0.5-i2-k2.0-clean | MH_02_easy | 6.17 | 7.79 | 4.37 | 3.33 | 0.565 |
+| step4-tune-f0.5-i2-k3.0-clean | MH_01_easy | 6.04 | 7.31 | 4.08 | 3.92 | 0.486 |
+| step4-tune-f0.5-i2-k3.0-clean | MH_02_easy | 6.53 | 8.24 | 4.14 | 3.10 | 0.581 |
+| step4-tune-f1.0-i1-clean | MH_01_easy | 5.72 | 6.96 | 4.22 | 4.07 | 0.495 |
+| step4-tune-f1.0-i1-clean | MH_02_easy | 6.12 | 7.73 | 4.41 | 3.26 | 0.558 |
+| step4-tune-f1.0-i2-clean | MH_01_easy | 5.65 | 6.89 | 4.25 | 4.16 | 0.523 |
+| step4-tune-f1.0-i2-clean | MH_02_easy | 5.93 | 7.49 | 4.54 | 3.95 | 0.552 |
 | stepA-v1-c | V1_01_easy | 2.82 | 2.38 | 1.77 | 1.77 | 0.409 |
 | stepA-v1-c | V1_02_medium | 3.55 | 2.95 | 1.77 | 1.71 | 0.669 |
 | stepA-v1-c | V1_03_difficult | 2.93 | 2.28 | 1.55 | 1.51 | 0.469 |
@@ -150,6 +195,36 @@ Clean (undegraded) IMU input. APE = absolute position error after Umeyama alignm
 | step3-C-stuck | main.py FF_STUCK6_ON=True | 99bf25b | 2026-11-17 | V1_01_easy | PASS | 1.77 | 1.92 | 1.77 | 0.847 | 0.409 | 0.42 |
 | step3-C-stuck | main.py FF_STUCK6_ON=True | 99bf25b | 2026-11-17 | V1_02_medium | PASS | 1.77 | 1.69 | 1.71 | 0.508 | 0.669 | 0.38 |
 | step3-C-stuck | main.py FF_STUCK6_ON=True | 99bf25b | 2026-11-17 | V1_03_difficult | PASS | 1.55 | 1.62 | 1.51 | 0.571 | 0.469 | 0.38 |
+| step4-abl-h-clean | main.py LEARN_FRAC=0.3 LEARN_ITERS=2 LEARN_MAX=(4.0,0.3,10.0,2.0) LEARN_MIN=(0.1,0.3,0.3,2.0) LEARN_ON=True | 8cb550f | 2026-11-17 | MH_01_easy | PASS | 4.21 | 5.58 | 3.89 | 8.01 | 0.496 | 0.86 |
+| step4-abl-h-clean | main.py LEARN_FRAC=0.3 LEARN_ITERS=2 LEARN_MAX=(4.0,0.3,10.0,2.0) LEARN_MIN=(0.1,0.3,0.3,2.0) LEARN_ON=True | 8cb550f | 2026-11-17 | MH_02_easy | PASS | 4.61 | 5.79 | 4.37 | 14.9 | 0.536 | 0.74 |
+| step4-abl-speed-clean | main.py LEARN_FRAC=0.3 LEARN_ITERS=2 LEARN_MAX=(4.0,1.0,5.0,2.0) LEARN_MIN=(0.1,0.05,5.0,2.0) LEARN_ON=True | 8cb550f | 2026-11-17 | MH_01_easy | PASS | 4.27 | 5.36 | 3.92 | 17.5 | 0.497 | 0.92 |
+| step4-abl-speed-clean | main.py LEARN_FRAC=0.3 LEARN_ITERS=2 LEARN_MAX=(4.0,1.0,5.0,2.0) LEARN_MIN=(0.1,0.05,5.0,2.0) LEARN_ON=True | 8cb550f | 2026-11-17 | MH_02_easy | PASS | 4.61 | 5.61 | 3.70 | 50.4 | 0.537 | 0.83 |
+| step4-abl-vol-clean | main.py LEARN_FRAC=0.3 LEARN_ITERS=2 LEARN_MAX=(2.0,0.3,10.0,4.0) LEARN_MIN=(2.0,0.3,0.3,0.1) LEARN_ON=True | 8cb550f | 2026-11-17 | MH_01_easy | PASS | 4.21 | 5.23 | 4.13 | 3 | 0.568 | 0.88 |
+| step4-abl-vol-clean | main.py LEARN_FRAC=0.3 LEARN_ITERS=2 LEARN_MAX=(2.0,0.3,10.0,4.0) LEARN_MIN=(2.0,0.3,0.3,0.1) LEARN_ON=True | 8cb550f | 2026-11-17 | MH_02_easy | PASS | 4.50 | 5.49 | 4.11 | 6.6 | 0.579 | 0.85 |
+| step4-tune-f0.3-i1-clean | main.py LEARN_FRAC=0.3 LEARN_ITERS=1 LEARN_ON=True | 8cb550f | 2026-11-17 | MH_01_easy | PASS | 4.27 | 5.27 | 4.14 | 8.61 | 0.497 | 0.79 |
+| step4-tune-f0.3-i1-clean | main.py LEARN_FRAC=0.3 LEARN_ITERS=1 LEARN_ON=True | 8cb550f | 2026-11-17 | MH_02_easy | PASS | 4.58 | 5.58 | 3.72 | 24.8 | 0.539 | 0.67 |
+| step4-tune-f0.3-i2-clean | main.py LEARN_FRAC=0.3 LEARN_ITERS=2 LEARN_ON=True | 8cb550f | 2026-11-17 | MH_01_easy | PASS | 4.29 | 5.30 | 4.19 | 10.3 | 0.500 | 0.94 |
+| step4-tune-f0.3-i2-clean | main.py LEARN_FRAC=0.3 LEARN_ITERS=2 LEARN_ON=True | 8cb550f | 2026-11-17 | MH_02_easy | PASS | 4.63 | 5.61 | 4.38 | 25.3 | 0.537 | 0.79 |
+| step4-tune-f0.3-i2-k1.5-clean | main.py LEARN_FRAC=0.3 LEARN_ITERS=2 LEARN_K=1.5 LEARN_ON=True | 8cb550f | 2026-11-17 | MH_01_easy | PASS | 4.28 | 5.30 | 4.21 | 6.39 | 0.505 | 0.99 |
+| step4-tune-f0.3-i2-k1.5-clean | main.py LEARN_FRAC=0.3 LEARN_ITERS=2 LEARN_K=1.5 LEARN_ON=True | 8cb550f | 2026-11-17 | MH_02_easy | PASS | 4.60 | 5.58 | 4.17 | 18.7 | 0.541 | 0.88 |
+| step4-tune-f0.3-i2-k2.0-clean | main.py LEARN_FRAC=0.3 LEARN_ITERS=2 LEARN_K=2.0 LEARN_ON=True | 8cb550f | 2026-11-17 | MH_01_easy | PASS | 4.27 | 5.25 | 4.21 | 4.67 | 0.504 | 1.01 |
+| step4-tune-f0.3-i2-k2.0-clean | main.py LEARN_FRAC=0.3 LEARN_ITERS=2 LEARN_K=2.0 LEARN_ON=True | 8cb550f | 2026-11-17 | MH_02_easy | PASS | 4.56 | 5.56 | 3.89 | 16.1 | 0.543 | 0.92 |
+| step4-tune-f0.3-i2-k3.0-clean | main.py LEARN_FRAC=0.3 LEARN_ITERS=2 LEARN_K=3.0 LEARN_ON=True | 8cb550f | 2026-11-17 | MH_01_easy | PASS | 4.25 | 5.21 | 4.18 | 3.65 | 0.497 | 0.90 |
+| step4-tune-f0.3-i2-k3.0-clean | main.py LEARN_FRAC=0.3 LEARN_ITERS=2 LEARN_K=3.0 LEARN_ON=True | 8cb550f | 2026-11-17 | MH_02_easy | PASS | 4.46 | 5.57 | 3.46 | 11 | 0.551 | 0.77 |
+| step4-tune-f0.5-i1-clean | main.py LEARN_FRAC=0.5 LEARN_ITERS=1 LEARN_ON=True | 8cb550f | 2026-11-17 | MH_01_easy | PASS | 4.22 | 5.18 | 4.07 | 4.84 | 0.497 | 0.65 |
+| step4-tune-f0.5-i1-clean | main.py LEARN_FRAC=0.5 LEARN_ITERS=1 LEARN_ON=True | 8cb550f | 2026-11-17 | MH_02_easy | PASS | 4.47 | 5.58 | 3.34 | 12.3 | 0.551 | 0.54 |
+| step4-tune-f0.5-i2-clean | main.py LEARN_FRAC=0.5 LEARN_ITERS=2 LEARN_ON=True | 8cb550f | 2026-11-17 | MH_01_easy | PASS | 4.25 | 5.27 | 4.15 | 4.68 | 0.525 | 1.02 |
+| step4-tune-f0.5-i2-clean | main.py LEARN_FRAC=0.5 LEARN_ITERS=2 LEARN_ON=True | 8cb550f | 2026-11-17 | MH_02_easy | PASS | 4.58 | 5.57 | 4.10 | 14.2 | 0.548 | 0.92 |
+| step4-tune-f0.5-i2-k1.5-clean | main.py LEARN_FRAC=0.5 LEARN_ITERS=2 LEARN_K=1.5 LEARN_ON=True | 8cb550f | 2026-11-17 | MH_01_easy | PASS | 4.22 | 5.15 | 4.12 | 3.49 | 0.519 | 1.27 |
+| step4-tune-f0.5-i2-k1.5-clean | main.py LEARN_FRAC=0.5 LEARN_ITERS=2 LEARN_K=1.5 LEARN_ON=True | 8cb550f | 2026-11-17 | MH_02_easy | PASS | 4.49 | 5.55 | 3.64 | 10.9 | 0.555 | 0.83 |
+| step4-tune-f0.5-i2-k2.0-clean | main.py LEARN_FRAC=0.5 LEARN_ITERS=2 LEARN_K=2.0 LEARN_ON=True | 8cb550f | 2026-11-17 | MH_01_easy | PASS | 4.18 | 5.09 | 4.08 | 3.07 | 0.506 | 0.93 |
+| step4-tune-f0.5-i2-k2.0-clean | main.py LEARN_FRAC=0.5 LEARN_ITERS=2 LEARN_K=2.0 LEARN_ON=True | 8cb550f | 2026-11-17 | MH_02_easy | PASS | 4.37 | 5.58 | 3.33 | 7.97 | 0.565 | 0.91 |
+| step4-tune-f0.5-i2-k3.0-clean | main.py LEARN_FRAC=0.5 LEARN_ITERS=2 LEARN_K=3.0 LEARN_ON=True | 8cb550f | 2026-11-17 | MH_01_easy | PASS | 4.08 | 5.20 | 3.92 | 2.67 | 0.486 | 0.96 |
+| step4-tune-f0.5-i2-k3.0-clean | main.py LEARN_FRAC=0.5 LEARN_ITERS=2 LEARN_K=3.0 LEARN_ON=True | 8cb550f | 2026-11-17 | MH_02_easy | PASS | 4.14 | 5.43 | 3.10 | 4.8 | 0.581 | 0.94 |
+| step4-tune-f1.0-i1-clean | main.py LEARN_FRAC=1.0 LEARN_ITERS=1 LEARN_ON=True | 8cb550f | 2026-11-17 | MH_01_easy | PASS | 4.22 | 5.18 | 4.07 | 4.61 | 0.495 | 0.73 |
+| step4-tune-f1.0-i1-clean | main.py LEARN_FRAC=1.0 LEARN_ITERS=1 LEARN_ON=True | 8cb550f | 2026-11-17 | MH_02_easy | PASS | 4.41 | 5.59 | 3.26 | 9.66 | 0.558 | 0.54 |
+| step4-tune-f1.0-i2-clean | main.py LEARN_FRAC=1.0 LEARN_ITERS=2 LEARN_ON=True | 8cb550f | 2026-11-17 | MH_01_easy | PASS | 4.25 | 5.24 | 4.16 | 4.2 | 0.523 | 0.91 |
+| step4-tune-f1.0-i2-clean | main.py LEARN_FRAC=1.0 LEARN_ITERS=2 LEARN_ON=True | 8cb550f | 2026-11-17 | MH_02_easy | PASS | 4.54 | 5.55 | 3.95 | 12.2 | 0.552 | 0.82 |
 | step6a | main_6a.py | a4f25e3 | 2026-11-16 | MH_01_easy | PASS | 51303.92 | 118423.21 | 4.24 | 1.52e-05 | 1132.918 | 0.19 |
 | step6a | main_6a.py | a4f25e3 | 2026-11-16 | MH_02_easy | PASS | 34197.60 | 79084.89 | 4.40 | 4.33e-05 | 919.509 | 0.20 |
 | step6a | main_6a.py | a4f25e3 | 2026-11-16 | MH_03_medium | PASS | 18192.52 | 39321.97 | 3.56 | 2.25e-05 | 554.725 | 0.16 |
@@ -266,6 +341,36 @@ Copies made by `python tools/official_degrade.py --all` with the organisers' `de
 | step3-tune-stuck-interp | b | 1..3 | 6 | 3.949 | 0.566 | 3.680 | 0.028 | 7.203 | 0.781 | 6/6 PASS |
 | step3-tune-stuck | a | 1..3 | 6 | 11.642 | 1.124 | 13.075 | 0.135 | 26.477 | 3.009 | 6/6 PASS |
 | step3-tune-stuck | b | 1..3 | 6 | 3.982 | 0.558 | 3.735 | 0.025 | 7.212 | 0.604 | 6/6 PASS |
+| step4-abl-h | a | 1..3 | 6 | 4.316 | 0.575 | 3.532 | 0.030 | 4.515 | 0.634 | 6/6 PASS |
+| step4-abl-h | b | 1..3 | 6 | 4.400 | 0.539 | 3.768 | 0.019 | 5.274 | 0.495 | 6/6 PASS |
+| step4-abl-speed | a | 1..3 | 6 | 4.312 | 0.559 | 3.495 | 0.035 | 4.299 | 0.846 | 6/6 PASS |
+| step4-abl-speed | b | 1..3 | 6 | 4.447 | 0.540 | 3.822 | 0.019 | 5.300 | 0.439 | 6/6 PASS |
+| step4-abl-vol | a | 1..3 | 6 | 4.700 | 0.722 | 4.277 | 0.054 | 6.222 | 1.637 | 6/6 PASS |
+| step4-abl-vol | b | 1..3 | 6 | 4.355 | 0.596 | 3.757 | 0.019 | 5.225 | 0.376 | 6/6 PASS |
+| step4-tune-f0.3-i1 | a | 1..3 | 6 | 4.529 | 0.632 | 4.064 | 0.055 | 5.563 | 1.412 | 6/6 PASS |
+| step4-tune-f0.3-i1 | b | 1..3 | 6 | 4.430 | 0.542 | 3.810 | 0.019 | 5.264 | 0.407 | 6/6 PASS |
+| step4-tune-f0.3-i2-k1.5 | a | 1..3 | 6 | 4.454 | 0.626 | 3.860 | 0.045 | 5.272 | 1.250 | 6/6 PASS |
+| step4-tune-f0.3-i2-k1.5 | b | 1..3 | 6 | 4.443 | 0.546 | 3.807 | 0.019 | 5.208 | 0.428 | 6/6 PASS |
+| step4-tune-f0.3-i2-k2.0 | a | 1..3 | 6 | 5.153 | 0.694 | 4.947 | 0.064 | 7.612 | 1.710 | 6/6 PASS |
+| step4-tune-f0.3-i2-k2.0 | b | 1..3 | 6 | 4.417 | 0.547 | 3.799 | 0.019 | 5.254 | 0.418 | 6/6 PASS |
+| step4-tune-f0.3-i2-k3.0 | a | 1..3 | 6 | 8.302 | 0.905 | 9.095 | 0.102 | 15.733 | 2.284 | 6/6 PASS |
+| step4-tune-f0.3-i2-k3.0 | b | 1..3 | 6 | 4.354 | 0.547 | 3.749 | 0.020 | 5.398 | 0.433 | 6/6 PASS |
+| step4-tune-f0.3-i2 | a | 1..3 | 6 | 4.318 | 0.576 | 3.536 | 0.030 | 4.328 | 0.682 | 6/6 PASS |
+| step4-tune-f0.3-i2 | b | 1..3 | 6 | 4.464 | 0.542 | 3.823 | 0.018 | 5.216 | 0.445 | 6/6 PASS |
+| step4-tune-f0.5-i1 | a | 1..3 | 6 | 6.421 | 0.827 | 6.844 | 0.094 | 11.887 | 2.050 | 6/6 PASS |
+| step4-tune-f0.5-i1 | b | 1..3 | 6 | 4.345 | 0.547 | 3.769 | 0.020 | 5.494 | 0.422 | 6/6 PASS |
+| step4-tune-f0.5-i2-k1.5 | a | 1..3 | 6 | 7.573 | 0.920 | 8.317 | 0.103 | 14.758 | 2.262 | 6/6 PASS |
+| step4-tune-f0.5-i2-k1.5 | b | 1..3 | 6 | 4.350 | 0.560 | 3.767 | 0.020 | 5.408 | 0.405 | 6/6 PASS |
+| step4-tune-f0.5-i2-k2.0 | a | 1..3 | 6 | 11.942 | 1.217 | 13.596 | 0.135 | 25.305 | 2.874 | 6/6 PASS |
+| step4-tune-f0.5-i2-k2.0 | b | 1..3 | 6 | 4.279 | 0.559 | 3.734 | 0.021 | 5.690 | 0.452 | 6/6 PASS |
+| step4-tune-f0.5-i2-k3.0 | a | 1..3 | 6 | 21.528 | 1.782 | 25.000 | 0.180 | 50.314 | 3.962 | 6/6 PASS |
+| step4-tune-f0.5-i2-k3.0 | b | 1..3 | 6 | 4.129 | 0.558 | 3.705 | 0.024 | 6.444 | 0.562 | 6/6 PASS |
+| step4-tune-f0.5-i2 | a | 1..3 | 6 | 4.889 | 0.710 | 4.727 | 0.064 | 6.698 | 1.638 | 6/6 PASS |
+| step4-tune-f0.5-i2 | b | 1..3 | 6 | 4.412 | 0.559 | 3.794 | 0.019 | 5.217 | 0.384 | 6/6 PASS |
+| step4-tune-f1.0-i1 | a | 1..3 | 6 | 15.668 | 1.488 | 17.942 | 0.159 | 34.753 | 3.371 | 6/6 PASS |
+| step4-tune-f1.0-i1 | b | 1..3 | 6 | 4.313 | 0.550 | 3.749 | 0.020 | 5.578 | 0.436 | 6/6 PASS |
+| step4-tune-f1.0-i2 | a | 1..3 | 6 | 19.500 | 1.709 | 22.361 | 0.179 | 45.712 | 3.687 | 6/6 PASS |
+| step4-tune-f1.0-i2 | b | 1..3 | 6 | 4.394 | 0.560 | 3.784 | 0.019 | 5.253 | 0.388 | 6/6 PASS |
 
 ## Every official-copy run
 
@@ -639,6 +744,186 @@ Copies made by `python tools/official_degrade.py --all` with the organisers' `de
 | step3-tune-stuck | main.py FF_STUCK6_ON=True | 44a61c6 | MH_02_easy_b_s1 | PASS | 4.050 | 0.618 | 4.867 | 0.018 | 8.034 | 0.244 | 0.47 |
 | step3-tune-stuck | main.py FF_STUCK6_ON=True | 44a61c6 | MH_02_easy_b_s2 | PASS | 3.890 | 0.604 | 3.528 | 0.008 | 6.522 | 0.421 | 0.43 |
 | step3-tune-stuck | main.py FF_STUCK6_ON=True | 44a61c6 | MH_02_easy_b_s3 | PASS | 4.168 | 0.600 | 3.132 | 0.034 | 6.562 | 0.626 | 0.43 |
+| step4-abl-h | main.py LEARN_FRAC=0.3 LEARN_ITERS=2 LEARN_MAX=(4.0,0.3,10.0,2.0) LEARN_MIN=(0.1,0.3,0.3,2.0) LEARN_ON=True | 8cb550f | MH_01_easy_a_s1 | PASS | 4.119 | 0.518 | 3.157 | 0.026 | 3.819 | 0.757 | 0.75 |
+| step4-abl-h | main.py LEARN_FRAC=0.3 LEARN_ITERS=2 LEARN_MAX=(4.0,0.3,10.0,2.0) LEARN_MIN=(0.1,0.3,0.3,2.0) LEARN_ON=True | 8cb550f | MH_01_easy_a_s2 | PASS | 4.356 | 0.607 | 2.978 | 0.047 | 4.473 | 0.603 | 0.79 |
+| step4-abl-h | main.py LEARN_FRAC=0.3 LEARN_ITERS=2 LEARN_MAX=(4.0,0.3,10.0,2.0) LEARN_MIN=(0.1,0.3,0.3,2.0) LEARN_ON=True | 8cb550f | MH_01_easy_a_s3 | PASS | 3.810 | 0.582 | 3.061 | 0.019 | 5.846 | 1.496 | 0.81 |
+| step4-abl-h | main.py LEARN_FRAC=0.3 LEARN_ITERS=2 LEARN_MAX=(4.0,0.3,10.0,2.0) LEARN_MIN=(0.1,0.3,0.3,2.0) LEARN_ON=True | 8cb550f | MH_01_easy_b_s1 | PASS | 4.176 | 0.517 | 3.621 | 0.023 | 4.825 | 0.660 | 0.89 |
+| step4-abl-h | main.py LEARN_FRAC=0.3 LEARN_ITERS=2 LEARN_MAX=(4.0,0.3,10.0,2.0) LEARN_MIN=(0.1,0.3,0.3,2.0) LEARN_ON=True | 8cb550f | MH_01_easy_b_s2 | PASS | 4.221 | 0.518 | 2.962 | 0.027 | 5.027 | 0.621 | 0.84 |
+| step4-abl-h | main.py LEARN_FRAC=0.3 LEARN_ITERS=2 LEARN_MAX=(4.0,0.3,10.0,2.0) LEARN_MIN=(0.1,0.3,0.3,2.0) LEARN_ON=True | 8cb550f | MH_01_easy_b_s3 | PASS | 4.198 | 0.515 | 3.675 | 0.010 | 5.067 | 0.669 | 0.81 |
+| step4-abl-h | main.py LEARN_FRAC=0.3 LEARN_ITERS=2 LEARN_MAX=(4.0,0.3,10.0,2.0) LEARN_MIN=(0.1,0.3,0.3,2.0) LEARN_ON=True | 8cb550f | MH_02_easy_a_s1 | PASS | 4.560 | 0.578 | 5.045 | 0.021 | 4.723 | 0.148 | 0.61 |
+| step4-abl-h | main.py LEARN_FRAC=0.3 LEARN_ITERS=2 LEARN_MAX=(4.0,0.3,10.0,2.0) LEARN_MIN=(0.1,0.3,0.3,2.0) LEARN_ON=True | 8cb550f | MH_02_easy_a_s2 | PASS | 4.503 | 0.583 | 3.605 | 0.006 | 4.302 | 0.287 | 0.73 |
+| step4-abl-h | main.py LEARN_FRAC=0.3 LEARN_ITERS=2 LEARN_MAX=(4.0,0.3,10.0,2.0) LEARN_MIN=(0.1,0.3,0.3,2.0) LEARN_ON=True | 8cb550f | MH_02_easy_a_s3 | PASS | 4.549 | 0.583 | 3.346 | 0.062 | 3.928 | 0.514 | 0.58 |
+| step4-abl-h | main.py LEARN_FRAC=0.3 LEARN_ITERS=2 LEARN_MAX=(4.0,0.3,10.0,2.0) LEARN_MIN=(0.1,0.3,0.3,2.0) LEARN_ON=True | 8cb550f | MH_02_easy_b_s1 | PASS | 4.568 | 0.558 | 5.186 | 0.018 | 5.674 | 0.388 | 0.69 |
+| step4-abl-h | main.py LEARN_FRAC=0.3 LEARN_ITERS=2 LEARN_MAX=(4.0,0.3,10.0,2.0) LEARN_MIN=(0.1,0.3,0.3,2.0) LEARN_ON=True | 8cb550f | MH_02_easy_b_s2 | PASS | 4.630 | 0.565 | 3.703 | 0.008 | 5.370 | 0.327 | 0.72 |
+| step4-abl-h | main.py LEARN_FRAC=0.3 LEARN_ITERS=2 LEARN_MAX=(4.0,0.3,10.0,2.0) LEARN_MIN=(0.1,0.3,0.3,2.0) LEARN_ON=True | 8cb550f | MH_02_easy_b_s3 | PASS | 4.605 | 0.559 | 3.460 | 0.030 | 5.684 | 0.303 | 0.66 |
+| step4-abl-speed | main.py LEARN_FRAC=0.3 LEARN_ITERS=2 LEARN_MAX=(4.0,1.0,5.0,2.0) LEARN_MIN=(0.1,0.05,5.0,2.0) LEARN_ON=True | 8cb550f | MH_01_easy_a_s1 | PASS | 4.126 | 0.513 | 3.132 | 0.028 | 3.260 | 0.713 | 0.88 |
+| step4-abl-speed | main.py LEARN_FRAC=0.3 LEARN_ITERS=2 LEARN_MAX=(4.0,1.0,5.0,2.0) LEARN_MIN=(0.1,0.05,5.0,2.0) LEARN_ON=True | 8cb550f | MH_01_easy_a_s2 | PASS | 4.247 | 0.553 | 2.635 | 0.065 | 4.011 | 0.950 | 0.92 |
+| step4-abl-speed | main.py LEARN_FRAC=0.3 LEARN_ITERS=2 LEARN_MAX=(4.0,1.0,5.0,2.0) LEARN_MIN=(0.1,0.05,5.0,2.0) LEARN_ON=True | 8cb550f | MH_01_easy_a_s3 | PASS | 3.908 | 0.556 | 3.167 | 0.021 | 6.811 | 2.194 | 0.86 |
+| step4-abl-speed | main.py LEARN_FRAC=0.3 LEARN_ITERS=2 LEARN_MAX=(4.0,1.0,5.0,2.0) LEARN_MIN=(0.1,0.05,5.0,2.0) LEARN_ON=True | 8cb550f | MH_01_easy_b_s1 | PASS | 4.273 | 0.518 | 3.741 | 0.022 | 5.088 | 0.627 | 1.19 |
+| step4-abl-speed | main.py LEARN_FRAC=0.3 LEARN_ITERS=2 LEARN_MAX=(4.0,1.0,5.0,2.0) LEARN_MIN=(0.1,0.05,5.0,2.0) LEARN_ON=True | 8cb550f | MH_01_easy_b_s2 | PASS | 4.277 | 0.519 | 3.036 | 0.024 | 5.099 | 0.518 | 1.08 |
+| step4-abl-speed | main.py LEARN_FRAC=0.3 LEARN_ITERS=2 LEARN_MAX=(4.0,1.0,5.0,2.0) LEARN_MIN=(0.1,0.05,5.0,2.0) LEARN_ON=True | 8cb550f | MH_01_easy_b_s3 | PASS | 4.264 | 0.517 | 3.756 | 0.011 | 5.013 | 0.591 | 0.89 |
+| step4-abl-speed | main.py LEARN_FRAC=0.3 LEARN_ITERS=2 LEARN_MAX=(4.0,1.0,5.0,2.0) LEARN_MIN=(0.1,0.05,5.0,2.0) LEARN_ON=True | 8cb550f | MH_02_easy_a_s1 | PASS | 4.544 | 0.576 | 5.002 | 0.021 | 4.636 | 0.262 | 0.72 |
+| step4-abl-speed | main.py LEARN_FRAC=0.3 LEARN_ITERS=2 LEARN_MAX=(4.0,1.0,5.0,2.0) LEARN_MIN=(0.1,0.05,5.0,2.0) LEARN_ON=True | 8cb550f | MH_02_easy_a_s2 | PASS | 4.463 | 0.581 | 3.548 | 0.004 | 3.950 | 0.316 | 0.78 |
+| step4-abl-speed | main.py LEARN_FRAC=0.3 LEARN_ITERS=2 LEARN_MAX=(4.0,1.0,5.0,2.0) LEARN_MIN=(0.1,0.05,5.0,2.0) LEARN_ON=True | 8cb550f | MH_02_easy_a_s3 | PASS | 4.584 | 0.573 | 3.488 | 0.070 | 3.124 | 0.640 | 0.64 |
+| step4-abl-speed | main.py LEARN_FRAC=0.3 LEARN_ITERS=2 LEARN_MAX=(4.0,1.0,5.0,2.0) LEARN_MIN=(0.1,0.05,5.0,2.0) LEARN_ON=True | 8cb550f | MH_02_easy_b_s1 | PASS | 4.614 | 0.559 | 5.219 | 0.018 | 5.509 | 0.262 | 0.67 |
+| step4-abl-speed | main.py LEARN_FRAC=0.3 LEARN_ITERS=2 LEARN_MAX=(4.0,1.0,5.0,2.0) LEARN_MIN=(0.1,0.05,5.0,2.0) LEARN_ON=True | 8cb550f | MH_02_easy_b_s2 | PASS | 4.624 | 0.566 | 3.684 | 0.008 | 5.506 | 0.313 | 0.68 |
+| step4-abl-speed | main.py LEARN_FRAC=0.3 LEARN_ITERS=2 LEARN_MAX=(4.0,1.0,5.0,2.0) LEARN_MIN=(0.1,0.05,5.0,2.0) LEARN_ON=True | 8cb550f | MH_02_easy_b_s3 | PASS | 4.630 | 0.561 | 3.495 | 0.028 | 5.585 | 0.322 | 0.72 |
+| step4-abl-vol | main.py LEARN_FRAC=0.3 LEARN_ITERS=2 LEARN_MAX=(2.0,0.3,10.0,4.0) LEARN_MIN=(2.0,0.3,0.3,0.1) LEARN_ON=True | 8cb550f | MH_01_easy_a_s1 | PASS | 4.293 | 0.637 | 3.684 | 0.054 | 1.471 | 0.829 | 0.86 |
+| step4-abl-vol | main.py LEARN_FRAC=0.3 LEARN_ITERS=2 LEARN_MAX=(2.0,0.3,10.0,4.0) LEARN_MIN=(2.0,0.3,0.3,0.1) LEARN_ON=True | 8cb550f | MH_01_easy_a_s2 | PASS | 5.434 | 0.770 | 4.597 | 0.081 | 6.875 | 1.507 | 0.78 |
+| step4-abl-vol | main.py LEARN_FRAC=0.3 LEARN_ITERS=2 LEARN_MAX=(2.0,0.3,10.0,4.0) LEARN_MIN=(2.0,0.3,0.3,0.1) LEARN_ON=True | 8cb550f | MH_01_easy_a_s3 | PASS | 4.272 | 0.742 | 4.091 | 0.026 | 13.852 | 3.276 | 0.81 |
+| step4-abl-vol | main.py LEARN_FRAC=0.3 LEARN_ITERS=2 LEARN_MAX=(2.0,0.3,10.0,4.0) LEARN_MIN=(2.0,0.3,0.3,0.1) LEARN_ON=True | 8cb550f | MH_01_easy_b_s1 | PASS | 4.229 | 0.591 | 3.691 | 0.026 | 5.103 | 0.535 | 0.87 |
+| step4-abl-vol | main.py LEARN_FRAC=0.3 LEARN_ITERS=2 LEARN_MAX=(2.0,0.3,10.0,4.0) LEARN_MIN=(2.0,0.3,0.3,0.1) LEARN_ON=True | 8cb550f | MH_01_easy_b_s2 | PASS | 4.208 | 0.588 | 3.042 | 0.025 | 5.134 | 0.467 | 0.82 |
+| step4-abl-vol | main.py LEARN_FRAC=0.3 LEARN_ITERS=2 LEARN_MAX=(2.0,0.3,10.0,4.0) LEARN_MIN=(2.0,0.3,0.3,0.1) LEARN_ON=True | 8cb550f | MH_01_easy_b_s3 | PASS | 4.169 | 0.584 | 3.634 | 0.013 | 4.688 | 0.535 | 0.79 |
+| step4-abl-vol | main.py LEARN_FRAC=0.3 LEARN_ITERS=2 LEARN_MAX=(2.0,0.3,10.0,4.0) LEARN_MIN=(2.0,0.3,0.3,0.1) LEARN_ON=True | 8cb550f | MH_02_easy_a_s1 | PASS | 4.685 | 0.710 | 4.469 | 0.023 | 5.041 | 0.634 | 0.66 |
+| step4-abl-vol | main.py LEARN_FRAC=0.3 LEARN_ITERS=2 LEARN_MAX=(2.0,0.3,10.0,4.0) LEARN_MIN=(2.0,0.3,0.3,0.1) LEARN_ON=True | 8cb550f | MH_02_easy_a_s2 | PASS | 4.230 | 0.763 | 3.792 | 0.004 | 1.983 | 1.647 | 0.90 |
+| step4-abl-vol | main.py LEARN_FRAC=0.3 LEARN_ITERS=2 LEARN_MAX=(2.0,0.3,10.0,4.0) LEARN_MIN=(2.0,0.3,0.3,0.1) LEARN_ON=True | 8cb550f | MH_02_easy_a_s3 | PASS | 5.286 | 0.711 | 5.028 | 0.136 | 8.108 | 1.931 | 0.84 |
+| step4-abl-vol | main.py LEARN_FRAC=0.3 LEARN_ITERS=2 LEARN_MAX=(2.0,0.3,10.0,4.0) LEARN_MIN=(2.0,0.3,0.3,0.1) LEARN_ON=True | 8cb550f | MH_02_easy_b_s1 | PASS | 4.488 | 0.601 | 4.996 | 0.014 | 5.408 | 0.152 | 0.73 |
+| step4-abl-vol | main.py LEARN_FRAC=0.3 LEARN_ITERS=2 LEARN_MAX=(2.0,0.3,10.0,4.0) LEARN_MIN=(2.0,0.3,0.3,0.1) LEARN_ON=True | 8cb550f | MH_02_easy_b_s2 | PASS | 4.479 | 0.615 | 3.718 | 0.009 | 5.246 | 0.242 | 0.75 |
+| step4-abl-vol | main.py LEARN_FRAC=0.3 LEARN_ITERS=2 LEARN_MAX=(2.0,0.3,10.0,4.0) LEARN_MIN=(2.0,0.3,0.3,0.1) LEARN_ON=True | 8cb550f | MH_02_easy_b_s3 | PASS | 4.554 | 0.598 | 3.461 | 0.029 | 5.771 | 0.325 | 0.69 |
+| step4-tune-f0.3-i1 | main.py LEARN_FRAC=0.3 LEARN_ITERS=1 LEARN_ON=True | 8cb550f | MH_01_easy_a_s1 | PASS | 4.118 | 0.534 | 3.304 | 0.058 | 1.246 | 0.783 | 0.55 |
+| step4-tune-f0.3-i1 | main.py LEARN_FRAC=0.3 LEARN_ITERS=1 LEARN_ON=True | 8cb550f | MH_01_easy_a_s2 | PASS | 5.329 | 0.725 | 4.613 | 0.090 | 6.262 | 1.458 | 0.54 |
+| step4-tune-f0.3-i1 | main.py LEARN_FRAC=0.3 LEARN_ITERS=1 LEARN_ON=True | 8cb550f | MH_01_easy_a_s3 | PASS | 4.113 | 0.666 | 3.999 | 0.025 | 13.045 | 3.174 | 0.57 |
+| step4-tune-f0.3-i1 | main.py LEARN_FRAC=0.3 LEARN_ITERS=1 LEARN_ON=True | 8cb550f | MH_01_easy_b_s1 | PASS | 4.276 | 0.519 | 3.718 | 0.025 | 5.068 | 0.570 | 0.59 |
+| step4-tune-f0.3-i1 | main.py LEARN_FRAC=0.3 LEARN_ITERS=1 LEARN_ON=True | 8cb550f | MH_01_easy_b_s2 | PASS | 4.281 | 0.519 | 3.052 | 0.023 | 5.038 | 0.517 | 0.63 |
+| step4-tune-f0.3-i1 | main.py LEARN_FRAC=0.3 LEARN_ITERS=1 LEARN_ON=True | 8cb550f | MH_01_easy_b_s3 | PASS | 4.258 | 0.517 | 3.737 | 0.011 | 4.885 | 0.554 | 0.62 |
+| step4-tune-f0.3-i1 | main.py LEARN_FRAC=0.3 LEARN_ITERS=1 LEARN_ON=True | 8cb550f | MH_02_easy_a_s1 | PASS | 4.516 | 0.618 | 4.683 | 0.027 | 4.267 | 0.468 | 0.45 |
+| step4-tune-f0.3-i1 | main.py LEARN_FRAC=0.3 LEARN_ITERS=1 LEARN_ON=True | 8cb550f | MH_02_easy_a_s2 | PASS | 4.259 | 0.633 | 3.579 | 0.003 | 2.422 | 1.086 | 0.49 |
+| step4-tune-f0.3-i1 | main.py LEARN_FRAC=0.3 LEARN_ITERS=1 LEARN_ON=True | 8cb550f | MH_02_easy_a_s3 | PASS | 4.836 | 0.617 | 4.210 | 0.126 | 6.135 | 1.502 | 0.44 |
+| step4-tune-f0.3-i1 | main.py LEARN_FRAC=0.3 LEARN_ITERS=1 LEARN_ON=True | 8cb550f | MH_02_easy_b_s1 | PASS | 4.576 | 0.563 | 5.175 | 0.017 | 5.539 | 0.209 | 0.51 |
+| step4-tune-f0.3-i1 | main.py LEARN_FRAC=0.3 LEARN_ITERS=1 LEARN_ON=True | 8cb550f | MH_02_easy_b_s2 | PASS | 4.582 | 0.569 | 3.697 | 0.008 | 5.401 | 0.256 | 0.54 |
+| step4-tune-f0.3-i1 | main.py LEARN_FRAC=0.3 LEARN_ITERS=1 LEARN_ON=True | 8cb550f | MH_02_easy_b_s3 | PASS | 4.606 | 0.563 | 3.480 | 0.028 | 5.654 | 0.336 | 0.52 |
+| step4-tune-f0.3-i2-k1.5 | main.py LEARN_FRAC=0.3 LEARN_ITERS=2 LEARN_K=1.5 LEARN_ON=True | 8cb550f | MH_01_easy_a_s1 | PASS | 4.042 | 0.539 | 2.968 | 0.041 | 2.240 | 0.735 | 0.89 |
+| step4-tune-f0.3-i2-k1.5 | main.py LEARN_FRAC=0.3 LEARN_ITERS=2 LEARN_K=1.5 LEARN_ON=True | 8cb550f | MH_01_easy_a_s2 | PASS | 5.082 | 0.714 | 4.141 | 0.082 | 5.590 | 1.383 | 0.87 |
+| step4-tune-f0.3-i2-k1.5 | main.py LEARN_FRAC=0.3 LEARN_ITERS=2 LEARN_K=1.5 LEARN_ON=True | 8cb550f | MH_01_easy_a_s3 | PASS | 4.065 | 0.667 | 3.901 | 0.025 | 12.603 | 3.076 | 0.83 |
+| step4-tune-f0.3-i2-k1.5 | main.py LEARN_FRAC=0.3 LEARN_ITERS=2 LEARN_K=1.5 LEARN_ON=True | 8cb550f | MH_01_easy_b_s1 | PASS | 4.281 | 0.528 | 3.710 | 0.023 | 5.008 | 0.568 | 0.92 |
+| step4-tune-f0.3-i2-k1.5 | main.py LEARN_FRAC=0.3 LEARN_ITERS=2 LEARN_K=1.5 LEARN_ON=True | 8cb550f | MH_01_easy_b_s2 | PASS | 4.289 | 0.526 | 3.007 | 0.024 | 4.978 | 0.628 | 0.94 |
+| step4-tune-f0.3-i2-k1.5 | main.py LEARN_FRAC=0.3 LEARN_ITERS=2 LEARN_K=1.5 LEARN_ON=True | 8cb550f | MH_01_easy_b_s3 | PASS | 4.267 | 0.525 | 3.732 | 0.011 | 4.844 | 0.558 | 0.87 |
+| step4-tune-f0.3-i2-k1.5 | main.py LEARN_FRAC=0.3 LEARN_ITERS=2 LEARN_K=1.5 LEARN_ON=True | 8cb550f | MH_02_easy_a_s1 | PASS | 4.521 | 0.608 | 4.785 | 0.021 | 4.274 | 0.402 | 0.74 |
+| step4-tune-f0.3-i2-k1.5 | main.py LEARN_FRAC=0.3 LEARN_ITERS=2 LEARN_K=1.5 LEARN_ON=True | 8cb550f | MH_02_easy_a_s2 | PASS | 4.363 | 0.616 | 3.604 | 0.004 | 3.008 | 0.768 | 0.74 |
+| step4-tune-f0.3-i2-k1.5 | main.py LEARN_FRAC=0.3 LEARN_ITERS=2 LEARN_K=1.5 LEARN_ON=True | 8cb550f | MH_02_easy_a_s3 | PASS | 4.651 | 0.611 | 3.759 | 0.100 | 3.917 | 1.135 | 0.64 |
+| step4-tune-f0.3-i2-k1.5 | main.py LEARN_FRAC=0.3 LEARN_ITERS=2 LEARN_K=1.5 LEARN_ON=True | 8cb550f | MH_02_easy_b_s1 | PASS | 4.598 | 0.564 | 5.183 | 0.017 | 5.451 | 0.208 | 0.72 |
+| step4-tune-f0.3-i2-k1.5 | main.py LEARN_FRAC=0.3 LEARN_ITERS=2 LEARN_K=1.5 LEARN_ON=True | 8cb550f | MH_02_easy_b_s2 | PASS | 4.604 | 0.571 | 3.709 | 0.008 | 5.394 | 0.282 | 0.78 |
+| step4-tune-f0.3-i2-k1.5 | main.py LEARN_FRAC=0.3 LEARN_ITERS=2 LEARN_K=1.5 LEARN_ON=True | 8cb550f | MH_02_easy_b_s3 | PASS | 4.622 | 0.564 | 3.502 | 0.028 | 5.570 | 0.321 | 0.77 |
+| step4-tune-f0.3-i2-k2.0 | main.py LEARN_FRAC=0.3 LEARN_ITERS=2 LEARN_K=2.0 LEARN_ON=True | 8cb550f | MH_01_easy_a_s1 | PASS | 4.311 | 0.560 | 3.819 | 0.066 | 1.772 | 0.851 | 0.84 |
+| step4-tune-f0.3-i2-k2.0 | main.py LEARN_FRAC=0.3 LEARN_ITERS=2 LEARN_K=2.0 LEARN_ON=True | 8cb550f | MH_01_easy_a_s2 | PASS | 7.334 | 0.857 | 7.527 | 0.117 | 11.220 | 1.822 | 0.85 |
+| step4-tune-f0.3-i2-k2.0 | main.py LEARN_FRAC=0.3 LEARN_ITERS=2 LEARN_K=2.0 LEARN_ON=True | 8cb550f | MH_01_easy_a_s3 | PASS | 5.386 | 0.797 | 5.402 | 0.030 | 18.539 | 4.097 | 0.83 |
+| step4-tune-f0.3-i2-k2.0 | main.py LEARN_FRAC=0.3 LEARN_ITERS=2 LEARN_K=2.0 LEARN_ON=True | 8cb550f | MH_01_easy_b_s1 | PASS | 4.269 | 0.527 | 3.675 | 0.025 | 5.029 | 0.568 | 0.92 |
+| step4-tune-f0.3-i2-k2.0 | main.py LEARN_FRAC=0.3 LEARN_ITERS=2 LEARN_K=2.0 LEARN_ON=True | 8cb550f | MH_01_easy_b_s2 | PASS | 4.276 | 0.525 | 3.088 | 0.026 | 5.029 | 0.612 | 0.87 |
+| step4-tune-f0.3-i2-k2.0 | main.py LEARN_FRAC=0.3 LEARN_ITERS=2 LEARN_K=2.0 LEARN_ON=True | 8cb550f | MH_01_easy_b_s3 | PASS | 4.250 | 0.523 | 3.711 | 0.011 | 4.836 | 0.540 | 0.92 |
+| step4-tune-f0.3-i2-k2.0 | main.py LEARN_FRAC=0.3 LEARN_ITERS=2 LEARN_K=2.0 LEARN_ON=True | 8cb550f | MH_02_easy_a_s1 | PASS | 4.570 | 0.650 | 4.561 | 0.029 | 4.424 | 0.518 | 0.76 |
+| step4-tune-f0.3-i2-k2.0 | main.py LEARN_FRAC=0.3 LEARN_ITERS=2 LEARN_K=2.0 LEARN_ON=True | 8cb550f | MH_02_easy_a_s2 | PASS | 4.201 | 0.659 | 3.612 | 0.003 | 1.901 | 1.271 | 0.77 |
+| step4-tune-f0.3-i2-k2.0 | main.py LEARN_FRAC=0.3 LEARN_ITERS=2 LEARN_K=2.0 LEARN_ON=True | 8cb550f | MH_02_easy_a_s3 | PASS | 5.116 | 0.640 | 4.759 | 0.139 | 7.814 | 1.704 | 0.70 |
+| step4-tune-f0.3-i2-k2.0 | main.py LEARN_FRAC=0.3 LEARN_ITERS=2 LEARN_K=2.0 LEARN_ON=True | 8cb550f | MH_02_easy_b_s1 | PASS | 4.556 | 0.567 | 5.144 | 0.016 | 5.560 | 0.179 | 0.87 |
+| step4-tune-f0.3-i2-k2.0 | main.py LEARN_FRAC=0.3 LEARN_ITERS=2 LEARN_K=2.0 LEARN_ON=True | 8cb550f | MH_02_easy_b_s2 | PASS | 4.560 | 0.574 | 3.710 | 0.008 | 5.390 | 0.270 | 0.86 |
+| step4-tune-f0.3-i2-k2.0 | main.py LEARN_FRAC=0.3 LEARN_ITERS=2 LEARN_K=2.0 LEARN_ON=True | 8cb550f | MH_02_easy_b_s3 | PASS | 4.593 | 0.566 | 3.465 | 0.029 | 5.683 | 0.341 | 0.76 |
+| step4-tune-f0.3-i2-k3.0 | main.py LEARN_FRAC=0.3 LEARN_ITERS=2 LEARN_K=3.0 LEARN_ON=True | 8cb550f | MH_01_easy_a_s1 | PASS | 6.492 | 0.735 | 7.570 | 0.121 | 9.018 | 0.993 | 0.80 |
+| step4-tune-f0.3-i2-k3.0 | main.py LEARN_FRAC=0.3 LEARN_ITERS=2 LEARN_K=3.0 LEARN_ON=True | 8cb550f | MH_01_easy_a_s2 | PASS | 15.376 | 1.247 | 17.850 | 0.168 | 27.294 | 2.490 | 0.76 |
+| step4-tune-f0.3-i2-k3.0 | main.py LEARN_FRAC=0.3 LEARN_ITERS=2 LEARN_K=3.0 LEARN_ON=True | 8cb550f | MH_01_easy_a_s3 | PASS | 10.609 | 1.109 | 11.558 | 0.039 | 29.107 | 4.758 | 0.72 |
+| step4-tune-f0.3-i2-k3.0 | main.py LEARN_FRAC=0.3 LEARN_ITERS=2 LEARN_K=3.0 LEARN_ON=True | 8cb550f | MH_01_easy_b_s1 | PASS | 4.246 | 0.519 | 3.595 | 0.028 | 5.045 | 0.631 | 0.77 |
+| step4-tune-f0.3-i2-k3.0 | main.py LEARN_FRAC=0.3 LEARN_ITERS=2 LEARN_K=3.0 LEARN_ON=True | 8cb550f | MH_01_easy_b_s2 | PASS | 4.246 | 0.519 | 3.099 | 0.027 | 5.166 | 0.552 | 0.77 |
+| step4-tune-f0.3-i2-k3.0 | main.py LEARN_FRAC=0.3 LEARN_ITERS=2 LEARN_K=3.0 LEARN_ON=True | 8cb550f | MH_01_easy_b_s3 | PASS | 4.216 | 0.515 | 3.695 | 0.013 | 4.949 | 0.553 | 0.79 |
+| step4-tune-f0.3-i2-k3.0 | main.py LEARN_FRAC=0.3 LEARN_ITERS=2 LEARN_K=3.0 LEARN_ON=True | 8cb550f | MH_02_easy_a_s1 | PASS | 5.434 | 0.803 | 4.863 | 0.060 | 9.194 | 1.011 | 0.64 |
+| step4-tune-f0.3-i2-k3.0 | main.py LEARN_FRAC=0.3 LEARN_ITERS=2 LEARN_K=3.0 LEARN_ON=True | 8cb550f | MH_02_easy_a_s2 | PASS | 4.057 | 0.765 | 4.134 | 0.004 | 2.263 | 2.049 | 0.68 |
+| step4-tune-f0.3-i2-k3.0 | main.py LEARN_FRAC=0.3 LEARN_ITERS=2 LEARN_K=3.0 LEARN_ON=True | 8cb550f | MH_02_easy_a_s3 | PASS | 7.846 | 0.769 | 8.597 | 0.224 | 17.525 | 2.405 | 0.61 |
+| step4-tune-f0.3-i2-k3.0 | main.py LEARN_FRAC=0.3 LEARN_ITERS=2 LEARN_K=3.0 LEARN_ON=True | 8cb550f | MH_02_easy_b_s1 | PASS | 4.449 | 0.575 | 5.053 | 0.015 | 5.870 | 0.185 | 0.67 |
+| step4-tune-f0.3-i2-k3.0 | main.py LEARN_FRAC=0.3 LEARN_ITERS=2 LEARN_K=3.0 LEARN_ON=True | 8cb550f | MH_02_easy_b_s2 | PASS | 4.453 | 0.580 | 3.672 | 0.009 | 5.392 | 0.274 | 0.70 |
+| step4-tune-f0.3-i2-k3.0 | main.py LEARN_FRAC=0.3 LEARN_ITERS=2 LEARN_K=3.0 LEARN_ON=True | 8cb550f | MH_02_easy_b_s3 | PASS | 4.514 | 0.574 | 3.381 | 0.031 | 5.965 | 0.401 | 0.69 |
+| step4-tune-f0.3-i2 | main.py LEARN_FRAC=0.3 LEARN_ITERS=2 LEARN_ON=True | 8cb550f | MH_01_easy_a_s1 | PASS | 4.103 | 0.523 | 3.118 | 0.026 | 3.637 | 0.653 | 0.92 |
+| step4-tune-f0.3-i2 | main.py LEARN_FRAC=0.3 LEARN_ITERS=2 LEARN_ON=True | 8cb550f | MH_01_easy_a_s2 | PASS | 4.355 | 0.606 | 2.902 | 0.047 | 4.226 | 0.757 | 0.75 |
+| step4-tune-f0.3-i2 | main.py LEARN_FRAC=0.3 LEARN_ITERS=2 LEARN_ON=True | 8cb550f | MH_01_easy_a_s3 | PASS | 3.796 | 0.585 | 3.048 | 0.019 | 5.870 | 1.534 | 0.74 |
+| step4-tune-f0.3-i2 | main.py LEARN_FRAC=0.3 LEARN_ITERS=2 LEARN_ON=True | 8cb550f | MH_01_easy_b_s1 | PASS | 4.292 | 0.522 | 3.736 | 0.021 | 5.015 | 0.591 | 0.80 |
+| step4-tune-f0.3-i2 | main.py LEARN_FRAC=0.3 LEARN_ITERS=2 LEARN_ON=True | 8cb550f | MH_01_easy_b_s2 | PASS | 4.298 | 0.521 | 2.997 | 0.023 | 4.986 | 0.598 | 0.78 |
+| step4-tune-f0.3-i2 | main.py LEARN_FRAC=0.3 LEARN_ITERS=2 LEARN_ON=True | 8cb550f | MH_01_easy_b_s3 | PASS | 4.283 | 0.520 | 3.760 | 0.010 | 4.897 | 0.583 | 0.81 |
+| step4-tune-f0.3-i2 | main.py LEARN_FRAC=0.3 LEARN_ITERS=2 LEARN_ON=True | 8cb550f | MH_02_easy_a_s1 | PASS | 4.561 | 0.578 | 5.041 | 0.021 | 4.614 | 0.207 | 0.63 |
+| step4-tune-f0.3-i2 | main.py LEARN_FRAC=0.3 LEARN_ITERS=2 LEARN_ON=True | 8cb550f | MH_02_easy_a_s2 | PASS | 4.517 | 0.584 | 3.614 | 0.005 | 4.220 | 0.324 | 0.71 |
+| step4-tune-f0.3-i2 | main.py LEARN_FRAC=0.3 LEARN_ITERS=2 LEARN_ON=True | 8cb550f | MH_02_easy_a_s3 | PASS | 4.575 | 0.583 | 3.496 | 0.066 | 3.400 | 0.620 | 0.65 |
+| step4-tune-f0.3-i2 | main.py LEARN_FRAC=0.3 LEARN_ITERS=2 LEARN_ON=True | 8cb550f | MH_02_easy_b_s1 | PASS | 4.630 | 0.559 | 5.223 | 0.018 | 5.448 | 0.267 | 0.69 |
+| step4-tune-f0.3-i2 | main.py LEARN_FRAC=0.3 LEARN_ITERS=2 LEARN_ON=True | 8cb550f | MH_02_easy_b_s2 | PASS | 4.637 | 0.566 | 3.702 | 0.007 | 5.432 | 0.305 | 0.74 |
+| step4-tune-f0.3-i2 | main.py LEARN_FRAC=0.3 LEARN_ITERS=2 LEARN_ON=True | 8cb550f | MH_02_easy_b_s3 | PASS | 4.644 | 0.560 | 3.522 | 0.027 | 5.518 | 0.327 | 0.69 |
+| step4-tune-f0.5-i1 | main.py LEARN_FRAC=0.5 LEARN_ITERS=1 LEARN_ON=True | 8cb550f | MH_01_easy_a_s1 | PASS | 6.471 | 0.759 | 7.688 | 0.119 | 7.076 | 0.876 | 0.57 |
+| step4-tune-f0.5-i1 | main.py LEARN_FRAC=0.5 LEARN_ITERS=1 LEARN_ON=True | 8cb550f | MH_01_easy_a_s2 | PASS | 9.143 | 0.951 | 9.929 | 0.133 | 15.114 | 1.953 | 0.58 |
+| step4-tune-f0.5-i1 | main.py LEARN_FRAC=0.5 LEARN_ITERS=1 LEARN_ON=True | 8cb550f | MH_01_easy_a_s3 | PASS | 5.416 | 0.805 | 5.454 | 0.030 | 18.632 | 4.035 | 0.60 |
+| step4-tune-f0.5-i1 | main.py LEARN_FRAC=0.5 LEARN_ITERS=1 LEARN_ON=True | 8cb550f | MH_01_easy_b_s1 | PASS | 4.246 | 0.519 | 3.727 | 0.027 | 5.336 | 0.630 | 0.60 |
+| step4-tune-f0.5-i1 | main.py LEARN_FRAC=0.5 LEARN_ITERS=1 LEARN_ON=True | 8cb550f | MH_01_easy_b_s2 | PASS | 4.217 | 0.519 | 3.094 | 0.024 | 5.395 | 0.528 | 0.64 |
+| step4-tune-f0.5-i1 | main.py LEARN_FRAC=0.5 LEARN_ITERS=1 LEARN_ON=True | 8cb550f | MH_01_easy_b_s3 | PASS | 4.185 | 0.516 | 3.699 | 0.013 | 5.081 | 0.556 | 0.63 |
+| step4-tune-f0.5-i1 | main.py LEARN_FRAC=0.5 LEARN_ITERS=1 LEARN_ON=True | 8cb550f | MH_02_easy_a_s1 | PASS | 5.675 | 0.847 | 4.936 | 0.064 | 9.853 | 0.919 | 0.47 |
+| step4-tune-f0.5-i1 | main.py LEARN_FRAC=0.5 LEARN_ITERS=1 LEARN_ON=True | 8cb550f | MH_02_easy_a_s2 | PASS | 4.139 | 0.841 | 4.602 | 0.004 | 3.093 | 2.034 | 0.56 |
+| step4-tune-f0.5-i1 | main.py LEARN_FRAC=0.5 LEARN_ITERS=1 LEARN_ON=True | 8cb550f | MH_02_easy_a_s3 | PASS | 7.682 | 0.759 | 8.455 | 0.216 | 17.554 | 2.481 | 0.46 |
+| step4-tune-f0.5-i1 | main.py LEARN_FRAC=0.5 LEARN_ITERS=1 LEARN_ON=True | 8cb550f | MH_02_easy_b_s1 | PASS | 4.437 | 0.578 | 5.030 | 0.015 | 5.845 | 0.200 | 0.54 |
+| step4-tune-f0.5-i1 | main.py LEARN_FRAC=0.5 LEARN_ITERS=1 LEARN_ON=True | 8cb550f | MH_02_easy_b_s2 | PASS | 4.453 | 0.581 | 3.653 | 0.009 | 5.386 | 0.238 | 0.54 |
+| step4-tune-f0.5-i1 | main.py LEARN_FRAC=0.5 LEARN_ITERS=1 LEARN_ON=True | 8cb550f | MH_02_easy_b_s3 | PASS | 4.528 | 0.573 | 3.412 | 0.029 | 5.918 | 0.381 | 0.53 |
+| step4-tune-f0.5-i2-k1.5 | main.py LEARN_FRAC=0.5 LEARN_ITERS=2 LEARN_K=1.5 LEARN_ON=True | 8cb550f | MH_01_easy_a_s1 | PASS | 7.682 | 0.880 | 9.423 | 0.136 | 9.260 | 0.928 | 0.75 |
+| step4-tune-f0.5-i2-k1.5 | main.py LEARN_FRAC=0.5 LEARN_ITERS=2 LEARN_K=1.5 LEARN_ON=True | 8cb550f | MH_01_easy_a_s2 | PASS | 12.135 | 1.110 | 13.718 | 0.150 | 21.062 | 2.168 | 0.76 |
+| step4-tune-f0.5-i2-k1.5 | main.py LEARN_FRAC=0.5 LEARN_ITERS=2 LEARN_K=1.5 LEARN_ON=True | 8cb550f | MH_01_easy_a_s3 | PASS | 6.772 | 0.914 | 6.951 | 0.034 | 22.351 | 4.516 | 0.85 |
+| step4-tune-f0.5-i2-k1.5 | main.py LEARN_FRAC=0.5 LEARN_ITERS=2 LEARN_K=1.5 LEARN_ON=True | 8cb550f | MH_01_easy_b_s1 | PASS | 4.243 | 0.541 | 3.694 | 0.027 | 5.225 | 0.595 | 0.87 |
+| step4-tune-f0.5-i2-k1.5 | main.py LEARN_FRAC=0.5 LEARN_ITERS=2 LEARN_K=1.5 LEARN_ON=True | 8cb550f | MH_01_easy_b_s2 | PASS | 4.214 | 0.539 | 3.086 | 0.024 | 5.345 | 0.522 | 0.81 |
+| step4-tune-f0.5-i2-k1.5 | main.py LEARN_FRAC=0.5 LEARN_ITERS=2 LEARN_K=1.5 LEARN_ON=True | 8cb550f | MH_01_easy_b_s3 | PASS | 4.176 | 0.536 | 3.670 | 0.014 | 4.935 | 0.531 | 0.84 |
+| step4-tune-f0.5-i2-k1.5 | main.py LEARN_FRAC=0.5 LEARN_ITERS=2 LEARN_K=1.5 LEARN_ON=True | 8cb550f | MH_02_easy_a_s1 | PASS | 6.014 | 0.893 | 5.060 | 0.067 | 11.076 | 0.977 | 0.70 |
+| step4-tune-f0.5-i2-k1.5 | main.py LEARN_FRAC=0.5 LEARN_ITERS=2 LEARN_K=1.5 LEARN_ON=True | 8cb550f | MH_02_easy_a_s2 | PASS | 4.444 | 0.925 | 5.341 | 0.005 | 5.313 | 2.338 | 0.75 |
+| step4-tune-f0.5-i2-k1.5 | main.py LEARN_FRAC=0.5 LEARN_ITERS=2 LEARN_K=1.5 LEARN_ON=True | 8cb550f | MH_02_easy_a_s3 | PASS | 8.393 | 0.802 | 9.411 | 0.228 | 19.485 | 2.643 | 0.65 |
+| step4-tune-f0.5-i2-k1.5 | main.py LEARN_FRAC=0.5 LEARN_ITERS=2 LEARN_K=1.5 LEARN_ON=True | 8cb550f | MH_02_easy_b_s1 | PASS | 4.468 | 0.580 | 5.038 | 0.015 | 5.726 | 0.177 | 0.73 |
+| step4-tune-f0.5-i2-k1.5 | main.py LEARN_FRAC=0.5 LEARN_ITERS=2 LEARN_K=1.5 LEARN_ON=True | 8cb550f | MH_02_easy_b_s2 | PASS | 4.457 | 0.589 | 3.688 | 0.009 | 5.364 | 0.246 | 0.69 |
+| step4-tune-f0.5-i2-k1.5 | main.py LEARN_FRAC=0.5 LEARN_ITERS=2 LEARN_K=1.5 LEARN_ON=True | 8cb550f | MH_02_easy_b_s3 | PASS | 4.543 | 0.576 | 3.428 | 0.029 | 5.856 | 0.361 | 0.90 |
+| step4-tune-f0.5-i2-k2.0 | main.py LEARN_FRAC=0.5 LEARN_ITERS=2 LEARN_K=2.0 LEARN_ON=True | 8cb550f | MH_01_easy_a_s1 | PASS | 12.415 | 1.312 | 14.931 | 0.189 | 18.732 | 0.997 | 0.79 |
+| step4-tune-f0.5-i2-k2.0 | main.py LEARN_FRAC=0.5 LEARN_ITERS=2 LEARN_K=2.0 LEARN_ON=True | 8cb550f | MH_01_easy_a_s2 | PASS | 20.265 | 1.500 | 23.972 | 0.175 | 36.985 | 2.645 | 0.80 |
+| step4-tune-f0.5-i2-k2.0 | main.py LEARN_FRAC=0.5 LEARN_ITERS=2 LEARN_K=2.0 LEARN_ON=True | 8cb550f | MH_01_easy_a_s3 | PASS | 10.785 | 1.150 | 11.718 | 0.040 | 29.939 | 4.901 | 0.83 |
+| step4-tune-f0.5-i2-k2.0 | main.py LEARN_FRAC=0.5 LEARN_ITERS=2 LEARN_K=2.0 LEARN_ON=True | 8cb550f | MH_01_easy_b_s1 | PASS | 4.231 | 0.528 | 3.702 | 0.028 | 5.562 | 0.688 | 0.84 |
+| step4-tune-f0.5-i2-k2.0 | main.py LEARN_FRAC=0.5 LEARN_ITERS=2 LEARN_K=2.0 LEARN_ON=True | 8cb550f | MH_01_easy_b_s2 | PASS | 4.173 | 0.529 | 3.143 | 0.027 | 5.661 | 0.574 | 0.88 |
+| step4-tune-f0.5-i2-k2.0 | main.py LEARN_FRAC=0.5 LEARN_ITERS=2 LEARN_K=2.0 LEARN_ON=True | 8cb550f | MH_01_easy_b_s3 | PASS | 4.128 | 0.523 | 3.659 | 0.015 | 5.272 | 0.564 | 0.90 |
+| step4-tune-f0.5-i2-k2.0 | main.py LEARN_FRAC=0.5 LEARN_ITERS=2 LEARN_K=2.0 LEARN_ON=True | 8cb550f | MH_02_easy_a_s1 | PASS | 9.005 | 1.180 | 7.235 | 0.096 | 25.116 | 2.576 | 0.62 |
+| step4-tune-f0.5-i2-k2.0 | main.py LEARN_FRAC=0.5 LEARN_ITERS=2 LEARN_K=2.0 LEARN_ON=True | 8cb550f | MH_02_easy_a_s2 | PASS | 6.017 | 1.073 | 7.986 | 0.006 | 12.337 | 3.127 | 0.78 |
+| step4-tune-f0.5-i2-k2.0 | main.py LEARN_FRAC=0.5 LEARN_ITERS=2 LEARN_K=2.0 LEARN_ON=True | 8cb550f | MH_02_easy_a_s3 | PASS | 13.163 | 1.087 | 15.733 | 0.306 | 28.724 | 2.997 | 0.97 |
+| step4-tune-f0.5-i2-k2.0 | main.py LEARN_FRAC=0.5 LEARN_ITERS=2 LEARN_K=2.0 LEARN_ON=True | 8cb550f | MH_02_easy_b_s1 | PASS | 4.347 | 0.592 | 4.933 | 0.015 | 6.098 | 0.186 | 0.73 |
+| step4-tune-f0.5-i2-k2.0 | main.py LEARN_FRAC=0.5 LEARN_ITERS=2 LEARN_K=2.0 LEARN_ON=True | 8cb550f | MH_02_easy_b_s2 | PASS | 4.335 | 0.597 | 3.618 | 0.009 | 5.397 | 0.271 | 0.74 |
+| step4-tune-f0.5-i2-k2.0 | main.py LEARN_FRAC=0.5 LEARN_ITERS=2 LEARN_K=2.0 LEARN_ON=True | 8cb550f | MH_02_easy_b_s3 | PASS | 4.462 | 0.585 | 3.348 | 0.031 | 6.148 | 0.425 | 0.71 |
+| step4-tune-f0.5-i2-k3.0 | main.py LEARN_FRAC=0.5 LEARN_ITERS=2 LEARN_K=3.0 LEARN_ON=True | 8cb550f | MH_01_easy_a_s1 | PASS | 22.997 | 2.190 | 25.269 | 0.282 | 46.049 | 1.190 | 0.76 |
+| step4-tune-f0.5-i2-k3.0 | main.py LEARN_FRAC=0.5 LEARN_ITERS=2 LEARN_K=3.0 LEARN_ON=True | 8cb550f | MH_01_easy_a_s2 | PASS | 35.334 | 2.048 | 44.289 | 0.229 | 75.533 | 3.714 | 0.79 |
+| step4-tune-f0.5-i2-k3.0 | main.py LEARN_FRAC=0.5 LEARN_ITERS=2 LEARN_K=3.0 LEARN_ON=True | 8cb550f | MH_01_easy_a_s3 | PASS | 17.824 | 1.465 | 21.056 | 0.045 | 43.681 | 4.855 | 0.80 |
+| step4-tune-f0.5-i2-k3.0 | main.py LEARN_FRAC=0.5 LEARN_ITERS=2 LEARN_K=3.0 LEARN_ON=True | 8cb550f | MH_01_easy_b_s1 | PASS | 4.177 | 0.506 | 3.751 | 0.031 | 6.671 | 0.870 | 0.82 |
+| step4-tune-f0.5-i2-k3.0 | main.py LEARN_FRAC=0.5 LEARN_ITERS=2 LEARN_K=3.0 LEARN_ON=True | 8cb550f | MH_01_easy_b_s2 | PASS | 4.079 | 0.516 | 3.310 | 0.034 | 6.433 | 0.707 | 0.88 |
+| step4-tune-f0.5-i2-k3.0 | main.py LEARN_FRAC=0.5 LEARN_ITERS=2 LEARN_K=3.0 LEARN_ON=True | 8cb550f | MH_01_easy_b_s3 | PASS | 3.975 | 0.507 | 3.633 | 0.016 | 6.208 | 0.645 | 0.87 |
+| step4-tune-f0.5-i2-k3.0 | main.py LEARN_FRAC=0.5 LEARN_ITERS=2 LEARN_K=3.0 LEARN_ON=True | 8cb550f | MH_02_easy_a_s1 | PASS | 16.135 | 1.827 | 14.806 | 0.102 | 54.659 | 6.121 | 0.71 |
+| step4-tune-f0.5-i2-k3.0 | main.py LEARN_FRAC=0.5 LEARN_ITERS=2 LEARN_K=3.0 LEARN_ON=True | 8cb550f | MH_02_easy_a_s2 | PASS | 11.725 | 1.444 | 14.510 | 0.009 | 30.059 | 4.916 | 0.71 |
+| step4-tune-f0.5-i2-k3.0 | main.py LEARN_FRAC=0.5 LEARN_ITERS=2 LEARN_K=3.0 LEARN_ON=True | 8cb550f | MH_02_easy_a_s3 | PASS | 25.151 | 1.716 | 30.071 | 0.414 | 51.902 | 2.975 | 0.67 |
+| step4-tune-f0.5-i2-k3.0 | main.py LEARN_FRAC=0.5 LEARN_ITERS=2 LEARN_K=3.0 LEARN_ON=True | 8cb550f | MH_02_easy_b_s1 | PASS | 4.127 | 0.612 | 4.818 | 0.016 | 6.978 | 0.203 | 0.79 |
+| step4-tune-f0.5-i2-k3.0 | main.py LEARN_FRAC=0.5 LEARN_ITERS=2 LEARN_K=3.0 LEARN_ON=True | 8cb550f | MH_02_easy_b_s2 | PASS | 4.122 | 0.606 | 3.523 | 0.009 | 5.673 | 0.375 | 0.87 |
+| step4-tune-f0.5-i2-k3.0 | main.py LEARN_FRAC=0.5 LEARN_ITERS=2 LEARN_K=3.0 LEARN_ON=True | 8cb550f | MH_02_easy_b_s3 | PASS | 4.290 | 0.600 | 3.197 | 0.035 | 6.702 | 0.574 | 0.74 |
+| step4-tune-f0.5-i2 | main.py LEARN_FRAC=0.5 LEARN_ITERS=2 LEARN_ON=True | 8cb550f | MH_01_easy_a_s1 | PASS | 4.814 | 0.624 | 4.907 | 0.081 | 2.744 | 0.836 | 1.08 |
+| step4-tune-f0.5-i2 | main.py LEARN_FRAC=0.5 LEARN_ITERS=2 LEARN_ON=True | 8cb550f | MH_01_easy_a_s2 | PASS | 6.244 | 0.803 | 5.947 | 0.103 | 8.595 | 1.671 | 0.80 |
+| step4-tune-f0.5-i2 | main.py LEARN_FRAC=0.5 LEARN_ITERS=2 LEARN_ON=True | 8cb550f | MH_01_easy_a_s3 | PASS | 4.269 | 0.708 | 4.169 | 0.026 | 13.923 | 3.257 | 0.84 |
+| step4-tune-f0.5-i2 | main.py LEARN_FRAC=0.5 LEARN_ITERS=2 LEARN_ON=True | 8cb550f | MH_01_easy_b_s1 | PASS | 4.257 | 0.547 | 3.709 | 0.024 | 5.066 | 0.543 | 0.86 |
+| step4-tune-f0.5-i2 | main.py LEARN_FRAC=0.5 LEARN_ITERS=2 LEARN_ON=True | 8cb550f | MH_01_easy_b_s2 | PASS | 4.253 | 0.545 | 3.015 | 0.023 | 5.054 | 0.452 | 0.83 |
+| step4-tune-f0.5-i2 | main.py LEARN_FRAC=0.5 LEARN_ITERS=2 LEARN_ON=True | 8cb550f | MH_01_easy_b_s3 | PASS | 4.218 | 0.543 | 3.690 | 0.012 | 4.775 | 0.543 | 0.79 |
+| step4-tune-f0.5-i2 | main.py LEARN_FRAC=0.5 LEARN_ITERS=2 LEARN_ON=True | 8cb550f | MH_02_easy_a_s1 | PASS | 4.649 | 0.686 | 4.473 | 0.029 | 4.799 | 0.544 | 0.66 |
+| step4-tune-f0.5-i2 | main.py LEARN_FRAC=0.5 LEARN_ITERS=2 LEARN_ON=True | 8cb550f | MH_02_easy_a_s2 | PASS | 4.105 | 0.772 | 3.852 | 0.004 | 1.588 | 1.686 | 0.81 |
+| step4-tune-f0.5-i2 | main.py LEARN_FRAC=0.5 LEARN_ITERS=2 LEARN_ON=True | 8cb550f | MH_02_easy_a_s3 | PASS | 5.256 | 0.667 | 5.011 | 0.140 | 8.536 | 1.835 | 0.67 |
+| step4-tune-f0.5-i2 | main.py LEARN_FRAC=0.5 LEARN_ITERS=2 LEARN_ON=True | 8cb550f | MH_02_easy_b_s1 | PASS | 4.570 | 0.570 | 5.141 | 0.017 | 5.448 | 0.195 | 0.66 |
+| step4-tune-f0.5-i2 | main.py LEARN_FRAC=0.5 LEARN_ITERS=2 LEARN_ON=True | 8cb550f | MH_02_easy_b_s2 | PASS | 4.567 | 0.580 | 3.709 | 0.008 | 5.352 | 0.254 | 0.70 |
+| step4-tune-f0.5-i2 | main.py LEARN_FRAC=0.5 LEARN_ITERS=2 LEARN_ON=True | 8cb550f | MH_02_easy_b_s3 | PASS | 4.609 | 0.569 | 3.498 | 0.028 | 5.606 | 0.317 | 0.70 |
+| step4-tune-f1.0-i1 | main.py LEARN_FRAC=1.0 LEARN_ITERS=1 LEARN_ON=True | 8cb550f | MH_01_easy_a_s1 | PASS | 18.081 | 1.816 | 20.905 | 0.241 | 30.013 | 1.023 | 0.60 |
+| step4-tune-f1.0-i1 | main.py LEARN_FRAC=1.0 LEARN_ITERS=1 LEARN_ON=True | 8cb550f | MH_01_easy_a_s2 | PASS | 23.550 | 1.649 | 28.207 | 0.183 | 44.075 | 2.860 | 0.54 |
+| step4-tune-f1.0-i1 | main.py LEARN_FRAC=1.0 LEARN_ITERS=1 LEARN_ON=True | 8cb550f | MH_01_easy_a_s3 | PASS | 7.917 | 0.988 | 8.242 | 0.036 | 24.771 | 4.766 | 0.54 |
+| step4-tune-f1.0-i1 | main.py LEARN_FRAC=1.0 LEARN_ITERS=1 LEARN_ON=True | 8cb550f | MH_01_easy_b_s1 | PASS | 4.242 | 0.517 | 3.720 | 0.028 | 5.409 | 0.655 | 0.60 |
+| step4-tune-f1.0-i1 | main.py LEARN_FRAC=1.0 LEARN_ITERS=1 LEARN_ON=True | 8cb550f | MH_01_easy_b_s2 | PASS | 4.202 | 0.517 | 3.112 | 0.026 | 5.487 | 0.548 | 0.59 |
+| step4-tune-f1.0-i1 | main.py LEARN_FRAC=1.0 LEARN_ITERS=1 LEARN_ON=True | 8cb550f | MH_01_easy_b_s3 | PASS | 4.178 | 0.513 | 3.693 | 0.014 | 5.133 | 0.563 | 0.59 |
+| step4-tune-f1.0-i1 | main.py LEARN_FRAC=1.0 LEARN_ITERS=1 LEARN_ON=True | 8cb550f | MH_02_easy_a_s1 | PASS | 14.172 | 1.658 | 12.735 | 0.101 | 46.218 | 4.903 | 0.44 |
+| step4-tune-f1.0-i1 | main.py LEARN_FRAC=1.0 LEARN_ITERS=1 LEARN_ON=True | 8cb550f | MH_02_easy_a_s2 | PASS | 8.328 | 1.233 | 10.928 | 0.008 | 19.218 | 3.751 | 0.54 |
+| step4-tune-f1.0-i1 | main.py LEARN_FRAC=1.0 LEARN_ITERS=1 LEARN_ON=True | 8cb550f | MH_02_easy_a_s3 | PASS | 21.959 | 1.584 | 26.636 | 0.382 | 44.224 | 2.923 | 0.55 |
+| step4-tune-f1.0-i1 | main.py LEARN_FRAC=1.0 LEARN_ITERS=1 LEARN_ON=True | 8cb550f | MH_02_easy_b_s1 | PASS | 4.376 | 0.586 | 4.967 | 0.015 | 6.006 | 0.198 | 0.63 |
+| step4-tune-f1.0-i1 | main.py LEARN_FRAC=1.0 LEARN_ITERS=1 LEARN_ON=True | 8cb550f | MH_02_easy_b_s2 | PASS | 4.384 | 0.589 | 3.621 | 0.009 | 5.394 | 0.249 | 0.60 |
+| step4-tune-f1.0-i1 | main.py LEARN_FRAC=1.0 LEARN_ITERS=1 LEARN_ON=True | 8cb550f | MH_02_easy_b_s3 | PASS | 4.493 | 0.578 | 3.380 | 0.030 | 6.039 | 0.405 | 0.57 |
+| step4-tune-f1.0-i2 | main.py LEARN_FRAC=1.0 LEARN_ITERS=2 LEARN_ON=True | 8cb550f | MH_01_easy_a_s1 | PASS | 26.000 | 2.382 | 28.510 | 0.306 | 56.857 | 1.503 | 0.78 |
+| step4-tune-f1.0-i2 | main.py LEARN_FRAC=1.0 LEARN_ITERS=2 LEARN_ON=True | 8cb550f | MH_01_easy_a_s2 | PASS | 30.763 | 1.933 | 37.928 | 0.203 | 61.904 | 3.301 | 0.83 |
+| step4-tune-f1.0-i2 | main.py LEARN_FRAC=1.0 LEARN_ITERS=2 LEARN_ON=True | 8cb550f | MH_01_easy_a_s3 | PASS | 7.156 | 0.943 | 7.363 | 0.035 | 23.310 | 4.642 | 0.83 |
+| step4-tune-f1.0-i2 | main.py LEARN_FRAC=1.0 LEARN_ITERS=2 LEARN_ON=True | 8cb550f | MH_01_easy_b_s1 | PASS | 4.254 | 0.546 | 3.694 | 0.025 | 5.086 | 0.550 | 0.84 |
+| step4-tune-f1.0-i2 | main.py LEARN_FRAC=1.0 LEARN_ITERS=2 LEARN_ON=True | 8cb550f | MH_01_easy_b_s2 | PASS | 4.247 | 0.542 | 3.048 | 0.023 | 5.108 | 0.495 | 1.07 |
+| step4-tune-f1.0-i2 | main.py LEARN_FRAC=1.0 LEARN_ITERS=2 LEARN_ON=True | 8cb550f | MH_01_easy_b_s3 | PASS | 4.216 | 0.540 | 3.684 | 0.012 | 4.789 | 0.532 | 0.86 |
+| step4-tune-f1.0-i2 | main.py LEARN_FRAC=1.0 LEARN_ITERS=2 LEARN_ON=True | 8cb550f | MH_02_easy_a_s1 | PASS | 16.302 | 1.854 | 15.202 | 0.095 | 54.630 | 5.876 | 0.63 |
+| step4-tune-f1.0-i2 | main.py LEARN_FRAC=1.0 LEARN_ITERS=2 LEARN_ON=True | 8cb550f | MH_02_easy_a_s2 | PASS | 8.892 | 1.261 | 11.564 | 0.008 | 20.706 | 3.857 | 0.71 |
+| step4-tune-f1.0-i2 | main.py LEARN_FRAC=1.0 LEARN_ITERS=2 LEARN_ON=True | 8cb550f | MH_02_easy_a_s3 | PASS | 27.887 | 1.878 | 33.597 | 0.424 | 56.866 | 2.946 | 0.60 |
+| step4-tune-f1.0-i2 | main.py LEARN_FRAC=1.0 LEARN_ITERS=2 LEARN_ON=True | 8cb550f | MH_02_easy_b_s1 | PASS | 4.530 | 0.576 | 5.092 | 0.015 | 5.519 | 0.178 | 0.69 |
+| step4-tune-f1.0-i2 | main.py LEARN_FRAC=1.0 LEARN_ITERS=2 LEARN_ON=True | 8cb550f | MH_02_easy_b_s2 | PASS | 4.528 | 0.585 | 3.710 | 0.008 | 5.344 | 0.245 | 0.66 |
+| step4-tune-f1.0-i2 | main.py LEARN_FRAC=1.0 LEARN_ITERS=2 LEARN_ON=True | 8cb550f | MH_02_easy_b_s3 | PASS | 4.590 | 0.572 | 3.478 | 0.029 | 5.674 | 0.326 | 0.64 |
 
 # Degraded input
 

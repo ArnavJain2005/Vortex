@@ -83,6 +83,7 @@ Deadline **22 Nov 2026, 11:59 PM IST**, confirmed by the FAQ (Q1 closed). Full-t
 | R1 | FAQ re-plan, Step 1: C core retired from the submission; memory gate moved from RSS to the heap (tracemalloc) | **Done (verified)** 17 Nov: gate PASS on Win 3.14 synthetic + MH_01 and Win 3.13 synthetic; bundle verified on 3.13/3.14; Python Docker image built, MH_01 output identical | Python-only zip verified |
 | R2 | Official-script harness (both column readings), input front end, new baseline | **Done (verified)** 17 Nov: 64 copies (8 sequences x readings a, b x seeds 1, 2, 3, 42), front end correct on all 72 files; baseline in `Docs/STEP2_BASELINE.md` | Table shown to Arnav before Step 3 |
 | R3 | Fault front end: stuck rows, spikes, bridging of missing samples (three switches), blind-window protection | **Done (verified): all three switches OFF** by the pre-registered rule (17 Nov, rule at 99bf25b); shipped output unchanged | Each switch judged on 36 held-out copies |
+| R4 | Envelope (V2 speed and volume sigmas) learned per flight instead of fixed values chosen on Machine Hall (`LEARN_ON`) | **In progress**: rule committed before the held-out run (17 Nov) | Held-out mean APE <= never-moving floor; clean no worse |
 
 ## Open questions (Q1 to Q5 are in the email drafted for prism@samsung.com on 15 Nov)
 
@@ -1040,3 +1041,63 @@ compiled too. Still under 8 MB; if it grows further, moving switched-off experim
 
 Not checked: TUM-VI (not downloaded); the seed-42 copies with the switches on (the switches ship off, so
 the Step 2 seed-42 numbers stand); a reading-aware variant (would need a new rule and new seeds).
+
+## Step 4: envelope learned per flight (17 Nov 2026, branch `track3/step4-envelope`)
+
+**Why.** The V2 envelope sigmas (speed 2.0 / 0.3 m/s, volume 5.0 / 2.0 m around a 10 s running centre) were
+chosen on Machine Hall. Under the official script's reading a they are far too loose to hold the drift
+(Step 2: held-out reading a APE 6.31 m against a floor of 3.75 m).
+
+**Piece** (`LEARN_ON`, default off; reference `vortex/core/witness.py` `learn_env` / `estimate_learned`,
+copied into `pathfinder.py` `_learn_env` / `_run_learned` bit-identically; `tests/test_witness.py`): pass 1
+runs with the fixed values and records per tick, after the updates, v^2 + P_vv and (p - c)^2 + P_pp
+(horizontal = mean of x, y; vertical). Over the ticks in the first LEARN_FRAC of the file's time span the
+sigma is LEARN_K x sqrt(mean) (one EM step for the prior's variance with the filter's own posterior),
+clamped to [LEARN_MIN, LEARN_MAX] = [(0.1, 0.05, 0.3, 0.1), (4.0, 1.0, 10.0, 4.0)] (wide, not tuned).
+LEARN_ITERS such steps, then the final pass that writes. Ground truth is never read. Cost: LEARN_ITERS + 1
+passes over the rows.
+
+**Tuning (MH_01/02 x readings a, b x seeds 1..3, 12 copies, and clean MH_01/02; tags `step4-tune-*`,
+`step4-abl-*`).** Mean APE SE3 m; never-moving floor on the same 12 copies 4.491; today (fixed values)
+8.128 (a 12.282, b 3.973), clean 3.878.
+
+| Setting | APE all | Reading a | Reading b | Gap RMSE | Blind RMSE | Clean APE |
+|---|---|---|---|---|---|---|
+| fixed (today) | 8.128 | 12.282 | 3.973 | 8.793 | 17.650 | 3.878 |
+| FRAC 0.3, 1 iter | 4.479 | 4.529 | 4.430 | 3.937 | 5.413 | 4.426 |
+| **FRAC 0.3, 2 iters** | **4.391** | 4.318 | 4.464 | 3.680 | 4.772 | 4.456 |
+| FRAC 0.5, 1 iter | 5.383 | 6.421 | 4.345 | 5.307 | 8.690 | 4.344 |
+| FRAC 0.5, 2 iters | 4.651 | 4.889 | 4.412 | 4.260 | 5.957 | 4.412 |
+| FRAC 1.0, 1 iter | 9.990 | 15.668 | 4.313 | 10.846 | 20.166 | 4.313 |
+| FRAC 1.0, 2 iters | 11.947 | 19.500 | 4.394 | 13.072 | 25.483 | 4.395 |
+| FRAC 0.3, 2 iters, K 1.5 | 4.449 | 4.454 | 4.443 | 3.833 | 5.240 | 4.439 |
+| FRAC 0.3, 2 iters, K 2 | 4.785 | 5.153 | 4.417 | 4.373 | 6.433 | 4.416 |
+| FRAC 0.3, 2 iters, K 3 | 6.328 | 8.302 | 4.354 | 6.422 | 10.566 | 4.355 |
+| FRAC 0.5, 2 iters, K 1.5 | 5.962 | 7.573 | 4.350 | 6.042 | 10.083 | 4.352 |
+| FRAC 0.5, 2 iters, K 2 | 8.111 | 11.942 | 4.279 | 8.665 | 15.498 | 4.278 |
+| FRAC 0.5, 2 iters, K 3 | 12.828 | 21.528 | 4.129 | 14.353 | 28.379 | 4.107 |
+| FRAC 0.3, 2 iters, speed only (volume fixed) | 4.379 | 4.312 | 4.447 | 3.659 | 4.799 | 4.440 |
+| FRAC 0.3, 2 iters, volume only (speed fixed) | 4.527 | 4.700 | 4.355 | 4.017 | 5.723 | 4.355 |
+| FRAC 0.3, 2 iters, horizontal only | 4.358 | 4.316 | 4.400 | 3.650 | 4.895 | 4.412 |
+
+Learned values on clean MH_01 (FRAC 0.5, 1 iter): speed 0.51 / 0.16 m/s, volume 1.19 / 0.32 m, close to the
+ground truth's own spread (speed RMS 0.35 / 0.20 m/s, distance from the 10 s centre 1.42 / 0.40 m; read for
+this diagnostic only, never by the estimator). On reading-a copies the learned values are larger (drift
+inflates them; a second iteration shrinks them).
+
+**Choice (on tuning only):** FRAC 0.3, 2 iterations, K 1.0, all four sigmas learned: the lowest APE among the
+full-learning settings and within 1 % of the best restricted variant, so the simpler one. It is the only
+setting judged on held-out data. **Every learned setting makes clean MH_01/02 worse (3.878 -> 4.11..4.46 m,
++6 to +15 %)**, including speed-only and volume-only: any envelope tighter than today's costs clean APE. So
+condition 2 below is expected to fail; the held-out run is made once anyway, as the rule's decision.
+
+**Decision rule, committed before any held-out run of `LEARN_ON`.** Held-out set H: MH_03..05, V1_01..03 x
+readings a, b x seeds 1, 2, 3 (36 copies; seed 42 reported, never decides). Clean set C: MH_01..05,
+V1_01..03. `LEARN_ON` (FRAC 0.3, ITERS 2, K 1.0) ships on only if all hold:
+1. mean APE (SE3 on the run) over H is no worse than the never-moving floor's on the same 36 copies
+   (tag `step2-floor-off`);
+2. mean APE over C is not worse than today's (`step3-C-off`) by more than 0.5 %;
+3. output contract PASS on every run.
+Reported, not deciding: the change against today's fixed envelope on H (`step3-H-off`) per reading, gap,
+blind and RPE 1 s. `python tools/judge_step4.py --h-on step4-H-learn --floor step2-floor-off --h-off
+step3-H-off --c-off step3-C-off --c-on step4-C-learn`. No constant changes after this commit.

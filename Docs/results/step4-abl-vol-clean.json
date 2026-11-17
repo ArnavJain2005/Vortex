@@ -1,0 +1,44 @@
+{
+ "commit": "8cb550f",
+ "date": "2026-11-17",
+ "degraded": false,
+ "main": "main.py",
+ "official": false,
+ "python": "3.14.7",
+ "results": [
+  {
+   "ate_none_rmse": 5.716315364036357,
+   "ate_origin_rmse": 6.979932205373241,
+   "ate_se3_rmse": 4.207908929333277,
+   "ate_sim3_rmse": 4.126273578973352,
+   "contract": "PASS",
+   "final_se3": 5.2297282207778855,
+   "rows": 36820,
+   "rpe200_rmse": 0.5677030011704733,
+   "sequence": "MH_01_easy",
+   "sim3_scale": 3.003448875637784,
+   "wall_s": 0.8818208999873605
+  },
+  {
+   "ate_none_rmse": 5.978259661281602,
+   "ate_origin_rmse": 7.554863140289968,
+   "ate_se3_rmse": 4.50226658080904,
+   "ate_sim3_rmse": 4.1093973297250335,
+   "contract": "PASS",
+   "final_se3": 5.487985844703786,
+   "rows": 30400,
+   "rpe200_rmse": 0.5788802096287261,
+   "sequence": "MH_02_easy",
+   "sim3_scale": 6.604135677221528,
+   "wall_s": 0.8470112000068184
+  }
+ ],
+ "set": {
+  "LEARN_FRAC": "0.3",
+  "LEARN_ITERS": "2",
+  "LEARN_MAX": "(2.0,0.3,10.0,4.0)",
+  "LEARN_MIN": "(2.0,0.3,0.3,0.1)",
+  "LEARN_ON": "True"
+ },
+ "tag": "step4-abl-vol-clean"
+}

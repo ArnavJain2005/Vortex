@@ -1,0 +1,43 @@
+{
+ "commit": "8cb550f",
+ "date": "2026-11-17",
+ "degraded": false,
+ "main": "main.py",
+ "official": false,
+ "python": "3.14.7",
+ "results": [
+  {
+   "ate_none_rmse": 5.723184756205972,
+   "ate_origin_rmse": 6.957851910413584,
+   "ate_se3_rmse": 4.2172805979464085,
+   "ate_sim3_rmse": 4.121763462414882,
+   "contract": "PASS",
+   "final_se3": 5.147643060940805,
+   "rows": 36820,
+   "rpe200_rmse": 0.5190700470526515,
+   "sequence": "MH_01_easy",
+   "sim3_scale": 3.48585677930793,
+   "wall_s": 1.2686060999985784
+  },
+  {
+   "ate_none_rmse": 6.012313639071376,
+   "ate_origin_rmse": 7.586330067212375,
+   "ate_se3_rmse": 4.485992316481276,
+   "ate_sim3_rmse": 3.6413240003230993,
+   "contract": "PASS",
+   "final_se3": 5.5544575667617355,
+   "rows": 30400,
+   "rpe200_rmse": 0.5548496506345284,
+   "sequence": "MH_02_easy",
+   "sim3_scale": 10.870727536699325,
+   "wall_s": 0.8346294999937527
+  }
+ ],
+ "set": {
+  "LEARN_FRAC": "0.5",
+  "LEARN_ITERS": "2",
+  "LEARN_K": "1.5",
+  "LEARN_ON": "True"
+ },
+ "tag": "step4-tune-f0.5-i2-k1.5-clean"
+}
