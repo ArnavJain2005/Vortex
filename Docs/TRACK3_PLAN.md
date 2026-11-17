@@ -1137,7 +1137,7 @@ settings). Not retried on the same held-out copies.
 
 | Item | Result | Where |
 |---|---|---|
-| `pytest` | 259 passed (256 + 3 Step 4 tests in `tests/test_witness.py`) | Windows, Python 3.14.7 |
+| `pytest` | 259 passed (256 + 3 Step 4 tests in `tests/test_witness.py`); 264 after merging main (Step E smoother tests), 18 Nov | Windows, Python 3.14.7 |
 | Reference vs `pathfinder.py` with `LEARN_ON` | within the equivalence criterion on a SYNTHETIC file for (ITERS 1, K 1.0) and (ITERS 2, K 1.5); learned sigmas identical | `tests/test_witness.py` |
 | Budget, `python -S benchmark.py --runs 15 --gate` (shipped settings, switch off) | PASS: synthetic 12.04 us/row, heap 505 / 1,012 / 5,471 KB (in-process / whole run / no bytecode); MH_01_easy_b_s1 11.19 us/row, 588 / 1,099 / 5,471 KB | `Docs/BUDGET.md` `step4-*` |
 | Cost with `LEARN_ON` (not shipped; in-process `run()`, best of 3, MH_01_easy_b_s1) | 25.7 us/row (off: 11.5), heap peak 613 KB (off: 588) | scratch script, not committed |
