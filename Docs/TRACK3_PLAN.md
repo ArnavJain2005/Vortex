@@ -84,6 +84,7 @@ Deadline **22 Nov 2026, 11:59 PM IST**, confirmed by the FAQ (Q1 closed). Full-t
 | R2 | Official-script harness (both column readings), input front end, new baseline | **Done (verified)** 17 Nov: 64 copies (8 sequences x readings a, b x seeds 1, 2, 3, 42), front end correct on all 72 files; baseline in `Docs/STEP2_BASELINE.md` | Table shown to Arnav before Step 3 |
 | R3 | Fault front end: stuck rows, spikes, bridging of missing samples (three switches), blind-window protection | **Done (verified): all three switches OFF** by the pre-registered rule (17 Nov, rule at 99bf25b); shipped output unchanged | Each switch judged on 36 held-out copies |
 | R4 | Envelope (V2 speed and volume sigmas) learned per flight instead of fixed values chosen on Machine Hall (`LEARN_ON`) | **Done (verified): OFF** by the pre-registered rule (17 Nov, rule at c1769cb): held-out APE 3.739 m vs floor 3.748 (passes), clean +6.7 % (fails); shipped output unchanged | Held-out mean APE <= never-moving floor; clean no worse |
+| R5 | Rotor drag (V3): drag rule v2 stages A and B as pre-registered (c1b594c) on V1_01..03; build V3 only if stage A passes | **Done (verified): NO-GO, V3 not built.** Stage A re-run 17 Nov reproduces the Step B result exactly (1 of 3 sequences pass, 2 needed); stage B not reached | Stage A on 2 of 3 Vicon Room 1 sequences |
 | F | Filter fixes from the 16-17 Nov reviews: gyro-bias cap on every still test (`BGCAP_ON`), covariance reset after injection (`RESET_ON`), refresh of the cached previous sample (`REFRESH_ON`), fallback velocity uncertainty (`P0V_ON`); four switches | **Done** (17 Nov): BGCAP, P0V, REFRESH pass and ship on; RESET fails (reading a APE +1.8 %) and ships off. Held-out mean APE 4.972 -> 4.962 m; floor 3.745 m | Each switch judged on 36 fresh held-out copies (seeds 4-6) by the no-harm rule |
 
 ## Open questions (Q1 to Q5 are in the email drafted for prism@samsung.com on 15 Nov)
@@ -1328,3 +1329,35 @@ Gates (Windows, Python 3.14): `pytest` 284 passed (g++ on PATH, so `test_ccore.p
 `pathfinder.py` whose Step F switches are set back off; without that its 11 pose tests fail, as expected.
 The no-cached-bytecode reading (compiling `pathfinder.py` while traced) rose from 5278 KB (Step 3) to 5512 KB
 with the added code: under the 8 MB limit it is held to, and above the 4 MB design target, as before.
+
+
+## Step 5: rotor drag (V3) (17 Nov 2026, branch `track3/step5-v3`)
+
+Brief: run drag rule v2 stages A and B exactly as pre-registered (commit c1b594c) on V1_01..03, rule not
+edited; build V3 in the filter only if stage A passes.
+
+`tools/drag_fit.py` and every module it imports (`vortex/data/euroc.py`, `vortex/geometry.py`,
+`vortex/rowspec.py`) are unchanged since c1b594c (`git diff c1b594c HEAD` on those files is empty). Re-run:
+`python tools/drag_fit.py --rule v2 data/euroc/V1_01_easy data/euroc/V1_02_medium data/euroc/V1_03_difficult`.
+Output identical to the Step B run (`Docs/drag/v2_V1_0*.json` equal key by key; regenerated files differ
+only in line endings, so the committed ones were kept):
+
+| Sequence | Airborne s | Axis a: k free / R^2 fixed k | Axis b: k free / R^2 fixed k | Sequence |
+|---|---|---|---|---|
+| V1_01_easy | 144 | 0.224 / 0.542 pass | 0.083 / -0.049 **fail** | fail |
+| V1_02_medium | 84 | 0.201 / 0.668 pass | 0.175 / 0.784 pass | pass |
+| V1_03_difficult | 100 | 0.194 / 0.630 pass | 0.138 / 0.432 **fail** | fail |
+
+**Stage A: NO-GO** (1 of 3; the rule needs 2). **Stage B is not run:** by the rule it compares V3 on
+against V1 + V2 in `main.py`, and V3 is not built after a stage A failure. So the V3 filter work (airborne
+detector, online thrust axis, k = 0.20 /s, sequential gated updates, accelerometer-bias states, SYNTHETIC
+bias step/walk check), the no-harm check on official copies and the ablation (V1+V2 / +V3 / V3 without the
+volume envelope) are not built or run. The ablation reduces to V1 + V2, the shipped estimator (Steps 2-4).
+
+No estimator, `pathfinder.py` or `main.py` change: output and budget are those of Step 4
+(`Docs/BUDGET.md` `step4-*`; `Docs/RESULTS.md` unchanged). `pytest tests/test_drag_fit.py`: 11 passed;
+the full suite was not re-run (no code changed since Step 4: 259 passed; 287 after merging main with Steps E and F, 18 Nov).
+
+Not done, and why: a rule v3 (for example axis a only, which holds on all three with k 0.19..0.22 /s) would
+be chosen after seeing V1_01..03, so it would need decision data never seen; the only unseen EuRoC
+sequences are V2_01..03, the final test set. Not proposed.
