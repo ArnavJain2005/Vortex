@@ -2,6 +2,12 @@
 for SCORING only; the estimator never sees it).
 
     python tools/smooth_eval.py --tag NAME --seqs MH_01_easy,MH_02_easy [--copies MH_01_easy_s1,...] [--cap N]
+    python tools/smooth_eval.py --tag NAME --official MH_01_easy_a_s1,MH_01_easy_b_s1,...
+
+--official: copies under data/official/ (tools/official_degrade.py, the organisers' degrade_imu.py), read
+through the input front end (vortex/core/frontend.py) as main.py does, and scored as the organisers
+score: APE with SE3 fitted on the run itself; plus RPE 1 s, error inside missing-row bursts (gap RMSE,
+gap growth) and the blind 5 s.
 
 Clean sequences come from data/euroc/<seq>, degraded copies from data/degraded/<copy> (made by
 `python -m vortex.degrade`). Per setting (off, on): clean APE SE3 and RPE 1 s; degraded APE with the
@@ -30,6 +36,63 @@ def traj(t_ns, out):
     return scoring._clean(np.asarray(t_ns) / 1e9, o[:, :3], o[:, 3:7])[0]
 
 
+def official_rows(path):
+    """Rows of an IMU csv after the input front end (canonical: gyro first, ns, m/s^2), and raw t_ns."""
+    import tempfile
+    from vortex.core import frontend
+    lay = frontend.detect(path)
+    if lay["canonical"]:
+        raw = euroc.read_imu_csv(path)
+        return sd.rows_from_raw(raw), raw.t_ns
+    fd, tmp = tempfile.mkstemp(suffix=".csv")
+    try:
+        with os.fdopen(fd, "wb") as f:
+            f.writelines(frontend.canonical_lines(path, lay))
+        raw = euroc.read_imu_csv(tmp)
+    finally:
+        os.remove(tmp)
+    return sd.rows_from_raw(raw), raw.t_ns
+
+
+def run_official(names):
+    res = []
+    for name in names:
+        rest, seed = name.rsplit("_s", 1)
+        base, reading = rest.rsplit("_", 1)
+        d = os.path.join(ROOT, "data", "official", name)
+        rows, t_ns = official_rows(os.path.join(d, "mav0", "imu0", "data.csv"))
+        with open(os.path.join(d, "degrade.json"), encoding="utf-8") as f:
+            ev = json.load(f)
+        ref = scoring.read_ground_truth(os.path.join(ROOT, "data", "euroc", base))
+        for on in (False, True):
+            r = scoring.score(ref, traj(t_ns, wx.estimate(rows, smooth=on)), align="se3", rpe_deltas=(200,),
+                              events=ev)
+            ph = r["phases"]
+            drops = [x for x in ph["dropouts"] if x.get("n")]
+            res.append({"copy": name, "seq": base, "reading": reading, "seed": int(seed), "on": on,
+                        "ape": r["ape"]["rmse"], "rpe1s": r["rpe"]["200"]["rmse"],
+                        "gap_rmse": st.mean(x["rmse"] for x in drops) if drops else None,
+                        "gap_growth": st.mean(x["growth"] for x in drops) if drops else None,
+                        "blind_rmse": ph["blind"].get("rmse"), "blind_growth": ph["blind"].get("growth")})
+            x = res[-1]
+            print("%-22s %-3s APE %.3f RPE 1 s %.3f gap RMSE %s gap growth %s blind RMSE %s" % (
+                name, "on" if on else "off", x["ape"], x["rpe1s"],
+                *("-" if x[k] is None else "%.3f" % x[k] for k in ("gap_rmse", "gap_growth", "blind_rmse"))),
+                flush=True)
+    summary = {}
+    for reading in sorted({r["reading"] for r in res}):
+        for on in (False, True):
+            rs = [r for r in res if r["reading"] == reading and r["on"] == on]
+            m = {k: st.mean(r[k] for r in rs if r[k] is not None)
+                 for k in ("ape", "rpe1s", "gap_rmse", "gap_growth", "blind_rmse", "blind_growth")
+                 if any(r[k] is not None for r in rs)}
+            m["n"] = len(rs)
+            summary["%s_%s" % (reading, "on" if on else "off")] = m
+            print("MEAN reading %s %-3s n %2d  %s" % (reading, "on" if on else "off", len(rs),
+                                                    "  ".join("%s %.4f" % kv for kv in m.items() if kv[0] != "n")))
+    return res, summary
+
+
 def is_final(name):
     return name.startswith("V2_")
 
@@ -39,6 +102,18 @@ def main(argv):
     tag = get("--tag", None)
     seqs = [s for s in get("--seqs", "").split(",") if s]
     copies = [s for s in get("--copies", "").split(",") if s]
+    official = [s for s in get("--official", "").split(",") if s]
+    if official:
+        if not tag or any(is_final(n) for n in official):
+            print(__doc__ if not tag else "refused: V2_* is the final test set")
+            return 2
+        res, summary = run_official(official)
+        os.makedirs(OUT_DIR, exist_ok=True)
+        with open(os.path.join(OUT_DIR, tag + ".json"), "w", encoding="utf-8", newline="\n") as f:
+            json.dump({"tag": tag, "date": time.strftime("%Y-%m-%d"), "cap": wx.SMOOTH_MAX_BLOCKS,
+                       "official": official, "summary": summary, "results": res}, f, indent=1)
+            f.write("\n")
+        return 0
     if not tag or not seqs:
         print(__doc__)
         return 2

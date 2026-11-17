@@ -1021,3 +1021,33 @@ shipped result are unchanged.
 
 Not checked: RSS of a C port (not ported); TUM-VI (no data); whether the organisers allow non-causal
 processing (open).
+
+### Step E, second look: official-script copies (17 Nov 2026, branch `track3/stepE2-smoother-official`)
+
+After Step 2 (official harness, `data/official/`), the smoother was rerun on the TUNING copies only:
+MH_01/02 x readings a, b x seeds 1..3 (12 copies; seed 42 is report-only and not used), read through the
+input front end as `main.py` reads them, scored as the organisers score (SE3 fitted on the run itself).
+`python tools/smooth_eval.py --tag stepE2-tune-official --official ...` (`Docs/smooth/stepE2-tune-official.json`).
+
+| Reading | Smoother | APE m | RPE 1 s m | Gap RMSE m | Gap growth m | Blind RMSE m | Blind growth m |
+|---|---|---|---|---|---|---|---|
+| b (accelerometer first) | off | **3.973** | 0.558 | **3.754** | 0.026 | 7.537 | 0.634 |
+| b | on | 4.341 | 0.399 | 3.863 | 0.022 | 7.350 | 0.559 |
+| a (raw EuRoC fed in) | off | 12.283 | 1.204 | 13.832 | 0.146 | 27.763 | 3.181 |
+| a | on | 10.734 | 1.343 | 11.193 | 0.058 | 29.110 | 3.195 |
+
+Never-moving floor on MH_01/02 (SE3 on the run): 4.31 / 4.65 m APE.
+
+**Reading.** Under reading b (and on clean data) the smoother raises APE (+9 %) and gap RMSE (+3 %),
+for the same reason as above. Under reading a it lowers APE 13 % and gap RMSE 19 %, but there the forward
+estimate is already about 3x worse than standing still (attitude lost to the gyro-sized faults): the
+smoother repairs part of a broken estimate rather than improving a working one, and the fault front end
+(O2) is meant to remove that failure first. The official gaps are short (5..50 rows), so bracketing them
+gives little (gap growth is already 0.02..0.15 m).
+
+**Decision: SMOOTH_ON stays off; no held-out run.** Revisit after O2 (spike / stuck rejection) and an
+in-flight witness, with a rule written before any held-out copy is run. Nothing shipped changes.
+
+`pytest`: 250 passed (245 after Step 2 + 5 smoother), Windows, Python 3.14.7. Budget not rerun: `pathfinder.py` and
+`main.py` unchanged.
+
