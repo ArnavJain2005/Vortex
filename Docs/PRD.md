@@ -233,3 +233,25 @@ pre-registered result, including the ideas that failed.
 - [ ] Deck `CollegeName_TeamName` in the official template
 - [ ] Video ≤ 3:00
 - [ ] Google Form submitted, confirmation saved
+
+## 10. Addendum: status after the evening of 18 Nov (Claude Code)
+
+Added after this file was placed; sections 0-9 above are unchanged. Where this addendum and section 3 disagree
+about what is done, this addendum is the newer record (details in `Docs/TRACK3_PLAN.md`).
+
+- **L1 was built and judged on 18 Nov, before this file reached the repo** (PR #50, branch `track3/stepL1-shrink`):
+  constant centre (whole-run mean), alpha per gyro-noise class (0.10 / 0.20, tuned on MH_01/02 a, b, seeds 1-3),
+  plus a second floor: the estimate reversed in time. Judged on **seeds 7-9** by a rule committed before those copies
+  existed: **both arms fail** (sequence consistency 4/6 and 3/6 against 5/6 needed; the high-noise arm also loses to
+  its reversed output), so `SHRINK_ON` ships off. L1a (one fixed alpha), the moving-centre variant and the
+  APE^2(alpha) identity test against `score.py` were not built.
+- **Seeds 7-9 are therefore spent.** Rule G (section 3) cannot use them. Proposal, for Arnav to decide: rule G on
+  seeds 10-12, rule H on 13-15, reserve 16-18.
+- **L4's first part is done** (PR #51, stacked on #50): switched-off experiments moved from `pathfinder.py` to
+  `tools/pathfinder_lab.py` (not shipped; the reference in `vortex/core` keeps them too); output byte-identical on
+  all 144 real inputs; no-bytecode heap 6,055 -> 4,935 KB (3.14), 6,431 -> 6,309 KB (3.13). The 4 MB target is not
+  met; the 3.13 peak does not track the source size (not investigated).
+- **Shared file:** PR #50 already adds `--reverse` to `tools/eval_euroc.py`, before Antigravity's `--root` change.
+  If #50 merges first, Antigravity rebases onto it.
+- **v0.9 fallback zip** frozen from `main` da14417 (K0): `dist/vortex_v0.9.zip`, SHA-256
+  0e558440a397ef4b78426cc471ac8d3fd17f8c658b28a6cd40aeb5a3ba555d6b.
