@@ -963,3 +963,45 @@ a non-canonical file, one extra pass that writes the canonical copy to disk.
 Not checked: TUM-VI (not downloaded); what the organisers actually feed the script (Q9); the
 `degrade_imu.py` licence and whether to commit it (Arnav); timing on a quiet machine (rerun the
 benchmark); the cost of the conversion pass in isolation.
+
+
+## Step 3: fault front end (17 Nov 2026, branch `track3/step3-faults`)
+
+**What the faults do to the shipped estimator** (Step 2 state): spikes and the first 4 rows of a stuck
+run are integrated as real data; a dead or NaN row makes the filter coast (velocity decays, attitude held)
+and also drops the next good row's integration step; steps longer than 0.1 s (most missing-row bursts:
+5-50 rows) coast instead of being bridged; duplicated rows (step 0) are skipped.
+
+**Pieces** (each a switch, default off; reference `vortex/core/faults.py` + `witness.INTERP_ON`, copied
+into `pathfinder.py` bit-identically, `tests/test_faults.py`):
+- `STUCK6_ON`: a row whose six values equal the previous row's exactly is a missing sample (stuck runs,
+  duplicated rows). Clean EuRoC has none (MH_01..05, V1_01..03 checked), so clean output cannot change.
+- `SPIKE_ON`: joint outlier test against the last accepted row and the next distinct row; one triple far
+  out (z > SPIKE_ZHI = 100) and the other out (z > SPIKE_ZLO = 3), z = squared deviation over its clipped
+  running mean. Chosen on MH_01/02.
+- `INTERP_ON`: rows marked missing are skipped (no coasting) and steps up to INTERP_MAX_S = 0.3 s (the
+  script's longest burst is 50 rows = 0.25 s; not tuned) are integrated with the trapezoid between the good
+  neighbours instead of coasted.
+- Blind window: the trailing all-zero run is never marked; it is detected exactly (no threshold). Checked
+  on all 64 copies: it equals the script's failure frames plus duplicates, and no all-zero row occurs
+  anywhere else. It has no switch: it only stops `STUCK6_ON` from touching the blind rows.
+- Calibration under faults (diagnostic, switches off): on every reading-a copy the anchor is the clean
+  file's still run (within 0.9 s); V1_01 and V1_02 have no still run even clean (first-second fallback).
+
+**Tuning (MH_01/02 x readings a, b x seeds 1..3, 12 copies; `Docs/RESULTS.md` tags `step3-tune-*`), mean
+APE SE3 m, reading a / reading b:** off 12.282 / 3.973; INTERP 13.349 / 3.949; STUCK 11.642 / 3.982;
+STUCK + INTERP 14.253 / 3.949; SPIKE (100/3) 12.300 / 3.977; all three with spike thresholds 30/3
+14.273 / 4.016, 100/3 14.367 / 3.963, 100/2 14.277 / 3.963. Spike detection against the script's own
+spike rows (rerun with zero spike magnitude, MH_01/02 only): at 100/3 about 40 % of the spikes are found,
+with about two false marks per true one (rotor vibration is heavy-tailed); clean MH_01/02 get 71 / 28 marks.
+
+**Decision rule, committed before any held-out run of these switches.** Held-out set H: MH_03..05,
+V1_01..03 x readings a, b x seeds 1, 2, 3 (36 copies; the seed-42 copies are reported, never decide).
+Clean set C: MH_01..05, V1_01..03. Switches are judged in the order STUCK6, SPIKE, INTERP, each with the
+earlier ones at their decided state. A switch ships on only if all hold:
+1. mean APE (SE3 on the run) over H improves by at least 1 %;
+2. in each reading separately, mean APE over its 18 copies is not worse by more than 1 %;
+3. mean gap RMSE and mean blind RMSE over H are each not worse by more than 2 %;
+4. mean APE over C is not worse by more than 0.5 %;
+5. output contract PASS on every run.
+Otherwise it ships off and is recorded as a measured experiment. No constant changes after this commit.

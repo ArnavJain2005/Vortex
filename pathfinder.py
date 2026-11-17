@@ -791,22 +791,168 @@ def _fe_canonical_lines(path, lay):
             yield b",".join([ts] + [x.strip() for x in g] + a) + b"\n"
 
 
+# ---- fault front end (Step 3): copy of vortex/core/faults.py, same rules (tests/test_faults.py) ----
+FF_STUCK6_ON = False
+FF_SPIKE_ON = False
+FF_SPIKE_ZHI = 100.0          # z needed on the triple that is far out (chosen on MH_01/02, 17 Nov)
+FF_SPIKE_ZLO = 3.0            # z needed on the other triple (chosen on MH_01/02, 17 Nov)
+FF_SPIKE_ALPHA = 0.01         # running mean weight after the warm-up (about 100 rows, 0.5 s at 200 Hz)
+FF_SPIKE_WARM = 50            # tested rows before any row can be judged a spike
+FF_SPIKE_CLIP = 10.0          # after the warm-up a row moves the running mean by at most this many times it
+                           # (an undetected spike would otherwise raise the scale and hide the next ones)
+FF_SPIKE_SPAN_NS = 50_000_000  # G..N span above which P is not judged (10 rows at 200 Hz)
+FF_SPIKE_FLOOR_G2 = 0.005 ** 2  # rad^2/s^2: deviations below this are never spikes (noiseless input)
+FF_SPIKE_FLOOR_A2 = 0.05 ** 2   # m^2/s^4
+FF_MISSING = b"nan,nan,nan,nan,nan,nan,m"
+
+
+def _ff_parse(line):
+    """(t_ns or None, six floats or None, ts text) of a data line."""
+    p = line.strip().split(b",")
+    ts = p[0].strip()
+    t = int(ts) if ts.isdigit() else None
+    if len(p) < 7:
+        return t, None, ts
+    try:
+        v = (float(p[1]), float(p[2]), float(p[3]), float(p[4]), float(p[5]), float(p[6]))
+    except ValueError:
+        return t, None, ts
+    s = v[0] * v[0] + v[1] * v[1] + v[2] * v[2] + v[3] * v[3] + v[4] * v[4] + v[5] * v[5]
+    if not s < 1e8:
+        return t, None, ts
+    return t, v, ts
+
+
+def _ff_filter_lines(lines, stuck=None, spike=None, stats=None):
+    """Yields the lines with stuck repeats and spikes rewritten as missing samples. Non-data lines are
+    passed on at once; data rows keep their order and number. stats (dict, optional) gets counts."""
+    stuck = FF_STUCK6_ON if stuck is None else stuck
+    spike = FF_SPIKE_ON if spike is None else spike
+    zhi, zlo = FF_SPIKE_ZHI, FF_SPIKE_ZLO
+    st = {"stuck": 0, "spike": 0, "zero_mid": 0, "blind_rows": 0, "tested": 0}
+    pend = None          # (t, v, ts, line): the row waiting for its next neighbour
+    reps = []            # lines repeating pend exactly
+    zeros = []           # buffered all-zero rows (lines, ts)
+    gt = None            # last accepted row: time and values
+    gv = None
+    eg = ea = 0.0        # running mean squared deviations (gyro, accel)
+    nw = 0
+
+    def resolve(nt, nv):
+        """Emit pend (spike-tested against gt..next) and its repeats."""
+        nonlocal gt, gv, eg, ea, nw
+        t, v, ts, line = pend
+        flag = False
+        if spike and gv is not None and nv is not None and t is not None and nt - gt <= FF_SPIKE_SPAN_NS:
+            d0 = v[0] - 0.5 * (gv[0] + nv[0])
+            d1 = v[1] - 0.5 * (gv[1] + nv[1])
+            d2 = v[2] - 0.5 * (gv[2] + nv[2])
+            dg = d0 * d0 + d1 * d1 + d2 * d2
+            d0 = v[3] - 0.5 * (gv[3] + nv[3])
+            d1 = v[4] - 0.5 * (gv[4] + nv[4])
+            d2 = v[5] - 0.5 * (gv[5] + nv[5])
+            da = d0 * d0 + d1 * d1 + d2 * d2
+            if (nw >= FF_SPIKE_WARM and dg > FF_SPIKE_FLOOR_G2 and da > FF_SPIKE_FLOOR_A2
+                    and ((dg > zhi * eg and da > zlo * ea) or (da > zhi * ea and dg > zlo * eg))):
+                flag = True
+                st["spike"] += 1
+            else:
+                nw += 1
+                st["tested"] += 1
+                if nw <= FF_SPIKE_WARM:
+                    eg += (dg - eg) / nw
+                    ea += (da - ea) / nw
+                else:
+                    eg += (min(dg, FF_SPIKE_CLIP * eg) - eg) * FF_SPIKE_ALPHA
+                    ea += (min(da, FF_SPIKE_CLIP * ea) - ea) * FF_SPIKE_ALPHA
+        out = [ts + b"," + FF_MISSING + b"\n" if flag else line]
+        for rl, rts in reps:
+            out.append(rts + b"," + FF_MISSING + b"\n")
+            st["stuck"] += 1
+        if not flag and t is not None:
+            gt, gv = t, v
+        return out
+
+    for line in lines:
+        s = line.strip()
+        if not s or s[0] == 35:
+            yield line
+            continue
+        if line[-1:] != b"\n":
+            line = line + b"\n"
+        t, v, ts = _ff_parse(line)
+        if v is not None and t is not None and not (v[0] or v[1] or v[2] or v[3] or v[4] or v[5]):
+            if pend is not None:
+                yield from resolve(None, None)
+                pend, reps = None, []
+            zeros.append((line, ts))
+            continue
+        if zeros:                               # an all-zero run that is not at the end: a fault
+            for zl, zts in zeros:
+                if stuck:
+                    yield zts + b"," + FF_MISSING + b"\n"
+                    st["zero_mid"] += 1
+                else:
+                    yield zl
+            zeros = []
+        if v is None or t is None:              # invalid row: passed on as it is
+            if pend is not None:
+                yield from resolve(None, None)
+                pend, reps = None, []
+            yield line
+            continue
+        if stuck and pend is not None and v == pend[1]:
+            reps.append((line, ts))
+            continue
+        if pend is not None:
+            yield from resolve(t, v)
+        pend, reps = (t, v, ts, line), []
+    if pend is not None:
+        yield from resolve(None, None)
+    for zl, _ in zeros:                         # trailing all-zero run: the blind window, untouched
+        yield zl
+    st["blind_rows"] = len(zeros)
+    if stats is not None:
+        stats.update(st)
+
+
+INTERP_ON = False            # Step 3: skip rows marked missing and integrate steps up to INTERP_MAX_S
+INTERP_MAX_S = 0.3           # s; the script's bursts are 5-50 rows (<= 0.25 s at 200 Hz)
+
+
 def run(src, dst, write=True, integrate=True):
-    """Stream src -> dst. Returns the number of data rows. With FRONT_ON a file that is not canonical is
-    first rewritten canonically next to dst (dst + '.vortex_in.csv', removed afterwards)."""
+    """Stream src -> dst. Returns the number of data rows. With FRONT_ON a file that is not canonical, and
+    with FF_STUCK6_ON / FF_SPIKE_ON every file, is first rewritten (canonical, faults marked missing) next to
+    dst (dst + '.vortex_in.csv', removed afterwards)."""
     LAST["frontend"] = None
+    LAST["faults"] = None
+    lines = None
     if FRONT_ON:
         lay = _fe_detect(src)
         LAST["frontend"] = lay
         if not lay["canonical"]:
-            tmp = dst + ".vortex_in.csv"
-            with open(tmp, "wb") as g:
-                g.writelines(_fe_canonical_lines(src, lay))
-            try:
-                return _run(tmp, dst, write, integrate)
-            finally:
-                os.remove(tmp)
-    return _run(src, dst, write, integrate)
+            lines = _fe_canonical_lines(src, lay)
+    f = None
+    if FF_STUCK6_ON or FF_SPIKE_ON:
+        if lines is None:
+            f = open(src, "rb")
+            lines = f
+        st = {}
+        LAST["faults"] = st
+        lines = _ff_filter_lines(lines, stats=st)
+    if lines is None:
+        return _run(src, dst, write, integrate)
+    tmp = dst + ".vortex_in.csv"
+    try:
+        with open(tmp, "wb") as g:
+            g.writelines(lines)
+    finally:
+        if f is not None:
+            f.close()
+    try:
+        return _run(tmp, dst, write, integrate)
+    finally:
+        os.remove(tmp)
 
 
 def _run(src, dst, write=True, integrate=True):
@@ -819,7 +965,8 @@ def _run(src, dst, write=True, integrate=True):
     cos = math.cos
     sin = math.sin
     exp = math.exp
-    max_dt = MAX_DT
+    interp = INTERP_ON
+    max_dt = INTERP_MAX_S if interp else MAX_DT
     max_jump = MAX_JUMP_S
     max_ss = MAX_SUMSQ
     n = 0
@@ -1164,7 +1311,7 @@ def _run(src, dst, write=True, integrate=True):
                         pfy = ay + qw * uy + (qz * ux - qx * uz)
                         pfz = az + qw * uz + (qx * uy - qy * ux)
                         has_prev = True
-                elif have_t:
+                elif have_t and not (interp and len(p) > 7 and p[7][:1] == b"m"):
                     dt = (t - tl) * 1e-9
                     if 0 < dt <= max_jump:
                         if fc:

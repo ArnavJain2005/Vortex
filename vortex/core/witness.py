@@ -289,6 +289,8 @@ def estimate(rows, v1=None, v2=None, v2p=None, log=None, jam=None, gap_on=None, 
     dv2 = [0.0, 0.0, 0.0]
     sg = sa = 0                         # length of the current run of identical gyro / accel triples
     lg = la = None
+    interp = INTERP_ON
+    max_dt = INTERP_MAX_S if interp else sd.MAX_DT
     for t, vals in rows[anchor:]:
         if t is not None:
             ok = sd.is_valid(vals)
@@ -409,7 +411,7 @@ def estimate(rows, v1=None, v2=None, v2p=None, log=None, jam=None, gap_on=None, 
                     if dt is None:
                         prev = sd._sample(q, vc, bg[0], bg[1], bg[2])
                         h1 = vals
-                    elif dt <= sd.MAX_DT and prev is not None:
+                    elif dt <= max_dt and prev is not None:
                         q, p, v, prev = sd._step(q, p, v, prev, vc, bg[0], bg[1], bg[2], g, dt)
                         if prev is not None:
                             fs[0] += prev[3]
@@ -443,7 +445,7 @@ def estimate(rows, v1=None, v2=None, v2p=None, log=None, jam=None, gap_on=None, 
                         gap += dt
                         h1, h2 = vals, None
                     t_last = t
-            elif t_last is not None:
+            elif t_last is not None and not (interp and type(vals) is MissingRow):
                 dt = (t - t_last) * 1e-9
                 if 0 < dt <= sd.MAX_JUMP_S:
                     p, v = coast(p, v, dt, tau)
@@ -462,23 +464,56 @@ def estimate(rows, v1=None, v2=None, v2p=None, log=None, jam=None, gap_on=None, 
 
 
 FRONT_ON = True              # Step 2 (17 Nov): input front end (vortex/core/frontend.py); no-op on canonical files
+# Step 3 (reference first; decision rules in Docs/TRACK3_PLAN.md, Step 3). STUCK6_ON / SPIKE_ON live in
+# faults.py. INTERP_ON: rows the fault pass marked missing are skipped (no coasting; the next good row
+# integrates across with the real timestamp step, i.e. the trapezoid between the good neighbours), and a
+# step up to INTERP_MAX_S (missing rows and bursts: the script's bursts are 5-50 rows, <= 0.25 s at
+# 200 Hz) is integrated instead of coasted. Longer steps coast as before.
+INTERP_ON = False
+INTERP_MAX_S = 0.3
 
 
-def estimate_file(path):
-    """The estimator on an IMU csv. With FRONT_ON, a file that is not canonical (accelerometer first,
-    timestamps not integer ns, accelerometer in g) is first rewritten canonically (frontend.py)."""
-    import os
-    import tempfile
-    from ..data import euroc
-    from . import frontend
+class MissingRow(tuple):
+    """Six NaNs for a row the fault pass marked missing (invalid everywhere; skipped with INTERP_ON)."""
+
+
+def prepare_lines(path):
+    """The file's lines after the input front end (FRONT_ON) and the fault pass (faults.STUCK6_ON /
+    SPIKE_ON), or None when neither changes anything (the file is read as it is)."""
+    from . import faults, frontend
+    lines = None
     if FRONT_ON:
         lay = frontend.detect(path)
         if not lay["canonical"]:
-            fd, tmp = tempfile.mkstemp(suffix=".csv")
-            try:
-                with os.fdopen(fd, "wb") as f:
-                    f.writelines(frontend.canonical_lines(path, lay))
-                return estimate(sd.rows_from_raw(euroc.read_imu_csv(tmp)))
-            finally:
-                os.remove(tmp)
-    return estimate(sd.rows_from_raw(euroc.read_imu_csv(path)))
+            lines = frontend.canonical_lines(path, lay)
+    if faults.STUCK6_ON or faults.SPIKE_ON:
+        if lines is None:
+            lines = open(path, "rb")
+        lines = faults.filter_lines(lines)
+    return lines
+
+
+def estimate_file(path):
+    """The estimator on an IMU csv, after prepare_lines(); rows marked missing become MissingRow."""
+    import os
+    import tempfile
+    from ..data import euroc
+    lines = prepare_lines(path)
+    if lines is None:
+        return estimate(sd.rows_from_raw(euroc.read_imu_csv(path)))
+    fd, tmp = tempfile.mkstemp(suffix=".csv")
+    miss = []
+    try:
+        with os.fdopen(fd, "wb") as f:
+            for line in lines:
+                s = line.strip()
+                if s and s[0] != 35:
+                    miss.append(s.endswith(b",m"))
+                f.write(line)
+        rows = sd.rows_from_raw(euroc.read_imu_csv(tmp))
+    finally:
+        if hasattr(lines, "close"):
+            lines.close()
+        os.remove(tmp)
+    rows = [(t, MissingRow(v)) if m else (t, v) for (t, v), m in zip(rows, miss)]
+    return estimate(rows)
