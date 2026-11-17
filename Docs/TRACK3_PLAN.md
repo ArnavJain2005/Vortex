@@ -86,6 +86,7 @@ Deadline **22 Nov 2026, 11:59 PM IST**, confirmed by the FAQ (Q1 closed). Full-t
 | R4 | Envelope (V2 speed and volume sigmas) learned per flight instead of fixed values chosen on Machine Hall (`LEARN_ON`) | **Done (verified): OFF** by the pre-registered rule (17 Nov, rule at c1769cb): held-out APE 3.739 m vs floor 3.748 (passes), clean +6.7 % (fails); shipped output unchanged | Held-out mean APE <= never-moving floor; clean no worse |
 | R5 | Rotor drag (V3): drag rule v2 stages A and B as pre-registered (c1b594c) on V1_01..03; build V3 only if stage A passes | **Done (verified): NO-GO, V3 not built.** Stage A re-run 17 Nov reproduces the Step B result exactly (1 of 3 sequences pass, 2 needed); stage B not reached | Stage A on 2 of 3 Vicon Room 1 sequences |
 | F | Filter fixes from the 16-17 Nov reviews: gyro-bias cap on every still test (`BGCAP_ON`), covariance reset after injection (`RESET_ON`), refresh of the cached previous sample (`REFRESH_ON`), fallback velocity uncertainty (`P0V_ON`); four switches | **Done** (17 Nov): BGCAP, P0V, REFRESH pass and ship on; RESET fails (reading a APE +1.8 %) and ships off. Held-out mean APE 4.972 -> 4.962 m; floor 3.745 m | Each switch judged on 36 fresh held-out copies (seeds 4-6) by the no-harm rule |
+| L1 | Positions scaled about their centroid, alpha per gyro-noise class (`SHRINK_ON`); null floor = the estimate reversed in time (`eval_euroc.py --reverse`) | **Done (verified): OFF** by the pre-registered rule (18 Nov, rule at d56c875): both arms improve the mean objective (reading a -49.5 %, reading b -23.9 %) but fail sequence consistency (4 and 3 of 6); LO also loses to its reversed output. Shipped output unchanged | Each arm judged on 36 fresh held-out copies (seeds 7-9) |
 
 ## Open questions (Q1 to Q5 are in the email drafted for prism@samsung.com on 15 Nov)
 
@@ -1430,3 +1431,71 @@ after this commit.
 - An arm that fails ships with its alpha at 1.0; `SHRINK_ON` ships on if either arm passes.
 - Expected from tuning (a prediction, not part of the rule): arm LO passes; arm HI fails condition 3
   (59.85 against 59.75 reversed on tuning).
+
+**Outcome (18 Nov 2026; rule commit d56c875, copies made after it; `python tools/judge_stepL1.py ...`).**
+Tags `stepL1-H-*` (36 copies), `stepL1-C-*` (8 clean). Mean objective (floor 60), and reported means:
+
+| Arm | Condition | Result | |
+|---|---|---|---|
+| LO (alpha_lo 0.10) | 1 reading a objective >= 2 % better | 143.17 -> 72.35 (-49.5 %) | pass |
+| | 2 >= 5 of 6 sequences improve | 4 of 6 | **FAIL** |
+| | 3 beats its reversed output | 72.35 vs 69.75 | **FAIL** |
+| | 4 reading b not worse / 5 clean / 6 contract | +0.00 % / +0.00 % / PASS | pass |
+| | reported, reading a: APE / blind / gap m | off 5.653 / 8.972 / 5.829; on 3.821 / 2.793 / 3.375; reversed 3.764 / 3.005 / 3.378; floor 3.748 / 2.505 / 3.256 | |
+| HI (alpha_hi 0.20, LO off) | 1 reading b objective >= 2 % better | 77.08 -> 58.66 (-23.9 %) | pass |
+| | 2 >= 5 of 6 sequences improve | 3 of 6 | **FAIL** |
+| | 3 beats its reversed output | 58.66 vs 60.30 | pass |
+| | 4 reading a not worse / 6 contract | -10.9 % / PASS | pass |
+| | 5 clean mean APE (reported) | 3.6548 -> 3.8493 m (+5.3 %) | - |
+| | reported, reading b: APE / blind / gap m | off 3.820 / 3.259 / 3.394; on 3.684 / 2.436 / 3.165; reversed 3.670 / 2.600 / 3.249; floor 3.748 / 2.505 / 3.256 | |
+
+**Shipped: `SHRINK_ON = False`** (both arms fail; alphas kept at their tuned values in the code, unused).
+Shipped output is byte-identical to Step F.
+
+Per sequence, mean objective over seeds 7-9 (floor 60):
+
+| Sequence | Reading | off | LO (0.10) | LO reversed | HI (0.20) | HI reversed |
+|---|---|---|---|---|---|---|
+| MH_03_medium | a | 138.1 | 59.7 | 61.5 | 138.1 | 123.3 |
+| MH_04_difficult | a | 115.3 | 56.4 | 61.0 | 115.3 | 93.0 |
+| MH_05_difficult | a | 133.7 | 54.9 | 59.3 | 133.7 | 81.5 |
+| V1_01_easy | a | 261.2 | 52.4 | 57.5 | 261.2 | 175.3 |
+| V1_02_medium | a | 109.5 | 109.5 | 85.0 | 63.0 | 60.9 |
+| V1_03_difficult | a | 101.2 | 101.2 | 94.2 | 54.1 | 62.2 |
+| MH_03_medium | b | 55.7 | 55.7 | 58.9 | 58.5 | 59.3 |
+| MH_04_difficult | b | 57.6 | 57.6 | 62.6 | 58.4 | 60.2 |
+| MH_05_difficult | b | 65.4 | 65.4 | 61.2 | 60.0 | 60.0 |
+| V1_01_easy | b | 52.5 | 52.5 | 60.0 | 53.7 | 59.1 |
+| V1_02_medium | b | 123.3 | 123.3 | 85.5 | 63.7 | 60.4 |
+| V1_03_difficult | b | 108.0 | 108.0 | 99.8 | 57.6 | 62.8 |
+
+**Reading (measured, after the verdict; nothing below changes it).**
+- Where a file is shrunk with its class's alpha it lands at or below the floor (52.4..63.7), and the four
+  high-noise copies beat their reversed output. The rule fails on consistency across sequences, not on the
+  mean.
+- **The classifier is the weak point.** The organisers' script guesses the accelerometer unit from the
+  median norm of the columns it treats as the accelerometer. On reading a those are the gyro: on V1_02 and
+  V1_03 it took them for g and scaled the noise down about 9.8x (copy log `accel g`), so their gyro noise
+  reads 0.043 and 0.076 rad/s, in the low-noise class. Reading a is not one noise regime.
+- The low-noise class mixes files already better than the floor (MH_03..05 b, V1_01 b: 52.5..65.4, which
+  alpha 0.20 moves toward 60) with files much worse than it (V1_02 b 123.3, V1_03 b 108.0, V1_02/03 a). What
+  separates them is not gyro noise; a trigger would have to detect a broken estimate. No such GT-free test
+  exists in the code yet.
+- Not done: a second rule with a different trigger. The only sequences never used are V2_01..03 (final test
+  set) and TUM-VI (not downloaded); new seeds of the same six sequences are not new evidence (18 Nov review,
+  item 6). Arnav decides.
+
+| Item | Result | Where |
+|---|---|---|
+| `pytest` | 310 passed (287 + 23 in `tests/test_shrink.py`; g++ on PATH, so `test_ccore.py` ran) | Windows, Python 3.14.7 |
+| Reference vs `pathfinder.py` with `SHRINK_ON` | identical to full precision on 12 SYNTHETIC cases (3 files x 4 alpha/threshold settings); meter values exactly equal | `tests/test_shrink.py` |
+| Budget, `python -S benchmark.py --runs 15 --gate` (shipped: switch off) | PASS on all three. Heap in-process / whole run / no bytecode: Win 3.14 synthetic 506 / 1,030 / 6,055 KB; Win 3.14 MH_01_easy_b_s1 588 / 1,117 / 6,055 KB; Win 3.13 synthetic 393 / 1,396 / 6,431 KB. Time 15.8, 14.9, 15.5 us/row (3.2, 2.9, 3.1 ms per IMU-s) | `Docs/BUDGET.md` `stepL1-*` |
+
+**Compile heap.** The no-bytecode reading rose 5,512 -> 6,055 KB (3.14) for code that ships off; 3.13 reads
+6,431 KB, about 1.4 MB under the 8 MB limit (7,812 KiB if MB means 10^6 bytes). Every switched-off experiment
+in `pathfinder.py` (fault pass, learned envelope, INTERP, RESET, now SHRINK) costs compile memory on an
+evaluator without our bytecode. Moving them out of `pathfinder.py` (kept in the reference) is the next
+efficiency step; not done here.
+
+Not checked: TUM-VI (not downloaded); Linux/WSL timing; how the organisers start tracemalloc (we assume
+before `main.py` runs). The reversed-null floor is one realisation per copy.
