@@ -550,6 +550,8 @@ Copies made by `python tools/official_degrade.py --all` with the organisers' `de
 | stepF-tune-refresh | b | 1..3 | 6 | 3.973 | 0.558 | 3.754 | 0.026 | 7.536 | 0.634 | 6/6 PASS |
 | stepF-tune-reset | a | 1..3 | 6 | 12.272 | 1.210 | 14.065 | 0.140 | 29.041 | 3.205 | 6/6 PASS |
 | stepF-tune-reset | b | 1..3 | 6 | 3.974 | 0.558 | 3.761 | 0.026 | 7.558 | 0.636 | 6/6 PASS |
+| stepL1-tune-on | a | 1..3 | 6 | 4.270 | 0.555 | 3.471 | 0.024 | 4.466 | 0.500 | 6/6 PASS |
+| stepL1-tune-on | b | 1..3 | 6 | 4.350 | 0.534 | 3.787 | 0.017 | 5.677 | 0.509 | 6/6 PASS |
 
 ## Every official-copy run
 
@@ -1475,6 +1477,18 @@ Copies made by `python tools/official_degrade.py --all` with the organisers' `de
 | stepF-tune-reset | main.py RESET_ON=True | 8cb550f | MH_02_easy_b_s1 | PASS | 3.998 | 0.623 | 4.795 | 0.018 | 8.166 | 0.214 | 0.39 |
 | stepF-tune-reset | main.py RESET_ON=True | 8cb550f | MH_02_easy_b_s2 | PASS | 3.898 | 0.610 | 3.616 | 0.009 | 6.381 | 0.449 | 0.39 |
 | stepF-tune-reset | main.py RESET_ON=True | 8cb550f | MH_02_easy_b_s3 | PASS | 4.050 | 0.608 | 2.995 | 0.038 | 7.396 | 0.700 | 0.36 |
+| stepL1-tune-on | main.py SHRINK_ON=True | da14417 | MH_01_easy_a_s1 | PASS | 4.039 | 0.511 | 3.060 | 0.032 | 2.439 | 0.660 | 0.63 |
+| stepL1-tune-on | main.py SHRINK_ON=True | da14417 | MH_01_easy_a_s2 | PASS | 4.259 | 0.534 | 2.770 | 0.027 | 4.657 | 0.452 | 0.64 |
+| stepL1-tune-on | main.py SHRINK_ON=True | da14417 | MH_01_easy_a_s3 | PASS | 3.799 | 0.529 | 3.057 | 0.010 | 5.233 | 0.938 | 0.59 |
+| stepL1-tune-on | main.py SHRINK_ON=True | da14417 | MH_01_easy_b_s1 | PASS | 4.247 | 0.502 | 3.807 | 0.020 | 5.659 | 0.701 | 0.68 |
+| stepL1-tune-on | main.py SHRINK_ON=True | da14417 | MH_01_easy_b_s2 | PASS | 4.222 | 0.504 | 3.111 | 0.022 | 5.544 | 0.667 | 0.72 |
+| stepL1-tune-on | main.py SHRINK_ON=True | da14417 | MH_01_easy_b_s3 | PASS | 4.175 | 0.504 | 3.709 | 0.011 | 5.471 | 0.656 | 0.64 |
+| stepL1-tune-on | main.py SHRINK_ON=True | da14417 | MH_02_easy_a_s1 | PASS | 4.493 | 0.598 | 4.826 | 0.024 | 3.842 | 0.207 | 0.54 |
+| stepL1-tune-on | main.py SHRINK_ON=True | da14417 | MH_02_easy_a_s2 | PASS | 4.331 | 0.573 | 3.499 | 0.005 | 3.346 | 0.172 | 0.58 |
+| stepL1-tune-on | main.py SHRINK_ON=True | da14417 | MH_02_easy_a_s3 | PASS | 4.701 | 0.584 | 3.616 | 0.044 | 7.282 | 0.568 | 0.53 |
+| stepL1-tune-on | main.py SHRINK_ON=True | da14417 | MH_02_easy_b_s1 | PASS | 4.456 | 0.564 | 5.124 | 0.018 | 5.878 | 0.327 | 0.56 |
+| stepL1-tune-on | main.py SHRINK_ON=True | da14417 | MH_02_easy_b_s2 | PASS | 4.480 | 0.564 | 3.564 | 0.006 | 5.624 | 0.273 | 0.56 |
+| stepL1-tune-on | main.py SHRINK_ON=True | da14417 | MH_02_easy_b_s3 | PASS | 4.522 | 0.563 | 3.407 | 0.024 | 5.884 | 0.429 | 0.70 |
 
 # Degraded input
 
