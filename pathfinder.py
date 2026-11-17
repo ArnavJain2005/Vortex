@@ -28,6 +28,7 @@ Passes: (1) calibration scan of the first 60 s; (2) rows before the anchor are s
 row, at most PRE_MAX_ROWS) and integrated backward; (3) one streaming forward pass writes every row.
 """
 import math
+import os
 import sys
 from array import array
 
@@ -618,7 +619,197 @@ def _inject(qw, qx, qy, qz, px, py, pz, vx, vy, vz, bgx, bgy, bgz, bax, bay, baz
             bax + dx[12], bay + dx[13], baz + dx[14])
 
 
+# ---- input front end (Step 2): copy of vortex/core/frontend.py, same rules (tests/test_frontend.py) ----
+FRONT_ON = True              # no-op on canonical files (gyro first, integer ns, m/s^2)
+FE_DETECT_ROWS = 4000         # 20 s at 200 Hz
+FE_ORDER_MARGIN = 0.5         # accelerometer-likeness gap needed to trust the data over the header
+FE_G_SCRIPT = 9.80665         # degrade_imu.py's G (g -> m/s^2)
+FE_G_LO, FE_G_HI = 0.5, 2.0      # median norm range read as g (degrade_imu.py's rule)
+FE_GYRO_SUSPECT = 3.0         # rad/s median norm: above this a deg/s gyro is suspected (flag only)
+FE_CANON_HEADER = ("#timestamp [ns],w_RS_S_x [rad s^-1],w_RS_S_y [rad s^-1],w_RS_S_z [rad s^-1],"
+                "a_RS_S_x [m s^-2],a_RS_S_y [m s^-2],a_RS_S_z [m s^-2]")
+FE_SHIFT = {"s": 9, "ms": 6, "us": 3, "ns": 0}
+
+
+def _fe_is_data(line):
+    s = line.strip()
+    return bool(s) and s[0] != 35
+
+
+def _fe_num(x):
+    try:
+        return float(x)
+    except ValueError:
+        return float("nan")
+
+
+def _fe_median(xs):
+    """Median of a non-empty list (sorted in place)."""
+    xs.sort()
+    n = len(xs)
+    h = n // 2
+    return xs[h] if n % 2 else 0.5 * (xs[h - 1] + xs[h])
+
+
+def _fe_quart(xs, f):
+    """Value at fraction f of a SORTED list (nearest rank, floor)."""
+    return xs[int(f * (len(xs) - 1))]
+
+
+def _fe_likeness(norms):
+    """(s, median) for one triple's norms; s = inf when there are fewer than 10."""
+    if len(norms) < 10:
+        return float("inf"), float("nan")
+    m = _fe_median(norms)
+    if not m > 0.0:
+        return float("inf"), m
+    r = (_fe_quart(norms, 0.75) - _fe_quart(norms, 0.25)) / m
+    d = min(abs(math.log(m / FE_G_SCRIPT)), abs(math.log(m)))
+    return d + r, m
+
+
+def _fe_header_order(header):
+    if header is None:
+        return None
+    toks = [t.strip().lower() for t in header.lstrip(b"\xef\xbb\xbf").lstrip(b"#").split(b",")]
+    if len(toks) < 7:
+        return None
+
+    def kind(t):
+        if t.startswith(b"w") or b"gyr" in t or b"rad" in t:
+            return "g"
+        if t.startswith(b"a") or b"acc" in t or b"m s^-2" in t or b"m/s" in t:
+            return "a"
+        return None
+    k1, k4 = kind(toks[1]), kind(toks[4])
+    if k1 == "g" and k4 == "a":
+        return "gyro_first"
+    if k1 == "a" and k4 == "g":
+        return "accel_first"
+    return None
+
+
+def _fe_detect(path):
+    """Layout of an IMU csv. Keys: order ('gyro_first' | 'accel_first'), order_from ('data' | 'header'
+    | 'default'), header_order, ts_unit, ts_digits (all timestamps of the sampled rows are digits),
+    accel_scale (1.0 or FE_G_SCRIPT), accel_unit, gyro_suspect, s1, s2 (likeness of columns 1-3 and 4-6),
+    canonical (True: read the file as it is)."""
+    header = None
+    n1, n2, steps = [], [], []
+    prev = None
+    digits = True
+    rows = 0
+    with open(path, "rb") as f:
+        if f.peek(3)[:3] == b"\xef\xbb\xbf":
+            f.read(3)
+        for line in f:
+            if not _fe_is_data(line):
+                if header is None and rows == 0 and line.strip()[:1] == b"#":
+                    header = line.strip()
+                continue
+            rows += 1
+            p = line.split(b",")
+            ts = p[0].strip()
+            if not ts.isdigit():
+                digits = False
+            t = _fe_num(ts)
+            if t == t and prev is not None and t > prev:
+                steps.append(t - prev)
+            if t == t:
+                prev = t
+            v = [_fe_num(p[i]) if i < len(p) else float("nan") for i in range(1, 7)]
+            a = v[0] * v[0] + v[1] * v[1] + v[2] * v[2]
+            b = v[3] * v[3] + v[4] * v[4] + v[5] * v[5]
+            if a == a and a < 1e30 and a > 0.0:
+                n1.append(math.sqrt(a))
+            if b == b and b < 1e30 and b > 0.0:
+                n2.append(math.sqrt(b))
+            if rows >= FE_DETECT_ROWS:
+                break
+    s1, m1 = _fe_likeness(n1)
+    s2, m2 = _fe_likeness(n2)
+    hdr = _fe_header_order(header)
+    if s2 + FE_ORDER_MARGIN <= s1:
+        order, src = "gyro_first", "data"
+    elif s1 + FE_ORDER_MARGIN <= s2:
+        order, src = "accel_first", "data"
+    elif hdr is not None:
+        order, src = hdr, "header"
+    else:
+        order, src = "gyro_first", "default"
+    m_acc, m_gyr = (m2, m1) if order == "gyro_first" else (m1, m2)
+    g_unit = m_acc == m_acc and FE_G_LO < m_acc < FE_G_HI
+    if steps:
+        dt = _fe_median(steps)
+        unit = "s" if dt < 1.0 else "ms" if dt < 1e3 else "us" if dt < 1e6 else "ns"
+    else:
+        unit = "ns"
+    lay = {"order": order, "order_from": src, "header_order": hdr, "ts_unit": unit, "ts_digits": digits,
+           "accel_scale": FE_G_SCRIPT if g_unit else 1.0, "accel_unit": "g" if g_unit else "m/s^2",
+           "gyro_suspect": m_gyr == m_gyr and m_gyr > FE_GYRO_SUSPECT, "s1": s1, "s2": s2}
+    lay["canonical"] = order == "gyro_first" and unit == "ns" and digits and not g_unit
+    return lay
+
+
+def _fe_ns_text(ts, shift):
+    """Timestamp text in `shift`-digit-smaller units -> integer nanosecond text, on the digits (exact).
+    Digits beyond the nanosecond are dropped (truncated). Anything that is not plain decimal digits with
+    at most one '.' is returned unchanged (the estimator then treats it as a bad timestamp)."""
+    s = ts.strip()
+    ip, dot, fp = s.partition(b".")
+    if not ip:
+        ip = b"0"
+    if not ip.isdigit() or (fp and not fp.isdigit()):
+        return s
+    fp = (fp + b"0" * shift)[:shift]
+    out = (ip + fp).lstrip(b"0")
+    return out or b"0"
+
+
+def _fe_canonical_lines(path, lay):
+    """The file's data rows rewritten canonically (bytes lines, '\\n' ends): integer ns timestamp, gyro
+    first, accelerometer in m/s^2. Same number and order of data rows; non-data lines dropped; a canonical
+    header first. Fields that are not numbers stay as they are (reordered only)."""
+    shift = FE_SHIFT[lay["ts_unit"]]
+    acc_first = lay["order"] == "accel_first"
+    k = lay["accel_scale"]
+    yield FE_CANON_HEADER.encode() + b"\n"
+    with open(path, "rb") as f:
+        if f.peek(3)[:3] == b"\xef\xbb\xbf":
+            f.read(3)
+        for line in f:
+            if not _fe_is_data(line):
+                continue
+            p = line.strip().split(b",")
+            p += [b""] * (7 - len(p))
+            ts = _fe_ns_text(p[0], shift)
+            g, a = (p[4:7], p[1:4]) if acc_first else (p[1:4], p[4:7])
+            if k != 1.0:
+                a = [repr(_fe_num(x) * k).encode() for x in a]
+            else:
+                a = [x.strip() for x in a]
+            yield b",".join([ts] + [x.strip() for x in g] + a) + b"\n"
+
+
 def run(src, dst, write=True, integrate=True):
+    """Stream src -> dst. Returns the number of data rows. With FRONT_ON a file that is not canonical is
+    first rewritten canonically next to dst (dst + '.vortex_in.csv', removed afterwards)."""
+    LAST["frontend"] = None
+    if FRONT_ON:
+        lay = _fe_detect(src)
+        LAST["frontend"] = lay
+        if not lay["canonical"]:
+            tmp = dst + ".vortex_in.csv"
+            with open(tmp, "wb") as g:
+                g.writelines(_fe_canonical_lines(src, lay))
+            try:
+                return _run(tmp, dst, write, integrate)
+            finally:
+                os.remove(tmp)
+    return _run(src, dst, write, integrate)
+
+
+def _run(src, dst, write=True, integrate=True):
     """Stream src -> dst. Returns the number of data rows.
     write=False: no output (benchmarks); integrate=False: identity poses (benchmarks)."""
     fl = float
