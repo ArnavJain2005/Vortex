@@ -461,6 +461,24 @@ def estimate(rows, v1=None, v2=None, v2p=None, log=None, jam=None, gap_on=None, 
     return out
 
 
+FRONT_ON = True              # Step 2 (17 Nov): input front end (vortex/core/frontend.py); no-op on canonical files
+
+
 def estimate_file(path):
+    """The estimator on an IMU csv. With FRONT_ON, a file that is not canonical (accelerometer first,
+    timestamps not integer ns, accelerometer in g) is first rewritten canonically (frontend.py)."""
+    import os
+    import tempfile
     from ..data import euroc
+    from . import frontend
+    if FRONT_ON:
+        lay = frontend.detect(path)
+        if not lay["canonical"]:
+            fd, tmp = tempfile.mkstemp(suffix=".csv")
+            try:
+                with os.fdopen(fd, "wb") as f:
+                    f.writelines(frontend.canonical_lines(path, lay))
+                return estimate(sd.rows_from_raw(euroc.read_imu_csv(tmp)))
+            finally:
+                os.remove(tmp)
     return estimate(sd.rows_from_raw(euroc.read_imu_csv(path)))

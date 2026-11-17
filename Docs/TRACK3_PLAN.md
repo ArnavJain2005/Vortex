@@ -81,6 +81,7 @@ Deadline **22 Nov 2026, 11:59 PM IST**, confirmed by the FAQ (Q1 closed). Full-t
 | 8 | Blind 5 s forecaster (W5), dead-sensor detection, per-row confidence (W6) | 8a dead-sensor detection (`DEAD_ON`, **on**) and velocity-decay forecaster (`FC_ON`, **on**, FC_TAU 0.5 s chosen on MH_01/02): **Done (verified on SYNTHETIC data and seeded degraded MH copies)** 16 Nov; both pass the pre-registered rule on held-out MH_03..05; reference and `main.py` bit-identical. Held-out blind growth -49.5 % (study A); zero failures 27.0 -> 4.4 m. 8b W6 per-row sigma from the filter covariance: built in the reference (`witness.row_sigma`, `tools/coverage.py`, `Docs/COVERAGE.md`) 16 Nov; **not informative** on MH_01/02 (rank correlation with the error -0.07), so no confidence is claimed; not in `main.py` | Blind error below constant velocity; coverage table |
 | 9 | Efficiency pass (C core if whole-process RAM counts); submission bundle, Dockerfile, deck, video | 9a `main.py` is a stub importing `pathfinder.py`, and the bundle ships its bytecode: **Done (verified on MH_01..05 clean and degraded, Win 3.13/3.14, WSL2 3.12)** 16 Nov; outputs byte-identical, peak RSS -3.5 to -3.8 MB (MH_01: 11.95 MB Win 3.14, 10.27 MB Linux 3.12), still above 8 MB. Bundle builder `tools/make_bundle.py`, README, Dockerfile: zip verified on all three Pythons; Docker image built and its output identical on all 65 inputs. 9b C core `main.cpp` (Q4 unanswered, so the strict reading is assumed): **Done (verified on MH_01..05 clean and degraded, Windows and WSL2 Linux)** 16 Nov; peak RSS 2.7 MB Linux / 4.8 MB Windows on MH_01, bit-identical to `pathfinder.py` on Linux; bundle in the PRD layout. C-core Dockerfile not built yet. Deck, video: Not started | Valid `team_name.zip` by 21 Nov 6 PM; submitted 3 h before cutoff |
 | R1 | FAQ re-plan, Step 1: C core retired from the submission; memory gate moved from RSS to the heap (tracemalloc) | **Done (verified)** 17 Nov: gate PASS on Win 3.14 synthetic + MH_01 and Win 3.13 synthetic; bundle verified on 3.13/3.14; Python Docker image built, MH_01 output identical | Python-only zip verified |
+| R2 | Official-script harness (both column readings), input front end, new baseline | **Done (verified)** 17 Nov: 64 copies (8 sequences x readings a, b x seeds 1, 2, 3, 42), front end correct on all 72 files; baseline in `Docs/STEP2_BASELINE.md` | Table shown to Arnav before Step 3 |
 
 ## Open questions (Q1 to Q5 are in the email drafted for prism@samsung.com on 15 Nov)
 
@@ -904,3 +905,61 @@ The 3.14 runs ran beside the full pytest suite, so their timing is pessimistic.
 Not checked: WSL2 Linux 3.12 (no stage, benchmark or verify run there this step, so the zip carries
 bytecode for 3.13 and 3.14 only); the Docker image on the degraded copies; how exactly the organisers
 start tracemalloc (we assume before `main.py` runs, the stricter reading).
+
+
+## Step 2: official-script harness, input front end, new baseline (17 Nov 2026, branch `track3/step2-official`)
+
+**Harness.** `tools/official_degrade.py` imports the organisers' `degrade_imu.py` from the git-ignored
+`tools/official/` (not committed: decision pending) and calls its `degrade()` with a chosen seed,
+max-level and gamma, without editing it. Its output for seed 42, reading a, MH_01 is byte-identical to
+the script's own CLI. Each copy `data/official/<seq>_<a|b>_s<seed>/` holds the degraded csv, `meta.json`
+(the script's statistics, what `--meta` writes) and `degrade.json` (phase windows for scoring:
+protected 2 s, missing-row bursts of >= 5 rows, last 5 s). Reading a = raw EuRoC (gyro first) fed in;
+reading b = reordered accelerometer first, left accelerometer first. 64 copies: MH_01..05, V1_01..03 x
+a, b x seeds 1, 2, 3, 42. Example (MH_01, seed 42): 36,820 -> 35,629 rows, 38 spikes, 525 stuck
+samples, 1,240 dropped (26 bursts), 49 duplicated rows, 1,001 zero rows.
+
+**Input front end** (`vortex/core/frontend.py`, copied into `pathfinder.py`; `FRONT_ON = True`). From
+the first 4,000 data rows: the accelerometer triple is the one whose median norm is nearest 9.81 m/s^2
+or 1 g and varies least (likeness gap needed 0.5; else the header names decide; else EuRoC order);
+timestamp unit from the median step (s / ms / us / ns, the script's thresholds); accelerometer in g
+when its median norm is in (0.5, 2.0). A non-canonical file is rewritten canonically next to the output
+(integer ns on the text, gyro first, m/s^2) and removed afterwards; a canonical EuRoC file is read as
+before, so clean outputs are byte-identical to Step 1 (checked on MH_01).
+- Correct, from the data alone, on all 8 clean files and all 64 copies (likeness gap >= 2.3; the
+  header agrees on every file), and on the most degraded 20 s of every copy (128 checks, gap >= 0.75).
+- **Cannot be detected:** gyro in deg/s versus a fast rad/s motion. A median gyro norm above 3 rad/s
+  is flagged (`gyro_suspect`), never converted. Also not handled: a header line without '#' still
+  counts as a data row (row rule unchanged); sub-nanosecond timestamp digits are truncated.
+
+**Baseline** (shipped estimator at 5699f6e, unchanged apart from the front end; `Docs/STEP2_BASELINE.md`,
+`Docs/RESULTS.md` tags `step2-*`). APE SE3 fitted on the run being scored; floor scored the same way.
+Held-out sequences (MH_03..05, V1_01..03), estimator / floor:
+
+| Input | Copies | APE m | RPE 1 s m | Gap RMSE m | Blind RMSE m |
+|---|---|---|---|---|---|
+| Clean | 6 | 3.59 / 3.75 | 0.791 / 0.912 | - | - |
+| Reading a, seeds 1..3 | 18 | **6.31 / 3.75** | 1.016 / 0.938 | 6.24 / 3.35 | 10.67 / 2.51 |
+| Reading a, seed 42 | 6 | 7.31 / 3.75 | 1.046 / 0.944 | 6.09 / 3.72 | 14.06 / 2.51 |
+| Reading b, seeds 1..3 | 18 | **3.86 / 3.75** | 0.840 / 0.938 | 3.50 / 3.35 | 3.49 / 2.51 |
+| Reading b, seed 42 | 6 | 3.82 / 3.75 | 0.841 / 0.944 | 3.91 / 3.72 | 2.86 / 2.51 |
+
+Reading. Under reading b the estimator is level with standing still on APE (+3 %) and better on RPE
+1 s, but worse in the gaps and in the blind 5 s. Under reading a (the gyro columns carry the
+accelerometer-sized noise, bias walk and spikes up to about 9 rad/s) it is far worse than the floor on
+every sequence: the attitude is lost. The blind 5 s error is dominated by the error already present at
+the failure (blind growth 0.6 m reading b, 1.4 m reading a, held out). Contract PASS on all 128
+official-copy runs and 16 clean runs.
+
+| Item | Result | Where |
+|---|---|---|
+| `pytest` | Full suite: 244 passed, 1 failed (`test_imports_are_stdlib_allowlist`: `os` now imported to remove the temporary copy; allow-list updated); `tests/test_main.py` rerun: 14 passed. Net: 245 (230 + 15 front end) | Windows, Python 3.14.7 |
+| Reference vs `pathfinder.py`, full precision | max difference 0 on MH_01_easy_b_s1, V1_02_medium_a_s42, MH_03_medium_b_s42 (real official copies) and the synthetic front-end cases | Windows 3.14 |
+| Budget, `python -S benchmark.py --runs 15 --gate` | PASS on all three. Heap in-process / whole run / no bytecode: synthetic 506 / 995 / 4,886 KB; MH_01_easy_b_s1 587 / 1,081 / 4,886 KB; MH_01_easy_a_s1 587 / 1,081 / 4,886 KB. Time 40.6, 38.1, 31.6 us/row: the laptop ran about 3x slower than in Step 1 throughout this session; on the same file in the same minute, Step 1 and Step 2 `pathfinder.run` took 1.33 s and 1.35 s (+1.5 %) | `Docs/BUDGET.md` `step2-*` |
+
+The front end adds about 216 KB to the in-process heap peak (the 4,000-row detection sample) and, for
+a non-canonical file, one extra pass that writes the canonical copy to disk.
+
+Not checked: TUM-VI (not downloaded); what the organisers actually feed the script (Q9); the
+`degrade_imu.py` licence and whether to commit it (Arnav); timing on a quiet machine (rerun the
+benchmark); the cost of the conversion pass in isolation.
