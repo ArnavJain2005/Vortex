@@ -1,8 +1,8 @@
 # Track 3 plan: Path Finder (trajectory estimation under sensor degradation)
 
 Running record of what is done, verified, blocked and unknown. Dates are IST. Update this file in the
-same commit as the work it describes. The full PRD, day-by-day plan and risk table live in the team doc
-"Vortex: Track 3 PRD, Plan of Action and Checklist".
+same commit as the work it describes. The PRD, day-by-day plan, work split and risk table live in
+`Docs/PRD.md` (v2, 18 Nov 2026; supersedes the 15 Nov team doc).
 
 Status vocabulary: **Done (verified)** = run with the stated result; **Done (unverified)** = written but
 not run on its real input; **Blocked**; **Not started**.
@@ -86,6 +86,7 @@ Deadline **22 Nov 2026, 11:59 PM IST**, confirmed by the FAQ (Q1 closed). Full-t
 | R4 | Envelope (V2 speed and volume sigmas) learned per flight instead of fixed values chosen on Machine Hall (`LEARN_ON`) | **Done (verified): OFF** by the pre-registered rule (17 Nov, rule at c1769cb): held-out APE 3.739 m vs floor 3.748 (passes), clean +6.7 % (fails); shipped output unchanged | Held-out mean APE <= never-moving floor; clean no worse |
 | R5 | Rotor drag (V3): drag rule v2 stages A and B as pre-registered (c1b594c) on V1_01..03; build V3 only if stage A passes | **Done (verified): NO-GO, V3 not built.** Stage A re-run 17 Nov reproduces the Step B result exactly (1 of 3 sequences pass, 2 needed); stage B not reached | Stage A on 2 of 3 Vicon Room 1 sequences |
 | F | Filter fixes from the 16-17 Nov reviews: gyro-bias cap on every still test (`BGCAP_ON`), covariance reset after injection (`RESET_ON`), refresh of the cached previous sample (`REFRESH_ON`), fallback velocity uncertainty (`P0V_ON`); four switches | **Done** (17 Nov): BGCAP, P0V, REFRESH pass and ship on; RESET fails (reading a APE +1.8 %) and ships off. Held-out mean APE 4.972 -> 4.962 m; floor 3.745 m | Each switch judged on 36 fresh held-out copies (seeds 4-6) by the no-harm rule |
+| PRD v2 | PRD v2 (18 Nov) in the repo (`Docs/PRD.md`): levers L1 shrinkage, L2 slow gravity alignment, L3 blind window, L4 hardening, L5 TUM-VI; paired, sequence-level judging (rules G and H); work split Claude Code / Antigravity / ChatGPT. Fallback zip frozen | **Done (verified)** 18 Nov (K0): `dist/vortex_v0.9.zip` from `main` da14417, eval input `data/official/MH_03_medium_b_s1` (placeholder), 26,106 rows, 3.19 ms per IMU-s, heap 1,013 KB; `verify` PASS on Win 3.13 and 3.14; SHA-256 0e558440a397ef4b78426cc471ac8d3fd17f8c658b28a6cd40aeb5a3ba555d6b | Zip verified; never deleted |
 
 ## Open questions (Q1 to Q5 are in the email drafted for prism@samsung.com on 15 Nov)
 

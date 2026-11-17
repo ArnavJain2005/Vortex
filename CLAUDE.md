@@ -8,6 +8,8 @@ A strong, honest, reproducible submission for the **Samsung PRISM XR Hackathon C
 "Path Finder: Trajectory Estimation Under Sensor Degradation"**. Deadline **22 Nov 2026, 11:59 PM IST**
 (confirmed by the organisers' FAQ, 17 Nov). Solo entry (Arnav Jain); full time from 20 Nov.
 
+Plan and work split: `Docs/PRD.md` (v2, 18 Nov). Claude Code owns the estimator; Antigravity owns data, replay and footage; ChatGPT owns deck and script.
+
 **The official task (organisers' slides and FAQ of 17 Nov 2026):** estimate a 6-DoF trajectory from a
 **degraded IMU only** (any EuRoC MAV or TUM-VI sequence, degraded with the organisers' `degrade_imu.py`;
 gravity alignment unknown). Output `estimated_trajectory.txt`: `timestamp tx ty tz qx qy qz qw`,
