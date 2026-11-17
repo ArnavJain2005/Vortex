@@ -92,7 +92,10 @@ python score.py --gt data/euroc/MH_01_easy --est est.txt [--events deg/degrade.j
 python tools/crosscheck_evo.py --evo-bin <venv>/Scripts                   # 16 Nov 2026: matches evo to 4.2e-7 m (synthetic)
 python tools/eval_euroc.py --tag NAME [--main main.py] [--set V2_ON=False]  # runs + scores every data/euroc sequence except V2_* (final test set: needs --seqs + --final); Docs/RESULTS.md
 python tools/eval_euroc.py --tag floor-still --main tools/baseline_still.py  # the never-moving floor (mean APE 5.25 m on MH)
-python -m vortex.degrade data/euroc/MH_03_medium data/degraded/MH_03_medium_s4 --seed 4  # degraded copies: <seq>_s<seed>
+python tools/official_degrade.py --all --readings a,b --seeds 1,2,3,42      # ORGANISERS' degrade_imu.py (in git-ignored tools/official/): data/official/<seq>_<a|b>_s<seed>
+python tools/eval_euroc.py --tag NAME --official [--seqs MH_03_medium_b_s1,...]  # every data/official copy; APE SE3 fitted on the run being scored
+python tools/baseline_table.py --est TAG --floor TAG --clean TAG --floor-clean TAG --out NAME  # estimator vs floor per sequence/reading; Docs/NAME.md
+python -m vortex.degrade data/euroc/MH_03_medium data/degraded/MH_03_medium_s4 --seed 4  # HISTORY: our own fault model (not the official one); <seq>_s<seed>
 python tools/eval_euroc.py --tag NAME --degraded [--seqs MH_03_medium_s4,...]  # every data/degraded copy; alignment from the clean run
 python -m vortex.degrade data/euroc/MH_03_medium data/degraded/MH_03_medium_s8 --seed 8 --failure-mode zero  # nan|zero|stuck
 python tools/blind_study.py --tag NAME data/euroc/MH_01_easy ... [--seed0 N --taus cv,0.5]  # blind 5 s study; Docs/BLIND.md
