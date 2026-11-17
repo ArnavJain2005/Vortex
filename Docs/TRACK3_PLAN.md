@@ -83,7 +83,7 @@ Deadline **22 Nov 2026, 11:59 PM IST**, confirmed by the FAQ (Q1 closed). Full-t
 | R1 | FAQ re-plan, Step 1: C core retired from the submission; memory gate moved from RSS to the heap (tracemalloc) | **Done (verified)** 17 Nov: gate PASS on Win 3.14 synthetic + MH_01 and Win 3.13 synthetic; bundle verified on 3.13/3.14; Python Docker image built, MH_01 output identical | Python-only zip verified |
 | R2 | Official-script harness (both column readings), input front end, new baseline | **Done (verified)** 17 Nov: 64 copies (8 sequences x readings a, b x seeds 1, 2, 3, 42), front end correct on all 72 files; baseline in `Docs/STEP2_BASELINE.md` | Table shown to Arnav before Step 3 |
 | R3 | Fault front end: stuck rows, spikes, bridging of missing samples (three switches), blind-window protection | **Done (verified): all three switches OFF** by the pre-registered rule (17 Nov, rule at 99bf25b); shipped output unchanged | Each switch judged on 36 held-out copies |
-| R4 | Envelope (V2 speed and volume sigmas) learned per flight instead of fixed values chosen on Machine Hall (`LEARN_ON`) | **In progress**: rule committed before the held-out run (17 Nov) | Held-out mean APE <= never-moving floor; clean no worse |
+| R4 | Envelope (V2 speed and volume sigmas) learned per flight instead of fixed values chosen on Machine Hall (`LEARN_ON`) | **Done (verified): OFF** by the pre-registered rule (17 Nov, rule at c1769cb): held-out APE 3.739 m vs floor 3.748 (passes), clean +6.7 % (fails); shipped output unchanged | Held-out mean APE <= never-moving floor; clean no worse |
 
 ## Open questions (Q1 to Q5 are in the email drafted for prism@samsung.com on 15 Nov)
 
@@ -1101,3 +1101,51 @@ V1_01..03. `LEARN_ON` (FRAC 0.3, ITERS 2, K 1.0) ships on only if all hold:
 Reported, not deciding: the change against today's fixed envelope on H (`step3-H-off`) per reading, gap,
 blind and RPE 1 s. `python tools/judge_step4.py --h-on step4-H-learn --floor step2-floor-off --h-off
 step3-H-off --c-off step3-C-off --c-on step4-C-learn`. No constant changes after this commit.
+
+**Outcome** (17 Nov; `python tools/judge_step4.py ...` as above; tags `step4-H-learn` (36 held-out copies),
+`step4-C-learn` (8 clean), `step4-R42-learn` (12 seed-42 copies, reported only); contract PASS on all runs):
+
+| Condition | Value | Result |
+|---|---|---|
+| 1 mean APE over H <= never-moving floor | floor 3.748, learned 3.739 m (-0.25 %) | pass |
+| 2 clean mean APE not worse by > 0.5 % | 3.663 -> 3.908 m (+6.68 %) | **FAIL** |
+| 3 contract PASS on every run | 44 runs | pass |
+
+**Verdict: `LEARN_ON` ships OFF.**
+
+Reported only, today's fixed envelope -> learned, mean over H (floor in brackets): APE 5.086 -> 3.739 m
+(3.748); reading a 6.311 -> 3.764 (3.748); reading b 3.861 -> 3.713 (3.748); gap RMSE 4.871 -> 3.361
+(3.351); blind RMSE 7.076 -> 2.874 (2.509); RPE 1 s 0.928 -> 0.950 (0.938). Seed 42 (12 copies): reading a
+7.310 -> 3.729 (3.747), reading b 3.822 -> 3.718 (3.747); blind reading a 14.061 -> 2.511 (2.508).
+
+Clean APE per sequence, fixed / learned / floor (m): MH_01 3.911 / 4.286 / 4.308; MH_02 3.846 / 4.626 /
+4.646; MH_03 3.530 / 3.524 / 3.580; MH_04 6.378 / 6.775 / 6.822; MH_05 6.546 / 6.841 / 6.879; V1_01 1.774 /
+1.806 / 1.853; V1_02 1.773 / 1.805 / 1.778; V1_03 1.548 / 1.601 / 1.574.
+
+**Reading.** The learned envelope does not find a better motion model; it collapses the estimate towards
+the never-moving trajectory. On every clean sequence the learned APE lands within 2 % of the floor's, and
+on H it ties the floor (-0.25 %) while RPE 1 s gets worse. On degraded copies that is a large gain over
+today (-26 %, reading a -40 %, blind -59 %), because today's estimate is worse than standing still there;
+on clean files it throws away the motion the fixed envelope keeps. The cause: the posterior spread of a
+filter whose only position information is the envelope itself is small, so each EM step tightens the prior
+further. Scaling the sigmas up (K) gives the motion back on clean files only by giving the drift back on
+reading a (tuning table). The real problem the step exposes: under reading a, the estimator is worse than
+not moving at all; that is a front-end/attitude problem (Steps 3, 5, 6), not an envelope problem.
+
+Shipped: `LEARN_ON = False` (reference and `pathfinder.py`; FRAC 0.3, ITERS 2, K 1.0 kept as the recorded
+settings). Not retried on the same held-out copies.
+
+| Item | Result | Where |
+|---|---|---|
+| `pytest` | 259 passed (256 + 3 Step 4 tests in `tests/test_witness.py`) | Windows, Python 3.14.7 |
+| Reference vs `pathfinder.py` with `LEARN_ON` | within the equivalence criterion on a SYNTHETIC file for (ITERS 1, K 1.0) and (ITERS 2, K 1.5); learned sigmas identical | `tests/test_witness.py` |
+| Budget, `python -S benchmark.py --runs 15 --gate` (shipped settings, switch off) | PASS: synthetic 12.04 us/row, heap 505 / 1,012 / 5,471 KB (in-process / whole run / no bytecode); MH_01_easy_b_s1 11.19 us/row, 588 / 1,099 / 5,471 KB | `Docs/BUDGET.md` `step4-*` |
+| Cost with `LEARN_ON` (not shipped; in-process `run()`, best of 3, MH_01_easy_b_s1) | 25.7 us/row (off: 11.5), heap peak 613 KB (off: 588) | scratch script, not committed |
+
+The no-bytecode compile peak rose again, 5.28 -> 5.47 MB (switched-off Step 4 code). Still under 8 MB. If
+Step 5 or 6 adds more, the switched-off experiments (fault pass, learned envelope) move out of
+`pathfinder.py`; they stay in the reference.
+
+Not checked: TUM-VI (not downloaded); a gated variant (learn only when the file looks like reading a)
+would need a new rule and new seeds; LEARN_ON timing through `python -S main.py` (only in-process).
+

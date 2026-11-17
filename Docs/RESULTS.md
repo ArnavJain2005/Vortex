@@ -13,6 +13,7 @@ Clean (undegraded) IMU input. APE = absolute position error after Umeyama alignm
 | step3-C-off | 3.91 / 0.480 | 3.85 / 0.591 | 3.53 / 0.983 | 6.38 / 1.193 | 6.55 / 1.023 | 1.77 / 0.409 | 1.77 / 0.669 | 1.55 / 0.469 | 3.66 | 0.727 |
 | step3-C-spike | 3.91 / 0.480 | 3.84 / 0.592 | 3.53 / 0.983 | 6.38 / 1.193 | 6.57 / 1.022 | 1.77 / 0.409 | 1.77 / 0.669 | 1.55 / 0.469 | 3.67 | 0.727 |
 | step3-C-stuck | 3.91 / 0.480 | 3.85 / 0.591 | 3.53 / 0.983 | 6.38 / 1.193 | 6.55 / 1.023 | 1.77 / 0.409 | 1.77 / 0.669 | 1.55 / 0.469 | 3.66 | 0.727 |
+| step4-C-learn | 4.29 / 0.500 | 4.63 / 0.537 | 3.52 / 1.300 | 6.78 / 1.189 | 6.84 / 1.091 | 1.81 / 0.441 | 1.81 / 0.900 | 1.60 / 0.590 | 3.91 | 0.819 |
 | step4-abl-h-clean | 4.21 / 0.496 | 4.61 / 0.536 | - | - | - | - | - | - | - | - |
 | step4-abl-speed-clean | 4.27 / 0.497 | 4.61 / 0.537 | - | - | - | - | - | - | - | - |
 | step4-abl-vol-clean | 4.21 / 0.568 | 4.50 / 0.579 | - | - | - | - | - | - | - | - |
@@ -98,6 +99,14 @@ Clean (undegraded) IMU input. APE = absolute position error after Umeyama alignm
 | step3-C-stuck | V1_01_easy | 2.82 | 2.38 | 1.77 | 1.77 | 0.409 |
 | step3-C-stuck | V1_02_medium | 3.55 | 2.95 | 1.77 | 1.71 | 0.669 |
 | step3-C-stuck | V1_03_difficult | 2.93 | 2.28 | 1.55 | 1.51 | 0.469 |
+| step4-C-learn | MH_01_easy | 5.56 | 6.79 | 4.29 | 4.19 | 0.500 |
+| step4-C-learn | MH_02_easy | 5.84 | 7.35 | 4.63 | 4.38 | 0.537 |
+| step4-C-learn | MH_03_medium | 8.10 | 5.16 | 3.52 | 3.49 | 1.300 |
+| step4-C-learn | MH_04_difficult | 9.63 | 7.83 | 6.78 | 6.73 | 1.189 |
+| step4-C-learn | MH_05_difficult | 9.73 | 8.09 | 6.84 | 6.82 | 1.091 |
+| step4-C-learn | V1_01_easy | 2.42 | 2.68 | 1.81 | 1.79 | 0.441 |
+| step4-C-learn | V1_02_medium | 2.75 | 2.20 | 1.81 | 1.75 | 0.900 |
+| step4-C-learn | V1_03_difficult | 2.74 | 2.36 | 1.60 | 1.56 | 0.590 |
 | step4-abl-h-clean | MH_01_easy | 5.57 | 6.76 | 4.21 | 3.89 | 0.496 |
 | step4-abl-h-clean | MH_02_easy | 5.84 | 7.34 | 4.61 | 4.37 | 0.536 |
 | step4-abl-speed-clean | MH_01_easy | 5.57 | 6.82 | 4.27 | 3.92 | 0.497 |
@@ -195,6 +204,14 @@ Clean (undegraded) IMU input. APE = absolute position error after Umeyama alignm
 | step3-C-stuck | main.py FF_STUCK6_ON=True | 99bf25b | 2026-11-17 | V1_01_easy | PASS | 1.77 | 1.92 | 1.77 | 0.847 | 0.409 | 0.42 |
 | step3-C-stuck | main.py FF_STUCK6_ON=True | 99bf25b | 2026-11-17 | V1_02_medium | PASS | 1.77 | 1.69 | 1.71 | 0.508 | 0.669 | 0.38 |
 | step3-C-stuck | main.py FF_STUCK6_ON=True | 99bf25b | 2026-11-17 | V1_03_difficult | PASS | 1.55 | 1.62 | 1.51 | 0.571 | 0.469 | 0.38 |
+| step4-C-learn | main.py LEARN_ON=True | c1769cb | 2026-11-17 | MH_01_easy | PASS | 4.29 | 5.30 | 4.19 | 10.3 | 0.500 | 0.84 |
+| step4-C-learn | main.py LEARN_ON=True | c1769cb | 2026-11-17 | MH_02_easy | PASS | 4.63 | 5.61 | 4.38 | 25.3 | 0.537 | 0.79 |
+| step4-C-learn | main.py LEARN_ON=True | c1769cb | 2026-11-17 | MH_03_medium | PASS | 3.52 | 4.51 | 3.49 | 0.615 | 1.300 | 0.75 |
+| step4-C-learn | main.py LEARN_ON=True | c1769cb | 2026-11-17 | MH_04_difficult | PASS | 6.78 | 3.87 | 6.73 | 3.15 | 1.189 | 0.59 |
+| step4-C-learn | main.py LEARN_ON=True | c1769cb | 2026-11-17 | MH_05_difficult | PASS | 6.84 | 4.34 | 6.82 | 2.74 | 1.091 | 0.63 |
+| step4-C-learn | main.py LEARN_ON=True | c1769cb | 2026-11-17 | V1_01_easy | PASS | 1.81 | 1.53 | 1.79 | 2 | 0.441 | 0.89 |
+| step4-C-learn | main.py LEARN_ON=True | c1769cb | 2026-11-17 | V1_02_medium | PASS | 1.81 | 1.72 | 1.75 | 0.423 | 0.900 | 0.65 |
+| step4-C-learn | main.py LEARN_ON=True | c1769cb | 2026-11-17 | V1_03_difficult | PASS | 1.60 | 1.27 | 1.56 | 0.344 | 0.590 | 0.68 |
 | step4-abl-h-clean | main.py LEARN_FRAC=0.3 LEARN_ITERS=2 LEARN_MAX=(4.0,0.3,10.0,2.0) LEARN_MIN=(0.1,0.3,0.3,2.0) LEARN_ON=True | 8cb550f | 2026-11-17 | MH_01_easy | PASS | 4.21 | 5.58 | 3.89 | 8.01 | 0.496 | 0.86 |
 | step4-abl-h-clean | main.py LEARN_FRAC=0.3 LEARN_ITERS=2 LEARN_MAX=(4.0,0.3,10.0,2.0) LEARN_MIN=(0.1,0.3,0.3,2.0) LEARN_ON=True | 8cb550f | 2026-11-17 | MH_02_easy | PASS | 4.61 | 5.79 | 4.37 | 14.9 | 0.536 | 0.74 |
 | step4-abl-speed-clean | main.py LEARN_FRAC=0.3 LEARN_ITERS=2 LEARN_MAX=(4.0,1.0,5.0,2.0) LEARN_MIN=(0.1,0.05,5.0,2.0) LEARN_ON=True | 8cb550f | 2026-11-17 | MH_01_easy | PASS | 4.27 | 5.36 | 3.92 | 17.5 | 0.497 | 0.92 |
@@ -341,6 +358,10 @@ Copies made by `python tools/official_degrade.py --all` with the organisers' `de
 | step3-tune-stuck-interp | b | 1..3 | 6 | 3.949 | 0.566 | 3.680 | 0.028 | 7.203 | 0.781 | 6/6 PASS |
 | step3-tune-stuck | a | 1..3 | 6 | 11.642 | 1.124 | 13.075 | 0.135 | 26.477 | 3.009 | 6/6 PASS |
 | step3-tune-stuck | b | 1..3 | 6 | 3.982 | 0.558 | 3.735 | 0.025 | 7.212 | 0.604 | 6/6 PASS |
+| step4-H-learn | a | 1..3 | 18 | 3.764 | 0.954 | 3.406 | 0.056 | 3.010 | 0.770 | 18/18 PASS |
+| step4-H-learn | b | 1..3 | 18 | 3.713 | 0.945 | 3.316 | 0.049 | 2.738 | 0.513 | 18/18 PASS |
+| step4-R42-learn | a | 42 | 6 | 3.729 | 0.965 | 3.753 | 0.027 | 2.511 | 0.718 | 6/6 PASS |
+| step4-R42-learn | b | 42 | 6 | 3.718 | 0.951 | 3.735 | 0.030 | 2.927 | 0.520 | 6/6 PASS |
 | step4-abl-h | a | 1..3 | 6 | 4.316 | 0.575 | 3.532 | 0.030 | 4.515 | 0.634 | 6/6 PASS |
 | step4-abl-h | b | 1..3 | 6 | 4.400 | 0.539 | 3.768 | 0.019 | 5.274 | 0.495 | 6/6 PASS |
 | step4-abl-speed | a | 1..3 | 6 | 4.312 | 0.559 | 3.495 | 0.035 | 4.299 | 0.846 | 6/6 PASS |
@@ -744,6 +765,54 @@ Copies made by `python tools/official_degrade.py --all` with the organisers' `de
 | step3-tune-stuck | main.py FF_STUCK6_ON=True | 44a61c6 | MH_02_easy_b_s1 | PASS | 4.050 | 0.618 | 4.867 | 0.018 | 8.034 | 0.244 | 0.47 |
 | step3-tune-stuck | main.py FF_STUCK6_ON=True | 44a61c6 | MH_02_easy_b_s2 | PASS | 3.890 | 0.604 | 3.528 | 0.008 | 6.522 | 0.421 | 0.43 |
 | step3-tune-stuck | main.py FF_STUCK6_ON=True | 44a61c6 | MH_02_easy_b_s3 | PASS | 4.168 | 0.600 | 3.132 | 0.034 | 6.562 | 0.626 | 0.43 |
+| step4-H-learn | main.py LEARN_ON=True | c1769cb | MH_03_medium_a_s1 | PASS | 3.797 | 1.364 | 3.662 | 0.056 | 4.103 | 0.195 | 0.67 |
+| step4-H-learn | main.py LEARN_ON=True | c1769cb | MH_03_medium_a_s2 | PASS | 4.141 | 1.306 | 4.515 | 0.044 | 4.613 | 0.308 | 0.66 |
+| step4-H-learn | main.py LEARN_ON=True | c1769cb | MH_03_medium_a_s3 | PASS | 3.588 | 1.304 | 2.802 | 0.134 | 2.430 | 1.278 | 0.64 |
+| step4-H-learn | main.py LEARN_ON=True | c1769cb | MH_03_medium_b_s1 | PASS | 3.474 | 1.367 | 3.157 | 0.051 | 3.829 | 0.359 | 0.79 |
+| step4-H-learn | main.py LEARN_ON=True | c1769cb | MH_03_medium_b_s2 | PASS | 3.439 | 1.327 | 3.501 | 0.036 | 3.790 | 0.324 | 0.68 |
+| step4-H-learn | main.py LEARN_ON=True | c1769cb | MH_03_medium_b_s3 | PASS | 3.514 | 1.336 | 3.004 | 0.140 | 4.587 | 0.416 | 0.67 |
+| step4-H-learn | main.py LEARN_ON=True | c1769cb | MH_04_difficult_a_s1 | PASS | 6.757 | 1.189 | 7.338 | 0.140 | 4.500 | 0.663 | 0.43 |
+| step4-H-learn | main.py LEARN_ON=True | c1769cb | MH_04_difficult_a_s2 | PASS | 6.468 | 1.248 | 6.476 | 0.029 | 3.878 | 0.311 | 0.43 |
+| step4-H-learn | main.py LEARN_ON=True | c1769cb | MH_04_difficult_a_s3 | PASS | 6.593 | 1.188 | 6.187 | 0.122 | 3.622 | 0.460 | 0.50 |
+| step4-H-learn | main.py LEARN_ON=True | c1769cb | MH_04_difficult_b_s1 | PASS | 6.769 | 1.179 | 7.633 | 0.112 | 4.207 | 0.429 | 0.54 |
+| step4-H-learn | main.py LEARN_ON=True | c1769cb | MH_04_difficult_b_s2 | PASS | 6.764 | 1.222 | 6.677 | 0.029 | 3.899 | 0.128 | 0.51 |
+| step4-H-learn | main.py LEARN_ON=True | c1769cb | MH_04_difficult_b_s3 | PASS | 6.749 | 1.195 | 6.134 | 0.141 | 3.914 | 0.181 | 0.48 |
+| step4-H-learn | main.py LEARN_ON=True | c1769cb | MH_05_difficult_a_s1 | PASS | 6.790 | 1.143 | 6.275 | 0.081 | 4.230 | 1.078 | 0.54 |
+| step4-H-learn | main.py LEARN_ON=True | c1769cb | MH_05_difficult_a_s2 | PASS | 6.754 | 1.086 | 5.159 | 0.011 | 5.277 | 1.066 | 0.48 |
+| step4-H-learn | main.py LEARN_ON=True | c1769cb | MH_05_difficult_a_s3 | PASS | 6.680 | 1.116 | 4.675 | 0.006 | 6.024 | 1.782 | 0.50 |
+| step4-H-learn | main.py LEARN_ON=True | c1769cb | MH_05_difficult_b_s1 | PASS | 6.813 | 1.136 | 6.336 | 0.073 | 4.134 | 0.866 | 0.54 |
+| step4-H-learn | main.py LEARN_ON=True | c1769cb | MH_05_difficult_b_s2 | PASS | 6.828 | 1.115 | 4.792 | 0.004 | 4.274 | 0.887 | 0.57 |
+| step4-H-learn | main.py LEARN_ON=True | c1769cb | MH_05_difficult_b_s3 | PASS | 6.826 | 1.116 | 5.015 | 0.015 | 4.055 | 0.719 | 0.60 |
+| step4-H-learn | main.py LEARN_ON=True | c1769cb | V1_01_easy_a_s1 | PASS | 1.727 | 0.488 | 1.654 | 0.062 | 2.256 | 0.825 | 0.80 |
+| step4-H-learn | main.py LEARN_ON=True | c1769cb | V1_01_easy_a_s2 | PASS | 1.728 | 0.548 | 1.535 | 0.049 | 1.440 | 0.637 | 0.69 |
+| step4-H-learn | main.py LEARN_ON=True | c1769cb | V1_01_easy_a_s3 | PASS | 2.553 | 0.560 | 2.390 | 0.047 | 3.503 | 0.619 | 0.71 |
+| step4-H-learn | main.py LEARN_ON=True | c1769cb | V1_01_easy_b_s1 | PASS | 1.823 | 0.462 | 1.628 | 0.030 | 1.600 | 0.129 | 0.78 |
+| step4-H-learn | main.py LEARN_ON=True | c1769cb | V1_01_easy_b_s2 | PASS | 1.774 | 0.462 | 1.508 | 0.008 | 1.279 | 0.164 | 0.85 |
+| step4-H-learn | main.py LEARN_ON=True | c1769cb | V1_01_easy_b_s3 | PASS | 1.801 | 0.459 | 1.558 | 0.019 | 1.207 | 0.238 | 0.86 |
+| step4-H-learn | main.py LEARN_ON=True | c1769cb | V1_02_medium_a_s1 | PASS | 1.826 | 0.895 | 1.727 | 0.000 | 1.018 | 1.053 | 0.53 |
+| step4-H-learn | main.py LEARN_ON=True | c1769cb | V1_02_medium_a_s2 | PASS | 1.942 | 0.912 | 1.890 | 0.000 | 2.616 | 1.145 | 0.52 |
+| step4-H-learn | main.py LEARN_ON=True | c1769cb | V1_02_medium_a_s3 | PASS | 1.761 | 0.900 | 1.693 | 0.102 | 1.439 | 1.169 | 0.48 |
+| step4-H-learn | main.py LEARN_ON=True | c1769cb | V1_02_medium_b_s1 | PASS | 1.781 | 0.896 | 1.680 | 0.000 | 0.802 | 1.046 | 0.56 |
+| step4-H-learn | main.py LEARN_ON=True | c1769cb | V1_02_medium_b_s2 | PASS | 1.944 | 0.912 | 1.855 | 0.000 | 2.593 | 1.263 | 0.55 |
+| step4-H-learn | main.py LEARN_ON=True | c1769cb | V1_02_medium_b_s3 | PASS | 1.820 | 0.900 | 1.833 | 0.108 | 1.755 | 1.245 | 0.51 |
+| step4-H-learn | main.py LEARN_ON=True | c1769cb | V1_03_difficult_a_s1 | PASS | 1.535 | 0.641 | 1.151 | 0.025 | 1.053 | 0.430 | 0.48 |
+| step4-H-learn | main.py LEARN_ON=True | c1769cb | V1_03_difficult_a_s2 | PASS | 1.536 | 0.643 | 0.874 | 0.061 | 0.909 | 0.321 | 0.51 |
+| step4-H-learn | main.py LEARN_ON=True | c1769cb | V1_03_difficult_a_s3 | PASS | 1.579 | 0.641 | 1.301 | 0.031 | 1.273 | 0.516 | 0.49 |
+| step4-H-learn | main.py LEARN_ON=True | c1769cb | V1_03_difficult_b_s1 | PASS | 1.544 | 0.639 | 1.101 | 0.018 | 1.091 | 0.381 | 0.51 |
+| step4-H-learn | main.py LEARN_ON=True | c1769cb | V1_03_difficult_b_s2 | PASS | 1.560 | 0.647 | 0.890 | 0.061 | 1.077 | 0.228 | 0.54 |
+| step4-H-learn | main.py LEARN_ON=True | c1769cb | V1_03_difficult_b_s3 | PASS | 1.610 | 0.644 | 1.388 | 0.040 | 1.195 | 0.235 | 0.52 |
+| step4-R42-learn | main.py LEARN_ON=True | c1769cb | MH_03_medium_a_s42 | PASS | 3.485 | 1.361 | 2.196 | 0.024 | 0.825 | 1.019 | 0.60 |
+| step4-R42-learn | main.py LEARN_ON=True | c1769cb | MH_03_medium_b_s42 | PASS | 3.483 | 1.328 | 2.184 | 0.026 | 4.378 | 0.514 | 0.60 |
+| step4-R42-learn | main.py LEARN_ON=True | c1769cb | MH_04_difficult_a_s42 | PASS | 6.679 | 1.228 | 7.070 | 0.000 | 3.094 | 0.696 | 0.44 |
+| step4-R42-learn | main.py LEARN_ON=True | c1769cb | MH_04_difficult_b_s42 | PASS | 6.776 | 1.217 | 7.283 | 0.000 | 4.107 | 0.332 | 0.47 |
+| step4-R42-learn | main.py LEARN_ON=True | c1769cb | MH_05_difficult_a_s42 | PASS | 6.774 | 1.127 | 8.405 | 0.028 | 5.468 | 0.883 | 0.48 |
+| step4-R42-learn | main.py LEARN_ON=True | c1769cb | MH_05_difficult_b_s42 | PASS | 6.822 | 1.119 | 8.205 | 0.050 | 4.347 | 0.820 | 0.57 |
+| step4-R42-learn | main.py LEARN_ON=True | c1769cb | V1_01_easy_a_s42 | PASS | 2.004 | 0.499 | 2.085 | 0.009 | 2.439 | 0.559 | 0.72 |
+| step4-R42-learn | main.py LEARN_ON=True | c1769cb | V1_01_easy_b_s42 | PASS | 1.802 | 0.465 | 2.042 | 0.008 | 1.213 | 0.167 | 0.84 |
+| step4-R42-learn | main.py LEARN_ON=True | c1769cb | V1_02_medium_a_s42 | PASS | 1.808 | 0.905 | 1.623 | 0.026 | 1.823 | 1.078 | 0.50 |
+| step4-R42-learn | main.py LEARN_ON=True | c1769cb | V1_02_medium_b_s42 | PASS | 1.801 | 0.912 | 1.524 | 0.028 | 1.999 | 1.178 | 0.53 |
+| step4-R42-learn | main.py LEARN_ON=True | c1769cb | V1_03_difficult_a_s42 | PASS | 1.626 | 0.667 | 1.140 | 0.074 | 1.414 | 0.075 | 0.59 |
+| step4-R42-learn | main.py LEARN_ON=True | c1769cb | V1_03_difficult_b_s42 | PASS | 1.621 | 0.666 | 1.172 | 0.069 | 1.516 | 0.106 | 0.66 |
 | step4-abl-h | main.py LEARN_FRAC=0.3 LEARN_ITERS=2 LEARN_MAX=(4.0,0.3,10.0,2.0) LEARN_MIN=(0.1,0.3,0.3,2.0) LEARN_ON=True | 8cb550f | MH_01_easy_a_s1 | PASS | 4.119 | 0.518 | 3.157 | 0.026 | 3.819 | 0.757 | 0.75 |
 | step4-abl-h | main.py LEARN_FRAC=0.3 LEARN_ITERS=2 LEARN_MAX=(4.0,0.3,10.0,2.0) LEARN_MIN=(0.1,0.3,0.3,2.0) LEARN_ON=True | 8cb550f | MH_01_easy_a_s2 | PASS | 4.356 | 0.607 | 2.978 | 0.047 | 4.473 | 0.603 | 0.79 |
 | step4-abl-h | main.py LEARN_FRAC=0.3 LEARN_ITERS=2 LEARN_MAX=(4.0,0.3,10.0,2.0) LEARN_MIN=(0.1,0.3,0.3,2.0) LEARN_ON=True | 8cb550f | MH_01_easy_a_s3 | PASS | 3.810 | 0.582 | 3.061 | 0.019 | 5.846 | 1.496 | 0.81 |
