@@ -1974,3 +1974,25 @@ this shows; the ship decision is rule G2 alone, and G2 is not changed after this
   on reversed, off reversed, floor, overall and by reading; per-sequence paired effects; both null forms.
 - Not re-run on seeds 10-12: clean EuRoC, TUM-VI room3/4 and clean rooms, and the gate (measured on the
   smoother-on base under G2).
+
+**Result of the re-measurement (18 Nov 2026, late evening; build a7f932b, the commit that pre-registered it;
+every tag records it; 144 runs, contract PASS on all; report in `Docs/results/stepGR-report.txt`).
+Informational: rule G's verdict (OFF, 5fd288c) stands as recorded; the decision is G2's.**
+
+| Seed 10-12 copies | off | on | on reversed | off reversed | floor |
+|---|---|---|---|---|---|
+| reading a | 5.502 | 3.647 | 3.840 | 5.327 | 3.746 |
+| reading b | 3.674 | 3.520 | 3.791 | 3.925 | 3.746 |
+| both (H) | 4.588 | 3.584 | 3.815 | 4.626 | 3.746 |
+
+- Rule G's level null, re-measured on the smoother-on base: on 3.584 against on reversed 3.815 m, so on is
+  below (under rule G, on 5fd288c without the smoother: 3.743 against 3.735, a fail). G2's gain form:
+  1.004 against 0.811 m, gain larger.
+- Same copies as rule G, so the change from 5fd288c to this build is the base (the Step 6 smoother merged in),
+  not the seeds. Both the off and on estimates moved: off 4.935 -> 4.588, on 3.743 -> 3.584 m.
+- Per sequence, paired effect off - on (m): MH_03 +2.002, MH_04 +0.635, MH_05 +1.573, V1_01 +0.962, V1_02
+  0.000, V1_03 +0.854 (V1_03 b 2.517 -> 1.593). RPE 1 s 0.746 -> 0.590; gap 4.460 -> 3.447; blind 7.077 ->
+  3.381 m (floor 2.506).
+- It agrees with the G2 decision (ship ON) and changes nothing. Not re-run on seeds 10-12: clean EuRoC, TUM-VI
+  and the gate. The floor tag `stepG-H-floor` (5fd288c) is reused; the never-moving baseline does not depend on
+  the estimator build.

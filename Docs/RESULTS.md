@@ -712,6 +712,14 @@ Copies made by `python tools/official_degrade.py --all` with the organisers' `de
 | stepG2-H-on-rev | b | 1..3 | 18 | 3.802 | 1.249 | 3.448 | 0.019 | 2.826 | 0.561 | 18/18 PASS |
 | stepG2-H-on | a | 1..3 | 18 | 3.651 | 0.619 | 3.591 | 0.015 | 3.100 | 0.684 | 18/18 PASS |
 | stepG2-H-on | b | 1..3 | 18 | 3.499 | 0.543 | 3.364 | 0.013 | 3.213 | 0.569 | 18/18 PASS |
+| stepGR-H-off-rev | a | 1..3 | 18 | 5.327 | 1.473 | 4.504 | 0.033 | 4.272 | 0.684 | 18/18 PASS |
+| stepGR-H-off-rev | b | 1..3 | 18 | 3.925 | 1.245 | 3.668 | 0.034 | 3.134 | 0.564 | 18/18 PASS |
+| stepGR-H-off | a | 1..3 | 18 | 5.502 | 0.934 | 5.302 | 0.038 | 9.963 | 1.550 | 18/18 PASS |
+| stepGR-H-off | b | 1..3 | 18 | 3.674 | 0.557 | 3.618 | 0.029 | 4.191 | 0.616 | 18/18 PASS |
+| stepGR-H-on-rev | a | 1..3 | 18 | 3.840 | 1.211 | 3.764 | 0.034 | 2.682 | 0.660 | 18/18 PASS |
+| stepGR-H-on-rev | b | 1..3 | 18 | 3.791 | 1.234 | 3.584 | 0.034 | 2.969 | 0.562 | 18/18 PASS |
+| stepGR-H-on | a | 1..3 | 18 | 3.647 | 0.632 | 3.488 | 0.028 | 3.061 | 0.669 | 18/18 PASS |
+| stepGR-H-on | b | 1..3 | 18 | 3.520 | 0.548 | 3.406 | 0.024 | 3.701 | 0.634 | 18/18 PASS |
 | stepL1-H-floor | a | 1..3 | 18 | 3.748 | 0.943 | 3.256 | 0.019 | 2.505 | 0.461 | 18/18 PASS |
 | stepL1-H-floor | b | 1..3 | 18 | 3.748 | 0.943 | 3.256 | 0.019 | 2.505 | 0.461 | 18/18 PASS |
 | stepL1-H-hi-rev | a | 1..3 | 18 | 5.382 | 1.114 | 4.853 | 0.019 | 4.851 | 0.499 | 18/18 PASS |
@@ -2183,6 +2191,150 @@ Copies made by `python tools/official_degrade.py --all` with the organisers' `de
 | stepG2-H-on | main.py TILT_ON=True | 3e2646e | V1_03_difficult_b_s16 | PASS | 1.349 | 0.285 | 0.951 | 0.004 | 0.845 | 0.261 | 0.81 |
 | stepG2-H-on | main.py TILT_ON=True | 3e2646e | V1_03_difficult_b_s17 | PASS | 1.482 | 0.377 | 1.428 | 0.002 | 0.508 | 0.516 | 0.97 |
 | stepG2-H-on | main.py TILT_ON=True | 3e2646e | V1_03_difficult_b_s18 | PASS | 1.362 | 0.270 | 1.500 | 0.012 | 0.868 | 0.360 | 0.79 |
+| stepGR-H-off-rev | main.py TILT_ON=False | a7f932b | MH_03_medium_a_s10 | PASS | 7.558 | 1.856 | 5.462 | 0.063 | 8.354 | 0.319 | 0.82 |
+| stepGR-H-off-rev | main.py TILT_ON=False | a7f932b | MH_03_medium_a_s11 | PASS | 8.298 | 2.239 | 6.530 | 0.004 | 5.825 | 0.319 | 0.75 |
+| stepGR-H-off-rev | main.py TILT_ON=False | a7f932b | MH_03_medium_a_s12 | PASS | 6.428 | 1.991 | 6.959 | 0.009 | 5.877 | 0.319 | 0.78 |
+| stepGR-H-off-rev | main.py TILT_ON=False | a7f932b | MH_03_medium_b_s10 | PASS | 3.635 | 1.782 | 3.125 | 0.063 | 3.343 | 0.319 | 0.90 |
+| stepGR-H-off-rev | main.py TILT_ON=False | a7f932b | MH_03_medium_b_s11 | PASS | 3.647 | 1.825 | 4.138 | 0.004 | 4.060 | 0.319 | 0.87 |
+| stepGR-H-off-rev | main.py TILT_ON=False | a7f932b | MH_03_medium_b_s12 | PASS | 3.627 | 1.817 | 3.604 | 0.009 | 3.684 | 0.319 | 0.90 |
+| stepGR-H-off-rev | main.py TILT_ON=False | a7f932b | MH_04_difficult_a_s10 | PASS | 7.616 | 1.474 | 7.351 | 0.024 | 7.499 | 0.272 | 0.61 |
+| stepGR-H-off-rev | main.py TILT_ON=False | a7f932b | MH_04_difficult_a_s11 | PASS | 6.562 | 1.462 | 7.859 | 0.102 | 5.367 | 0.272 | 0.64 |
+| stepGR-H-off-rev | main.py TILT_ON=False | a7f932b | MH_04_difficult_a_s12 | PASS | 6.824 | 1.485 | 6.016 | 0.000 | 6.180 | 0.272 | 0.59 |
+| stepGR-H-off-rev | main.py TILT_ON=False | a7f932b | MH_04_difficult_b_s10 | PASS | 6.465 | 1.351 | 5.719 | 0.024 | 4.905 | 0.272 | 0.73 |
+| stepGR-H-off-rev | main.py TILT_ON=False | a7f932b | MH_04_difficult_b_s11 | PASS | 6.528 | 1.339 | 8.161 | 0.102 | 4.902 | 0.272 | 0.69 |
+| stepGR-H-off-rev | main.py TILT_ON=False | a7f932b | MH_04_difficult_b_s12 | PASS | 6.569 | 1.348 | 5.223 | 0.000 | 4.825 | 0.272 | 0.71 |
+| stepGR-H-off-rev | main.py TILT_ON=False | a7f932b | MH_05_difficult_a_s10 | PASS | 7.119 | 1.579 | 5.280 | 0.022 | 5.694 | 0.961 | 0.70 |
+| stepGR-H-off-rev | main.py TILT_ON=False | a7f932b | MH_05_difficult_a_s11 | PASS | 11.712 | 2.482 | 7.193 | 0.030 | 7.574 | 0.919 | 0.76 |
+| stepGR-H-off-rev | main.py TILT_ON=False | a7f932b | MH_05_difficult_a_s12 | PASS | 8.283 | 1.738 | 6.874 | 0.030 | 7.191 | 0.898 | 0.68 |
+| stepGR-H-off-rev | main.py TILT_ON=False | a7f932b | MH_05_difficult_b_s10 | PASS | 6.615 | 1.270 | 4.638 | 0.022 | 4.086 | 0.603 | 0.76 |
+| stepGR-H-off-rev | main.py TILT_ON=False | a7f932b | MH_05_difficult_b_s11 | PASS | 6.664 | 1.311 | 6.716 | 0.030 | 4.133 | 0.978 | 0.69 |
+| stepGR-H-off-rev | main.py TILT_ON=False | a7f932b | MH_05_difficult_b_s12 | PASS | 6.723 | 1.255 | 6.690 | 0.031 | 3.629 | 0.680 | 0.83 |
+| stepGR-H-off-rev | main.py TILT_ON=False | a7f932b | V1_01_easy_a_s10 | PASS | 3.749 | 1.002 | 2.810 | 0.014 | 2.840 | 1.331 | 0.94 |
+| stepGR-H-off-rev | main.py TILT_ON=False | a7f932b | V1_01_easy_a_s11 | PASS | 4.403 | 1.048 | 3.061 | 0.010 | 1.020 | 1.309 | 0.93 |
+| stepGR-H-off-rev | main.py TILT_ON=False | a7f932b | V1_01_easy_a_s12 | PASS | 3.549 | 0.964 | 3.339 | 0.016 | 1.909 | 1.181 | 0.97 |
+| stepGR-H-off-rev | main.py TILT_ON=False | a7f932b | V1_01_easy_b_s10 | PASS | 1.794 | 0.643 | 1.879 | 0.014 | 2.093 | 0.933 | 1.03 |
+| stepGR-H-off-rev | main.py TILT_ON=False | a7f932b | V1_01_easy_b_s11 | PASS | 1.807 | 0.603 | 1.357 | 0.011 | 1.355 | 0.436 | 1.02 |
+| stepGR-H-off-rev | main.py TILT_ON=False | a7f932b | V1_01_easy_b_s12 | PASS | 2.028 | 0.626 | 1.898 | 0.016 | 2.970 | 0.834 | 1.08 |
+| stepGR-H-off-rev | main.py TILT_ON=False | a7f932b | V1_02_medium_a_s10 | PASS | 2.314 | 1.284 | 2.344 | 0.045 | 1.478 | 0.820 | 0.75 |
+| stepGR-H-off-rev | main.py TILT_ON=False | a7f932b | V1_02_medium_a_s11 | PASS | 2.083 | 1.284 | 2.211 | 0.027 | 1.610 | 1.109 | 0.66 |
+| stepGR-H-off-rev | main.py TILT_ON=False | a7f932b | V1_02_medium_a_s12 | PASS | 2.177 | 1.275 | 1.582 | 0.018 | 1.770 | 1.091 | 0.59 |
+| stepGR-H-off-rev | main.py TILT_ON=False | a7f932b | V1_02_medium_b_s10 | PASS | 2.415 | 1.283 | 2.242 | 0.045 | 1.530 | 0.798 | 0.74 |
+| stepGR-H-off-rev | main.py TILT_ON=False | a7f932b | V1_02_medium_b_s11 | PASS | 2.141 | 1.293 | 2.142 | 0.027 | 1.858 | 1.149 | 0.64 |
+| stepGR-H-off-rev | main.py TILT_ON=False | a7f932b | V1_02_medium_b_s12 | PASS | 2.226 | 1.286 | 1.685 | 0.018 | 1.760 | 1.070 | 0.71 |
+| stepGR-H-off-rev | main.py TILT_ON=False | a7f932b | V1_03_difficult_a_s10 | PASS | 1.842 | 1.059 | 2.204 | 0.077 | 1.762 | 0.269 | 0.73 |
+| stepGR-H-off-rev | main.py TILT_ON=False | a7f932b | V1_03_difficult_a_s11 | PASS | 3.119 | 1.211 | 2.307 | 0.059 | 2.719 | 0.338 | 0.75 |
+| stepGR-H-off-rev | main.py TILT_ON=False | a7f932b | V1_03_difficult_a_s12 | PASS | 2.254 | 1.087 | 1.697 | 0.053 | 2.227 | 0.314 | 0.72 |
+| stepGR-H-off-rev | main.py TILT_ON=False | a7f932b | V1_03_difficult_b_s10 | PASS | 1.867 | 1.059 | 2.204 | 0.077 | 1.714 | 0.266 | 0.73 |
+| stepGR-H-off-rev | main.py TILT_ON=False | a7f932b | V1_03_difficult_b_s11 | PASS | 3.523 | 1.230 | 2.629 | 0.059 | 3.115 | 0.332 | 0.71 |
+| stepGR-H-off-rev | main.py TILT_ON=False | a7f932b | V1_03_difficult_b_s12 | PASS | 2.379 | 1.082 | 1.977 | 0.052 | 2.456 | 0.293 | 0.79 |
+| stepGR-H-off | main.py TILT_ON=False | a7f932b | MH_03_medium_a_s10 | PASS | 7.842 | 0.929 | 10.714 | 0.089 | 8.416 | 2.692 | 0.77 |
+| stepGR-H-off | main.py TILT_ON=False | a7f932b | MH_03_medium_a_s11 | PASS | 8.136 | 1.350 | 8.503 | 0.005 | 6.731 | 1.489 | 0.90 |
+| stepGR-H-off | main.py TILT_ON=False | a7f932b | MH_03_medium_a_s12 | PASS | 6.190 | 0.830 | 5.139 | 0.022 | 9.279 | 0.841 | 0.87 |
+| stepGR-H-off | main.py TILT_ON=False | a7f932b | MH_03_medium_b_s10 | PASS | 2.761 | 0.443 | 2.569 | 0.039 | 3.931 | 0.469 | 0.99 |
+| stepGR-H-off | main.py TILT_ON=False | a7f932b | MH_03_medium_b_s11 | PASS | 3.033 | 0.430 | 3.392 | 0.002 | 5.400 | 0.589 | 0.83 |
+| stepGR-H-off | main.py TILT_ON=False | a7f932b | MH_03_medium_b_s12 | PASS | 2.816 | 0.426 | 2.742 | 0.010 | 3.380 | 0.324 | 0.91 |
+| stepGR-H-off | main.py TILT_ON=False | a7f932b | MH_04_difficult_a_s10 | PASS | 8.528 | 1.204 | 10.904 | 0.012 | 14.044 | 0.552 | 0.61 |
+| stepGR-H-off | main.py TILT_ON=False | a7f932b | MH_04_difficult_a_s11 | PASS | 7.497 | 1.066 | 7.633 | 0.131 | 11.065 | 2.454 | 0.61 |
+| stepGR-H-off | main.py TILT_ON=False | a7f932b | MH_04_difficult_a_s12 | PASS | 7.073 | 1.235 | 7.092 | 0.000 | 5.017 | 1.440 | 0.64 |
+| stepGR-H-off | main.py TILT_ON=False | a7f932b | MH_04_difficult_b_s10 | PASS | 6.408 | 0.899 | 6.046 | 0.014 | 5.275 | 0.340 | 0.70 |
+| stepGR-H-off | main.py TILT_ON=False | a7f932b | MH_04_difficult_b_s11 | PASS | 6.355 | 0.868 | 7.861 | 0.083 | 6.546 | 0.358 | 0.77 |
+| stepGR-H-off | main.py TILT_ON=False | a7f932b | MH_04_difficult_b_s12 | PASS | 6.417 | 0.968 | 5.750 | 0.000 | 5.552 | 0.719 | 0.69 |
+| stepGR-H-off | main.py TILT_ON=False | a7f932b | MH_05_difficult_a_s10 | PASS | 7.924 | 1.226 | 5.830 | 0.028 | 14.913 | 1.625 | 0.79 |
+| stepGR-H-off | main.py TILT_ON=False | a7f932b | MH_05_difficult_a_s11 | PASS | 12.446 | 2.374 | 6.752 | 0.041 | 45.256 | 5.728 | 0.81 |
+| stepGR-H-off | main.py TILT_ON=False | a7f932b | MH_05_difficult_a_s12 | PASS | 8.887 | 1.554 | 7.481 | 0.040 | 23.230 | 2.292 | 0.74 |
+| stepGR-H-off | main.py TILT_ON=False | a7f932b | MH_05_difficult_b_s10 | PASS | 6.491 | 0.840 | 5.354 | 0.025 | 4.307 | 0.753 | 0.79 |
+| stepGR-H-off | main.py TILT_ON=False | a7f932b | MH_05_difficult_b_s11 | PASS | 6.490 | 0.871 | 6.947 | 0.030 | 3.906 | 0.530 | 0.82 |
+| stepGR-H-off | main.py TILT_ON=False | a7f932b | MH_05_difficult_b_s12 | PASS | 6.522 | 0.829 | 6.631 | 0.019 | 3.197 | 0.723 | 0.83 |
+| stepGR-H-off | main.py TILT_ON=False | a7f932b | V1_01_easy_a_s10 | PASS | 4.563 | 0.953 | 4.878 | 0.020 | 3.480 | 0.962 | 0.91 |
+| stepGR-H-off | main.py TILT_ON=False | a7f932b | V1_01_easy_a_s11 | PASS | 4.818 | 0.900 | 5.872 | 0.031 | 6.145 | 1.515 | 0.88 |
+| stepGR-H-off | main.py TILT_ON=False | a7f932b | V1_01_easy_a_s12 | PASS | 3.302 | 0.769 | 2.573 | 0.021 | 9.700 | 1.155 | 0.86 |
+| stepGR-H-off | main.py TILT_ON=False | a7f932b | V1_01_easy_b_s10 | PASS | 2.081 | 0.323 | 1.730 | 0.017 | 3.020 | 0.240 | 0.93 |
+| stepGR-H-off | main.py TILT_ON=False | a7f932b | V1_01_easy_b_s11 | PASS | 1.937 | 0.298 | 1.578 | 0.007 | 1.732 | 0.310 | 0.99 |
+| stepGR-H-off | main.py TILT_ON=False | a7f932b | V1_01_easy_b_s12 | PASS | 1.999 | 0.336 | 1.673 | 0.015 | 1.566 | 0.374 | 1.10 |
+| stepGR-H-off | main.py TILT_ON=False | a7f932b | V1_02_medium_a_s10 | PASS | 1.600 | 0.361 | 1.414 | 0.014 | 4.754 | 1.138 | 0.65 |
+| stepGR-H-off | main.py TILT_ON=False | a7f932b | V1_02_medium_a_s11 | PASS | 1.503 | 0.388 | 1.262 | 0.014 | 0.877 | 0.652 | 0.58 |
+| stepGR-H-off | main.py TILT_ON=False | a7f932b | V1_02_medium_a_s12 | PASS | 1.790 | 0.493 | 1.512 | 0.002 | 3.682 | 2.018 | 0.63 |
+| stepGR-H-off | main.py TILT_ON=False | a7f932b | V1_02_medium_b_s10 | PASS | 1.802 | 0.398 | 1.340 | 0.013 | 5.558 | 1.295 | 0.65 |
+| stepGR-H-off | main.py TILT_ON=False | a7f932b | V1_02_medium_b_s11 | PASS | 1.600 | 0.418 | 1.227 | 0.019 | 2.365 | 0.403 | 0.67 |
+| stepGR-H-off | main.py TILT_ON=False | a7f932b | V1_02_medium_b_s12 | PASS | 1.874 | 0.479 | 1.616 | 0.003 | 4.238 | 1.961 | 0.64 |
+| stepGR-H-off | main.py TILT_ON=False | a7f932b | V1_03_difficult_a_s10 | PASS | 1.617 | 0.302 | 1.822 | 0.057 | 3.410 | 0.394 | 0.67 |
+| stepGR-H-off | main.py TILT_ON=False | a7f932b | V1_03_difficult_a_s11 | PASS | 3.318 | 0.576 | 4.049 | 0.075 | 6.414 | 0.698 | 0.68 |
+| stepGR-H-off | main.py TILT_ON=False | a7f932b | V1_03_difficult_a_s12 | PASS | 2.002 | 0.308 | 2.002 | 0.086 | 2.915 | 0.257 | 0.66 |
+| stepGR-H-off | main.py TILT_ON=False | a7f932b | V1_03_difficult_b_s10 | PASS | 1.586 | 0.282 | 2.054 | 0.055 | 3.733 | 0.405 | 0.75 |
+| stepGR-H-off | main.py TILT_ON=False | a7f932b | V1_03_difficult_b_s11 | PASS | 3.719 | 0.601 | 4.413 | 0.075 | 8.138 | 0.967 | 0.80 |
+| stepGR-H-off | main.py TILT_ON=False | a7f932b | V1_03_difficult_b_s12 | PASS | 2.246 | 0.316 | 2.194 | 0.092 | 3.600 | 0.319 | 0.72 |
+| stepGR-H-on-rev | main.py TILT_ON=True | a7f932b | MH_03_medium_a_s10 | PASS | 3.591 | 1.643 | 3.521 | 0.063 | 2.614 | 0.319 | 0.82 |
+| stepGR-H-on-rev | main.py TILT_ON=True | a7f932b | MH_03_medium_a_s11 | PASS | 3.966 | 1.728 | 4.404 | 0.004 | 2.864 | 0.319 | 0.84 |
+| stepGR-H-on-rev | main.py TILT_ON=True | a7f932b | MH_03_medium_a_s12 | PASS | 3.757 | 1.746 | 4.238 | 0.009 | 2.888 | 0.319 | 0.87 |
+| stepGR-H-on-rev | main.py TILT_ON=True | a7f932b | MH_03_medium_b_s10 | PASS | 3.635 | 1.782 | 3.125 | 0.063 | 3.343 | 0.319 | 0.88 |
+| stepGR-H-on-rev | main.py TILT_ON=True | a7f932b | MH_03_medium_b_s11 | PASS | 3.647 | 1.825 | 4.138 | 0.004 | 4.060 | 0.319 | 0.82 |
+| stepGR-H-on-rev | main.py TILT_ON=True | a7f932b | MH_03_medium_b_s12 | PASS | 3.627 | 1.817 | 3.604 | 0.009 | 3.684 | 0.319 | 0.92 |
+| stepGR-H-on-rev | main.py TILT_ON=True | a7f932b | MH_04_difficult_a_s10 | PASS | 6.488 | 1.321 | 5.604 | 0.024 | 4.594 | 0.272 | 0.73 |
+| stepGR-H-on-rev | main.py TILT_ON=True | a7f932b | MH_04_difficult_a_s11 | PASS | 6.595 | 1.296 | 8.186 | 0.103 | 5.155 | 0.272 | 0.65 |
+| stepGR-H-on-rev | main.py TILT_ON=True | a7f932b | MH_04_difficult_a_s12 | PASS | 6.597 | 1.325 | 6.151 | 0.000 | 4.136 | 0.272 | 0.61 |
+| stepGR-H-on-rev | main.py TILT_ON=True | a7f932b | MH_04_difficult_b_s10 | PASS | 6.465 | 1.351 | 5.719 | 0.024 | 4.905 | 0.272 | 0.69 |
+| stepGR-H-on-rev | main.py TILT_ON=True | a7f932b | MH_04_difficult_b_s11 | PASS | 6.528 | 1.339 | 8.161 | 0.102 | 4.902 | 0.272 | 0.70 |
+| stepGR-H-on-rev | main.py TILT_ON=True | a7f932b | MH_04_difficult_b_s12 | PASS | 6.569 | 1.348 | 5.223 | 0.000 | 4.825 | 0.272 | 0.66 |
+| stepGR-H-on-rev | main.py TILT_ON=True | a7f932b | MH_05_difficult_a_s10 | PASS | 6.746 | 1.232 | 5.087 | 0.022 | 3.598 | 0.754 | 0.74 |
+| stepGR-H-on-rev | main.py TILT_ON=True | a7f932b | MH_05_difficult_a_s11 | PASS | 6.650 | 1.341 | 6.782 | 0.030 | 4.449 | 0.944 | 0.71 |
+| stepGR-H-on-rev | main.py TILT_ON=True | a7f932b | MH_05_difficult_a_s12 | PASS | 6.673 | 1.256 | 6.616 | 0.031 | 4.474 | 0.947 | 0.69 |
+| stepGR-H-on-rev | main.py TILT_ON=True | a7f932b | MH_05_difficult_b_s10 | PASS | 6.615 | 1.270 | 4.638 | 0.022 | 4.086 | 0.603 | 0.78 |
+| stepGR-H-on-rev | main.py TILT_ON=True | a7f932b | MH_05_difficult_b_s11 | PASS | 6.664 | 1.311 | 6.716 | 0.030 | 4.133 | 0.978 | 0.83 |
+| stepGR-H-on-rev | main.py TILT_ON=True | a7f932b | MH_05_difficult_b_s12 | PASS | 6.723 | 1.255 | 6.690 | 0.031 | 3.629 | 0.680 | 0.82 |
+| stepGR-H-on-rev | main.py TILT_ON=True | a7f932b | V1_01_easy_a_s10 | PASS | 2.104 | 0.637 | 2.025 | 0.014 | 1.416 | 0.857 | 0.98 |
+| stepGR-H-on-rev | main.py TILT_ON=True | a7f932b | V1_01_easy_a_s11 | PASS | 2.270 | 0.642 | 2.235 | 0.010 | 1.990 | 1.361 | 0.98 |
+| stepGR-H-on-rev | main.py TILT_ON=True | a7f932b | V1_01_easy_a_s12 | PASS | 1.874 | 0.624 | 1.452 | 0.016 | 1.247 | 1.353 | 0.93 |
+| stepGR-H-on-rev | main.py TILT_ON=True | a7f932b | V1_01_easy_b_s10 | PASS | 1.794 | 0.643 | 1.879 | 0.014 | 2.093 | 0.933 | 1.04 |
+| stepGR-H-on-rev | main.py TILT_ON=True | a7f932b | V1_01_easy_b_s11 | PASS | 1.807 | 0.603 | 1.357 | 0.011 | 1.355 | 0.436 | 0.99 |
+| stepGR-H-on-rev | main.py TILT_ON=True | a7f932b | V1_01_easy_b_s12 | PASS | 2.028 | 0.626 | 1.898 | 0.016 | 2.970 | 0.834 | 1.11 |
+| stepGR-H-on-rev | main.py TILT_ON=True | a7f932b | V1_02_medium_a_s10 | PASS | 2.314 | 1.284 | 2.344 | 0.045 | 1.478 | 0.820 | 0.66 |
+| stepGR-H-on-rev | main.py TILT_ON=True | a7f932b | V1_02_medium_a_s11 | PASS | 2.083 | 1.284 | 2.211 | 0.027 | 1.610 | 1.109 | 0.70 |
+| stepGR-H-on-rev | main.py TILT_ON=True | a7f932b | V1_02_medium_a_s12 | PASS | 2.177 | 1.275 | 1.582 | 0.018 | 1.770 | 1.091 | 0.60 |
+| stepGR-H-on-rev | main.py TILT_ON=True | a7f932b | V1_02_medium_b_s10 | PASS | 2.415 | 1.283 | 2.242 | 0.045 | 1.530 | 0.798 | 0.65 |
+| stepGR-H-on-rev | main.py TILT_ON=True | a7f932b | V1_02_medium_b_s11 | PASS | 2.141 | 1.293 | 2.142 | 0.027 | 1.858 | 1.149 | 0.66 |
+| stepGR-H-on-rev | main.py TILT_ON=True | a7f932b | V1_02_medium_b_s12 | PASS | 2.226 | 1.286 | 1.685 | 0.018 | 1.760 | 1.070 | 0.70 |
+| stepGR-H-on-rev | main.py TILT_ON=True | a7f932b | V1_03_difficult_a_s10 | PASS | 1.592 | 1.033 | 2.049 | 0.077 | 1.137 | 0.276 | 0.68 |
+| stepGR-H-on-rev | main.py TILT_ON=True | a7f932b | V1_03_difficult_a_s11 | PASS | 1.886 | 1.077 | 1.744 | 0.061 | 1.762 | 0.291 | 0.70 |
+| stepGR-H-on-rev | main.py TILT_ON=True | a7f932b | V1_03_difficult_a_s12 | PASS | 1.750 | 1.050 | 1.521 | 0.051 | 1.087 | 0.311 | 0.73 |
+| stepGR-H-on-rev | main.py TILT_ON=True | a7f932b | V1_03_difficult_b_s10 | PASS | 1.641 | 1.038 | 2.036 | 0.077 | 1.152 | 0.275 | 0.75 |
+| stepGR-H-on-rev | main.py TILT_ON=True | a7f932b | V1_03_difficult_b_s11 | PASS | 1.971 | 1.091 | 1.730 | 0.061 | 1.925 | 0.303 | 0.77 |
+| stepGR-H-on-rev | main.py TILT_ON=True | a7f932b | V1_03_difficult_b_s12 | PASS | 1.746 | 1.047 | 1.531 | 0.052 | 1.236 | 0.292 | 0.75 |
+| stepGR-H-on | main.py TILT_ON=True | a7f932b | MH_03_medium_a_s10 | PASS | 3.073 | 0.625 | 3.289 | 0.059 | 3.355 | 0.321 | 0.83 |
+| stepGR-H-on | main.py TILT_ON=True | a7f932b | MH_03_medium_a_s11 | PASS | 3.761 | 0.654 | 3.415 | 0.005 | 3.732 | 0.292 | 0.87 |
+| stepGR-H-on | main.py TILT_ON=True | a7f932b | MH_03_medium_a_s12 | PASS | 3.322 | 0.585 | 2.917 | 0.011 | 3.291 | 0.110 | 0.90 |
+| stepGR-H-on | main.py TILT_ON=True | a7f932b | MH_03_medium_b_s10 | PASS | 2.761 | 0.443 | 2.569 | 0.039 | 3.931 | 0.469 | 0.83 |
+| stepGR-H-on | main.py TILT_ON=True | a7f932b | MH_03_medium_b_s11 | PASS | 3.033 | 0.430 | 3.392 | 0.002 | 5.400 | 0.589 | 0.85 |
+| stepGR-H-on | main.py TILT_ON=True | a7f932b | MH_03_medium_b_s12 | PASS | 2.816 | 0.426 | 2.742 | 0.010 | 3.380 | 0.324 | 1.02 |
+| stepGR-H-on | main.py TILT_ON=True | a7f932b | MH_04_difficult_a_s10 | PASS | 6.576 | 1.010 | 5.408 | 0.025 | 3.844 | 0.334 | 0.68 |
+| stepGR-H-on | main.py TILT_ON=True | a7f932b | MH_04_difficult_a_s11 | PASS | 6.427 | 0.961 | 8.197 | 0.101 | 5.297 | 0.631 | 0.62 |
+| stepGR-H-on | main.py TILT_ON=True | a7f932b | MH_04_difficult_a_s12 | PASS | 6.283 | 1.020 | 5.641 | 0.000 | 3.661 | 0.437 | 0.66 |
+| stepGR-H-on | main.py TILT_ON=True | a7f932b | MH_04_difficult_b_s10 | PASS | 6.408 | 0.899 | 6.046 | 0.014 | 5.275 | 0.340 | 0.66 |
+| stepGR-H-on | main.py TILT_ON=True | a7f932b | MH_04_difficult_b_s11 | PASS | 6.355 | 0.868 | 7.861 | 0.083 | 6.546 | 0.358 | 0.68 |
+| stepGR-H-on | main.py TILT_ON=True | a7f932b | MH_04_difficult_b_s12 | PASS | 6.417 | 0.968 | 5.750 | 0.000 | 5.552 | 0.719 | 0.59 |
+| stepGR-H-on | main.py TILT_ON=True | a7f932b | MH_05_difficult_a_s10 | PASS | 6.469 | 0.883 | 4.898 | 0.027 | 3.258 | 0.654 | 0.73 |
+| stepGR-H-on | main.py TILT_ON=True | a7f932b | MH_05_difficult_a_s11 | PASS | 6.652 | 1.067 | 7.140 | 0.032 | 5.198 | 1.595 | 0.68 |
+| stepGR-H-on | main.py TILT_ON=True | a7f932b | MH_05_difficult_a_s12 | PASS | 6.696 | 0.951 | 6.692 | 0.037 | 4.602 | 1.110 | 0.73 |
+| stepGR-H-on | main.py TILT_ON=True | a7f932b | MH_05_difficult_b_s10 | PASS | 6.491 | 0.840 | 5.354 | 0.025 | 4.307 | 0.753 | 0.81 |
+| stepGR-H-on | main.py TILT_ON=True | a7f932b | MH_05_difficult_b_s11 | PASS | 6.490 | 0.871 | 6.947 | 0.030 | 3.906 | 0.530 | 0.85 |
+| stepGR-H-on | main.py TILT_ON=True | a7f932b | MH_05_difficult_b_s12 | PASS | 6.522 | 0.829 | 6.631 | 0.019 | 3.197 | 0.723 | 0.83 |
+| stepGR-H-on | main.py TILT_ON=True | a7f932b | V1_01_easy_a_s10 | PASS | 2.521 | 0.487 | 2.471 | 0.018 | 0.955 | 0.168 | 1.05 |
+| stepGR-H-on | main.py TILT_ON=True | a7f932b | V1_01_easy_a_s11 | PASS | 2.349 | 0.434 | 1.840 | 0.014 | 1.667 | 0.462 | 0.96 |
+| stepGR-H-on | main.py TILT_ON=True | a7f932b | V1_01_easy_a_s12 | PASS | 2.044 | 0.431 | 2.058 | 0.017 | 1.425 | 0.279 | 0.98 |
+| stepGR-H-on | main.py TILT_ON=True | a7f932b | V1_01_easy_b_s10 | PASS | 2.081 | 0.323 | 1.730 | 0.017 | 3.020 | 0.240 | 0.92 |
+| stepGR-H-on | main.py TILT_ON=True | a7f932b | V1_01_easy_b_s11 | PASS | 1.937 | 0.298 | 1.578 | 0.007 | 1.732 | 0.310 | 1.12 |
+| stepGR-H-on | main.py TILT_ON=True | a7f932b | V1_01_easy_b_s12 | PASS | 1.999 | 0.336 | 1.673 | 0.015 | 1.566 | 0.374 | 0.99 |
+| stepGR-H-on | main.py TILT_ON=True | a7f932b | V1_02_medium_a_s10 | PASS | 1.600 | 0.361 | 1.414 | 0.014 | 4.754 | 1.138 | 0.56 |
+| stepGR-H-on | main.py TILT_ON=True | a7f932b | V1_02_medium_a_s11 | PASS | 1.503 | 0.388 | 1.262 | 0.014 | 0.877 | 0.652 | 0.59 |
+| stepGR-H-on | main.py TILT_ON=True | a7f932b | V1_02_medium_a_s12 | PASS | 1.790 | 0.493 | 1.512 | 0.002 | 3.682 | 2.018 | 0.56 |
+| stepGR-H-on | main.py TILT_ON=True | a7f932b | V1_02_medium_b_s10 | PASS | 1.802 | 0.398 | 1.340 | 0.013 | 5.558 | 1.295 | 0.65 |
+| stepGR-H-on | main.py TILT_ON=True | a7f932b | V1_02_medium_b_s11 | PASS | 1.600 | 0.418 | 1.227 | 0.019 | 2.365 | 0.403 | 0.66 |
+| stepGR-H-on | main.py TILT_ON=True | a7f932b | V1_02_medium_b_s12 | PASS | 1.874 | 0.479 | 1.616 | 0.003 | 4.238 | 1.961 | 0.61 |
+| stepGR-H-on | main.py TILT_ON=True | a7f932b | V1_03_difficult_a_s10 | PASS | 1.361 | 0.308 | 1.017 | 0.060 | 1.631 | 0.291 | 0.68 |
+| stepGR-H-on | main.py TILT_ON=True | a7f932b | V1_03_difficult_a_s11 | PASS | 1.810 | 0.418 | 1.867 | 0.025 | 2.813 | 0.933 | 0.66 |
+| stepGR-H-on | main.py TILT_ON=True | a7f932b | V1_03_difficult_a_s12 | PASS | 1.413 | 0.296 | 1.741 | 0.034 | 1.060 | 0.621 | 0.70 |
+| stepGR-H-on | main.py TILT_ON=True | a7f932b | V1_03_difficult_b_s10 | PASS | 1.362 | 0.298 | 1.089 | 0.063 | 1.519 | 0.339 | 0.78 |
+| stepGR-H-on | main.py TILT_ON=True | a7f932b | V1_03_difficult_b_s11 | PASS | 1.945 | 0.448 | 1.966 | 0.035 | 3.858 | 1.195 | 0.80 |
+| stepGR-H-on | main.py TILT_ON=True | a7f932b | V1_03_difficult_b_s12 | PASS | 1.472 | 0.297 | 1.804 | 0.037 | 1.271 | 0.487 | 0.76 |
 | stepL1-H-floor | tools\baseline_still.py | d56c875 | MH_03_medium_a_s7 | PASS | 3.581 | 1.224 | 3.567 | 0.024 | 3.088 | 0.319 | 0.19 |
 | stepL1-H-floor | tools\baseline_still.py | d56c875 | MH_03_medium_a_s8 | PASS | 3.586 | 1.226 | 2.800 | 0.012 | 3.083 | 0.319 | 0.21 |
 | stepL1-H-floor | tools\baseline_still.py | d56c875 | MH_03_medium_a_s9 | PASS | 3.579 | 1.225 | 3.125 | 0.018 | 3.083 | 0.319 | 0.18 |

@@ -1,0 +1,21 @@
+Builds: stepGR-H-off a7f932b, stepGR-H-on a7f932b, stepGR-H-on-rev a7f932b, stepGR-H-off-rev a7f932b, stepG-H-floor 5fd288c
+| Copies | off | on | on reversed | off reversed | floor | gain off-on | gain reversed |
+|---|---|---|---|---|---|---|---|
+| a | 5.502 | 3.647 | 3.840 | 5.327 | 3.746 | 1.855 | 1.488 |
+| b | 3.674 | 3.520 | 3.791 | 3.925 | 3.746 | 0.154 | 0.134 |
+| both | 4.588 | 3.584 | 3.815 | 4.626 | 3.746 | 1.004 | 0.811 |
+
+Rule G's null (level): on 3.584 vs on reversed 3.815 m -> on below
+G2's null form (gain): 1.004 vs 0.811 m reversed -> gain larger
+
+Per sequence (mean of 6 copies: a, b x seeds 10-12; paired effect = off - on, m)
+| Sequence | off | on | effect | % | on reversed | off reversed | floor | b off | b on |
+|---|---|---|---|---|---|---|---|---|---|
+| MH_03_medium | 5.129 | 3.127 | +2.002 | +39.0 | 3.704 | 5.532 | 3.583 | 2.870 | 2.870 |
+| MH_04_difficult | 7.046 | 6.411 | +0.635 | +9.0 | 6.540 | 6.761 | 6.814 | 6.393 | 6.393 |
+| MH_05_difficult | 8.127 | 6.554 | +1.573 | +19.4 | 6.678 | 7.853 | 6.868 | 6.501 | 6.501 |
+| V1_01_easy | 3.117 | 2.155 | +0.962 | +30.9 | 1.980 | 2.888 | 1.854 | 2.006 | 2.006 |
+| V1_02_medium | 1.695 | 1.695 | +0.000 | +0.0 | 2.226 | 2.226 | 1.779 | 1.759 | 1.759 |
+| V1_03_difficult | 2.415 | 1.561 | +0.854 | +35.4 | 1.764 | 2.498 | 1.580 | 2.517 | 1.593 |
+RPE 1 s 0.746 -> 0.590; gap 4.460 -> 3.447; blind 7.077 -> 3.381 m
+INFORMATIONAL re-measurement on a new base; rule G's verdict (OFF, 5fd288c) stands; the decision is G2.
