@@ -11,13 +11,14 @@ EuRoC files are gyro first, and we do not know what the organisers feed in:
 
     python tools/official_degrade.py data/euroc/MH_01_easy --reading a --seed 1
     python tools/official_degrade.py --all [--seeds 1,2,3,42] [--readings a,b] [--seqs MH_01_easy,...]
+    python tools/official_degrade.py --all --seqs V2_01_easy,V2_02_medium,V2_03_difficult --readings a,b --seeds 42 --final
 
 Output: data/official/<sequence>_<reading>_s<seed>/
     mav0/imu0/data.csv   the degraded file, exactly as the script writes it (pandas to_csv)
     meta.json            the script's own statistics (what its --meta writes) + reading and source
     degrade.json         phase windows for vortex.scoring (healthy = the 2 s protected opening,
                          missing-row bursts of >= BURST_MIN rows, failure = the last 5 s)
-Ground truth is not copied: scoring reads data/euroc/<sequence>. V2_* (final test set) is refused.
+Ground truth is not copied: scoring reads data/euroc/<sequence>. V2_* requires explicit --final.
 OFFLINE tool (numpy, pandas); never imported by main.py.
 """
 import argparse
@@ -65,11 +66,15 @@ def missing_runs(t_in, t_out):
     return runs
 
 
-def make_copy(seq_dir, reading, seed, out_root=OUT, max_level=None, gamma=None, mod=None):
-    import pandas as pd
+def guard_final(seq, final=False):
+    if seq.startswith(FINAL_PREFIX) and not final:
+        raise SystemExit("refused: %s is the final test set; pass --final only when told to run the final table" % seq)
+
+
+def make_copy(seq_dir, reading, seed, out_root=OUT, max_level=None, gamma=None, mod=None, final=False):
     seq = os.path.basename(os.path.normpath(seq_dir))
-    if seq.startswith(FINAL_PREFIX):
-        raise SystemExit("refused: %s is the final test set" % seq)
+    guard_final(seq, final)
+    import pandas as pd
     if reading not in ("a", "b"):
         raise SystemExit("reading must be a or b")
     mod = mod or load_script()
@@ -136,26 +141,32 @@ def main(argv=None):
     ap.add_argument("--max-level", type=float, default=None)
     ap.add_argument("--gamma", type=float, default=None)
     ap.add_argument("--out", default=OUT)
+    ap.add_argument("--final", action="store_true", help="explicitly allow the sealed V2 final test set")
     a = ap.parse_args(argv)
-    mod = load_script()
     if a.all:
+        if a.final and not a.seqs:
+            ap.error("--final with --all requires explicit --seqs")
         names = a.seqs.split(",") if a.seqs else sorted(
             n for n in os.listdir(a.root) if os.path.isdir(os.path.join(a.root, n))
         )
-        seq_dirs = [os.path.join(a.root, n) for n in names if not n.startswith(FINAL_PREFIX)]
+        for n in names:
+            guard_final(n, a.final)
+        seq_dirs = [os.path.join(a.root, n) for n in names if a.final or not n.startswith(FINAL_PREFIX)]
         readings = a.readings.split(",")
         seeds = [int(s) for s in a.seeds.split(",")]
     else:
         if not a.seq:
             ap.error("give a sequence folder or --all")
+        guard_final(os.path.basename(os.path.normpath(a.seq)), a.final)
         seq_dir = a.seq if os.path.exists(a.seq) or not os.path.exists(os.path.join(a.root, a.seq)) else os.path.join(a.root, a.seq)
         seq_dirs = [seq_dir]
         readings = [a.reading or "a"]
         seeds = [a.seed if a.seed is not None else 42]
+    mod = load_script()
     for d in seq_dirs:
         for r in readings:
             for s in seeds:
-                name, m, e = make_copy(d, r, s, a.out, a.max_level, a.gamma, mod)
+                name, m, e = make_copy(d, r, s, a.out, a.max_level, a.gamma, mod, final=a.final)
                 print("%-26s rows %d -> %d  spikes %d  stuck %d  dropped %d (%d bursts)  dup %d  zeros %d  "
                       "ts %s  accel %s" % (name, m["rows_in"], m["rows_out"], m["spikes"], m["stuck_samples"],
                                            m["dropped_total"], m["dropped_burst_gaps"], m["duplicated_rows"],
