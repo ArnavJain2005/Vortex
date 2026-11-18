@@ -243,9 +243,9 @@ Sets:
 | `budget313_us_per_row_us` | 35.2 | step7-win-py313 | 2026-11-18 |
 | `budget313_cpu_ms_per_imu_s_ms` | 6.60 | step7-win-py313 | 2026-11-18 |
 | `budget313_wall_ms_per_imu_s_ms` | 7.04 | step7-win-py313 | 2026-11-18 |
-| `pytest_passed_n` | 346 | pytest Windows 11, Python 3.14.7, commit 0e0ba1f | 2026-11-18 |
-| `pytest_failed_n` | 0 | pytest Windows 11, Python 3.14.7, commit 0e0ba1f | 2026-11-18 |
-| `pytest_skipped_n` | 0 | pytest Windows 11, Python 3.14.7, commit 0e0ba1f | 2026-11-18 |
+| `pytest_passed_n` | 410 | pytest Windows 11, Python 3.14.7, commit be064ed | 2026-11-19 |
+| `pytest_failed_n` | 0 | pytest Windows 11, Python 3.14.7, commit be064ed | 2026-11-19 |
+| `pytest_skipped_n` | 0 | pytest Windows 11, Python 3.14.7, commit be064ed | 2026-11-19 |
 | `experiments_off_n` | 9 | make_numbers.OFF | - |
 | `off_ff_stuck6` | stuck-row filter: failed its rule (Step 3) | Step 3 | - |
 | `off_ff_spike` | spike filter: failed its rule (Step 3) | Step 3 | - |
