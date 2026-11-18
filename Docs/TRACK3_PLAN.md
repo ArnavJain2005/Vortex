@@ -1812,6 +1812,25 @@ The detector adds one pass over the file: synthetic +1.6 us/row against Step 6 (
 
 V1 hand-held: not changed (see above).
 
+**After merging main (19 Nov, L2 `TILT_ON` shipped meanwhile; reporting only, nothing decided).** Step 7 was judged
+without `TILT_ON` and rule G2 without `PLATFORM_ON`; the combined build (tags `step7m-*`) was run on the same copies:
+- TUM-VI: equal to Step 7 alone on every metric to the third decimal (rooms 1-4 seeds 1-3: tuning 0.871 m, held-out
+  rooms 1.109 m; room3/4 seeds 7-9: APE 1.127, gap 1.113, blind 1.277 m; clean 0.879 m). L2 does not move the
+  hand-held path.
+- EuRoC held-out, seeds 4-6: APE 4.648 (Step 6) -> 3.480 m (floor 3.745), gap 4.582 -> 3.513 (3.626), blind 7.559 ->
+  3.017 (2.504); seeds 7-9: APE 4.516 -> 3.566 (3.748), gap 4.465 -> 3.289 (3.256), blind 6.574 -> 3.110 (2.505).
+  Clean MH/V1: 3.555 -> 3.570 m (floor 3.930). Seeds 4-9 were spent before L2 (reporting only).
+- Cost (all GATE PASS; heap peak / whole run / whole run without cached bytecode, KB; us/row): MH_01 b s1
+  1,234 / 1,816 / **7,188**; 28.6. room1 b s1 863 / 1,440 / 7,188; 33.4. Synthetic 3.14 1,062 / 1,652 / 7,188; 35.8.
+  Synthetic 3.13 942 / 2,264 / **7,551**; 31.0.
+- **The no-bytecode heap rose about 1.4 MB (5,802 -> 7,188 KB), 0.9 MB of it from a parser threshold, not from the algorithm.** Compiling
+  `pathfinder.py` from source peaks at 5,876 KB for main, 5,428 KB for Step 7 alone, 6,748 KB merged (Python 3.14).
+  The merged file has 16,490 parser tokens, main 15,747; CPython's parser grows its token array by doubling, and
+  padding main's file with filler lines moves the compile peak from 5,820 to 6,743 KB exactly between 16,367 and
+  16,387 tokens. The next doubling is at 32,768 tokens; below that, growth is about linear. Headroom to the 8 MB
+  hard limit on Python 3.13 is now about 0.45 MB. The gated algorithm heap (about 1.2 MB) is unaffected. Not
+  fixed here: getting back under 16,384 tokens needs about 110 fewer tokens with no margin, or a second module.
+
 **4. V5 walking rhythm (19 Nov, time-boxed to one session): stopped at feasibility on the tuning rooms; OFF, not
 built.** No held-out data and no seed was used; no rule was registered, because nothing reached a candidate
 setting. `python tools/v5_feasibility.py` (room1/room2 clean; reads mocap ground truth to judge the signals, an

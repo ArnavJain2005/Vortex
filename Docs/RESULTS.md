@@ -43,6 +43,7 @@ Clean (undegraded) IMU input. APE = absolute position error after Umeyama alignm
 | step7a-v1-v2volume | 3.86 / 0.539 | 5.98 / 1.019 | 3.78 / 0.974 | 6.35 / 1.285 | 6.39 / 1.084 | - | - | - | - | - |
 | step7a-v1v2 | 3.99 / 0.506 | 5.97 / 0.973 | 3.53 / 0.983 | 6.41 / 1.193 | 6.55 / 1.023 | - | - | - | - | - |
 | step7a-v2-no-v1 | 4.02 / 0.505 | 6.00 / 0.973 | 3.51 / 0.992 | 6.28 / 1.185 | 6.51 / 1.016 | - | - | - | - | - |
+| step7m-shipped-clean | 4.23 / 0.295 | 4.54 / 0.364 | 2.71 / 0.344 | 6.26 / 0.829 | 6.56 / 0.761 | 1.89 / 0.211 | 1.03 / 0.217 | 1.34 / 0.239 | 3.57 | 0.407 |
 | step8 | 3.99 / 0.506 | 5.97 / 0.973 | 3.53 / 0.983 | 6.41 / 1.193 | 6.55 / 1.023 | - | - | - | - | - |
 | stepA-v1-c | - | - | - | - | - | 1.77 / 0.409 | 1.77 / 0.669 | 1.55 / 0.469 | - | - |
 | stepA-v1-floor | - | - | - | - | - | 1.85 / 0.439 | 1.78 / 0.964 | 1.57 / 0.716 | - | - |
@@ -165,6 +166,14 @@ Clean (undegraded) IMU input. APE = absolute position error after Umeyama alignm
 | step6-shipped-clean | V1_01_easy | 2.64 | 2.44 | 1.89 | 1.81 | 0.211 |
 | step6-shipped-clean | V1_02_medium | 3.64 | 1.87 | 1.03 | 1.03 | 0.217 |
 | step6-shipped-clean | V1_03_difficult | 3.14 | 2.01 | 1.22 | 1.22 | 0.168 |
+| step7m-shipped-clean | MH_01_easy | 6.19 | 7.60 | 4.23 | 4.22 | 0.295 |
+| step7m-shipped-clean | MH_02_easy | 6.59 | 8.57 | 4.54 | 4.53 | 0.364 |
+| step7m-shipped-clean | MH_03_medium | 7.70 | 4.48 | 2.71 | 2.71 | 0.344 |
+| step7m-shipped-clean | MH_04_difficult | 10.92 | 7.07 | 6.26 | 6.18 | 0.829 |
+| step7m-shipped-clean | MH_05_difficult | 10.43 | 7.55 | 6.56 | 6.53 | 0.761 |
+| step7m-shipped-clean | V1_01_easy | 2.64 | 2.44 | 1.89 | 1.81 | 0.211 |
+| step7m-shipped-clean | V1_02_medium | 3.64 | 1.87 | 1.03 | 1.03 | 0.217 |
+| step7m-shipped-clean | V1_03_difficult | 2.99 | 2.18 | 1.34 | 1.34 | 0.239 |
 | stepA-v1-c | V1_01_easy | 2.82 | 2.38 | 1.77 | 1.77 | 0.409 |
 | stepA-v1-c | V1_02_medium | 3.55 | 2.95 | 1.77 | 1.71 | 0.669 |
 | stepA-v1-c | V1_03_difficult | 2.93 | 2.28 | 1.55 | 1.51 | 0.469 |
@@ -455,6 +464,14 @@ Clean (undegraded) IMU input. APE = absolute position error after Umeyama alignm
 | step7a-v2-no-v1 | main.py V1_ON=False | 290c894 | 2026-11-16 | MH_03_medium | PASS | 3.51 | 4.03 | 3.47 | 0.62 | 0.992 | 0.28 |
 | step7a-v2-no-v1 | main.py V1_ON=False | 290c894 | 2026-11-16 | MH_04_difficult | PASS | 6.28 | 4.03 | 6.17 | 1.66 | 1.185 | 0.22 |
 | step7a-v2-no-v1 | main.py V1_ON=False | 290c894 | 2026-11-16 | MH_05_difficult | PASS | 6.51 | 4.96 | 6.36 | 2.17 | 1.016 | 0.24 |
+| step7m-shipped-clean | main.py | cb91920 | 2026-11-19 | MH_01_easy | PASS | 4.23 | 6.14 | 4.22 | 0.756 | 0.295 | 1.41 |
+| step7m-shipped-clean | main.py | cb91920 | 2026-11-19 | MH_02_easy | PASS | 4.54 | 5.76 | 4.53 | 0.759 | 0.364 | 1.10 |
+| step7m-shipped-clean | main.py | cb91920 | 2026-11-19 | MH_03_medium | PASS | 2.71 | 3.18 | 2.71 | 1.04 | 0.344 | 1.02 |
+| step7m-shipped-clean | main.py | cb91920 | 2026-11-19 | MH_04_difficult | PASS | 6.26 | 5.87 | 6.18 | 1.56 | 0.829 | 0.78 |
+| step7m-shipped-clean | main.py | cb91920 | 2026-11-19 | MH_05_difficult | PASS | 6.56 | 4.14 | 6.53 | 1.39 | 0.761 | 1.18 |
+| step7m-shipped-clean | main.py | cb91920 | 2026-11-19 | V1_01_easy | PASS | 1.89 | 1.80 | 1.81 | 0.429 | 0.211 | 1.45 |
+| step7m-shipped-clean | main.py | cb91920 | 2026-11-19 | V1_02_medium | PASS | 1.03 | 1.50 | 1.03 | 0.998 | 0.217 | 1.03 |
+| step7m-shipped-clean | main.py | cb91920 | 2026-11-19 | V1_03_difficult | PASS | 1.34 | 1.25 | 1.34 | 0.971 | 0.239 | 1.13 |
 | step8 | main.py | 02e2e5d | 2026-11-16 | MH_01_easy | PASS | 3.99 | 5.96 | 3.98 | 1.08 | 0.506 | 0.40 |
 | step8 | main.py | 02e2e5d | 2026-11-16 | MH_02_easy | PASS | 5.97 | 7.56 | 4.28 | 0.303 | 0.973 | 0.33 |
 | step8 | main.py | 02e2e5d | 2026-11-16 | MH_03_medium | PASS | 3.53 | 4.12 | 3.47 | 0.584 | 0.983 | 0.34 |
@@ -668,6 +685,10 @@ Copies made by `python tools/official_degrade.py --all` with the organisers' `de
 | step6-shipped-official | a | 42 | 8 | 7.374 | 1.026 | 7.344 | 0.046 | 17.110 | 2.276 | 8/8 PASS |
 | step6-shipped-official | b | 1..3 | 60 | 3.644 | 0.514 | 3.410 | 0.021 | 4.022 | 0.549 | 60/60 PASS |
 | step6-shipped-official | b | 42 | 8 | 3.721 | 0.522 | 3.734 | 0.026 | 3.269 | 0.604 | 8/8 PASS |
+| step7m-H46 | a | 1..3 | 18 | 3.539 | 0.601 | 3.610 | 0.021 | 2.849 | 0.585 | 18/18 PASS |
+| step7m-H46 | b | 1..3 | 18 | 3.421 | 0.518 | 3.417 | 0.019 | 3.185 | 0.487 | 18/18 PASS |
+| step7m-H79 | a | 1..3 | 18 | 3.642 | 0.605 | 3.373 | 0.015 | 2.862 | 0.603 | 18/18 PASS |
+| step7m-H79 | b | 1..3 | 18 | 3.490 | 0.531 | 3.204 | 0.014 | 3.357 | 0.557 | 18/18 PASS |
 | stepF-H-bgcap | a | 1..3 | 18 | 6.193 | 0.977 | 6.500 | 0.076 | 11.196 | 1.591 | 18/18 PASS |
 | stepF-H-bgcap | b | 1..3 | 18 | 3.752 | 0.836 | 3.523 | 0.032 | 2.733 | 0.505 | 18/18 PASS |
 | stepF-H-floor | a | 1..3 | 18 | 3.745 | 0.941 | 3.626 | 0.024 | 2.504 | 0.461 | 18/18 PASS |
@@ -1543,6 +1564,78 @@ Copies made by `python tools/official_degrade.py --all` with the organisers' `de
 | step6-shipped-official | main.py | 8da205d | V1_03_difficult_b_s7 | PASS | 1.658 | 0.367 | 1.706 | 0.021 | 1.366 | 0.444 | 0.70 |
 | step6-shipped-official | main.py | 8da205d | V1_03_difficult_b_s8 | PASS | 1.948 | 0.307 | 2.260 | 0.004 | 1.995 | 0.467 | 0.72 |
 | step6-shipped-official | main.py | 8da205d | V1_03_difficult_b_s9 | PASS | 2.395 | 0.315 | 1.878 | 0.000 | 5.330 | 0.813 | 0.76 |
+| step7m-H46 | main.py | 0e8a7bd | MH_03_medium_a_s4 | PASS | 3.295 | 0.644 | 2.740 | 0.043 | 2.023 | 0.363 | 0.85 |
+| step7m-H46 | main.py | 0e8a7bd | MH_03_medium_a_s5 | PASS | 3.211 | 0.534 | 3.538 | 0.023 | 2.730 | 0.328 | 0.87 |
+| step7m-H46 | main.py | 0e8a7bd | MH_03_medium_a_s6 | PASS | 3.368 | 0.628 | 3.752 | 0.014 | 2.241 | 0.369 | 0.93 |
+| step7m-H46 | main.py | 0e8a7bd | MH_03_medium_b_s4 | PASS | 2.877 | 0.464 | 2.407 | 0.028 | 4.323 | 0.660 | 0.89 |
+| step7m-H46 | main.py | 0e8a7bd | MH_03_medium_b_s5 | PASS | 3.003 | 0.422 | 2.656 | 0.015 | 4.568 | 0.441 | 0.89 |
+| step7m-H46 | main.py | 0e8a7bd | MH_03_medium_b_s6 | PASS | 3.034 | 0.440 | 2.794 | 0.010 | 5.588 | 0.453 | 1.02 |
+| step7m-H46 | main.py | 0e8a7bd | MH_04_difficult_a_s4 | PASS | 6.004 | 0.928 | 6.207 | 0.087 | 4.224 | 0.847 | 0.64 |
+| step7m-H46 | main.py | 0e8a7bd | MH_04_difficult_a_s5 | PASS | 6.231 | 0.992 | 6.651 | 0.008 | 4.513 | 0.272 | 0.64 |
+| step7m-H46 | main.py | 0e8a7bd | MH_04_difficult_a_s6 | PASS | 6.774 | 0.993 | 7.209 | 0.010 | 7.469 | 0.684 | 0.61 |
+| step7m-H46 | main.py | 0e8a7bd | MH_04_difficult_b_s4 | PASS | 6.408 | 0.855 | 6.721 | 0.079 | 6.645 | 0.332 | 0.63 |
+| step7m-H46 | main.py | 0e8a7bd | MH_04_difficult_b_s5 | PASS | 6.294 | 0.891 | 6.681 | 0.013 | 6.573 | 0.450 | 0.65 |
+| step7m-H46 | main.py | 0e8a7bd | MH_04_difficult_b_s6 | PASS | 6.182 | 0.920 | 6.529 | 0.007 | 5.538 | 0.516 | 0.66 |
+| step7m-H46 | main.py | 0e8a7bd | MH_05_difficult_a_s4 | PASS | 6.713 | 0.931 | 6.899 | 0.014 | 3.556 | 0.702 | 0.92 |
+| step7m-H46 | main.py | 0e8a7bd | MH_05_difficult_a_s5 | PASS | 6.646 | 0.917 | 7.830 | 0.000 | 5.909 | 1.041 | 0.74 |
+| step7m-H46 | main.py | 0e8a7bd | MH_05_difficult_a_s6 | PASS | 6.585 | 0.937 | 6.200 | 0.024 | 4.305 | 0.696 | 0.73 |
+| step7m-H46 | main.py | 0e8a7bd | MH_05_difficult_b_s4 | PASS | 6.597 | 0.827 | 6.950 | 0.010 | 4.248 | 0.436 | 0.81 |
+| step7m-H46 | main.py | 0e8a7bd | MH_05_difficult_b_s5 | PASS | 6.547 | 0.827 | 7.131 | 0.000 | 2.824 | 0.532 | 0.84 |
+| step7m-H46 | main.py | 0e8a7bd | MH_05_difficult_b_s6 | PASS | 6.523 | 0.802 | 5.944 | 0.017 | 3.039 | 0.535 | 0.79 |
+| step7m-H46 | main.py | 0e8a7bd | V1_01_easy_a_s4 | PASS | 1.946 | 0.415 | 1.768 | 0.012 | 0.528 | 0.209 | 1.12 |
+| step7m-H46 | main.py | 0e8a7bd | V1_01_easy_a_s5 | PASS | 1.974 | 0.410 | 1.483 | 0.019 | 2.055 | 0.456 | 1.10 |
+| step7m-H46 | main.py | 0e8a7bd | V1_01_easy_a_s6 | PASS | 2.832 | 0.455 | 2.143 | 0.023 | 2.093 | 0.519 | 1.01 |
+| step7m-H46 | main.py | 0e8a7bd | V1_01_easy_b_s4 | PASS | 2.224 | 0.293 | 2.139 | 0.016 | 3.022 | 0.101 | 1.43 |
+| step7m-H46 | main.py | 0e8a7bd | V1_01_easy_b_s5 | PASS | 2.139 | 0.317 | 1.811 | 0.016 | 1.571 | 0.128 | 1.16 |
+| step7m-H46 | main.py | 0e8a7bd | V1_01_easy_b_s6 | PASS | 1.937 | 0.289 | 1.684 | 0.028 | 2.464 | 0.262 | 1.23 |
+| step7m-H46 | main.py | 0e8a7bd | V1_02_medium_a_s4 | PASS | 1.430 | 0.436 | 1.992 | 0.008 | 2.297 | 0.996 | 0.67 |
+| step7m-H46 | main.py | 0e8a7bd | V1_02_medium_a_s5 | PASS | 1.269 | 0.323 | 1.115 | 0.050 | 2.161 | 0.619 | 0.65 |
+| step7m-H46 | main.py | 0e8a7bd | V1_02_medium_a_s6 | PASS | 1.308 | 0.277 | 1.289 | 0.000 | 2.391 | 0.939 | 0.62 |
+| step7m-H46 | main.py | 0e8a7bd | V1_02_medium_b_s4 | PASS | 1.264 | 0.366 | 1.662 | 0.009 | 0.439 | 0.849 | 0.71 |
+| step7m-H46 | main.py | 0e8a7bd | V1_02_medium_b_s5 | PASS | 1.276 | 0.284 | 1.054 | 0.041 | 2.003 | 0.492 | 0.69 |
+| step7m-H46 | main.py | 0e8a7bd | V1_02_medium_b_s6 | PASS | 1.148 | 0.311 | 1.125 | 0.000 | 1.300 | 0.896 | 0.67 |
+| step7m-H46 | main.py | 0e8a7bd | V1_03_difficult_a_s4 | PASS | 1.429 | 0.415 | 1.650 | 0.009 | 1.512 | 0.542 | 0.67 |
+| step7m-H46 | main.py | 0e8a7bd | V1_03_difficult_a_s5 | PASS | 1.339 | 0.294 | 1.213 | 0.019 | 0.628 | 0.411 | 0.70 |
+| step7m-H46 | main.py | 0e8a7bd | V1_03_difficult_a_s6 | PASS | 1.348 | 0.282 | 1.303 | 0.017 | 0.650 | 0.531 | 0.73 |
+| step7m-H46 | main.py | 0e8a7bd | V1_03_difficult_b_s4 | PASS | 1.431 | 0.421 | 1.648 | 0.011 | 2.074 | 0.713 | 0.81 |
+| step7m-H46 | main.py | 0e8a7bd | V1_03_difficult_b_s5 | PASS | 1.326 | 0.306 | 1.211 | 0.021 | 0.437 | 0.417 | 0.81 |
+| step7m-H46 | main.py | 0e8a7bd | V1_03_difficult_b_s6 | PASS | 1.359 | 0.281 | 1.352 | 0.017 | 0.666 | 0.561 | 0.83 |
+| step7m-H79 | main.py | cb91920 | MH_03_medium_a_s7 | PASS | 3.572 | 0.653 | 3.197 | 0.026 | 2.821 | 0.236 | 0.86 |
+| step7m-H79 | main.py | cb91920 | MH_03_medium_a_s8 | PASS | 3.403 | 0.642 | 3.197 | 0.009 | 4.149 | 0.665 | 0.83 |
+| step7m-H79 | main.py | cb91920 | MH_03_medium_a_s9 | PASS | 4.000 | 0.609 | 3.513 | 0.021 | 5.732 | 0.404 | 0.82 |
+| step7m-H79 | main.py | cb91920 | MH_03_medium_b_s7 | PASS | 2.831 | 0.433 | 2.894 | 0.013 | 1.451 | 0.408 | 0.84 |
+| step7m-H79 | main.py | cb91920 | MH_03_medium_b_s8 | PASS | 2.793 | 0.418 | 2.588 | 0.011 | 3.260 | 0.337 | 0.96 |
+| step7m-H79 | main.py | cb91920 | MH_03_medium_b_s9 | PASS | 2.832 | 0.456 | 2.565 | 0.018 | 3.461 | 0.330 | 0.94 |
+| step7m-H79 | main.py | cb91920 | MH_04_difficult_a_s7 | PASS | 6.670 | 1.018 | 6.815 | 0.015 | 3.285 | 0.516 | 0.62 |
+| step7m-H79 | main.py | cb91920 | MH_04_difficult_a_s8 | PASS | 6.311 | 0.978 | 4.344 | 0.005 | 2.367 | 0.260 | 0.74 |
+| step7m-H79 | main.py | cb91920 | MH_04_difficult_a_s9 | PASS | 6.042 | 0.926 | 6.281 | 0.047 | 3.104 | 0.361 | 0.68 |
+| step7m-H79 | main.py | cb91920 | MH_04_difficult_b_s7 | PASS | 6.231 | 0.912 | 6.446 | 0.016 | 5.282 | 0.537 | 0.82 |
+| step7m-H79 | main.py | cb91920 | MH_04_difficult_b_s8 | PASS | 6.467 | 0.910 | 4.619 | 0.003 | 5.480 | 0.658 | 0.74 |
+| step7m-H79 | main.py | cb91920 | MH_04_difficult_b_s9 | PASS | 6.429 | 0.847 | 6.262 | 0.059 | 8.388 | 0.564 | 0.79 |
+| step7m-H79 | main.py | cb91920 | MH_05_difficult_a_s7 | PASS | 6.592 | 0.983 | 5.897 | 0.007 | 3.331 | 0.808 | 0.81 |
+| step7m-H79 | main.py | cb91920 | MH_05_difficult_a_s8 | PASS | 6.295 | 0.872 | 5.738 | 0.022 | 6.450 | 1.618 | 0.74 |
+| step7m-H79 | main.py | cb91920 | MH_05_difficult_a_s9 | PASS | 6.704 | 0.945 | 8.241 | 0.028 | 2.108 | 0.856 | 0.80 |
+| step7m-H79 | main.py | cb91920 | MH_05_difficult_b_s7 | PASS | 6.768 | 0.856 | 6.451 | 0.005 | 5.708 | 1.492 | 1.00 |
+| step7m-H79 | main.py | cb91920 | MH_05_difficult_b_s8 | PASS | 6.529 | 0.828 | 4.946 | 0.024 | 3.966 | 0.397 | 0.81 |
+| step7m-H79 | main.py | cb91920 | MH_05_difficult_b_s9 | PASS | 6.646 | 0.792 | 8.469 | 0.014 | 1.391 | 0.351 | 0.77 |
+| step7m-H79 | main.py | cb91920 | V1_01_easy_a_s7 | PASS | 2.564 | 0.392 | 3.015 | 0.023 | 1.965 | 0.232 | 1.09 |
+| step7m-H79 | main.py | cb91920 | V1_01_easy_a_s8 | PASS | 2.020 | 0.387 | 1.900 | 0.006 | 1.049 | 0.259 | 0.97 |
+| step7m-H79 | main.py | cb91920 | V1_01_easy_a_s9 | PASS | 2.194 | 0.385 | 1.645 | 0.012 | 1.056 | 0.350 | 1.09 |
+| step7m-H79 | main.py | cb91920 | V1_01_easy_b_s7 | PASS | 1.859 | 0.330 | 1.960 | 0.025 | 2.186 | 0.321 | 1.12 |
+| step7m-H79 | main.py | cb91920 | V1_01_easy_b_s8 | PASS | 1.918 | 0.308 | 1.736 | 0.003 | 1.580 | 0.061 | 1.18 |
+| step7m-H79 | main.py | cb91920 | V1_01_easy_b_s9 | PASS | 1.919 | 0.259 | 1.555 | 0.010 | 1.007 | 0.254 | 1.72 |
+| step7m-H79 | main.py | cb91920 | V1_02_medium_a_s7 | PASS | 1.084 | 0.287 | 1.053 | 0.008 | 1.230 | 0.572 | 0.88 |
+| step7m-H79 | main.py | cb91920 | V1_02_medium_a_s8 | PASS | 1.558 | 0.354 | 1.643 | 0.007 | 1.316 | 0.484 | 0.84 |
+| step7m-H79 | main.py | cb91920 | V1_02_medium_a_s9 | PASS | 2.395 | 0.504 | 1.143 | 0.014 | 7.782 | 1.616 | 0.98 |
+| step7m-H79 | main.py | cb91920 | V1_02_medium_b_s7 | PASS | 1.222 | 0.354 | 1.038 | 0.007 | 2.871 | 0.738 | 1.08 |
+| step7m-H79 | main.py | cb91920 | V1_02_medium_b_s8 | PASS | 1.634 | 0.400 | 1.809 | 0.009 | 2.004 | 0.530 | 0.98 |
+| step7m-H79 | main.py | cb91920 | V1_02_medium_b_s9 | PASS | 2.500 | 0.491 | 1.162 | 0.011 | 8.080 | 1.437 | 0.94 |
+| step7m-H79 | main.py | cb91920 | V1_03_difficult_a_s7 | PASS | 1.347 | 0.326 | 0.958 | 0.025 | 1.230 | 0.531 | 0.99 |
+| step7m-H79 | main.py | cb91920 | V1_03_difficult_a_s8 | PASS | 1.363 | 0.316 | 1.167 | 0.005 | 0.484 | 0.588 | 0.93 |
+| step7m-H79 | main.py | cb91920 | V1_03_difficult_a_s9 | PASS | 1.451 | 0.306 | 0.975 | 0.000 | 2.060 | 0.490 | 0.84 |
+| step7m-H79 | main.py | cb91920 | V1_03_difficult_b_s7 | PASS | 1.362 | 0.330 | 0.971 | 0.023 | 0.947 | 0.372 | 0.97 |
+| step7m-H79 | main.py | cb91920 | V1_03_difficult_b_s8 | PASS | 1.366 | 0.327 | 1.170 | 0.005 | 0.748 | 0.656 | 1.01 |
+| step7m-H79 | main.py | cb91920 | V1_03_difficult_b_s9 | PASS | 1.512 | 0.306 | 1.037 | 0.000 | 2.618 | 0.576 | 1.15 |
 | stepF-H-bgcap | main.py BGCAP_ON=True | cba34e3 | MH_03_medium_a_s4 | PASS | 9.788 | 1.282 | 7.504 | 0.134 | 18.792 | 0.590 | 0.38 |
 | stepF-H-bgcap | main.py BGCAP_ON=True | cba34e3 | MH_03_medium_a_s5 | PASS | 6.701 | 1.120 | 8.246 | 0.083 | 12.165 | 1.955 | 0.39 |
 | stepF-H-bgcap | main.py BGCAP_ON=True | cba34e3 | MH_03_medium_a_s6 | PASS | 7.218 | 1.285 | 10.621 | 0.115 | 13.495 | 1.123 | 0.36 |

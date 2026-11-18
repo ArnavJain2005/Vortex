@@ -34,17 +34,17 @@ PYTEST_JSON = os.path.join(DOCS, "numbers", "pytest.json")
 # ---- which committed run is which. Change these (never the keys) when the shipped build changes. ----
 SOURCES = {
     # held-out official copies: MH_03..05 + V1_01..03, readings a and b, the shipped build and the floor
-    "heldout": ("results/step6-H46", "results/stepF-H-floor", "seeds 4-6, shipped build (Step 6)"),
-    "heldout79": ("results/step6-H79", "results/stepL1-H-floor", "seeds 7-9, shipped build (Step 6)"),
+    "heldout": ("results/step7m-H46", "results/stepF-H-floor", "seeds 4-6, shipped build (Step 7 + L2)"),
+    "heldout79": ("results/step7m-H79", "results/stepL1-H-floor", "seeds 7-9, shipped build (Step 7 + L2)"),
     # clean sequences MH_01..05 + V1_01..03
-    "clean": ("results/step6-shipped-clean", "results/step2-floor-clean", "clean, shipped build (Step 6)"),
+    "clean": ("results/step7m-shipped-clean", "results/step2-floor-clean", "clean, shipped build (Step 7 + L2)"),
     # TUM-VI rooms 1-4 (rooms 5, 6 are kept for the final table): shipped build (Step 7), official seeds 1-3, and clean
-    "tumvi": ("tumvi/step7-shipped-tumvi", "tumvi/tumvi-floor-off", "TUM-VI rooms 1-4 official copies seeds 1-3, shipped build (Step 7)"),
-    "tumvi_clean": ("tumvi/step7-shipped-tumvi-clean", "tumvi/tumvi-floor-clean", "TUM-VI rooms 1-4 clean, shipped build (Step 7)"),
+    "tumvi": ("tumvi/step7m-shipped-tumvi", "tumvi/tumvi-floor-off", "TUM-VI rooms 1-4 official copies seeds 1-3, shipped build (Step 7 + L2)"),
+    "tumvi_clean": ("tumvi/step7m-shipped-tumvi-clean", "tumvi/tumvi-floor-clean", "TUM-VI rooms 1-4 clean, shipped build (Step 7 + L2)"),
     "tumvi_calib": "tumvi/tumvi-calib",
-    # budget: real official input (MH_01_easy_b_s1), Windows, Python 3.14 and 3.13 (synthetic), shipped build with the Step 6 smoother and the Step 7 platform switch
-    "budget": "budget/step7-win-py314-mh01-b-s1",
-    "budget313": "budget/step7-win-py313",
+    # budget: real official input (MH_01_easy_b_s1), Windows, Python 3.14 and 3.13 (synthetic), shipped build: Step 6 smoother, Step 7 platform switch, L2 tilt
+    "budget": "budget/step7m-win-py314-mh01-b-s1",
+    "budget313": "budget/step7m-win-py313",
 }
 TUMVI_TUNING = ("dataset-room1", "dataset-room2")
 TUMVI_HELDOUT = ("dataset-room3", "dataset-room4")
@@ -65,7 +65,7 @@ OFF = [
     ("SHRINK_ON", "Step L1", "shrinkage about the centroid: failed its rule"),
 ]
 SHIPPED_ON = ["V1_ON", "V2_ON", "V2P_ON", "GAP_ON", "DEAD_ON", "FC_ON", "PRE_HOLD", "BGCAP_ON", "REFRESH_ON",
-              "P0V_ON", "FRONT_ON", "SMOOTH_ON", "PLATFORM_ON"]
+              "P0V_ON", "FRONT_ON", "SMOOTH_ON", "PLATFORM_ON", "TILT_ON"]
 
 
 def load(tag):
