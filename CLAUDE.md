@@ -105,6 +105,9 @@ python tools/platform_check.py [--identity N]                            # Step 
 python tools/judge_step7.py                                               # Step 7 rule (18 Nov: PLATFORM_ON ON; held-out room3/4 APE 1.994 -> 1.127 m, floor 1.164)
 python tools/end_rest.py [--official --seqs A,B]                          # Step 6: last still tick before the blind window (18 Nov: none near the end on MH/V1; no end anchor)
 python tools/judge_step6.py --h step6-H --c step6-C --floor step2-floor-off --r42 step6-R42  # Step 6 rule (18 Nov: SMOOTH_ON ON; held-out APE -7.8 %, gap -10.7 %, clean -2.7 %)
+python tools/tilt_eval.py --tag NAME [--main tools/ref_main.py --set TILT_ON=True] --seqs MH_01_easy_a_s1,...  # L2: roll/pitch error vs GT by phase; Docs/tilt/
+python tools/tilt_tune.py --tag stepL2-tune --reverse --grid "TILT_TAU=4"   # 18 Nov: L2 tuning grid (MH_01/02 + TUM-VI room1/2), reference via tools/ref_main.py; --render TAG
+python tools/judge_stepG.py --floor T --off T --on T --on-rev T --c-off T --c-on T [--t-off T --t-on T --ct-off T --ct-on T] --gate PASS  # rule G (L2), seeds 10-12
 python tools/baseline_table.py --est TAG --floor TAG --clean TAG --floor-clean TAG --out NAME  # estimator vs floor per sequence/reading; Docs/NAME.md
 python -m vortex.degrade data/euroc/MH_03_medium data/degraded/MH_03_medium_s4 --seed 4  # HISTORY: our own fault model (not the official one); <seq>_s<seed>
 python tools/eval_euroc.py --tag NAME --degraded [--seqs MH_03_medium_s4,...]  # every data/degraded copy; alignment from the clean run

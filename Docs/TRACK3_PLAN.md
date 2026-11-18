@@ -92,6 +92,7 @@ Deadline **22 Nov 2026, 11:59 PM IST**, confirmed by the FAQ (Q1 closed). Full-t
 | Lean | Switched-off experiments moved from `pathfinder.py` to `tools/pathfinder_lab.py` (not shipped) to cut compile memory | **Done (verified)** 18 Nov: output byte-identical on all 144 real inputs; no-bytecode heap 6,055 -> 4,935 KB (3.14), 6,431 -> 6,309 KB (3.13); gate PASS | `tests/test_lab.py`; gates PASS |
 | PRD v2 | PRD v2 (18 Nov) in the repo (`Docs/PRD.md`): levers L1 shrinkage, L2 slow gravity alignment, L3 blind window, L4 hardening, L5 TUM-VI; paired, sequence-level judging (rules G and H); work split Claude Code / Antigravity / ChatGPT. Fallback zip frozen | **Done (verified)** 18 Nov (K0): `dist/vortex_v0.9.zip` from `main` da14417, eval input `data/official/MH_03_medium_b_s1` (placeholder), 26,106 rows, 3.19 ms per IMU-s, heap 1,013 KB; `verify` PASS on Win 3.13 and 3.14; SHA-256 0e558440a397ef4b78426cc471ac8d3fd17f8c658b28a6cd40aeb5a3ba555d6b | Zip verified; never deleted |
 | NUMBERS (K6, early) | `tools/make_numbers.py` -> `Docs/NUMBERS.md` + `Docs/numbers/numbers.json`: every number the deck, script and README may quote, as `key | value | source tag | date`, generated from committed result, TUM-VI, budget and pytest files. Keys are stable (ChatGPT's `[[N:key]]`); when the shipped build changes, `SOURCES` in the script points at the new tags | **Done (verified)** 18 Nov: headline keys reproduce the Step F verdict to the digit (held-out 4.962 vs floor 3.745 m; reading a 6.181, b 3.744; gap 5.036; blind 6.992). Budget from a fresh lean run (`lean-win-py314-mh01-b-s1`) | `tests/test_numbers.py` (3); `--check` in the suite |
+| L2 | Slow gravity alignment over a 4 s window with a lag model, weighted by a gyro noise meter (`TILT_ON`) | **Done (verified): ON** by rule G2 (18 Nov, rule at 3e2646e, seeds 16-18, base with the Step 6 smoother): all 13 checks pass, held-out APE 4.922 -> 3.575 m (floor 3.746), DiD null 1.347 vs 1.187 m. Rule G (seeds 10-12) had failed its level null; G2 was **written after seeing that: weaker evidence, same 6 flights** | Rule G2 on 36 fresh held-out copies + TUM-VI room3/4 |
 
 ## Open questions (Q1 to Q5 are in the email drafted for prism@samsung.com on 15 Nov)
 
@@ -1812,3 +1813,294 @@ The detector adds one pass over the file: synthetic +1.6 us/row against Step 6 (
 V1 hand-held: not changed (see above). V5 walking rhythm: not started in this step; it needs its own
 time-boxed session with a rule first.
 
+
+
+## Step L2: slow gravity alignment with a gyro noise meter (18-19 Nov 2026, branch `track3/stepL2-tilt`)
+
+**Why.** Under reading a the organisers' script puts accelerometer-sized faults on the gyro columns (white
+0.20 rad/s per sample, bias walk 0.010 rad/s/sqrt(s), spikes up to 6 rad/s, all times the severity ramp) and
+gyro-sized faults on the accelerometer, so attitude from the gyro is lost while the accelerometer stays nearly
+clean. Measured on the tuning copies (`tools/tilt_eval.py`, roll/pitch error against ground truth, MH_01/02 x
+seeds 1-3): 9.4 deg RMS under reading a, 1.2 deg under reading b, 0.9 deg clean.
+
+**Piece** (`TILT_ON`, default off; reference `vortex/core/witness.py`, copied into `pathfinder.py`;
+`tests/test_tilt.py`, 15 tests). Not the instantaneous accelerometer tilt (on a multirotor the accelerometer
+reads thrust along body z plus drag): over a window the vehicle's mean acceleration is near zero, so the mean
+world-frame specific force (body specific force rotated by the current attitude estimate) must point along +z.
+- Window: an exponential average over the 0.25 s ticks with time constant `TILT_TAU`; O(1) memory (3 + 2 + 2
+  floats). After every injected correction the stored mean is rotated by the attitude correction and, with
+  `TILT_LAG`, shifted for the gyro-bias correction, so nothing is measured twice.
+- Measurement: F_hat = F_true - dth x F_true, so dth_x = F_y / g, dth_y = -F_x / g (world-frame error,
+  q_true = Exp(dth) q; sign checked against exact rotations in the tests). `TILT_LAG`: an exponential mean of an
+  error ramping at -R dbg lags by tau, so the row is dth + tau R dbg (the gyro-bias states become directly
+  observable). Two sequential scalar updates per tick, variance `TILT_R_K` x (window spread / g^2 x tick / tau
+  + (`TILT_DV` / (g tau))^2) / w.
+- Gate: no update while the filter's own window-mean horizontal acceleration exceeds `TILT_GATE_A` = 0.5 m/s^2.
+- Gyro meter: per-sample white-noise sigma from second differences of the raw gyro, median over the last
+  `TILT_MED_TICKS` = 40 ticks (spikes do not count), weight 0 until the ring is full. Weight w rises from 0 at
+  `TILT_G_LO` = 0.05 rad/s to 1 at `TILT_G_HI` = 0.10 (clean EuRoC flight reads about 0.04, reading a at full
+  severity 0.17-0.20; Step L1 meter). With w = 0 the output is unchanged to the bit (test). With w > 0 the gyro
+  white-noise density rises toward the measured one and the gyro bias-walk density toward `TILT_WALK_K` = 0.7
+  times it (the script's own walk / white ratio for those faults).
+- Deviation from the brief, said plainly: the brief asked for a window of 10-20 s and a meter against "its
+  calibration floor". Tuning chose 4 s (below), and the meter uses absolute thresholds, because the calibration
+  rest reads far below the rotor vibration in flight, so a ratio to it would mark every clean flight as jammed.
+
+**Synthetic checks** (`tests/test_tilt.py`). Sign conventions against exact rotations; window rotation to
+second order; spike robustness of the meter; clean gyro: output identical with the switch on; steady 15 deg
+banked circle with a drag-like pitch offset (instantaneous accelerometer tilt wrong by about 15 deg), weight
+forced to 1: tilt error stays within the stated bias (2.9 deg at 4 s) plus 1 deg (measured max 2.8 deg); jammed
+gyro + clean accelerometer: tilt RMS below 0.75 x off and below 4.5 deg; reference and `pathfinder.py` agree to
+full precision on 6 cases (jammed, clean forced, degraded forced x `TILT_LAG` on/off), each with the update
+actually firing.
+
+**Tuning (MH_01/02 only;** `python tools/tilt_tune.py`, tables in `Docs/tilt/stepL2-*.md`, generated). Probe 1
+(`stepL2-probe1`) ran an earlier meter (weight allowed from the first tick) without the lag model; probes 2 and 3
+and the final pass run the committed code. Means over 6 copies per reading, reading a:
+
+| Setting | APE m | RPE 1 s m | Gap RMSE m | Blind RMSE m | Tilt RMS deg |
+|---|---|---|---|---|---|
+| off (shipped) | 12.282 | 1.204 | 13.832 | 27.763 | 9.42 |
+| no lag model, R_K 0.1, tau 12 s (probe 1) / 6 / 4 s (probe 2) | 14.880 / 6.761 / 5.076 | 1.681 / 1.052 / 0.838 | 16.54 / 6.80 / 5.19 | 25.72 / 8.83 / 7.25 | 5.62 / 4.01 / 3.39 |
+| lag model, R_K 0.1, tau 12 / 6 / 4 / 3 / 2 s (probes 2-3) | 4.544 / 3.890 / 3.690 / 3.593 / 3.560 | 0.713 / 0.623 / 0.579 / 0.560 / 0.551 | 4.47 / 3.75 / 3.50 / 3.39 / 3.39 | 6.21 / 6.41 / 6.78 / 6.59 / 6.56 | 5.41 / 4.30 / 3.61 / 3.12 / 2.68 |
+| **chosen: lag, tau 4 s, R_K 1, walk 0.7, meter 0.05 / 0.10** | **3.687** | **0.583** | **3.505** | **6.726** | **3.46** |
+| same, output reversed in time (null) | 4.666 | 0.582 | 4.236 | 7.210 | - |
+| never-moving floor (Step E2, MH_01/02) | 4.491 | - | 3.852 | 5.291 | - |
+
+Other settings at tau 4 s: R_K 0.1 3.690, walk ratio 0.35 / 1.4 3.877 / 3.613, meter 0.07 / 0.12 5.041 m.
+Reading b, clean MH_01/02 and the TUM-VI tuning rooms (room1/2 x a, b x seeds 1-3) are **identical** with the
+switch on in every setting (the meter keeps the weight at 0): reading b 3.973, clean 3.878, TUM-VI a / b
+2.001 / 2.054 m. Tau 4 s rather than the best 2 s: below 4 s the acceleration gate blocks every update in the
+synthetic banked circle, so 2-3 s acts only where the flight is gentle; 4 s is within 4 % of the best.
+
+**Reading (tuning only, not evidence).** On reading a the estimate goes from about 3x worse than standing still
+to below it (3.69 against 4.49 m), and below its own reversed output (4.67), with RPE 1 s halved and tilt
+error from 9.4 to 3.5 deg: the attitude, and with it some of the motion, is recovered, not just the spread
+fitted. The blind 5 s is still worse than the floor (6.73 against 5.29 m): that is L3's job. TUM-VI: the
+estimator is worse than its floor there with or without L2 (2.0 against 1.1 m; Antigravity's baseline), and L2
+does not touch it.
+
+**Also changed.** `tools/pathfinder_lab.py` carries L2 too (its meter is the JAM meter's second-difference sums,
+now accumulated when JAM or TILT is on), so the lab stays a superset of `pathfinder.py`; with TILT_ON it writes the
+same bytes as `pathfinder.py` (test). New tools: `tools/ref_main.py` (the reference as a main script, for tuning
+with `--set`), `tools/tilt_eval.py`, `tools/tilt_tune.py`, `tools/judge_stepG.py` (+ `tests/test_judge_stepG.py`,
+10 tests on synthetic tables).
+
+| Item | Result | Where |
+|---|---|---|
+| Shipped output (TILT_ON off) vs the lean `main` (ed147f0) | **byte-identical on all 246** real non-V2 inputs (8 clean EuRoC, 136 official EuRoC copies, 6 TUM-VI rooms, 96 official TUM-VI copies) | scratch script, Windows 3.14 |
+| `pytest` | 348 passed (321 on the lean branch + 17 `tests/test_tilt.py` + 10 `tests/test_judge_stepG.py`; g++ on PATH) | Windows, Python 3.14.7 |
+| Budget, `python -S benchmark.py --runs 15 --gate` (shipped: TILT_ON off) | PASS on both. Heap in-process / whole run / no bytecode: synthetic 506 / 1,008 / 5,362 KB; MH_01_easy_b_s1 587 / 1,095 / 5,362 KB. Time 15.3 and 11.5 us/row (3.06 and 2.23 ms per IMU-s) | `Docs/BUDGET.md` `stepL2-*` |
+| Cost of TILT_ON | about +1 us/row on MH_01_easy_a_s1 (10.0 / 13.0 off, 11.5 / 12.6 on, two runs each: inside this laptop's spread). Rule G condition 9 runs the gate with TILT_ON | scratch timing, Windows 3.14 |
+
+**Compile heap.** The no-bytecode reading rose 4,935 -> 5,362 KB (3.14) with the L2 code, which ships off
+until rule G decides. Under the 8 MB limit; above the 4 MB design target, as before Lean. If L2 fails rule G it
+moves to the lab (L4), and the reading falls back.
+
+Not checked: Win 3.13 and Linux gates; TUM-VI attitude error (the ground-truth reader is EuRoC-only, so TUM-VI is
+APE only); whether the gate (`TILT_GATE_A`) ever blocks an update on the real tuning flights (not logged).
+
+**Decision rule G, committed before the held-out copies exist** (`tools/judge_stepG.py`; constants frozen in
+this commit; no constant changes after it). Held-out H: MH_03..05, V1_01..03 x readings a, b x seeds **10, 11,
+12** (36 copies, made with the organisers' script after this commit). These are 6 flights, not 36: seeds and
+readings re-use the same trajectories, so the sequence-level condition pools each sequence's 6 copies. TUM-VI
+block T: room3, room4 x a, b x seeds 10-12 (12 copies Antigravity made on 18 Nov; never run by Claude Code).
+Clean C: MH_01..05, V1_01..03; clean TUM-VI CT: room1..4. Tags `stepG-H-floor`, `stepG-H-off`, `stepG-H-on`,
+`stepG-H-on-rev` (on, positions reversed in time), `stepG-C-off/-on`, `stepG-T-off/-on`, `stepG-CT-off/-on`.
+`TILT_ON` ships on only if all hold:
+1. mean APE (SE3 fitted on the run) over H improves by at least 2 %;
+2. the paired gain is positive on at least 4 of the 6 sequences (mean over each sequence's 6 copies);
+3. in each reading separately, mean APE over its 18 copies is not worse by more than 1 %;
+4. mean gap RMSE and mean blind RMSE over H are each not worse by more than 2 %;
+5. clean mean APE is not worse by more than 0.5 % (C, and separately CT);
+6. TUM-VI block T: mean APE not worse by more than 1 %;
+7. mean APE over H with TILT_ON beats the same output reversed in time (Step L1 null floor);
+8. output contract PASS on every run;
+9. `python -S benchmark.py --runs 15 --gate` PASS with TILT_ON = True.
+Reported beside the verdict: the never-moving floor, RPE 1 s, each sequence's paired effect and the
+sequence-level spread. A gain is called "better aligned APE" unless RPE 1 s improves too.
+Expected from tuning (a prediction, not part of the rule): reading b and clean unchanged (the meter keeps the
+weight at 0 there); reading a improves on MH_03..05 and V1_01; V1_02 a and V1_03 a may not move, because the
+organisers' script scaled their gyro noise down (Step L1: meter 0.043 and 0.076 rad/s), so condition 2 is the
+risk.
+
+**Outcome (18 Nov 2026, late evening; rule commit 5fd288c; the seed 10-12 copies were made after it;
+`python tools/judge_stepG.py ... --gate PASS`, output kept in `Docs/results/stepG-verdict.txt`).** Tags
+`stepG-H-*` (36 copies), `stepG-C-*` (8 clean), `Docs/tumvi/stepG-T-*` (12 TUM-VI copies), `stepG-CT-*` (4 clean
+rooms). Gate with TILT_ON (condition 9, a scratch copy with `TILT_ON = True`): PASS on synthetic (heap 1,004 KB,
+12.1 us/row) and MH_01_easy_a_s1 (1,094 KB, 9.3 us/row); no-bytecode 5,357 KB.
+
+| Condition | Result | |
+|---|---|---|
+| 1 H mean APE improves >= 2 % | 4.935 -> 3.743 m (-24.15 %) | pass |
+| 2 paired gain > 0 on >= 4 of 6 sequences | 5 of 6 (V1_02 unchanged: +0.0 %) | pass |
+| 3 reading a / b not worse by > 1 % | -36.86 % / -4.88 % | pass |
+| 4 gap / blind RMSE not worse by > 2 % | -29.61 % / -52.67 % | pass |
+| 5 clean EuRoC / clean TUM-VI | -0.464 % / +0.000 % | pass |
+| 6 TUM-VI block (room3/4) | 2.545 -> 2.545 m (+0.00 %) | pass |
+| 7 beats its own reversed output | **3.743 vs 3.735 m** | **FAIL** |
+| 8 contract PASS | 156 runs | pass |
+| 9 benchmark gate with TILT_ON | PASS | pass |
+
+**Shipped: `TILT_ON = False`.** Shipped output is byte-identical to the lean `main`. Seeds 10-12 are spent.
+
+**Base, said plainly (added 18 Nov after the G2 run, at Arnav's request; nothing in rule G changes).** Rule G
+was judged on 5fd288c, before the Step 6 smoother; the verdict applies to that build. 5fd288c sits on ed147f0
+(the lean re-land); `SMOOTH_ON` does not exist in it, and #58 reached `main` (d1fc504) after the rule G runs.
+Every `stepG-*` tag records commit 5fd288c. That build no longer exists on `main`.
+
+Per sequence and reading, mean over seeds 10-12 (APE m; blind RMSE m):
+
+| Sequence | Reading | off | on | on reversed | floor | blind on | blind floor |
+|---|---|---|---|---|---|---|---|
+| MH_03_medium | a | 8.208 | 3.969 | 3.684 | 3.583 | 3.188 | 3.085 |
+| MH_03_medium | b | 3.518 | 3.518 | 3.340 | 3.583 | 2.997 | 3.085 |
+| MH_04_difficult | a | 7.761 | 6.299 | 6.621 | 6.814 | 4.404 | 3.851 |
+| MH_04_difficult | b | 6.533 | 6.533 | 6.564 | 6.814 | 3.774 | 3.851 |
+| MH_05_difficult | a | 10.346 | 6.499 | 6.693 | 6.868 | 4.189 | 4.061 |
+| MH_05_difficult | b | 6.546 | 6.546 | 6.604 | 6.868 | 4.419 | 4.061 |
+| V1_01_easy | a | 4.738 | 2.071 | 2.107 | 1.854 | 1.426 | 1.724 |
+| V1_01_easy | b | 1.874 | 1.874 | 1.740 | 1.854 | 1.868 | 1.724 |
+| V1_02_medium | a | 2.108 | 2.108 | 2.030 | 1.779 | 2.656 | 1.043 |
+| V1_02_medium | b | 2.261 | 2.261 | 2.126 | 1.779 | 3.743 | 1.043 |
+| V1_03_difficult | a | 2.529 | 1.589 | 1.647 | 1.580 | 1.548 | 1.269 |
+| V1_03_difficult | b | 2.798 | 1.650 | 1.666 | 1.580 | 2.029 | 1.269 |
+
+Sequence-level paired gain: mean +24.8 %, sd 16.8 % (n = 6). Means by reading, on / reversed / floor: a 3.756 /
+3.797 / 3.746; b 3.730 / 3.673 / 3.746. RPE 1 s over H 0.931 -> 0.869.
+
+**Reading (measured, after the verdict; nothing below changes it).**
+- L2 removes the reading-a failure: reading a goes from 5.95 m to 3.76 m, level with standing still (3.75), and
+  the blind 5 s over H from 6.38 to 3.02 m (floor 2.50). It does not get below the floor on held-out data, unlike
+  on tuning (3.69 against 4.49). The tuning gain below the floor did not carry over.
+- Condition 7 fails on the pooled mean. On reading a, where L2 acts, it beats its reversed output (3.756 against
+  3.797); on reading b the estimate, mostly unchanged by L2, already loses to its reversed output (3.730 against
+  3.673). The null says the shipped estimator's motion on reading b carries no more than what the alignment can
+  fit, which is the Step L1 finding again. The rule pooled both readings, as written.
+- As predicted, V1_02 did not move (meter below 0.05 rad/s on both readings). Not predicted: V1_03 b moved
+  (2.798 -> 1.650 m): its gyro meter reads above 0.05 on reading b too (aggressive flight vibration plus the
+  script's noise), so L2 acted there and helped.
+- Called "better aligned APE", not motion recovered: the rule did not pass, and APE ends at the floor.
+- Not done: any revised rule. Seeds 16-18 are the only reserve (one re-judge of one revised variant with a new
+  rule). Rule H (L3) was planned on seeds 13-15. Arnav decides.
+
+### Rule G2 (Step L2 re-judge, seeds 16-18): **written after seeing rule G's result; weaker evidence; same 6 flights**
+
+Arnav's decision (18 Nov, late evening): one re-judge of L2 on the last reserve, with a revised null, committed
+before the seed 16-18 copies exist. `TILT_*` constants are unchanged since rule G (5fd288c); nothing was tuned
+after rule G. `tools/judge_stepG2.py` (+ `tests/test_judge_stepG2.py`, 7 tests on synthetic tables).
+
+**Base changed, said plainly.** Since rule G, `main` shipped the Step 6 smoother ON (#58, judged on seeds 1-3).
+Rule G judged L2 without it. G2 judges L2 on the base that ships: this branch with `main` merged
+(`SMOOTH_ON = True`). After the merge, reference = `pathfinder.py` with TILT_ON + smoother on 6 synthetic cases,
+the lab = `pathfinder.py` with TILT_ON, and the shipped output (TILT_ON off) is checked byte-identical to `main` (result recorded with the outcome).
+
+**Base by hash (stated 18 Nov after the G2 run, at Arnav's request; it names the build the paragraph above
+already described and changes no condition).** Rule G2 judges 3e2646e: the merge of `main` at d1fc504 (Step 6
+smoother ON) into Step L2, with every `TILT_*` constant as at 5fd288c; TILT_ON set per run with `--set`. Every
+`stepG2-*` tag records commit 3e2646e. Rule G2 is not changed after this point, whatever the re-measurement
+below shows.
+
+Held-out H: MH_03..05, V1_01..03 x readings a, b x seeds **16, 17, 18** (36 copies, made after this commit).
+TUM-VI block T: room3, room4 x a, b x seeds 16-18 (12 copies, made by Claude Code after this commit; Antigravity
+had made seeds 1-3 and 7-15 only). Clean C: MH_01..05, V1_01..03; clean TUM-VI CT: room1..4. Tags `stepG2-H-floor`,
+`stepG2-H-off`, `stepG2-H-on`, `stepG2-H-off-rev`, `stepG2-H-on-rev`, `stepG2-C-off/-on`, `stepG2-T-off/-on`,
+`stepG2-CT-off/-on`. `TILT_ON` ships on only if all hold:
+- Conditions 1-6, 8, 9: identical to rule G, same thresholds (H APE >= 2 % better; >= 4 of 6 sequences; each
+  reading not worse by > 1 %; gap and blind not worse by > 2 %; clean EuRoC and clean TUM-VI not worse by
+  > 0.5 %; TUM-VI block not worse by > 1 %; contract PASS on every run; benchmark gate PASS with TILT_ON).
+- **7 (replaced): difference-in-differences null.** The gain mean_H(APE off - APE on) must exceed the same gain
+  on both outputs reversed in time, mean_H(APE off-reversed - APE on-reversed). It asks whether L2's gain needs
+  the right time order, which is what the null is for; rule G's form compared levels, and failed on reading b
+  copies that L2 mostly does not touch.
+- **10 (new): no reading-b sequence worse by more than 2 %** (mean of its 3 seeds, on against off). V1_03 b fired
+  unexpectedly under rule G, so the switch must not hurt where it fires on reading b.
+If G2 fails, `TILT_ON` stays off for good and the reserve is spent. L3 (rule H, seeds 13-15) is judged only
+after G2 is decided, on whichever base ships; if G2 passes, rule H names `TILT_ON = True` as its base.
+Prediction (not part of the rule): conditions 1-4 pass as under rule G (the smoother may shrink the margins);
+condition 7 is the open question.
+
+**Outcome of rule G2 (18 Nov 2026, late evening; rule commit 3e2646e; the 48 seed 16-18 copies were made after
+it; `python tools/judge_stepG2.py ...`, output in `Docs/results/stepG2-verdict.txt`).** Base: `main` with the
+smoother ON, merged into this branch; with TILT_ON off the merged branch is byte-identical to `main` on all 282
+real non-V2 inputs on disk at the time. Gate with TILT_ON (condition 9): PASS on synthetic (heap 1,641 KB with
+bytecode, 6,027 KB without; 30.5 us/row) and MH_01_easy_a_s1 (1,805 KB; 28.0 us/row), both measured while another
+evaluation was running, so the times are pessimistic.
+
+| Condition | Result | |
+|---|---|---|
+| 1 H mean APE improves >= 2 % | 4.922 -> 3.575 m (-27.36 %) | pass |
+| 2 paired gain > 0 on >= 4 of 6 sequences | 5 of 6 (V1_02 unchanged) | pass |
+| 3 reading a / b not worse by > 1 % | -42.18 % / -0.83 % | pass |
+| 4 gap / blind RMSE not worse by > 2 % | -28.83 % / -57.48 % | pass |
+| 5 clean EuRoC / clean TUM-VI | +0.422 % / +0.000 % | pass (EuRoC close to its 0.5 % limit) |
+| 6 TUM-VI block (room3/4) | 2.136 -> 2.136 m (+0.00 %) | pass |
+| 7 gain exceeds the gain on reversed outputs | 1.347 vs 1.187 m | pass |
+| 8 contract PASS | 192 runs | pass |
+| 9 benchmark gate with TILT_ON | PASS | pass |
+| 10 no reading-b sequence worse by > 2 % | worst +0.00 % (V1_03 b improves 1.574 -> 1.398) | pass |
+
+**Shipped: `TILT_ON = True`** (reference, `pathfinder.py`, lab copy). Seeds 16-18 are spent; no seed reserve is
+left for L2.
+
+Means by reading over seeds 16-18 (APE m; blind and gap RMSE m):
+
+| Reading | off | on | on reversed | off reversed | floor | blind on / floor | gap on / floor |
+|---|---|---|---|---|---|---|---|
+| a | 6.315 | 3.651 | 3.881 | 6.217 | 3.746 | 3.100 / 2.506 | 3.591 / 3.453 |
+| b | 3.528 | 3.499 | 3.802 | 3.840 | 3.746 | 3.213 / 2.506 | 3.364 / 3.453 |
+| both | 4.922 | 3.575 | 3.841 | - | 3.746 | 3.156 / 2.506 | 3.478 / 3.453 |
+
+**Reading (measured, after the verdict; nothing below changes it).**
+- On these seeds, and with the smoother, the estimate is below the never-moving floor on both readings
+  (3.651 and 3.499 against 3.746) and below its own reversed output on both (rule G's level null would also have
+  passed here: 3.575 against 3.841). Under rule G (seeds 10-12, no smoother) the same L2 ended level with the
+  floor. Seeds and the smoother both changed between the two judgements, so the difference cannot be assigned
+  to either; the seeds re-use the same 6 flights.
+- Weaker evidence, said plainly: G2's condition 7 was chosen after rule G's result was known. The other
+  conditions are rule G's, unchanged, and they passed on copies made after G2 was committed.
+- The blind 5 s is still worse than the floor (3.16 against 2.51 m): L3's job. Gap RMSE is level with it.
+- Clean EuRoC moved +0.42 %, all of it from one flight: clean V1_03_difficult 1.222 -> 1.342 m (+9.8 %); the
+  other 7 clean sequences are identical (meter at weight 0). On the aggressive V1_03 flight the gyro meter rises
+  above 0.05 rad/s without any added fault, so L2 acts on a sound gyro there and costs 0.12 m. Inside the 0.5 %
+  mean limit, but a known cost: an organiser test on a V1_03-like clean flight would see it.
+- Rule H (L3, seeds 13-15) must name `TILT_ON = True` (and `SMOOTH_ON = True`) as its base.
+
+### Re-measurement of rule G's null on the smoother-on base (informational; NOT a re-judge)
+
+Asked by Arnav (18 Nov, late evening), written and committed before it runs, after rule G2 was committed
+(3e2646e) and judged. Rule G's verdict stands as recorded (OFF, judged on 5fd288c, verdict 6ba6f6e) whatever
+this shows; the ship decision is rule G2 alone, and G2 is not changed after this.
+
+- Build: this branch at the commit that carries this text (smoother ON; code identical to 3e2646e except the
+  shipped default `TILT_ON = True`). Every run sets TILT_ON explicitly with `--set`; no constant changes.
+- Data: the same 36 seed 10-12 copies rule G used (MH_03..05, V1_01..03 x a, b x seeds 10-12), the same
+  `--reverse` comparison. Tags `stepGR-H-off`, `stepGR-H-on`, `stepGR-H-on-rev` (rule G's level null: on
+  against on reversed) and `stepGR-H-off-rev` (so G2's difference-in-differences form can be read off too).
+  The floor is the never-moving baseline and does not depend on the build: `stepG-H-floor` is reused.
+- Report (`python tools/remeasure_stepG.py`, output kept in `Docs/results/stepGR-report.txt`): means of off, on,
+  on reversed, off reversed, floor, overall and by reading; per-sequence paired effects; both null forms.
+- Not re-run on seeds 10-12: clean EuRoC, TUM-VI room3/4 and clean rooms, and the gate (measured on the
+  smoother-on base under G2).
+
+**Result of the re-measurement (18 Nov 2026, late evening; build a7f932b, the commit that pre-registered it;
+every tag records it; 144 runs, contract PASS on all; report in `Docs/results/stepGR-report.txt`).
+Informational: rule G's verdict (OFF, 5fd288c) stands as recorded; the decision is G2's.**
+
+| Seed 10-12 copies | off | on | on reversed | off reversed | floor |
+|---|---|---|---|---|---|
+| reading a | 5.502 | 3.647 | 3.840 | 5.327 | 3.746 |
+| reading b | 3.674 | 3.520 | 3.791 | 3.925 | 3.746 |
+| both (H) | 4.588 | 3.584 | 3.815 | 4.626 | 3.746 |
+
+- Rule G's level null, re-measured on the smoother-on base: on 3.584 against on reversed 3.815 m, so on is
+  below (under rule G, on 5fd288c without the smoother: 3.743 against 3.735, a fail). G2's gain form:
+  1.004 against 0.811 m, gain larger.
+- Same copies as rule G, so the change from 5fd288c to this build is the base (the Step 6 smoother merged in),
+  not the seeds. Both the off and on estimates moved: off 4.935 -> 4.588, on 3.743 -> 3.584 m.
+- Per sequence, paired effect off - on (m): MH_03 +2.002, MH_04 +0.635, MH_05 +1.573, V1_01 +0.962, V1_02
+  0.000, V1_03 +0.854 (V1_03 b 2.517 -> 1.593). RPE 1 s 0.746 -> 0.590; gap 4.460 -> 3.447; blind 7.077 ->
+  3.381 m (floor 2.506).
+- It agrees with the G2 decision (ship ON) and changes nothing. Not re-run on seeds 10-12: clean EuRoC, TUM-VI
+  and the gate. The floor tag `stepG-H-floor` (5fd288c) is reused; the never-moving baseline does not depend on
+  the estimator build.

@@ -1,0 +1,67 @@
+{
+ "commit": "5fd288c",
+ "date": "2026-11-18",
+ "degraded": false,
+ "main": "main.py",
+ "official": false,
+ "python": "3.14.7",
+ "results": [
+  {
+   "ate_none_rmse": 2.108797158345507,
+   "ate_origin_rmse": 1.0870061772154707,
+   "ate_se3_rmse": 1.009444733850226,
+   "ate_sim3_rmse": 0.8604871300708864,
+   "contract": "PASS",
+   "final_se3": 0.4437879284004834,
+   "rows": 28122,
+   "rpe200_rmse": 0.7632760222831593,
+   "sequence": "dataset-room1_512_16",
+   "sim3_scale": 0.49212448950524695,
+   "wall_s": 0.4002217000233941
+  },
+  {
+   "ate_none_rmse": 1.727616236374657,
+   "ate_origin_rmse": 1.4574009564910992,
+   "ate_se3_rmse": 1.0658809720484408,
+   "ate_sim3_rmse": 1.0430447462637213,
+   "contract": "PASS",
+   "final_se3": 1.9980216080142168,
+   "rows": 28732,
+   "rpe200_rmse": 1.2199568161676015,
+   "sequence": "dataset-room2_512_16",
+   "sim3_scale": 0.7414817008832164,
+   "wall_s": 0.39253119996283203
+  },
+  {
+   "ate_none_rmse": 1.6968431697538089,
+   "ate_origin_rmse": 1.4254069807658496,
+   "ate_se3_rmse": 0.883150542691846,
+   "ate_sim3_rmse": 0.8831149076790857,
+   "contract": "PASS",
+   "final_se3": 0.7244624974281373,
+   "rows": 28124,
+   "rpe200_rmse": 1.1005975190518147,
+   "sequence": "dataset-room3_512_16",
+   "sim3_scale": 1.009043899300036,
+   "wall_s": 0.37271999998483807
+  },
+  {
+   "ate_none_rmse": 2.7529472726482354,
+   "ate_origin_rmse": 1.8441180336009784,
+   "ate_se3_rmse": 1.3974984806559538,
+   "ate_sim3_rmse": 0.9580061157919165,
+   "contract": "PASS",
+   "final_se3": 1.8070653707581692,
+   "rows": 22212,
+   "rpe200_rmse": 0.6683286394263098,
+   "sequence": "dataset-room4_512_16",
+   "sim3_scale": 0.32540933940220873,
+   "wall_s": 0.32062909996602684
+  }
+ ],
+ "reverse": false,
+ "set": {
+  "TILT_ON": "True"
+ },
+ "tag": "stepG-CT-on"
+}
