@@ -88,6 +88,7 @@ python -S benchmark.py --runs 15 --gate [--input IMU.csv] --tag NAME      # gate
 python tools/make_bundle.py stage                                        # once per Python to carry bytecode for (py -3.13, py -3.14, python3 in WSL)
 python tools/make_bundle.py eval EVAL_IMU.csv                            # estimated_trajectory.txt + metadata.json (heap peak, time) into the stage
 python tools/make_bundle.py zip --name NAME                              # dist/NAME.zip; then: python tools/make_bundle.py verify dist/NAME.zip
+python tools/make_numbers.py [--pytest] [--check]                       # Docs/NUMBERS.md: every quotable number (key | value | source tag | date), from committed files; --pytest re-runs the suite first
 g++ -O2 -std=c++17 -ffp-contract=off -o build/vortex main.cpp           # RECORDED EXPERIMENT only (C core, not accepted); benchmark/eval_euroc --cbin still time it
 python benchmark.py --render                                             # rebuilds Docs/BUDGET.md from Docs/budget/*.json (never hand-edit)
 python score.py --gt data/euroc/MH_01_easy --est est.txt [--events deg/degrade.json] [--imu IMU.csv] [--align se3|given --given-from clean_est.txt]
