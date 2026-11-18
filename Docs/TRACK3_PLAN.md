@@ -1996,3 +1996,16 @@ Informational: rule G's verdict (OFF, 5fd288c) stands as recorded; the decision 
 - It agrees with the G2 decision (ship ON) and changes nothing. Not re-run on seeds 10-12: clean EuRoC, TUM-VI
   and the gate. The floor tag `stepG-H-floor` (5fd288c) is reused; the never-moving baseline does not depend on
   the estimator build.
+
+**Gate on the shipped build (19 Nov 2026; 405109e, TILT_ON and SMOOTH_ON on; quiet machine, Windows, Python
+3.14.7; `python -S benchmark.py --runs 15 --gate`): PASS on all three inputs.**
+
+| Input | heap, estimator | heap, whole run (bytecode / none) | `python -S main.py` | check |
+|---|---|---|---|---|
+| synthetic | 1,062 KB | 1,646 / 6,031 KB | 37.3 us/row | PASS |
+| MH_01_easy_b_s1 | 1,234 KB | 1,809 / 6,032 KB | 27.3 us/row | PASS |
+| MH_01_easy_a_s1 (L2 acts) | 1,234 KB | 1,810 / 6,032 KB | 27.1 us/row | PASS |
+
+Under the 4 MB heap target and 50 us/row with bytecode. Without cached bytecode the compile heap is 6,031 KB:
+above the 4 MB target, under the 8 MB limit (Step 6 on `main` measured 7,338 KB at 8da205d). Tags
+`Docs/budget/stepL2-win-py314*.json`; `Docs/BUDGET.md` rendered.
