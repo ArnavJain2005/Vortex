@@ -82,7 +82,7 @@ not verified.
 
 ```
 pip install -e .[dev]
-pytest                                        # 18 Nov 2026: 335 passed (Step 6 smoother ON, merged with main at 77b3641) (Windows, Python 3.14; test_ccore.py, the C-core experiment, needs g++ on PATH)
+pytest                                        # 18 Nov 2026: 372 passed on track3/stepL2-tilt (TILT_ON and SMOOTH_ON shipped) (Windows, Python 3.14; test_ccore.py, the C-core experiment, needs g++ on PATH)
 python -S main.py IMU.csv estimated_trajectory.txt                       # submission entry point: a stub importing pathfinder.py (the estimator, stdlib only)
 python -S benchmark.py --runs 15 --gate [--input IMU.csv] --tag NAME      # gate: heap (tracemalloc) <= 4 MB, <= 50 us/row, checker PASS; RSS reported only
 python tools/make_bundle.py stage                                        # once per Python to carry bytecode for (py -3.13, py -3.14, python3 in WSL)
@@ -103,6 +103,9 @@ python tools/judge_step3.py --name X --h-off TAG --h-on TAG --c-off TAG --c-on T
 python tools/judge_step4.py --h-on TAG --floor TAG --h-off TAG --c-off TAG --c-on TAG  # Step 4 rule (17 Nov: LEARN_ON OFF; held-out ties the floor, clean +6.7 %)
 python tools/end_rest.py [--official --seqs A,B]                          # Step 6: last still tick before the blind window (18 Nov: none near the end on MH/V1; no end anchor)
 python tools/judge_step6.py --h step6-H --c step6-C --floor step2-floor-off --r42 step6-R42  # Step 6 rule (18 Nov: SMOOTH_ON ON; held-out APE -7.8 %, gap -10.7 %, clean -2.7 %)
+python tools/tilt_eval.py --tag NAME [--main tools/ref_main.py --set TILT_ON=True] --seqs MH_01_easy_a_s1,...  # L2: roll/pitch error vs GT by phase; Docs/tilt/
+python tools/tilt_tune.py --tag stepL2-tune --reverse --grid "TILT_TAU=4"   # 18 Nov: L2 tuning grid (MH_01/02 + TUM-VI room1/2), reference via tools/ref_main.py; --render TAG
+python tools/judge_stepG.py --floor T --off T --on T --on-rev T --c-off T --c-on T [--t-off T --t-on T --ct-off T --ct-on T] --gate PASS  # rule G (L2), seeds 10-12
 python tools/baseline_table.py --est TAG --floor TAG --clean TAG --floor-clean TAG --out NAME  # estimator vs floor per sequence/reading; Docs/NAME.md
 python -m vortex.degrade data/euroc/MH_03_medium data/degraded/MH_03_medium_s4 --seed 4  # HISTORY: our own fault model (not the official one); <seq>_s<seed>
 python tools/eval_euroc.py --tag NAME --degraded [--seqs MH_03_medium_s4,...]  # every data/degraded copy; alignment from the clean run

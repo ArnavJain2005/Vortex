@@ -112,6 +112,17 @@ PRE_HOLD = True
 RESET_ON = False
 REFRESH_ON = True
 P0V_ON = True
+# Step L2 (witness.TILT_*): windowed gravity alignment + gyro noise meter; see vortex/core/witness.py
+TILT_ON = True               # Step L2: ON by rule G2 (18 Nov 2026, seeds 16-18; rule G on seeds 10-12 had failed its null)
+TILT_TAU = 4.0
+TILT_G_LO = 0.05
+TILT_G_HI = 0.10
+TILT_MED_TICKS = 40
+TILT_R_K = 1.0
+TILT_DV = 2.0
+TILT_WALK_K = 0.7
+TILT_LAG = True
+TILT_GATE_A = 0.5
 SMOOTH_ON = True             # Step 6: ON (rule passed 18 Nov 2026); fixed-interval (RTS) smoother at the tick (vortex/core/witness.py smooth_*)
 SMOOTH_MAX_BLOCKS = 1024     # stored blocks (fixed cap; a full store merges adjacent pairs): <= 1.05 MB of floats
 N = 15
@@ -543,7 +554,8 @@ def _kf_init(still):
     return P
 
 
-def _kf_propagate(P, r, fx, fy, fz, T, acc_d2=ACC_NOISE * ACC_NOISE, gyro_d2=GYRO_NOISE * GYRO_NOISE):
+def _kf_propagate(P, r, fx, fy, fz, T, acc_d2=ACC_NOISE * ACC_NOISE, gyro_d2=GYRO_NOISE * GYRO_NOISE,
+                  gyro_w2=GYRO_WALK * GYRO_WALK):
     A = [(0, 3, T), (1, 4, T), (2, 5, T),
          (3, 7, T * fz), (3, 8, -T * fy), (4, 6, -T * fz), (4, 8, T * fx), (5, 6, T * fy), (5, 7, -T * fx)]
     for i in range(3):
@@ -562,7 +574,7 @@ def _kf_propagate(P, r, fx, fy, fz, T, acc_d2=ACC_NOISE * ACC_NOISE, gyro_d2=GYR
             Pn[rr + i] += a * M[rr + j]
     qv = acc_d2 * T
     qt = gyro_d2 * T
-    qg = GYRO_WALK * GYRO_WALK * T
+    qg = gyro_w2 * T
     qa = ACC_WALK * ACC_WALK * T
     for k in range(3):
         Pn[(3 + k) * (N + 1)] += qv
@@ -598,6 +610,48 @@ def _kf_update(P, dx, k, z, var):
             oi = i * N
             for j in range(N):
                 P[oi + j] -= Ki * row[j]
+
+
+def _kf_update_row(P, dx, h, z, var):
+    """witness.kf_update_row: z = sum h_k dx[k] + noise."""
+    ph = [0.0] * N
+    for i in range(N):
+        oi = i * N
+        a = 0.0
+        for k, c in h:
+            a += P[oi + k] * c
+        ph[i] = a
+    S = var
+    hx = 0.0
+    for k, c in h:
+        S += c * ph[k]
+        hx += c * dx[k]
+    if not S > 0.0:
+        return
+    inn = z - hx
+    for i in range(N):
+        Ki = ph[i] / S
+        if Ki != 0.0:
+            dx[i] += Ki * inn
+            oi = i * N
+            for j in range(N):
+                P[oi + j] -= Ki * ph[j]
+
+
+def _tilt_weight(ring):
+    """witness.tilt_weight."""
+    s = sorted(ring)
+    m = len(s)
+    med = s[m // 2] if m % 2 else 0.5 * (s[m // 2 - 1] + s[m // 2])
+    sg = math.sqrt(med)
+    w = (sg - TILT_G_LO) / (TILT_G_HI - TILT_G_LO)
+    return (0.0 if w < 0.0 else 1.0 if w > 1.0 else w), med
+
+
+def _tilt_var(s2, g, w):
+    """witness.tilt_var."""
+    b = TILT_DV / (g * TILT_TAU)
+    return TILT_R_K * (s2 / (g * g) * (TICK_S / TILT_TAU) + b * b) / w
 
 
 def _bin_still(n, s, ss):
@@ -1425,6 +1479,15 @@ def _run(src, dst, write=True, integrate=True, env=None, collect=None, store=Non
     sgx = sgy = sgz = sax = say = saz = NAN
     fc, tau = FC_ON, FC_TAU
     reset, refresh = RESET_ON, REFRESH_ON
+    tilt = TILT_ON                           # Step L2 state (witness.estimate); its gyro meter is the JAM meter's
+    tF = [0.0, 0.0, 0.0]                     # second differences (dg, nd, fdt), accumulated when jam or tilt
+    tS = [0.0, 0.0]
+    tV = [0.0, 0.0]
+    tn = 0
+    tfull = TILT_TAU / TICK_S
+    tring = []
+    tw = 0.0
+    med = 0.0
     zupt_ticks = 0
     zs2, zm2 = ZUPT_SIGMA * ZUPT_SIGMA, ZARU_SIGMA_MIN * ZARU_SIGMA_MIN
     t = tl = 0
@@ -1540,12 +1603,26 @@ def _run(src, dst, write=True, integrate=True, env=None, collect=None, store=Non
                                             gd2 = jg
                                         if ja > ad2:
                                             ad2 = ja
+                                    gw2 = GYRO_WALK * GYRO_WALK
+                                    if tilt and nd >= BLOCK_MIN_ROWS and fn:
+                                        tring.append(dg / (18.0 * nd))
+                                        if len(tring) > TILT_MED_TICKS:
+                                            tring.pop(0)
+                                        if len(tring) == TILT_MED_TICKS:
+                                            tw, med = _tilt_weight(tring)
+                                        if tw > 0.0:
+                                            d2 = med * fdt / fn
+                                            if d2 > gd2:
+                                                gd2 += tw * (d2 - gd2)
+                                            w2 = TILT_WALK_K * TILT_WALK_K * d2
+                                            if w2 > gw2:
+                                                gw2 += tw * (w2 - gw2)
                                     if fn:
-                                        _kf_propagate(P, r, fsx / fn, fsy / fn, fsz / fn, T, ad2, gd2)
+                                        _kf_propagate(P, r, fsx / fn, fsy / fn, fsz / fn, T, ad2, gd2, gw2)
                                         if smooth:
                                             sA = _phi_entries(r, fsx / fn, fsy / fn, fsz / fn, T)
                                     else:
-                                        _kf_propagate(P, r, 0.0, 0.0, g, T, ad2, gd2)
+                                        _kf_propagate(P, r, 0.0, 0.0, g, T, ad2, gd2, gw2)
                                         if smooth:
                                             sA = _phi_entries(r, 0.0, 0.0, g, T)
                                 elif smooth:
@@ -1580,18 +1657,58 @@ def _run(src, dst, write=True, integrate=True, env=None, collect=None, store=Non
                                     kf_update(P, dx, 0, ccx - px, s2ph)
                                     kf_update(P, dx, 1, ccy - py, s2ph)
                                     kf_update(P, dx, 2, ccz - pz, s2pv)
+                                tup = False
+                                if tilt and fn and T > 0.0:
+                                    tn += 1
+                                    b = 1.0 / tn
+                                    if b < T / TILT_TAU:
+                                        b = T / TILT_TAU
+                                    fm = fsx / fn - tF[0]
+                                    tS[0] += (fm * fm - tS[0]) * b
+                                    tV[0] += (vx - tV[0]) * b
+                                    tF[0] += fm * b
+                                    fm = fsy / fn - tF[1]
+                                    tS[1] += (fm * fm - tS[1]) * b
+                                    tV[1] += (vy - tV[1]) * b
+                                    tF[1] += fm * b
+                                    fm = fsz / fn - tF[2]
+                                    tF[2] += fm * b
+                                    ax_ = (vx - tV[0]) / TILT_TAU
+                                    ay_ = (vy - tV[1]) / TILT_TAU
+                                    if tw > 0.0 and tn >= tfull and ax_ * ax_ + ay_ * ay_ <= TILT_GATE_A * TILT_GATE_A:
+                                        if TILT_LAG:
+                                            hr = [(6, 1.0)] + [(9 + j, TILT_TAU * r1[j]) for j in range(3)]
+                                            _kf_update_row(P, dx, hr, tF[1] / g, _tilt_var(tS[1], g, tw))
+                                            hr = [(7, 1.0)] + [(9 + j, TILT_TAU * r1[3 + j]) for j in range(3)]
+                                            _kf_update_row(P, dx, hr, -tF[0] / g, _tilt_var(tS[0], g, tw))
+                                        else:
+                                            kf_update(P, dx, 6, tF[1] / g, _tilt_var(tS[1], g, tw))
+                                            kf_update(P, dx, 7, -tF[0] / g, _tilt_var(tS[0], g, tw))
+                                        tup = True
                                 sdx = None
-                                if zupt or v2 or v2p:
+                                if zupt or v2 or v2p or tup:
                                     sdx = dx
                                     ow, ox, oy, oz = qw, qx, qy, qz
                                     (qw, qx, qy, qz, px, py, pz, vx, vy, vz, bgx, bgy, bgz, bax, bay,
                                      baz) = _inject(qw, qx, qy, qz, px, py, pz, vx, vy, vz, bgx, bgy, bgz,
                                                     bax, bay, baz, dx)
-                                    if reset or refresh:
+                                    if reset or refresh or tilt:
                                         chk = 0.0
                                         for e in dx:
                                             chk += e
                                         if chk - chk == 0.0:
+                                            if tilt:            # Step L2: the window was built with the old attitude
+                                                ex, ey, ez = dx[6], dx[7], dx[8]
+                                                f0, f1, f2 = tF
+                                                tF = [f0 + ey * f2 - ez * f1, f1 + ez * f0 - ex * f2,
+                                                      f2 + ex * f1 - ey * f0]
+                                                if TILT_LAG:
+                                                    u0 = TILT_TAU * g * (r1[0] * dx[9] + r1[1] * dx[10]
+                                                                         + r1[2] * dx[11])
+                                                    u1 = TILT_TAU * g * (r1[3] * dx[9] + r1[4] * dx[10]
+                                                                         + r1[5] * dx[11])
+                                                    tF[0] += u1
+                                                    tF[1] -= u0
                                             if reset:
                                                 _kf_reset(P, dx[6], dx[7], dx[8])
                                             if refresh and has_prev:
@@ -1649,7 +1766,7 @@ def _run(src, dst, write=True, integrate=True, env=None, collect=None, store=Non
                             bs0 += gx; bs1 += gy; bs2 += gz; bs3 += ax; bs4 += ay; bs5 += az
                             bq0 += gx * gx; bq1 += gy * gy; bq2 += gz * gz
                             bq3 += ax * ax; bq4 += ay * ay; bq5 += az * az
-                            if jam:
+                            if jam or tilt:
                                 # ---- noise meter: second differences of the raw values ----
                                 if dt <= max_dt and has_prev:
                                     if hn >= 2:
