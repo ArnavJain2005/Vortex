@@ -166,6 +166,31 @@ RESET_ON = False            # OFF (failed the rule). After each injection: covar
 REFRESH_ON = True            # after each injection: the cached previous sample re-expressed with the corrected
                              # attitude and biases (refresh_prev)
 P0V_ON = True                 # no still run (fallback init): initial velocity sigma = the V2 envelope, not P0_VEL
+# Step L2 (K2, 18-19 Nov; reference first, rule in Docs/TRACK3_PLAN.md, Step L2): slow gravity alignment with a
+# gyro noise meter (TILT_ON, default off). Over a window of TILT_TAU seconds the vehicle's mean world-frame
+# acceleration is near zero (velocity is bounded), so the mean of the world specific force (body specific
+# force rotated by the current attitude estimate) must point along +z with magnitude g. Its horizontal part
+# F_x, F_y measures the window-mean roll/pitch error: F_hat = F_true - dth x F_true, so dth_x = F_y / g and
+# dth_y = -F_x / g (world-frame error, q_true = Exp(dth) q). Not the instantaneous accelerometer tilt: on a
+# multirotor the accelerometer reads thrust along body z plus drag, not gravity. The window is an exponential
+# average over ticks (O(1) memory), rotated with every injected attitude correction so a corrected error is not
+# measured twice. Bias of the measurement: the window-mean true acceleration, about TILT_DV / (g TILT_TAU).
+# Trust: a gyro noise meter (per-sample white-noise sigma from second differences, median over TILT_MED_TICKS
+# ticks so spikes do not count) gives a weight w from 0 at TILT_G_LO to 1 at TILT_G_HI. With w = 0 nothing
+# changes. With w > 0 the tilt pseudo-measurements are applied with variance R / w and the gyro white-noise and
+# bias-walk densities are raised to the measured level (bias walk = TILT_WALK_K x measured white density).
+TILT_ON = False
+TILT_TAU = 12.0              # s, window (time constant) of the mean world specific force; PRD 10-20 s
+TILT_G_LO = 0.05             # rad/s per sample: meter at or below -> weight 0. Clean EuRoC flight reads about
+                             # 0.04 (rotor vibration; Step L1 meter, MH_01/02), reading b about 0.04
+TILT_G_HI = 0.10             # rad/s per sample: weight 1 at and above. Reading a at full severity: 0.17-0.20
+TILT_MED_TICKS = 40          # ticks (10 s): median window of the gyro meter (spikes: about 0.6 per s at full severity)
+TILT_R_K = 1.0               # variance multiplier for the overlapping windows (tuned on MH_01/02 only)
+TILT_DV = 2.0                # m/s, velocity change bound for the bias term (the V2 speed envelope V2_SIGMA_H)
+TILT_WALK_K = 0.7            # gyro bias-walk density / white density when jammed: the organisers' script ratio
+                             # 0.010 / (0.20 sqrt(0.005)) for the accelerometer-sized faults (reading a)
+TILT_GATE_A = 0.5            # m/s^2: no tilt update while the filter's own window-mean horizontal acceleration
+                             # (v - window-mean v) / TILT_TAU exceeds this (not small: a sustained manoeuvre)
 N = 15
 
 
@@ -190,10 +215,11 @@ def kf_init(still):
     return P
 
 
-def kf_propagate(P, r, fx, fy, fz, T, acc_d2=ACC_NOISE * ACC_NOISE, gyro_d2=GYRO_NOISE * GYRO_NOISE):
+def kf_propagate(P, r, fx, fy, fz, T, acc_d2=ACC_NOISE * ACC_NOISE, gyro_d2=GYRO_NOISE * GYRO_NOISE,
+                 gyro_w2=GYRO_WALK * GYRO_WALK):
     """P <- Phi P Phi^T + Q for a tick of T seconds. r: row-major R (body to world), f: mean world
-    specific force; acc_d2, gyro_d2: white-noise densities squared. Phi = I + A; A's non-zero
-    entries are listed as (row, col, value)."""
+    specific force; acc_d2, gyro_d2: white-noise densities squared; gyro_w2: gyro bias-walk density
+    squared. Phi = I + A; A's non-zero entries are listed as (row, col, value)."""
     A = [(0, 3, T), (1, 4, T), (2, 5, T),
          (3, 7, T * fz), (3, 8, -T * fy), (4, 6, -T * fz), (4, 8, T * fx), (5, 6, T * fy), (5, 7, -T * fx)]
     for i in range(3):
@@ -212,7 +238,7 @@ def kf_propagate(P, r, fx, fy, fz, T, acc_d2=ACC_NOISE * ACC_NOISE, gyro_d2=GYRO
             Pn[rr + i] += a * M[rr + j]
     qv = acc_d2 * T
     qt = gyro_d2 * T
-    qg = GYRO_WALK * GYRO_WALK * T
+    qg = gyro_w2 * T
     qa = ACC_WALK * ACC_WALK * T
     for k in range(3):
         Pn[(3 + k) * (N + 1)] += qv
@@ -293,6 +319,25 @@ def refresh_prev(prev, qo, qn, dx):
     change, rotated by R(qn)."""
     bx, by, bz = sd.rotate((qo[0], -qo[1], -qo[2], -qo[3]), prev[3], prev[4], prev[5])
     return (prev[0] - dx[9], prev[1] - dx[10], prev[2] - dx[11]) + sd.rotate(qn, bx - dx[12], by - dx[13], bz - dx[14])
+
+
+def tilt_weight(ring):
+    """Step L2: (weight, median per-sample gyro variance) from the ring of per-tick gyro variances. The
+    weight rises linearly from 0 at TILT_G_LO to 1 at TILT_G_HI (rad/s per sample)."""
+    s = sorted(ring)
+    m = len(s)
+    med = s[m // 2] if m % 2 else 0.5 * (s[m // 2 - 1] + s[m // 2])
+    sg = math.sqrt(med)
+    w = (sg - TILT_G_LO) / (TILT_G_HI - TILT_G_LO)
+    return (0.0 if w < 0.0 else 1.0 if w > 1.0 else w), med
+
+
+def tilt_var(s2, g, w):
+    """Step L2: variance of one tilt pseudo-measurement (rad^2). s2: window spread of the per-tick
+    horizontal specific force on that axis ((m/s^2)^2); the window mean of TILT_TAU / TICK_S ticks;
+    plus the bias term (TILT_DV / (g TILT_TAU))^2; times TILT_R_K, over the weight w."""
+    b = TILT_DV / (g * TILT_TAU)
+    return TILT_R_K * (s2 / (g * g) * (TICK_S / TILT_TAU) + b * b) / w
 
 
 def coast(p, v, dt, tau):
@@ -445,7 +490,7 @@ def smooth_apply(out, rows, anchor, blocks, t_end, d_end):
 
 
 def estimate(rows, v1=None, v2=None, v2p=None, log=None, jam=None, gap_on=None, dead=None, fc=None,
-             pre_hold=None, zden=None, sig=None, smooth=None, env=None, collect=None):
+             pre_hold=None, zden=None, sig=None, smooth=None, env=None, collect=None, tilt=None):
     """rows: list of (t_ns or None, six floats). Returns one (px, py, pz, qw, qx, qy, qz) per row.
     v1, v2, v2p, jam, gap_on, dead, fc, pre_hold, zden: switches (default the module's *_ON). log: optional list, gets
     one dict per tick. sig: optional list, gets one per-row position sigma (m, 3D) per row (step 8b,
@@ -459,6 +504,7 @@ def estimate(rows, v1=None, v2=None, v2p=None, log=None, jam=None, gap_on=None, 
     zden = ZUPT_DEN_ON if zden is None else zden
     tau = (FC_TAU if (FC_ON if fc is None else fc) else None)
     smooth = SMOOTH_ON if smooth is None else smooth
+    tilt = TILT_ON if tilt is None else tilt
     c = [0.0, 0.0, 0.0]                 # running centre of the volume envelope
     cal = sd.calibrate(rows)
     init, anchor = cal.init, cal.anchor
@@ -505,6 +551,13 @@ def estimate(rows, v1=None, v2=None, v2p=None, log=None, jam=None, gap_on=None, 
     e = env if env is not None else (V2_SIGMA_H, V2_SIGMA_V, V2P_SIGMA_H, V2P_SIGMA_V)
     s2vh, s2vv, s2ph, s2pv = e[0] * e[0], e[1] * e[1], e[2] * e[2], e[3] * e[3]
     reset, refresh = RESET_ON, REFRESH_ON
+    tF = [0.0, 0.0, 0.0]                # Step L2: window mean of the world specific force
+    tS = [0.0, 0.0]                     # ... its spread (x, y) about the mean
+    tV = [0.0, 0.0]                     # ... window mean of the filter's horizontal velocity (gate)
+    tn = 0                              # ticks in the window so far
+    tfull = TILT_TAU / TICK_S           # ticks to fill it
+    tring = []                          # per-tick gyro variances (meter)
+    tw = 0.0                            # weight
     for t, vals in rows[anchor:]:
         if t is not None:
             ok = sd.is_valid(vals)
@@ -549,12 +602,25 @@ def estimate(rows, v1=None, v2=None, v2p=None, log=None, jam=None, gap_on=None, 
                                     gd2 = jg
                                 if ja > ad2:
                                     ad2 = ja
+                            gw2 = GYRO_WALK * GYRO_WALK
+                            if tilt and nd >= sd.BLOCK_MIN_ROWS and fn:
+                                tring.append(dg / (18.0 * nd))
+                                if len(tring) > TILT_MED_TICKS:
+                                    tring.pop(0)
+                                tw, med = tilt_weight(tring)
+                                if tw > 0.0:
+                                    d2 = med * fdt / fn
+                                    if d2 > gd2:
+                                        gd2 += tw * (d2 - gd2)
+                                    w2 = TILT_WALK_K * TILT_WALK_K * d2
+                                    if w2 > gw2:
+                                        gw2 += tw * (w2 - gw2)
                             if fn:
-                                kf_propagate(P, r, fs[0] / fn, fs[1] / fn, fs[2] / fn, T, ad2, gd2)
+                                kf_propagate(P, r, fs[0] / fn, fs[1] / fn, fs[2] / fn, T, ad2, gd2, gw2)
                                 if smooth:
                                     sA = phi_entries(r, fs[0] / fn, fs[1] / fn, fs[2] / fn, T)
                             else:
-                                kf_propagate(P, r, 0.0, 0.0, g, T, ad2, gd2)
+                                kf_propagate(P, r, 0.0, 0.0, g, T, ad2, gd2, gw2)
                                 if smooth:
                                     sA = phi_entries(r, 0.0, 0.0, g, T)
                         elif smooth:
@@ -593,16 +659,38 @@ def estimate(rows, v1=None, v2=None, v2p=None, log=None, jam=None, gap_on=None, 
                             kf_update(P, dx, 0, c[0] - p[0], s2ph)
                             kf_update(P, dx, 1, c[1] - p[1], s2ph)
                             kf_update(P, dx, 2, c[2] - p[2], s2pv)
+                        tup = False
+                        if tilt and fn and T > 0.0:
+                            tn += 1
+                            b = 1.0 / tn
+                            if b < T / TILT_TAU:
+                                b = T / TILT_TAU
+                            for k in range(3):
+                                fm = fs[k] / fn - tF[k]
+                                if k < 2:
+                                    tS[k] += (fm * fm - tS[k]) * b
+                                    tV[k] += (v[k] - tV[k]) * b
+                                tF[k] += fm * b
+                            ax_ = (v[0] - tV[0]) / TILT_TAU
+                            ay_ = (v[1] - tV[1]) / TILT_TAU
+                            if tw > 0.0 and tn >= tfull and ax_ * ax_ + ay_ * ay_ <= TILT_GATE_A * TILT_GATE_A:
+                                kf_update(P, dx, 6, tF[1] / g, tilt_var(tS[1], g, tw))
+                                kf_update(P, dx, 7, -tF[0] / g, tilt_var(tS[0], g, tw))
+                                tup = True
                         sdx = None
-                        if zupt or v2 or v2p:
+                        if zupt or v2 or v2p or tup:
                             sdx = dx
                             qo = q
                             q, p, v, bg, ba = inject(q, p, v, bg, ba, dx)
-                            if reset or refresh:
+                            if reset or refresh or tilt:
                                 chk = 0.0
                                 for e in dx:
                                     chk += e
                                 if chk - chk == 0.0:        # inject applied it (a non-finite dx is discarded)
+                                    if tilt:                # Step L2: the window was built with the old attitude
+                                        ex, ey, ez = dx[6], dx[7], dx[8]
+                                        f0, f1, f2 = tF
+                                        tF = [f0 + ey * f2 - ez * f1, f1 + ez * f0 - ex * f2, f2 + ex * f1 - ey * f0]
                                     if reset:
                                         kf_reset(P, dx[6], dx[7], dx[8])
                                     if refresh and prev is not None:
