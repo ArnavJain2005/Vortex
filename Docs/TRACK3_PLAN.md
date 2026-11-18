@@ -88,7 +88,7 @@ Deadline **22 Nov 2026, 11:59 PM IST**, confirmed by the FAQ (Q1 closed). Full-t
 | F | Filter fixes from the 16-17 Nov reviews: gyro-bias cap on every still test (`BGCAP_ON`), covariance reset after injection (`RESET_ON`), refresh of the cached previous sample (`REFRESH_ON`), fallback velocity uncertainty (`P0V_ON`); four switches | **Done** (17 Nov): BGCAP, P0V, REFRESH pass and ship on; RESET fails (reading a APE +1.8 %) and ships off. Held-out mean APE 4.972 -> 4.962 m; floor 3.745 m | Each switch judged on 36 fresh held-out copies (seeds 4-6) by the no-harm rule |
 | L1 | Positions scaled about their centroid, alpha per gyro-noise class (`SHRINK_ON`); null floor = the estimate reversed in time (`eval_euroc.py --reverse`) | **Done (verified): OFF** by the pre-registered rule (18 Nov, rule at d56c875): both arms improve the mean objective (reading a -49.5 %, reading b -23.9 %) but fail sequence consistency (4 and 3 of 6); LO also loses to its reversed output. Shipped output unchanged | Each arm judged on 36 fresh held-out copies (seeds 7-9) |
 | Lean | Switched-off experiments moved from `pathfinder.py` to `tools/pathfinder_lab.py` (not shipped) to cut compile memory | **Done (verified)** 18 Nov: output byte-identical on all 144 real inputs; no-bytecode heap 6,055 -> 4,935 KB (3.14), 6,431 -> 6,309 KB (3.13); gate PASS | `tests/test_lab.py`; gates PASS |
-| L2 | Slow gravity alignment over a 4 s window with a lag model, weighted by a gyro noise meter (`TILT_ON`) | **Built, tuned; rule G committed, not judged** 18 Nov: tuning reading a APE 12.28 -> 3.69 m (floor 4.49, reversed 4.67); reading b, clean, TUM-VI room1/2 identical. Held-out judging (seeds 10-12) is K3 | Rule G on 36 fresh held-out copies + TUM-VI room3/4 |
+| L2 | Slow gravity alignment over a 4 s window with a lag model, weighted by a gyro noise meter (`TILT_ON`) | **Done (verified): OFF** by rule G (18 Nov, rule at 5fd288c, seeds 10-12): passes 11 of 12 conditions (held-out APE 4.935 -> 3.743 m, -24 %; 5 of 6 sequences; blind -53 %) but fails the reversed-output null (3.743 vs 3.735 m). Shipped output unchanged | Rule G on 36 fresh held-out copies + TUM-VI room3/4 |
 
 ## Open questions (Q1 to Q5 are in the email drafted for prism@samsung.com on 15 Nov)
 
@@ -1648,3 +1648,58 @@ Expected from tuning (a prediction, not part of the rule): reading b and clean u
 weight at 0 there); reading a improves on MH_03..05 and V1_01; V1_02 a and V1_03 a may not move, because the
 organisers' script scaled their gyro noise down (Step L1: meter 0.043 and 0.076 rad/s), so condition 2 is the
 risk.
+
+**Outcome (18 Nov 2026, late evening; rule commit 5fd288c; the seed 10-12 copies were made after it;
+`python tools/judge_stepG.py ... --gate PASS`, output kept in `Docs/results/stepG-verdict.txt`).** Tags
+`stepG-H-*` (36 copies), `stepG-C-*` (8 clean), `Docs/tumvi/stepG-T-*` (12 TUM-VI copies), `stepG-CT-*` (4 clean
+rooms). Gate with TILT_ON (condition 9, a scratch copy with `TILT_ON = True`): PASS on synthetic (heap 1,004 KB,
+12.1 us/row) and MH_01_easy_a_s1 (1,094 KB, 9.3 us/row); no-bytecode 5,357 KB.
+
+| Condition | Result | |
+|---|---|---|
+| 1 H mean APE improves >= 2 % | 4.935 -> 3.743 m (-24.15 %) | pass |
+| 2 paired gain > 0 on >= 4 of 6 sequences | 5 of 6 (V1_02 unchanged: +0.0 %) | pass |
+| 3 reading a / b not worse by > 1 % | -36.86 % / -4.88 % | pass |
+| 4 gap / blind RMSE not worse by > 2 % | -29.61 % / -52.67 % | pass |
+| 5 clean EuRoC / clean TUM-VI | -0.464 % / +0.000 % | pass |
+| 6 TUM-VI block (room3/4) | 2.545 -> 2.545 m (+0.00 %) | pass |
+| 7 beats its own reversed output | **3.743 vs 3.735 m** | **FAIL** |
+| 8 contract PASS | 156 runs | pass |
+| 9 benchmark gate with TILT_ON | PASS | pass |
+
+**Shipped: `TILT_ON = False`.** Shipped output is byte-identical to the lean `main`. Seeds 10-12 are spent.
+
+Per sequence and reading, mean over seeds 10-12 (APE m; blind RMSE m):
+
+| Sequence | Reading | off | on | on reversed | floor | blind on | blind floor |
+|---|---|---|---|---|---|---|---|
+| MH_03_medium | a | 8.208 | 3.969 | 3.684 | 3.583 | 3.188 | 3.085 |
+| MH_03_medium | b | 3.518 | 3.518 | 3.340 | 3.583 | 2.997 | 3.085 |
+| MH_04_difficult | a | 7.761 | 6.299 | 6.621 | 6.814 | 4.404 | 3.851 |
+| MH_04_difficult | b | 6.533 | 6.533 | 6.564 | 6.814 | 3.774 | 3.851 |
+| MH_05_difficult | a | 10.346 | 6.499 | 6.693 | 6.868 | 4.189 | 4.061 |
+| MH_05_difficult | b | 6.546 | 6.546 | 6.604 | 6.868 | 4.419 | 4.061 |
+| V1_01_easy | a | 4.738 | 2.071 | 2.107 | 1.854 | 1.426 | 1.724 |
+| V1_01_easy | b | 1.874 | 1.874 | 1.740 | 1.854 | 1.868 | 1.724 |
+| V1_02_medium | a | 2.108 | 2.108 | 2.030 | 1.779 | 2.656 | 1.043 |
+| V1_02_medium | b | 2.261 | 2.261 | 2.126 | 1.779 | 3.743 | 1.043 |
+| V1_03_difficult | a | 2.529 | 1.589 | 1.647 | 1.580 | 1.548 | 1.269 |
+| V1_03_difficult | b | 2.798 | 1.650 | 1.666 | 1.580 | 2.029 | 1.269 |
+
+Sequence-level paired gain: mean +24.8 %, sd 16.8 % (n = 6). Means by reading, on / reversed / floor: a 3.756 /
+3.797 / 3.746; b 3.730 / 3.673 / 3.746. RPE 1 s over H 0.931 -> 0.869.
+
+**Reading (measured, after the verdict; nothing below changes it).**
+- L2 removes the reading-a failure: reading a goes from 5.95 m to 3.76 m, level with standing still (3.75), and
+  the blind 5 s over H from 6.38 to 3.02 m (floor 2.50). It does not get below the floor on held-out data, unlike
+  on tuning (3.69 against 4.49). The tuning gain below the floor did not carry over.
+- Condition 7 fails on the pooled mean. On reading a, where L2 acts, it beats its reversed output (3.756 against
+  3.797); on reading b the estimate, mostly unchanged by L2, already loses to its reversed output (3.730 against
+  3.673). The null says the shipped estimator's motion on reading b carries no more than what the alignment can
+  fit, which is the Step L1 finding again. The rule pooled both readings, as written.
+- As predicted, V1_02 did not move (meter below 0.05 rad/s on both readings). Not predicted: V1_03 b moved
+  (2.798 -> 1.650 m): its gyro meter reads above 0.05 on reading b too (aggressive flight vibration plus the
+  script's noise), so L2 acted there and helped.
+- Called "better aligned APE", not motion recovered: the rule did not pass, and APE ends at the floor.
+- Not done: any revised rule. Seeds 16-18 are the only reserve (one re-judge of one revised variant with a new
+  rule). Rule H (L3) was planned on seeds 13-15. Arnav decides.
