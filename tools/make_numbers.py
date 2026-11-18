@@ -240,7 +240,7 @@ def render(t):
 
 
 def run_pytest():
-    p = subprocess.run([sys.executable, "-m", "pytest", "-q", "-p", "no:cacheprovider"], cwd=ROOT,
+    p = subprocess.run([sys.executable, "-m", "pytest", "-q", "-rf", "-p", "no:cacheprovider"], cwd=ROOT,
                        capture_output=True, text=True)
     tail = [ln for ln in p.stdout.splitlines() if ln.strip()][-1]
     count = lambda w: int(m.group(1)) if (m := re.search(r"(\d+) " + w, tail)) else 0  # noqa: E731
@@ -254,6 +254,9 @@ def run_pytest():
     with open(PYTEST_JSON, "w", encoding="utf-8", newline="\n") as f:
         json.dump(rec, f, indent=1)
         f.write("\n")
+    for ln in p.stdout.splitlines():
+        if ln.startswith("FAILED"):
+            print(ln)
     print("pytest:", rec["summary"])
     return p.returncode
 

@@ -571,457 +571,457 @@
  },
  "tumvi_copies_n": {
   "value": "24",
-  "source": "tumvi-off vs tumvi-floor-off",
+  "source": "step7-shipped-tumvi vs tumvi-floor-off",
   "date": "2026-11-18"
  },
  "tumvi_contract_pass_n": {
   "value": "24/24",
-  "source": "tumvi-off",
+  "source": "step7-shipped-tumvi",
   "date": "2026-11-18"
  },
  "tumvi_ape_m": {
-  "value": "2.313",
-  "source": "tumvi-off vs tumvi-floor-off",
+  "value": "0.990",
+  "source": "step7-shipped-tumvi vs tumvi-floor-off",
   "date": "2026-11-18"
  },
  "tumvi_ape_floor_m": {
   "value": "1.137",
-  "source": "tumvi-off vs tumvi-floor-off",
+  "source": "step7-shipped-tumvi vs tumvi-floor-off",
   "date": "2026-11-18"
  },
  "tumvi_ape_vs_floor_pct": {
-  "value": "+103.5",
-  "source": "tumvi-off vs tumvi-floor-off",
+  "value": "-12.9",
+  "source": "step7-shipped-tumvi vs tumvi-floor-off",
   "date": "2026-11-18"
  },
  "tumvi_gap_m": {
-  "value": "2.038",
-  "source": "tumvi-off vs tumvi-floor-off",
+  "value": "0.977",
+  "source": "step7-shipped-tumvi vs tumvi-floor-off",
   "date": "2026-11-18"
  },
  "tumvi_gap_floor_m": {
   "value": "1.078",
-  "source": "tumvi-off vs tumvi-floor-off",
+  "source": "step7-shipped-tumvi vs tumvi-floor-off",
   "date": "2026-11-18"
  },
  "tumvi_gap_vs_floor_pct": {
-  "value": "+89.0",
-  "source": "tumvi-off vs tumvi-floor-off",
+  "value": "-9.4",
+  "source": "step7-shipped-tumvi vs tumvi-floor-off",
   "date": "2026-11-18"
  },
  "tumvi_blind_m": {
-  "value": "5.016",
-  "source": "tumvi-off vs tumvi-floor-off",
+  "value": "0.985",
+  "source": "step7-shipped-tumvi vs tumvi-floor-off",
   "date": "2026-11-18"
  },
  "tumvi_blind_floor_m": {
   "value": "0.709",
-  "source": "tumvi-off vs tumvi-floor-off",
+  "source": "step7-shipped-tumvi vs tumvi-floor-off",
   "date": "2026-11-18"
  },
  "tumvi_blind_vs_floor_pct": {
-  "value": "+607.5",
-  "source": "tumvi-off vs tumvi-floor-off",
+  "value": "+38.9",
+  "source": "step7-shipped-tumvi vs tumvi-floor-off",
   "date": "2026-11-18"
  },
  "tumvi_rpe1s_m": {
-  "value": "1.100",
-  "source": "tumvi-off vs tumvi-floor-off",
+  "value": "1.005",
+  "source": "step7-shipped-tumvi vs tumvi-floor-off",
   "date": "2026-11-18"
  },
  "tumvi_rpe1s_floor_m": {
   "value": "1.349",
-  "source": "tumvi-off vs tumvi-floor-off",
+  "source": "step7-shipped-tumvi vs tumvi-floor-off",
   "date": "2026-11-18"
  },
  "tumvi_rpe1s_vs_floor_pct": {
-  "value": "-18.5",
-  "source": "tumvi-off vs tumvi-floor-off",
+  "value": "-25.5",
+  "source": "step7-shipped-tumvi vs tumvi-floor-off",
   "date": "2026-11-18"
  },
  "tumvi_seqs_beat_floor_n": {
-  "value": "0/4",
-  "source": "tumvi-off vs tumvi-floor-off",
+  "value": "4/4",
+  "source": "step7-shipped-tumvi vs tumvi-floor-off",
   "date": "2026-11-18"
  },
  "tumvi_a_ape_m": {
-  "value": "2.240",
-  "source": "tumvi-off vs tumvi-floor-off",
+  "value": "0.983",
+  "source": "step7-shipped-tumvi vs tumvi-floor-off",
   "date": "2026-11-18"
  },
  "tumvi_a_ape_floor_m": {
   "value": "1.137",
-  "source": "tumvi-off vs tumvi-floor-off",
+  "source": "step7-shipped-tumvi vs tumvi-floor-off",
   "date": "2026-11-18"
  },
  "tumvi_a_ape_vs_floor_pct": {
-  "value": "+97.0",
-  "source": "tumvi-off vs tumvi-floor-off",
+  "value": "-13.5",
+  "source": "step7-shipped-tumvi vs tumvi-floor-off",
   "date": "2026-11-18"
  },
  "tumvi_a_gap_m": {
-  "value": "2.025",
-  "source": "tumvi-off vs tumvi-floor-off",
+  "value": "0.979",
+  "source": "step7-shipped-tumvi vs tumvi-floor-off",
   "date": "2026-11-18"
  },
  "tumvi_a_gap_floor_m": {
   "value": "1.078",
-  "source": "tumvi-off vs tumvi-floor-off",
+  "source": "step7-shipped-tumvi vs tumvi-floor-off",
   "date": "2026-11-18"
  },
  "tumvi_a_gap_vs_floor_pct": {
-  "value": "+87.9",
-  "source": "tumvi-off vs tumvi-floor-off",
+  "value": "-9.2",
+  "source": "step7-shipped-tumvi vs tumvi-floor-off",
   "date": "2026-11-18"
  },
  "tumvi_a_blind_m": {
-  "value": "4.646",
-  "source": "tumvi-off vs tumvi-floor-off",
+  "value": "0.920",
+  "source": "step7-shipped-tumvi vs tumvi-floor-off",
   "date": "2026-11-18"
  },
  "tumvi_a_blind_floor_m": {
   "value": "0.709",
-  "source": "tumvi-off vs tumvi-floor-off",
+  "source": "step7-shipped-tumvi vs tumvi-floor-off",
   "date": "2026-11-18"
  },
  "tumvi_a_blind_vs_floor_pct": {
-  "value": "+555.3",
-  "source": "tumvi-off vs tumvi-floor-off",
+  "value": "+29.7",
+  "source": "step7-shipped-tumvi vs tumvi-floor-off",
   "date": "2026-11-18"
  },
  "tumvi_a_rpe1s_m": {
-  "value": "1.094",
-  "source": "tumvi-off vs tumvi-floor-off",
+  "value": "1.000",
+  "source": "step7-shipped-tumvi vs tumvi-floor-off",
   "date": "2026-11-18"
  },
  "tumvi_a_rpe1s_floor_m": {
   "value": "1.349",
-  "source": "tumvi-off vs tumvi-floor-off",
+  "source": "step7-shipped-tumvi vs tumvi-floor-off",
   "date": "2026-11-18"
  },
  "tumvi_a_rpe1s_vs_floor_pct": {
-  "value": "-18.9",
-  "source": "tumvi-off vs tumvi-floor-off",
+  "value": "-25.9",
+  "source": "step7-shipped-tumvi vs tumvi-floor-off",
   "date": "2026-11-18"
  },
  "tumvi_a_seqs_beat_floor_n": {
-  "value": "0/4",
-  "source": "tumvi-off vs tumvi-floor-off",
+  "value": "4/4",
+  "source": "step7-shipped-tumvi vs tumvi-floor-off",
   "date": "2026-11-18"
  },
  "tumvi_b_ape_m": {
-  "value": "2.387",
-  "source": "tumvi-off vs tumvi-floor-off",
+  "value": "0.997",
+  "source": "step7-shipped-tumvi vs tumvi-floor-off",
   "date": "2026-11-18"
  },
  "tumvi_b_ape_floor_m": {
   "value": "1.137",
-  "source": "tumvi-off vs tumvi-floor-off",
+  "source": "step7-shipped-tumvi vs tumvi-floor-off",
   "date": "2026-11-18"
  },
  "tumvi_b_ape_vs_floor_pct": {
-  "value": "+109.9",
-  "source": "tumvi-off vs tumvi-floor-off",
+  "value": "-12.3",
+  "source": "step7-shipped-tumvi vs tumvi-floor-off",
   "date": "2026-11-18"
  },
  "tumvi_b_gap_m": {
-  "value": "2.050",
-  "source": "tumvi-off vs tumvi-floor-off",
+  "value": "0.975",
+  "source": "step7-shipped-tumvi vs tumvi-floor-off",
   "date": "2026-11-18"
  },
  "tumvi_b_gap_floor_m": {
   "value": "1.078",
-  "source": "tumvi-off vs tumvi-floor-off",
+  "source": "step7-shipped-tumvi vs tumvi-floor-off",
   "date": "2026-11-18"
  },
  "tumvi_b_gap_vs_floor_pct": {
-  "value": "+90.2",
-  "source": "tumvi-off vs tumvi-floor-off",
+  "value": "-9.5",
+  "source": "step7-shipped-tumvi vs tumvi-floor-off",
   "date": "2026-11-18"
  },
  "tumvi_b_blind_m": {
-  "value": "5.386",
-  "source": "tumvi-off vs tumvi-floor-off",
+  "value": "1.049",
+  "source": "step7-shipped-tumvi vs tumvi-floor-off",
   "date": "2026-11-18"
  },
  "tumvi_b_blind_floor_m": {
   "value": "0.709",
-  "source": "tumvi-off vs tumvi-floor-off",
+  "source": "step7-shipped-tumvi vs tumvi-floor-off",
   "date": "2026-11-18"
  },
  "tumvi_b_blind_vs_floor_pct": {
-  "value": "+659.7",
-  "source": "tumvi-off vs tumvi-floor-off",
+  "value": "+48.0",
+  "source": "step7-shipped-tumvi vs tumvi-floor-off",
   "date": "2026-11-18"
  },
  "tumvi_b_rpe1s_m": {
-  "value": "1.106",
-  "source": "tumvi-off vs tumvi-floor-off",
+  "value": "1.010",
+  "source": "step7-shipped-tumvi vs tumvi-floor-off",
   "date": "2026-11-18"
  },
  "tumvi_b_rpe1s_floor_m": {
   "value": "1.349",
-  "source": "tumvi-off vs tumvi-floor-off",
+  "source": "step7-shipped-tumvi vs tumvi-floor-off",
   "date": "2026-11-18"
  },
  "tumvi_b_rpe1s_vs_floor_pct": {
-  "value": "-18.0",
-  "source": "tumvi-off vs tumvi-floor-off",
+  "value": "-25.1",
+  "source": "step7-shipped-tumvi vs tumvi-floor-off",
   "date": "2026-11-18"
  },
  "tumvi_b_seqs_beat_floor_n": {
-  "value": "0/4",
-  "source": "tumvi-off vs tumvi-floor-off",
+  "value": "4/4",
+  "source": "step7-shipped-tumvi vs tumvi-floor-off",
   "date": "2026-11-18"
  },
  "tumvi_room12_ape_m": {
-  "value": "2.028",
-  "source": "tumvi-off vs tumvi-floor-off",
+  "value": "0.871",
+  "source": "step7-shipped-tumvi vs tumvi-floor-off",
   "date": "2026-11-18"
  },
  "tumvi_room12_ape_floor_m": {
   "value": "1.110",
-  "source": "tumvi-off vs tumvi-floor-off",
+  "source": "step7-shipped-tumvi vs tumvi-floor-off",
   "date": "2026-11-18"
  },
  "tumvi_room12_ape_vs_floor_pct": {
-  "value": "+82.7",
-  "source": "tumvi-off vs tumvi-floor-off",
+  "value": "-21.5",
+  "source": "step7-shipped-tumvi vs tumvi-floor-off",
   "date": "2026-11-18"
  },
  "tumvi_room12_gap_m": {
-  "value": "1.928",
-  "source": "tumvi-off vs tumvi-floor-off",
+  "value": "0.877",
+  "source": "step7-shipped-tumvi vs tumvi-floor-off",
   "date": "2026-11-18"
  },
  "tumvi_room12_gap_floor_m": {
   "value": "1.063",
-  "source": "tumvi-off vs tumvi-floor-off",
+  "source": "step7-shipped-tumvi vs tumvi-floor-off",
   "date": "2026-11-18"
  },
  "tumvi_room12_gap_vs_floor_pct": {
-  "value": "+81.3",
-  "source": "tumvi-off vs tumvi-floor-off",
+  "value": "-17.5",
+  "source": "step7-shipped-tumvi vs tumvi-floor-off",
   "date": "2026-11-18"
  },
  "tumvi_room12_blind_m": {
-  "value": "3.628",
-  "source": "tumvi-off vs tumvi-floor-off",
+  "value": "0.953",
+  "source": "step7-shipped-tumvi vs tumvi-floor-off",
   "date": "2026-11-18"
  },
  "tumvi_room12_blind_floor_m": {
   "value": "0.677",
-  "source": "tumvi-off vs tumvi-floor-off",
+  "source": "step7-shipped-tumvi vs tumvi-floor-off",
   "date": "2026-11-18"
  },
  "tumvi_room12_blind_vs_floor_pct": {
-  "value": "+436.0",
-  "source": "tumvi-off vs tumvi-floor-off",
+  "value": "+40.7",
+  "source": "step7-shipped-tumvi vs tumvi-floor-off",
   "date": "2026-11-18"
  },
  "tumvi_room12_rpe1s_m": {
-  "value": "1.114",
-  "source": "tumvi-off vs tumvi-floor-off",
+  "value": "0.988",
+  "source": "step7-shipped-tumvi vs tumvi-floor-off",
   "date": "2026-11-18"
  },
  "tumvi_room12_rpe1s_floor_m": {
   "value": "1.438",
-  "source": "tumvi-off vs tumvi-floor-off",
+  "source": "step7-shipped-tumvi vs tumvi-floor-off",
   "date": "2026-11-18"
  },
  "tumvi_room12_rpe1s_vs_floor_pct": {
-  "value": "-22.5",
-  "source": "tumvi-off vs tumvi-floor-off",
+  "value": "-31.2",
+  "source": "step7-shipped-tumvi vs tumvi-floor-off",
   "date": "2026-11-18"
  },
  "tumvi_room12_seqs_beat_floor_n": {
-  "value": "0/2",
-  "source": "tumvi-off vs tumvi-floor-off",
+  "value": "2/2",
+  "source": "step7-shipped-tumvi vs tumvi-floor-off",
   "date": "2026-11-18"
  },
  "tumvi_room34_ape_m": {
-  "value": "2.599",
-  "source": "tumvi-off vs tumvi-floor-off",
+  "value": "1.109",
+  "source": "step7-shipped-tumvi vs tumvi-floor-off",
   "date": "2026-11-18"
  },
  "tumvi_room34_ape_floor_m": {
   "value": "1.164",
-  "source": "tumvi-off vs tumvi-floor-off",
+  "source": "step7-shipped-tumvi vs tumvi-floor-off",
   "date": "2026-11-18"
  },
  "tumvi_room34_ape_vs_floor_pct": {
-  "value": "+123.2",
-  "source": "tumvi-off vs tumvi-floor-off",
+  "value": "-4.7",
+  "source": "step7-shipped-tumvi vs tumvi-floor-off",
   "date": "2026-11-18"
  },
  "tumvi_room34_gap_m": {
-  "value": "2.147",
-  "source": "tumvi-off vs tumvi-floor-off",
+  "value": "1.077",
+  "source": "step7-shipped-tumvi vs tumvi-floor-off",
   "date": "2026-11-18"
  },
  "tumvi_room34_gap_floor_m": {
   "value": "1.092",
-  "source": "tumvi-off vs tumvi-floor-off",
+  "source": "step7-shipped-tumvi vs tumvi-floor-off",
   "date": "2026-11-18"
  },
  "tumvi_room34_gap_vs_floor_pct": {
-  "value": "+96.5",
-  "source": "tumvi-off vs tumvi-floor-off",
+  "value": "-1.4",
+  "source": "step7-shipped-tumvi vs tumvi-floor-off",
   "date": "2026-11-18"
  },
  "tumvi_room34_blind_m": {
-  "value": "6.404",
-  "source": "tumvi-off vs tumvi-floor-off",
+  "value": "1.016",
+  "source": "step7-shipped-tumvi vs tumvi-floor-off",
   "date": "2026-11-18"
  },
  "tumvi_room34_blind_floor_m": {
   "value": "0.741",
-  "source": "tumvi-off vs tumvi-floor-off",
+  "source": "step7-shipped-tumvi vs tumvi-floor-off",
   "date": "2026-11-18"
  },
  "tumvi_room34_blind_vs_floor_pct": {
-  "value": "+764.2",
-  "source": "tumvi-off vs tumvi-floor-off",
+  "value": "+37.1",
+  "source": "step7-shipped-tumvi vs tumvi-floor-off",
   "date": "2026-11-18"
  },
  "tumvi_room34_rpe1s_m": {
-  "value": "1.085",
-  "source": "tumvi-off vs tumvi-floor-off",
+  "value": "1.022",
+  "source": "step7-shipped-tumvi vs tumvi-floor-off",
   "date": "2026-11-18"
  },
  "tumvi_room34_rpe1s_floor_m": {
   "value": "1.260",
-  "source": "tumvi-off vs tumvi-floor-off",
+  "source": "step7-shipped-tumvi vs tumvi-floor-off",
   "date": "2026-11-18"
  },
  "tumvi_room34_rpe1s_vs_floor_pct": {
-  "value": "-13.9",
-  "source": "tumvi-off vs tumvi-floor-off",
+  "value": "-18.9",
+  "source": "step7-shipped-tumvi vs tumvi-floor-off",
   "date": "2026-11-18"
  },
  "tumvi_room34_seqs_beat_floor_n": {
-  "value": "0/2",
-  "source": "tumvi-off vs tumvi-floor-off",
+  "value": "2/2",
+  "source": "step7-shipped-tumvi vs tumvi-floor-off",
   "date": "2026-11-18"
  },
  "tumvi_clean_seqs_n": {
-  "value": "6",
-  "source": "tumvi-clean vs tumvi-floor-clean",
+  "value": "4",
+  "source": "step7-shipped-tumvi-clean vs tumvi-floor-clean",
   "date": "2026-11-18"
  },
  "tumvi_clean_ape_m": {
-  "value": "0.997",
-  "source": "tumvi-clean vs tumvi-floor-clean",
+  "value": "0.879",
+  "source": "step7-shipped-tumvi-clean vs tumvi-floor-clean",
   "date": "2026-11-18"
  },
  "tumvi_clean_ape_floor_m": {
-  "value": "1.077",
-  "source": "tumvi-clean vs tumvi-floor-clean",
+  "value": "1.137",
+  "source": "step7-shipped-tumvi-clean vs tumvi-floor-clean",
   "date": "2026-11-18"
  },
  "tumvi_clean_ape_vs_floor_pct": {
-  "value": "-7.5",
-  "source": "tumvi-clean vs tumvi-floor-clean",
+  "value": "-22.6",
+  "source": "step7-shipped-tumvi-clean vs tumvi-floor-clean",
   "date": "2026-11-18"
  },
  "tumvi_clean_rpe1s_m": {
-  "value": "0.855",
-  "source": "tumvi-clean vs tumvi-floor-clean",
+  "value": "0.875",
+  "source": "step7-shipped-tumvi-clean vs tumvi-floor-clean",
   "date": "2026-11-18"
  },
  "tumvi_clean_rpe1s_floor_m": {
-  "value": "1.233",
-  "source": "tumvi-clean vs tumvi-floor-clean",
+  "value": "1.365",
+  "source": "step7-shipped-tumvi-clean vs tumvi-floor-clean",
   "date": "2026-11-18"
  },
  "tumvi_clean_rpe1s_vs_floor_pct": {
-  "value": "-30.6",
-  "source": "tumvi-clean vs tumvi-floor-clean",
+  "value": "-35.9",
+  "source": "step7-shipped-tumvi-clean vs tumvi-floor-clean",
   "date": "2026-11-18"
  },
  "tumvi_clean_seqs_beat_floor_n": {
-  "value": "4/6",
-  "source": "tumvi-clean vs tumvi-floor-clean",
+  "value": "4/4",
+  "source": "step7-shipped-tumvi-clean vs tumvi-floor-clean",
   "date": "2026-11-18"
  },
  "tumvi_clean_room12_seqs_n": {
   "value": "2",
-  "source": "tumvi-clean vs tumvi-floor-clean",
+  "source": "step7-shipped-tumvi-clean vs tumvi-floor-clean",
   "date": "2026-11-18"
  },
  "tumvi_clean_room12_ape_m": {
-  "value": "1.038",
-  "source": "tumvi-clean vs tumvi-floor-clean",
+  "value": "0.751",
+  "source": "step7-shipped-tumvi-clean vs tumvi-floor-clean",
   "date": "2026-11-18"
  },
  "tumvi_clean_room12_ape_floor_m": {
   "value": "1.110",
-  "source": "tumvi-clean vs tumvi-floor-clean",
+  "source": "step7-shipped-tumvi-clean vs tumvi-floor-clean",
   "date": "2026-11-18"
  },
  "tumvi_clean_room12_ape_vs_floor_pct": {
-  "value": "-6.5",
-  "source": "tumvi-clean vs tumvi-floor-clean",
+  "value": "-32.3",
+  "source": "step7-shipped-tumvi-clean vs tumvi-floor-clean",
   "date": "2026-11-18"
  },
  "tumvi_clean_room12_rpe1s_m": {
-  "value": "0.992",
-  "source": "tumvi-clean vs tumvi-floor-clean",
+  "value": "0.870",
+  "source": "step7-shipped-tumvi-clean vs tumvi-floor-clean",
   "date": "2026-11-18"
  },
  "tumvi_clean_room12_rpe1s_floor_m": {
   "value": "1.471",
-  "source": "tumvi-clean vs tumvi-floor-clean",
+  "source": "step7-shipped-tumvi-clean vs tumvi-floor-clean",
   "date": "2026-11-18"
  },
  "tumvi_clean_room12_rpe1s_vs_floor_pct": {
-  "value": "-32.6",
-  "source": "tumvi-clean vs tumvi-floor-clean",
+  "value": "-40.8",
+  "source": "step7-shipped-tumvi-clean vs tumvi-floor-clean",
   "date": "2026-11-18"
  },
  "tumvi_clean_room12_seqs_beat_floor_n": {
-  "value": "1/2",
-  "source": "tumvi-clean vs tumvi-floor-clean",
+  "value": "2/2",
+  "source": "step7-shipped-tumvi-clean vs tumvi-floor-clean",
   "date": "2026-11-18"
  },
  "tumvi_clean_room34_seqs_n": {
   "value": "2",
-  "source": "tumvi-clean vs tumvi-floor-clean",
+  "source": "step7-shipped-tumvi-clean vs tumvi-floor-clean",
   "date": "2026-11-18"
  },
  "tumvi_clean_room34_ape_m": {
-  "value": "1.140",
-  "source": "tumvi-clean vs tumvi-floor-clean",
+  "value": "1.008",
+  "source": "step7-shipped-tumvi-clean vs tumvi-floor-clean",
   "date": "2026-11-18"
  },
  "tumvi_clean_room34_ape_floor_m": {
   "value": "1.163",
-  "source": "tumvi-clean vs tumvi-floor-clean",
+  "source": "step7-shipped-tumvi-clean vs tumvi-floor-clean",
   "date": "2026-11-18"
  },
  "tumvi_clean_room34_ape_vs_floor_pct": {
-  "value": "-2.0",
-  "source": "tumvi-clean vs tumvi-floor-clean",
+  "value": "-13.4",
+  "source": "step7-shipped-tumvi-clean vs tumvi-floor-clean",
   "date": "2026-11-18"
  },
  "tumvi_clean_room34_rpe1s_m": {
-  "value": "0.884",
-  "source": "tumvi-clean vs tumvi-floor-clean",
+  "value": "0.879",
+  "source": "step7-shipped-tumvi-clean vs tumvi-floor-clean",
   "date": "2026-11-18"
  },
  "tumvi_clean_room34_rpe1s_floor_m": {
   "value": "1.259",
-  "source": "tumvi-clean vs tumvi-floor-clean",
+  "source": "step7-shipped-tumvi-clean vs tumvi-floor-clean",
   "date": "2026-11-18"
  },
  "tumvi_clean_room34_rpe1s_vs_floor_pct": {
-  "value": "-29.8",
-  "source": "tumvi-clean vs tumvi-floor-clean",
+  "value": "-30.2",
+  "source": "step7-shipped-tumvi-clean vs tumvi-floor-clean",
   "date": "2026-11-18"
  },
  "tumvi_clean_room34_seqs_beat_floor_n": {
-  "value": "1/2",
-  "source": "tumvi-clean vs tumvi-floor-clean",
+  "value": "2/2",
+  "source": "step7-shipped-tumvi-clean vs tumvi-floor-clean",
   "date": "2026-11-18"
  },
  "tumvi_calib_clean_calibrated_n": {
@@ -1046,107 +1046,107 @@
  },
  "budget_input": {
   "value": "official/MH_01_easy_b_s1/mav0/imu0/data.csv",
-  "source": "step6-lean-win-py314-mh01-b-s1",
+  "source": "step7-win-py314-mh01-b-s1",
   "date": "2026-11-18"
  },
  "budget_rows_n": {
   "value": "35697",
-  "source": "step6-lean-win-py314-mh01-b-s1",
+  "source": "step7-win-py314-mh01-b-s1",
   "date": "2026-11-18"
  },
  "budget_python": {
   "value": "3.14.7",
-  "source": "step6-lean-win-py314-mh01-b-s1",
+  "source": "step7-win-py314-mh01-b-s1",
   "date": "2026-11-18"
  },
  "budget_heap_kb": {
   "value": "1232",
-  "source": "step6-lean-win-py314-mh01-b-s1",
+  "source": "step7-win-py314-mh01-b-s1",
   "date": "2026-11-18"
  },
  "budget_heap_whole_run_kb": {
-  "value": "1796",
-  "source": "step6-lean-win-py314-mh01-b-s1",
+  "value": "1802",
+  "source": "step7-win-py314-mh01-b-s1",
   "date": "2026-11-18"
  },
  "budget_heap_no_bytecode_kb": {
-  "value": "5580",
-  "source": "step6-lean-win-py314-mh01-b-s1",
+  "value": "5802",
+  "source": "step7-win-py314-mh01-b-s1",
   "date": "2026-11-18"
  },
  "budget_us_per_row_us": {
-  "value": "30.4",
-  "source": "step6-lean-win-py314-mh01-b-s1",
+  "value": "31.0",
+  "source": "step7-win-py314-mh01-b-s1",
   "date": "2026-11-18"
  },
  "budget_cpu_ms_per_imu_s_ms": {
   "value": "5.77",
-  "source": "step6-lean-win-py314-mh01-b-s1",
+  "source": "step7-win-py314-mh01-b-s1",
   "date": "2026-11-18"
  },
  "budget_wall_ms_per_imu_s_ms": {
-  "value": "5.89",
-  "source": "step6-lean-win-py314-mh01-b-s1",
+  "value": "6.00",
+  "source": "step7-win-py314-mh01-b-s1",
   "date": "2026-11-18"
  },
  "budget313_input": {
   "value": "SYNTHETIC (tools/synth_euroc.py, seed 0)",
-  "source": "step6-lean-win-py313",
+  "source": "step7-win-py313",
   "date": "2026-11-18"
  },
  "budget313_rows_n": {
   "value": "36000",
-  "source": "step6-lean-win-py313",
+  "source": "step7-win-py313",
   "date": "2026-11-18"
  },
  "budget313_python": {
   "value": "3.13.5",
-  "source": "step6-lean-win-py313",
+  "source": "step7-win-py313",
   "date": "2026-11-18"
  },
  "budget313_heap_kb": {
   "value": "940",
-  "source": "step6-lean-win-py313",
+  "source": "step7-win-py313",
   "date": "2026-11-18"
  },
  "budget313_heap_whole_run_kb": {
-  "value": "1984",
-  "source": "step6-lean-win-py313",
+  "value": "2252",
+  "source": "step7-win-py313",
   "date": "2026-11-18"
  },
  "budget313_heap_no_bytecode_kb": {
   "value": "6309",
-  "source": "step6-lean-win-py313",
+  "source": "step7-win-py313",
   "date": "2026-11-18"
  },
  "budget313_us_per_row_us": {
-  "value": "22.9",
-  "source": "step6-lean-win-py313",
+  "value": "35.2",
+  "source": "step7-win-py313",
   "date": "2026-11-18"
  },
  "budget313_cpu_ms_per_imu_s_ms": {
-  "value": "4.51",
-  "source": "step6-lean-win-py313",
+  "value": "6.60",
+  "source": "step7-win-py313",
   "date": "2026-11-18"
  },
  "budget313_wall_ms_per_imu_s_ms": {
-  "value": "4.58",
-  "source": "step6-lean-win-py313",
+  "value": "7.04",
+  "source": "step7-win-py313",
   "date": "2026-11-18"
  },
  "pytest_passed_n": {
-  "value": "335",
-  "source": "pytest Windows 11, Python 3.14.7, commit eba7c81",
+  "value": "346",
+  "source": "pytest Windows 11, Python 3.14.7, commit 0e0ba1f",
   "date": "2026-11-18"
  },
  "pytest_failed_n": {
   "value": "0",
-  "source": "pytest Windows 11, Python 3.14.7, commit eba7c81",
+  "source": "pytest Windows 11, Python 3.14.7, commit 0e0ba1f",
   "date": "2026-11-18"
  },
  "pytest_skipped_n": {
   "value": "0",
-  "source": "pytest Windows 11, Python 3.14.7, commit eba7c81",
+  "source": "pytest Windows 11, Python 3.14.7, commit 0e0ba1f",
   "date": "2026-11-18"
  },
  "experiments_off_n": {
@@ -1200,7 +1200,7 @@
   "date": "-"
  },
  "switches_on": {
-  "value": "V1_ON, V2_ON, V2P_ON, GAP_ON, DEAD_ON, FC_ON, PRE_HOLD, BGCAP_ON, REFRESH_ON, P0V_ON, FRONT_ON, SMOOTH_ON",
+  "value": "V1_ON, V2_ON, V2P_ON, GAP_ON, DEAD_ON, FC_ON, PRE_HOLD, BGCAP_ON, REFRESH_ON, P0V_ON, FRONT_ON, SMOOTH_ON, PLATFORM_ON",
   "source": "pathfinder.py",
   "date": "-"
  }
