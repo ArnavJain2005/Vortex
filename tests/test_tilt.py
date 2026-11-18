@@ -95,8 +95,10 @@ def tilt_forced(monkeypatch):
     monkeypatch.setattr(wx, "TILT_G_HI", 0.0)
 
 
-def test_shipped_state_off():
-    assert wx.TILT_ON is False
+def test_shipped_state_on():
+    """Rule G2 (18 Nov 2026, seeds 16-18) passed: TILT_ON ships on in the reference and pathfinder.py."""
+    import test_core_equivalence as tce
+    assert wx.TILT_ON is True and tce.main.TILT_ON is True
 
 
 def test_measurement_sign_matches_finite_difference():

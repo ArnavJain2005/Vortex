@@ -82,7 +82,7 @@ not verified.
 
 ```
 pip install -e .[dev]
-pytest                                        # 18 Nov 2026: 335 passed on main (Step 6 smoother ON); Step L2 branch count recorded with the G2 outcome (Windows, Python 3.14; test_ccore.py, the C-core experiment, needs g++ on PATH)
+pytest                                        # 18 Nov 2026: 372 passed on track3/stepL2-tilt (TILT_ON and SMOOTH_ON shipped) (Windows, Python 3.14; test_ccore.py, the C-core experiment, needs g++ on PATH)
 python -S main.py IMU.csv estimated_trajectory.txt                       # submission entry point: a stub importing pathfinder.py (the estimator, stdlib only)
 python -S benchmark.py --runs 15 --gate [--input IMU.csv] --tag NAME      # gate: heap (tracemalloc) <= 4 MB, <= 50 us/row, checker PASS; RSS reported only
 python tools/make_bundle.py stage                                        # once per Python to carry bytecode for (py -3.13, py -3.14, python3 in WSL)

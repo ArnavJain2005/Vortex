@@ -1,0 +1,27 @@
+  1 mean APE over H improves >= 2 %              4.922 -> 3.575 m (-27.36 %)            pass
+  2 paired gain > 0 on >= 4 of 6 sequences       5 of 6                                 pass
+  3 reading a mean APE not worse by > 1 %        6.315 -> 3.651 m (-42.18 %)            pass
+  3 reading b mean APE not worse by > 1 %        3.528 -> 3.499 m (-0.83 %)             pass
+  4 mean gap RMSE over H not worse by > 2 %      4.886 -> 3.478 m (-28.83 %)            pass
+  4 mean blind RMSE over H not worse by > 2 %    7.424 -> 3.156 m (-57.48 %)            pass
+  5 clean EuRoC mean APE not worse by > 0.5 %    3.5551 -> 3.5701 m (+0.422 %)          pass
+  5 clean TUM-VI mean APE not worse by > 0.5 %   0.9717 -> 0.9717 m (+0.000 %)          pass
+  6 TUM-VI block mean APE not worse by > 1 %     2.136 -> 2.136 m (+0.00 %)             pass
+  7 gain exceeds the gain on reversed outputs    1.347 vs 1.187 m (reversed)            pass
+  8 contract PASS on every run                   192 runs                               pass
+  9 benchmark gate with TILT_ON                  PASS                                   pass
+  10 no reading-b sequence worse by > 2 %        worst MH_03_medium +0.00 %             pass
+
+Per sequence (mean of 6 copies: readings a, b x seeds 16-18; MH/V1 seeds re-use the same 6 flights)
+| Sequence | APE off | APE on | gain % | floor | off reversed | on reversed | b off | b on | RPE 1 s off | RPE 1 s on |
+|---|---|---|---|---|---|---|---|---|---|---|
+| MH_03_medium | 6.101 | 3.126 | +48.8 | 3.581 | 6.443 | 3.678 | 2.842 | 2.842 | 0.713 | 0.500 |
+| MH_04_difficult | 7.222 | 6.351 | +12.1 | 6.812 | 7.041 | 6.478 | 6.312 | 6.312 | 1.115 | 0.939 |
+| MH_05_difficult | 7.817 | 6.546 | +16.3 | 6.869 | 7.563 | 6.759 | 6.548 | 6.548 | 0.945 | 0.855 |
+| V1_01_easy | 4.864 | 2.170 | +55.4 | 1.854 | 4.798 | 2.110 | 2.002 | 2.002 | 0.566 | 0.354 |
+| V1_02_medium | 1.861 | 1.861 | +0.0 | 1.779 | 2.282 | 2.282 | 1.891 | 1.891 | 0.522 | 0.522 |
+| V1_03_difficult | 1.665 | 1.397 | +16.1 | 1.582 | 2.045 | 1.741 | 1.574 | 1.398 | 0.334 | 0.316 |
+Sequence-level paired gain: mean +24.8 %, sd 22.1 % (n = 6). Floor over H: 3.746 m. RPE 1 s 0.699 -> 0.581.
+Rule G2 was written after seeing rule G's result: weaker evidence; same 6 flights.
+Wording: motion recovered (APE and RPE 1 s both better)
+VERDICT: TILT_ON ships ON

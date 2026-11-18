@@ -180,7 +180,7 @@ P0V_ON = True                 # no still run (fallback init): initial velocity s
 # ticks so spikes do not count; weight 0 until the ring is full) gives a weight w from 0 at TILT_G_LO to 1 at TILT_G_HI. With w = 0 nothing
 # changes. With w > 0 the tilt pseudo-measurements are applied with variance R / w and the gyro white-noise and
 # bias-walk densities are raised to the measured level (bias walk = TILT_WALK_K x measured white density).
-TILT_ON = False
+TILT_ON = True               # ON by rule G2 (18 Nov 2026, seeds 16-18; written after rule G failed: weaker evidence, same 6 flights)
 TILT_TAU = 4.0               # s, window (time constant). PRD said 10-20 s; tuned on MH_01/02 a (Docs/tilt/stepL2-probe*.md):
                              # with the lag model 12 / 6 / 4 / 3 / 2 s gave APE 4.54 / 3.89 / 3.69 / 3.59 / 3.56 m. 4 s is the
                              # shortest the banked-circle test accepts (2-3 s: the gate blocks every update there)

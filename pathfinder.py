@@ -95,7 +95,7 @@ PRE_HOLD = True
 REFRESH_ON = True
 P0V_ON = True
 # Step L2 (witness.TILT_*): windowed gravity alignment + gyro noise meter; see vortex/core/witness.py
-TILT_ON = False
+TILT_ON = True               # Step L2: ON by rule G2 (18 Nov 2026, seeds 16-18; rule G on seeds 10-12 had failed its null)
 TILT_TAU = 4.0
 TILT_G_LO = 0.05
 TILT_G_HI = 0.10
