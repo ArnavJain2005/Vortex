@@ -8,6 +8,8 @@ A strong, honest, reproducible submission for the **Samsung PRISM XR Hackathon C
 "Path Finder: Trajectory Estimation Under Sensor Degradation"**. Deadline **22 Nov 2026, 11:59 PM IST**
 (confirmed by the organisers' FAQ, 17 Nov). Solo entry (Arnav Jain); full time from 20 Nov.
 
+Plan and work split: `Docs/PRD.md` (v2, 18 Nov). Claude Code owns the estimator; Antigravity owns data, replay and footage; ChatGPT owns deck and script.
+
 **The official task (organisers' slides and FAQ of 17 Nov 2026):** estimate a 6-DoF trajectory from a
 **degraded IMU only** (any EuRoC MAV or TUM-VI sequence, degraded with the organisers' `degrade_imu.py`;
 gravity alignment unknown). Output `estimated_trajectory.txt`: `timestamp tx ty tz qx qy qz qw`,
@@ -80,12 +82,13 @@ not verified.
 
 ```
 pip install -e .[dev]
-pytest                                        # 18 Nov 2026: 329 passed (Step 6 smoother ON, merged with the lean pathfinder) (Windows, Python 3.14; test_ccore.py, the C-core experiment, needs g++ on PATH)
+pytest                                        # 18 Nov 2026: 335 passed (Step 6 smoother ON, merged with main at 77b3641) (Windows, Python 3.14; test_ccore.py, the C-core experiment, needs g++ on PATH)
 python -S main.py IMU.csv estimated_trajectory.txt                       # submission entry point: a stub importing pathfinder.py (the estimator, stdlib only)
 python -S benchmark.py --runs 15 --gate [--input IMU.csv] --tag NAME      # gate: heap (tracemalloc) <= 4 MB, <= 50 us/row, checker PASS; RSS reported only
 python tools/make_bundle.py stage                                        # once per Python to carry bytecode for (py -3.13, py -3.14, python3 in WSL)
 python tools/make_bundle.py eval EVAL_IMU.csv                            # estimated_trajectory.txt + metadata.json (heap peak, time) into the stage
 python tools/make_bundle.py zip --name NAME                              # dist/NAME.zip; then: python tools/make_bundle.py verify dist/NAME.zip
+python tools/make_numbers.py [--pytest] [--check]                       # Docs/NUMBERS.md: every quotable number (key | value | source tag | date), from committed files; --pytest re-runs the suite first
 g++ -O2 -std=c++17 -ffp-contract=off -o build/vortex main.cpp           # RECORDED EXPERIMENT only (C core, not accepted); benchmark/eval_euroc --cbin still time it
 python benchmark.py --render                                             # rebuilds Docs/BUDGET.md from Docs/budget/*.json (never hand-edit)
 python score.py --gt data/euroc/MH_01_easy --est est.txt [--events deg/degrade.json] [--imu IMU.csv] [--align se3|given --given-from clean_est.txt]

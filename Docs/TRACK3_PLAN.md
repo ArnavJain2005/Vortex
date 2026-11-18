@@ -1,8 +1,8 @@
 # Track 3 plan: Path Finder (trajectory estimation under sensor degradation)
 
 Running record of what is done, verified, blocked and unknown. Dates are IST. Update this file in the
-same commit as the work it describes. The full PRD, day-by-day plan and risk table live in the team doc
-"Vortex: Track 3 PRD, Plan of Action and Checklist".
+same commit as the work it describes. The PRD, day-by-day plan, work split and risk table live in
+`Docs/PRD.md` (v2, 18 Nov 2026; supersedes the 15 Nov team doc).
 
 Status vocabulary: **Done (verified)** = run with the stated result; **Done (unverified)** = written but
 not run on its real input; **Blocked**; **Not started**.
@@ -89,6 +89,8 @@ Deadline **22 Nov 2026, 11:59 PM IST**, confirmed by the FAQ (Q1 closed). Full-t
 | F | Filter fixes from the 16-17 Nov reviews: gyro-bias cap on every still test (`BGCAP_ON`), covariance reset after injection (`RESET_ON`), refresh of the cached previous sample (`REFRESH_ON`), fallback velocity uncertainty (`P0V_ON`); four switches | **Done** (17 Nov): BGCAP, P0V, REFRESH pass and ship on; RESET fails (reading a APE +1.8 %) and ships off. Held-out mean APE 4.972 -> 4.962 m; floor 3.745 m | Each switch judged on 36 fresh held-out copies (seeds 4-6) by the no-harm rule |
 | L1 | Positions scaled about their centroid, alpha per gyro-noise class (`SHRINK_ON`); null floor = the estimate reversed in time (`eval_euroc.py --reverse`) | **Done (verified): OFF** by the pre-registered rule (18 Nov, rule at d56c875): both arms improve the mean objective (reading a -49.5 %, reading b -23.9 %) but fail sequence consistency (4 and 3 of 6); LO also loses to its reversed output. Shipped output unchanged | Each arm judged on 36 fresh held-out copies (seeds 7-9) |
 | Lean | Switched-off experiments moved from `pathfinder.py` to `tools/pathfinder_lab.py` (not shipped) to cut compile memory | **Done (verified)** 18 Nov: output byte-identical on all 144 real inputs; no-bytecode heap 6,055 -> 4,935 KB (3.14), 6,431 -> 6,309 KB (3.13); gate PASS | `tests/test_lab.py`; gates PASS |
+| PRD v2 | PRD v2 (18 Nov) in the repo (`Docs/PRD.md`): levers L1 shrinkage, L2 slow gravity alignment, L3 blind window, L4 hardening, L5 TUM-VI; paired, sequence-level judging (rules G and H); work split Claude Code / Antigravity / ChatGPT. Fallback zip frozen | **Done (verified)** 18 Nov (K0): `dist/vortex_v0.9.zip` from `main` da14417, eval input `data/official/MH_03_medium_b_s1` (placeholder), 26,106 rows, 3.19 ms per IMU-s, heap 1,013 KB; `verify` PASS on Win 3.13 and 3.14; SHA-256 0e558440a397ef4b78426cc471ac8d3fd17f8c658b28a6cd40aeb5a3ba555d6b | Zip verified; never deleted |
+| NUMBERS (K6, early) | `tools/make_numbers.py` -> `Docs/NUMBERS.md` + `Docs/numbers/numbers.json`: every number the deck, script and README may quote, as `key | value | source tag | date`, generated from committed result, TUM-VI, budget and pytest files. Keys are stable (ChatGPT's `[[N:key]]`); when the shipped build changes, `SOURCES` in the script points at the new tags | **Done (verified)** 18 Nov: headline keys reproduce the Step F verdict to the digit (held-out 4.962 vs floor 3.745 m; reading a 6.181, b 3.744; gap 5.036; blind 6.992). Budget from a fresh lean run (`lean-win-py314-mh01-b-s1`) | `tests/test_numbers.py` (3); `--check` in the suite |
 
 ## Open questions (Q1 to Q5 are in the email drafted for prism@samsung.com on 15 Nov)
 
@@ -1508,6 +1510,26 @@ MH_01_easy_b_s1 (other sessions' tests were running at the same time); heap in-p
 whole run 1,632.3 / 1,795.9 KB; **no cached bytecode 5,579.7 KB** (lean without the smoother: 4,934.5; the
 smoother's code costs about 645 KB of compile memory). Under the 8 MB limit by 2.5 MB; still over the 4 MB
 target when compiled from source.
+
+**Shipped build on the seeds spent by earlier steps** (REPORTED ONLY, not a second judgement: seeds 4-6 were
+Step F's held-out copies, 7-9 Step L1's; `eval_euroc --main main.py --official`, tags `step6-H46`,
+`step6-H79`; previous shipped-build runs `stepF-H-p0v-refresh`, `stepL1-H-off`; floors on the same copies):
+
+| Copies | APE before -> Step 6 (floor) | reading a | reading b | gap RMSE | blind RMSE |
+|---|---|---|---|---|---|
+| seeds 4-6 (36) | 4.962 -> 4.648 (3.745) | 6.181 -> 5.782 | 3.744 -> 3.515 | 5.036 -> 4.582 | 6.992 -> 7.559 |
+| seeds 7-9 (36) | 4.736 -> 4.516 (3.748) | 5.653 -> 5.445 | 3.820 -> 3.588 | 4.611 -> 4.465 | 6.116 -> 6.574 |
+
+The same pattern as the judged seeds 1-3: APE and gap better, reading b below the floor, reading a above it,
+blind worse (+7 to +8 %). `tools/make_numbers.py` SOURCES now point at these runs, `step6-shipped-clean` and
+the `step6-lean-win-*` budgets; the TUM-VI sources are Antigravity's G1 runs of the build before the smoother
+(labelled so in `Docs/NUMBERS.md`, not re-run here). `SMOOTH_ON` joins `SHIPPED_ON`.
+
+**Merged with main at 77b3641** (PRD v2, NUMBERS.md, the final-set gate, the failure map; no estimator
+change): `python tools/make_numbers.py --pytest`: **335 passed** (Windows 3.14). The first such run had 1
+failed, 334 passed; it ran while `Docs/NUMBERS.md` was still the one generated from the old SOURCES, and the
+recorded summary does not name the test; the NUMBERS, lab, port and final-gate tests then passed (21), and
+the full re-run passed. Most likely `test_numbers` against the stale file (not proven).
 
 
 ## Step L1: trust-scaled shrinkage about the centroid (18 Nov 2026, branch `track3/stepL1-shrink`)

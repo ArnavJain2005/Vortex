@@ -13,9 +13,9 @@ Timing varies about +-15% between reruns on the same laptop.
 
 | Run | Commit | Date | OS | CPU | Python | Input | Rows |
 |---|---|---|---|---|---|---|---|
-| lean-win-py313 | dc162ac | 2026-11-18 | Windows 11 | Intel(R) Core(TM) i7-14650HX | 3.13.5 | SYNTHETIC (tools/synth_euroc.py, seed 0) | 36000 (180 s) |
-| lean-win-py314-mh01-b-s1 | dc162ac | 2026-11-18 | Windows 11 | Intel(R) Core(TM) i7-14650HX | 3.14.7 | real: ../../../data/official/MH_01_easy_b_s1/mav0/imu0/data.csv | 35697 (184 s) |
-| lean-win-py314 | dc162ac | 2026-11-18 | Windows 11 | Intel(R) Core(TM) i7-14650HX | 3.14.7 | SYNTHETIC (tools/synth_euroc.py, seed 0) | 36000 (180 s) |
+| lean-win-py313 | 3b06021 | 2026-11-18 | Windows 11 | Intel(R) Core(TM) i7-14650HX | 3.13.5 | SYNTHETIC (tools/synth_euroc.py, seed 0) | 36000 (180 s) |
+| lean-win-py314-mh01-b-s1 | 3b06021 | 2026-11-18 | Windows 11 | Intel(R) Core(TM) i7-14650HX | 3.14.7 | real: ../../../data/official/MH_01_easy_b_s1/mav0/imu0/data.csv | 35697 (184 s) |
+| lean-win-py314 | 3b06021 | 2026-11-18 | Windows 11 | Intel(R) Core(TM) i7-14650HX | 3.14.7 | SYNTHETIC (tools/synth_euroc.py, seed 0) | 36000 (180 s) |
 | linux-wsl2-py312-mh01 | ba79c15 | 2026-11-16 | Linux 5.15.167.4-microsoft-standard-WSL2 | Intel(R) Core(TM) i7-14650HX | 3.12.3 | real: data/euroc/MH_01_easy/mav0/imu0/data.csv | 36820 (184 s) |
 | linux-wsl2-py312 | ba79c15 | 2026-11-16 | Linux 5.15.167.4-microsoft-standard-WSL2 | Intel(R) Core(TM) i7-14650HX | 3.12.3 | SYNTHETIC (tools/synth_euroc.py, seed 0) | 36000 (180 s) |
 | step1-win-py313 | e7b6684 | 2026-11-17 | Windows 11 | Intel(R) Core(TM) i7-14650HX | 3.13.5 | SYNTHETIC (tools/synth_euroc.py, seed 0) | 36000 (180 s) |
@@ -29,6 +29,7 @@ Timing varies about +-15% between reruns on the same laptop.
 | step4-win-py314-mh01-b-s1 | c1769cb | 2026-11-17 | Windows 11 | Intel(R) Core(TM) i7-14650HX | 3.14.7 | real: data/official/MH_01_easy_b_s1/mav0/imu0/data.csv | 35697 (184 s) |
 | step4-win-py314 | c1769cb | 2026-11-17 | Windows 11 | Intel(R) Core(TM) i7-14650HX | 3.14.7 | SYNTHETIC (tools/synth_euroc.py, seed 0) | 36000 (180 s) |
 | step4m-win-py314 | 39e7ee0 | 2026-11-18 | Windows 11 | Intel(R) Core(TM) i7-14650HX | 3.14.7 | SYNTHETIC (tools/synth_euroc.py, seed 0) | 36000 (180 s) |
+| step6-lean-win-py313 | eba7c81 | 2026-11-18 | Windows 11 | Intel(R) Core(TM) i7-14650HX | 3.13.5 | SYNTHETIC (tools/synth_euroc.py, seed 0) | 36000 (180 s) |
 | step6-lean-win-py314-mh01-b-s1 | 0284338 | 2026-11-18 | Windows 11 | Intel(R) Core(TM) i7-14650HX | 3.14.7 | real: data/official/MH_01_easy_b_s1/mav0/imu0/data.csv | 35697 (184 s) |
 | step6-lean-win-py314 | 0284338 | 2026-11-18 | Windows 11 | Intel(R) Core(TM) i7-14650HX | 3.14.7 | SYNTHETIC (tools/synth_euroc.py, seed 0) | 36000 (180 s) |
 | step6-win-py314-mh01-b-s1 | 8da205d | 2026-11-18 | Windows 11 | Intel(R) Core(TM) i7-14650HX | 3.14.7 | real: data/official/MH_01_easy_b_s1/mav0/imu0/data.csv | 35697 (184 s) |
@@ -53,9 +54,9 @@ Timing varies about +-15% between reruns on the same laptop.
 
 | Run | us per row | Left of 100 (of 50 target) | Wall ms per IMU-s | CPU ms per IMU-s | Left of 20 ms | Heap peak KB in-process / whole run | Left of 4 MB target | Heap KB, whole run, no cached bytecode | Peak RSS MiB (median / max, not gated) | Peak private MiB | Output |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| lean-win-py313 | 13.10 | 86.9 (36.9) | 2.62 | 2.43 | 17.4 | 392.5 / 1368.3 | 2728 KB | 6309.4 | 11.57 / 11.73 | 6.61 | PASS |
-| lean-win-py314-mh01-b-s1 | 13.19 | 86.8 (36.8) | 2.56 | 2.46 | 17.4 | 587.3 / 1083.5 | 3012 KB | 4934.5 | 12.62 / 12.67 | 7.73 | PASS |
-| lean-win-py314 | 12.91 | 87.1 (37.1) | 2.58 | 2.52 | 17.4 | 505.5 / 996.8 | 3099 KB | 4934.5 | 12.00 / 12.30 | 7.12 | PASS |
+| lean-win-py313 | 14.07 | 85.9 (35.9) | 2.81 | 2.69 | 17.2 | 392.5 / 1368.4 | 2728 KB | 6309.6 | 11.54 / 11.80 | 6.61 | PASS |
+| lean-win-py314-mh01-b-s1 | 12.49 | 87.5 (37.5) | 2.42 | 2.29 | 17.6 | 587.3 / 1083.6 | 3012 KB | 4935.8 | 12.60 / 12.66 | 7.71 | PASS |
+| lean-win-py314 | 13.14 | 86.9 (36.9) | 2.63 | 2.60 | 17.4 | 505.5 / 996.8 | 3099 KB | 4935.8 | 12.01 / 12.29 | 7.19 | PASS |
 | linux-wsl2-py312-mh01 | 16.01 | 84.0 (34.0) | 3.20 | 1.25 | 16.8 | 463.2 / - | 3633 KB | - | 10.23 / 10.31 | - | PASS |
 | linux-wsl2-py312 | 9.77 | 90.2 (40.2) | 1.95 | 1.39 | 18.0 | 234.3 / - | 3862 KB | - | 10.07 / 10.12 | - | PASS |
 | step1-win-py313 | 9.40 | 90.6 (40.6) | 1.88 | 1.82 | 18.1 | 234.1 / 1190.1 | 2906 KB | 6309.5 | 11.10 / 11.14 | 5.53 | PASS |
@@ -69,6 +70,7 @@ Timing varies about +-15% between reruns on the same laptop.
 | step4-win-py314-mh01-b-s1 | 10.41 | 89.6 (39.6) | 2.02 | 1.87 | 18.0 | 587.6 / 1099.0 | 2997 KB | 5471.3 | 12.68 / 12.75 | 7.73 | PASS |
 | step4-win-py314 | 10.78 | 89.2 (39.2) | 2.16 | 2.08 | 17.8 | 505.5 / 1011.8 | 3084 KB | 5471.2 | 12.09 / 12.33 | 7.14 | PASS |
 | step4m-win-py314 | 12.62 | 87.4 (37.4) | 2.52 | 2.52 | 17.5 | 505.5 / 1019.3 | 3077 KB | 5730.7 | 12.07 / 12.22 | 7.16 | PASS |
+| step6-lean-win-py313 | 22.88 | 77.1 (27.1) | 4.58 | 4.51 | 15.4 | 939.9 / 1984.2 | 2112 KB | 6309.5 | 12.18 / 12.47 | 7.25 | PASS |
 | step6-lean-win-py314-mh01-b-s1 | 30.40 | 69.6 (19.6) | 5.89 | 5.77 | 14.1 | 1231.8 / 1795.9 | 2300 KB | 5579.7 | 12.82 / 13.09 | 7.97 | PASS |
 | step6-lean-win-py314 | 35.63 | 64.4 (14.4) | 7.13 | 6.86 | 12.9 | 1059.8 / 1632.3 | 2464 KB | 5579.7 | 12.50 / 12.87 | 7.73 | PASS |
 | step6-win-py314-mh01-b-s1 | 30.19 | 69.8 (19.8) | 5.85 | 5.69 | 14.1 | 1232.3 / 1818.2 | 2278 KB | 7337.7 | 12.83 / 12.90 | 7.94 | PASS |
@@ -111,18 +113,18 @@ Runs measured with `--cbin` (step 9b, step A). Its output is compared byte for b
 
 | Run | Stage | us per row | min |
 |---|---|---|---|
-| lean-win-py313 | parse (read, split, 6 floats, timestamp) | 2.39 | 2.09 |
-| lean-win-py313 | parse + write (identity poses) | 3.71 | 3.03 |
-| lean-win-py313 | parse + init + strapdown integrator | 9.81 | 8.85 |
-| lean-win-py313 | parse + init + strapdown integrator + write (full main.py) | 11.54 | 10.67 |
-| lean-win-py314-mh01-b-s1 | parse (read, split, 6 floats, timestamp) | 3.33 | 3.19 |
-| lean-win-py314-mh01-b-s1 | parse + write (identity poses) | 4.21 | 3.99 |
-| lean-win-py314-mh01-b-s1 | parse + init + strapdown integrator | 9.51 | 9.02 |
-| lean-win-py314-mh01-b-s1 | parse + init + strapdown integrator + write (full main.py) | 13.68 | 10.74 |
-| lean-win-py314 | parse (read, split, 6 floats, timestamp) | 2.88 | 2.48 |
-| lean-win-py314 | parse + write (identity poses) | 3.91 | 3.75 |
-| lean-win-py314 | parse + init + strapdown integrator | 12.79 | 10.20 |
-| lean-win-py314 | parse + init + strapdown integrator + write (full main.py) | 13.77 | 11.48 |
+| lean-win-py313 | parse (read, split, 6 floats, timestamp) | 2.64 | 2.50 |
+| lean-win-py313 | parse + write (identity poses) | 3.59 | 3.50 |
+| lean-win-py313 | parse + init + strapdown integrator | 9.87 | 9.51 |
+| lean-win-py313 | parse + init + strapdown integrator + write (full main.py) | 11.83 | 10.98 |
+| lean-win-py314-mh01-b-s1 | parse (read, split, 6 floats, timestamp) | 4.10 | 3.76 |
+| lean-win-py314-mh01-b-s1 | parse + write (identity poses) | 4.63 | 4.40 |
+| lean-win-py314-mh01-b-s1 | parse + init + strapdown integrator | 9.52 | 9.22 |
+| lean-win-py314-mh01-b-s1 | parse + init + strapdown integrator + write (full main.py) | 11.39 | 11.03 |
+| lean-win-py314 | parse (read, split, 6 floats, timestamp) | 2.90 | 2.53 |
+| lean-win-py314 | parse + write (identity poses) | 3.90 | 3.66 |
+| lean-win-py314 | parse + init + strapdown integrator | 11.78 | 10.74 |
+| lean-win-py314 | parse + init + strapdown integrator + write (full main.py) | 12.79 | 11.97 |
 | linux-wsl2-py312-mh01 | parse (read, split, 6 floats, timestamp) | 3.09 | 2.63 |
 | linux-wsl2-py312-mh01 | parse + write (identity poses) | 3.89 | 3.79 |
 | linux-wsl2-py312-mh01 | parse + init + strapdown integrator | 15.56 | 9.20 |
@@ -175,6 +177,10 @@ Runs measured with `--cbin` (step 9b, step A). Its output is compared byte for b
 | step4m-win-py314 | parse + write (identity poses) | 3.75 | 3.31 |
 | step4m-win-py314 | parse + init + strapdown integrator | 11.37 | 10.34 |
 | step4m-win-py314 | parse + init + strapdown integrator + write (full main.py) | 12.27 | 11.24 |
+| step6-lean-win-py313 | parse (read, split, 6 floats, timestamp) | 2.60 | 2.33 |
+| step6-lean-win-py313 | parse + write (identity poses) | 3.67 | 3.25 |
+| step6-lean-win-py313 | parse + init + strapdown integrator | 10.89 | 9.71 |
+| step6-lean-win-py313 | parse + init + strapdown integrator + write (full main.py) | 31.29 | 26.81 |
 | step6-lean-win-py314-mh01-b-s1 | parse (read, split, 6 floats, timestamp) | 4.11 | 3.64 |
 | step6-lean-win-py314-mh01-b-s1 | parse + write (identity poses) | 4.83 | 4.62 |
 | step6-lean-win-py314-mh01-b-s1 | parse + init + strapdown integrator | 11.49 | 9.87 |
@@ -256,9 +262,9 @@ Runs measured with `--cbin` (step 9b, step A). Its output is compared byte for b
 
 | Run | Pass | us per row |
 |---|---|---|
-| lean-win-py313 | calibration scan + backward pre-anchor pass + forward pass (no smoother yet) | 11.54 |
-| lean-win-py314-mh01-b-s1 | calibration scan + backward pre-anchor pass + forward pass (no smoother yet) | 13.68 |
-| lean-win-py314 | calibration scan + backward pre-anchor pass + forward pass (no smoother yet) | 13.77 |
+| lean-win-py313 | calibration scan + backward pre-anchor pass + forward pass (no smoother yet) | 11.83 |
+| lean-win-py314-mh01-b-s1 | calibration scan + backward pre-anchor pass + forward pass (no smoother yet) | 11.39 |
+| lean-win-py314 | calibration scan + backward pre-anchor pass + forward pass (no smoother yet) | 12.79 |
 | linux-wsl2-py312-mh01 | calibration scan + backward pre-anchor pass + forward pass (no smoother yet) | 16.80 |
 | linux-wsl2-py312 | calibration scan + backward pre-anchor pass + forward pass (no smoother yet) | 6.56 |
 | step1-win-py313 | calibration scan + backward pre-anchor pass + forward pass (no smoother yet) | 13.03 |
@@ -272,6 +278,7 @@ Runs measured with `--cbin` (step 9b, step A). Its output is compared byte for b
 | step4-win-py314-mh01-b-s1 | calibration scan + backward pre-anchor pass + forward pass (no smoother yet) | 10.42 |
 | step4-win-py314 | calibration scan + backward pre-anchor pass + forward pass (no smoother yet) | 10.37 |
 | step4m-win-py314 | calibration scan + backward pre-anchor pass + forward pass (no smoother yet) | 12.27 |
+| step6-lean-win-py313 | calibration scan + backward pre-anchor pass + forward pass (no smoother yet) | 31.29 |
 | step6-lean-win-py314-mh01-b-s1 | calibration scan + backward pre-anchor pass + forward pass (no smoother yet) | 34.78 |
 | step6-lean-win-py314 | calibration scan + backward pre-anchor pass + forward pass (no smoother yet) | 35.42 |
 | step6-win-py314-mh01-b-s1 | calibration scan + backward pre-anchor pass + forward pass (no smoother yet) | 26.09 |
@@ -316,6 +323,7 @@ The shipped witnesses (V1 stillness, V2 envelope and position prior; switches in
 | step4-win-py314-mh01-b-s1 | 64 | 345024 (5391 rows) | 960000 |
 | step4-win-py314 | 64 | 0 (0 rows) | 960000 |
 | step4m-win-py314 | 64 | 0 (0 rows) | 960000 |
+| step6-lean-win-py313 | 64 | 0 (0 rows) | 960000 |
 | step6-lean-win-py314-mh01-b-s1 | 64 | 345024 (5391 rows) | 960000 |
 | step6-lean-win-py314 | 64 | 0 (0 rows) | 960000 |
 | step6-win-py314-mh01-b-s1 | 64 | 345024 (5391 rows) | 960000 |
@@ -340,18 +348,18 @@ The shipped witnesses (V1 stillness, V2 envelope and position prior; switches in
 
 | Run | Command | us per row | Wall ms per IMU-s | Peak RSS MiB |
 |---|---|---|---|---|
-| lean-win-py313 | `python -S main.py` | 13.10 | 2.62 | 11.57 |
-| lean-win-py313 | `python main.py` | 13.00 | 2.60 | 11.71 |
-| lean-win-py313 | `python -S main.py, no cached bytecode` | 15.17 | 3.03 | 16.17 |
-| lean-win-py313 | `python -S pathfinder.py` | 13.44 | 2.69 | 15.52 |
-| lean-win-py314-mh01-b-s1 | `python -S main.py` | 13.19 | 2.56 | 12.62 |
-| lean-win-py314-mh01-b-s1 | `python main.py` | 14.58 | 2.83 | 14.96 |
-| lean-win-py314-mh01-b-s1 | `python -S main.py, no cached bytecode` | 14.27 | 2.77 | 16.32 |
-| lean-win-py314-mh01-b-s1 | `python -S pathfinder.py` | 14.62 | 2.83 | 16.72 |
-| lean-win-py314 | `python -S main.py` | 12.91 | 2.58 | 12.00 |
-| lean-win-py314 | `python main.py` | 13.06 | 2.61 | 14.46 |
-| lean-win-py314 | `python -S main.py, no cached bytecode` | 12.48 | 2.50 | 16.47 |
-| lean-win-py314 | `python -S pathfinder.py` | 12.13 | 2.43 | 16.19 |
+| lean-win-py313 | `python -S main.py` | 14.07 | 2.81 | 11.54 |
+| lean-win-py313 | `python main.py` | 14.05 | 2.81 | 11.70 |
+| lean-win-py313 | `python -S main.py, no cached bytecode` | 14.48 | 2.90 | 16.11 |
+| lean-win-py313 | `python -S pathfinder.py` | 14.09 | 2.82 | 15.41 |
+| lean-win-py314-mh01-b-s1 | `python -S main.py` | 12.49 | 2.42 | 12.60 |
+| lean-win-py314-mh01-b-s1 | `python main.py` | 13.62 | 2.64 | 14.97 |
+| lean-win-py314-mh01-b-s1 | `python -S main.py, no cached bytecode` | 13.13 | 2.54 | 16.41 |
+| lean-win-py314-mh01-b-s1 | `python -S pathfinder.py` | 14.83 | 2.88 | 16.85 |
+| lean-win-py314 | `python -S main.py` | 13.14 | 2.63 | 12.01 |
+| lean-win-py314 | `python main.py` | 13.37 | 2.67 | 14.57 |
+| lean-win-py314 | `python -S main.py, no cached bytecode` | 12.98 | 2.60 | 16.34 |
+| lean-win-py314 | `python -S pathfinder.py` | 12.92 | 2.58 | 16.19 |
 | linux-wsl2-py312-mh01 | `python -S main.py` | 16.01 | 3.20 | 10.23 |
 | linux-wsl2-py312-mh01 | `python main.py` | 20.32 | 4.06 | 10.92 |
 | linux-wsl2-py312-mh01 | `python -S main.py, no cached bytecode` | 15.21 | 3.04 | 13.70 |
@@ -404,6 +412,10 @@ The shipped witnesses (V1 stillness, V2 envelope and position prior; switches in
 | step4m-win-py314 | `python main.py` | 12.89 | 2.58 | 14.82 |
 | step4m-win-py314 | `python -S main.py, no cached bytecode` | 14.08 | 2.82 | 17.61 |
 | step4m-win-py314 | `python -S pathfinder.py` | 13.64 | 2.73 | 17.16 |
+| step6-lean-win-py313 | `python -S main.py` | 22.88 | 4.58 | 12.18 |
+| step6-lean-win-py313 | `python main.py` | 23.37 | 4.67 | 12.43 |
+| step6-lean-win-py313 | `python -S main.py, no cached bytecode` | 24.81 | 4.96 | 17.36 |
+| step6-lean-win-py313 | `python -S pathfinder.py` | 22.87 | 4.57 | 16.68 |
 | step6-lean-win-py314-mh01-b-s1 | `python -S main.py` | 30.40 | 5.89 | 12.82 |
 | step6-lean-win-py314-mh01-b-s1 | `python main.py` | 32.01 | 6.21 | 15.42 |
 | step6-lean-win-py314-mh01-b-s1 | `python -S main.py, no cached bytecode` | 31.61 | 6.13 | 18.10 |
