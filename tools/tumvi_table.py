@@ -56,7 +56,7 @@ def _canonical_path(src: str, tmp_dir: str) -> str:
         if not lay["canonical"]:
             lines = pf._fe_canonical_lines(src, lay)
     f = None
-    if pf.FF_STUCK6_ON or pf.FF_SPIKE_ON:
+    if getattr(pf, "FF_STUCK6_ON", False) or getattr(pf, "FF_SPIKE_ON", False):  # fault pass: lab copy only since 18 Nov
         if lines is None:
             f = open(src, "rb")
             lines = f

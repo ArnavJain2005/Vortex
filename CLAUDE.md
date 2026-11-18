@@ -82,7 +82,7 @@ not verified.
 
 ```
 pip install -e .[dev]
-pytest                                        # 18 Nov 2026: 287 passed (Steps 3-5 merged with Step F) (Windows, Python 3.14; test_ccore.py, the C-core experiment, needs g++ on PATH)
+pytest                                        # 18 Nov 2026: 321 passed (lean pathfinder re-landed on main with #54) (Windows, Python 3.14; test_ccore.py, the C-core experiment, needs g++ on PATH)
 python -S main.py IMU.csv estimated_trajectory.txt                       # submission entry point: a stub importing pathfinder.py (the estimator, stdlib only)
 python -S benchmark.py --runs 15 --gate [--input IMU.csv] --tag NAME      # gate: heap (tracemalloc) <= 4 MB, <= 50 us/row, checker PASS; RSS reported only
 python tools/make_bundle.py stage                                        # once per Python to carry bytecode for (py -3.13, py -3.14, python3 in WSL)
@@ -94,6 +94,8 @@ python score.py --gt data/euroc/MH_01_easy --est est.txt [--events deg/degrade.j
 python tools/crosscheck_evo.py --evo-bin <venv>/Scripts                   # 16 Nov 2026: matches evo to 4.2e-7 m (synthetic)
 python tools/eval_euroc.py --tag NAME [--main main.py] [--set V2_ON=False]  # runs + scores every data/euroc sequence except V2_* (final test set: needs --seqs + --final); Docs/RESULTS.md
 python tools/eval_euroc.py --tag floor-still --main tools/baseline_still.py  # the never-moving floor (mean APE 5.25 m on MH)
+python tools/eval_euroc.py --tag NAME --official --main tools/pathfinder_lab.py --set SHRINK_ON=True  # switched-off experiments (FF_*, LEARN, INTERP, JAM, RESET, SHRINK) live only in the lab copy since 18 Nov; pathfinder.py ships without them (tests/test_lab.py: byte-identical with all off)
+python tools/eval_euroc.py --tag NAME --official --reverse [--set ...]   # null floor: the estimate reversed in time (Step L1)
 python tools/official_degrade.py --all --readings a,b --seeds 1,2,3,42      # ORGANISERS' degrade_imu.py (in git-ignored tools/official/): data/official/<seq>_<a|b>_s<seed>
 python tools/eval_euroc.py --tag NAME --official [--seqs MH_03_medium_b_s1,...]  # every data/official copy; APE SE3 fitted on the run being scored
 python tools/judge_step3.py --name X --h-off TAG --h-on TAG --c-off TAG --c-on TAG  # Step 3 rule (17 Nov: STUCK6, SPIKE, INTERP all OFF)
