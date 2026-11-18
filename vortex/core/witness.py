@@ -180,12 +180,14 @@ P0V_ON = True                 # no still run (fallback init): initial velocity s
 # changes. With w > 0 the tilt pseudo-measurements are applied with variance R / w and the gyro white-noise and
 # bias-walk densities are raised to the measured level (bias walk = TILT_WALK_K x measured white density).
 TILT_ON = False
-TILT_TAU = 12.0              # s, window (time constant) of the mean world specific force; PRD 10-20 s
+TILT_TAU = 4.0               # s, window (time constant). PRD said 10-20 s; tuned on MH_01/02 a (Docs/tilt/stepL2-probe*.md):
+                             # with the lag model 12 / 6 / 4 / 3 / 2 s gave APE 4.54 / 3.89 / 3.69 / 3.59 / 3.56 m. 4 s is the
+                             # shortest the banked-circle test accepts (2-3 s: the gate blocks every update there)
 TILT_G_LO = 0.05             # rad/s per sample: meter at or below -> weight 0. Clean EuRoC flight reads about
                              # 0.04 (rotor vibration; Step L1 meter, MH_01/02), reading b about 0.04
 TILT_G_HI = 0.10             # rad/s per sample: weight 1 at and above. Reading a at full severity: 0.17-0.20
 TILT_MED_TICKS = 40          # ticks (10 s): median window of the gyro meter (spikes: about 0.6 per s at full severity)
-TILT_R_K = 1.0               # variance multiplier for the overlapping windows (tuned on MH_01/02 only)
+TILT_R_K = 1.0               # variance multiplier: 0.01 / 0.1 / 1 flat on tuning (3.95 / 3.89 / 3.87 m at 6 s; 3.69 / 3.69 m at 4 s)
 TILT_DV = 2.0                # m/s, velocity change bound for the bias term (the V2 speed envelope V2_SIGMA_H)
 TILT_WALK_K = 0.7            # gyro bias-walk density / white density when jammed: the organisers' script ratio
                              # 0.010 / (0.20 sqrt(0.005)) for the accelerometer-sized faults (reading a)

@@ -166,9 +166,10 @@ def test_banked_flight_stays_within_bias(tilt_forced):
 
 
 def test_jammed_gyro_tilt_held():
-    """Reading-a-like gyro (white 0.2 rad/s per sample, a roll-axis bias appearing after the calibration
-    rest, spikes), clean accelerometer. TILT_ON (meter-weighted, shipped constants) holds the tilt; off it is
-    lost."""
+    """Reading-a-like gyro (white 0.2 rad/s per sample, a bias appearing after the calibration rest, spikes),
+    clean accelerometer. TILT_ON (meter-weighted, the module's constants) must hold the tilt clearly better than
+    off. Off is not hopeless here (V2's velocity prior already corrects some tilt through the filter's
+    coupling), so the check is relative plus an absolute cap."""
     def jam(rng, k, n):
         t = k / 200.0
         e = rng.standard_normal(3) * 0.2
@@ -182,8 +183,8 @@ def test_jammed_gyro_tilt_held():
     off = _tilt_err_deg(wx.estimate(rows, tilt=False), Rt, 30.0)
     on = _tilt_err_deg(wx.estimate(rows, tilt=True), Rt, 30.0)
     rms = lambda x: float(np.sqrt(np.mean(x * x)))  # noqa: E731
-    assert rms(off) > 20.0, rms(off)
-    assert rms(on) < 6.0, (rms(on), rms(off))
+    assert rms(on) < 0.75 * rms(off), (rms(on), rms(off))
+    assert rms(on) < 4.5, (rms(on), rms(off))
 
 
 def test_window_memory_is_bounded():
@@ -194,3 +195,90 @@ def test_window_memory_is_bounded():
     assert len(log) > 2 * wx.TILT_MED_TICKS
     assert max(d["tring"] for d in log) == wx.TILT_MED_TICKS
     assert max(d["tw"] for d in log) == 1.0 and any(d["tup"] for d in log)
+
+
+# ---- reference and pathfinder.py agree with TILT_ON ----
+
+def _jam_rows(seed=3, seconds=60.0):
+    def jam(rng, k, n):
+        e = rng.standard_normal(3) * 0.2
+        if k > 1200:
+            e = e + np.array([0.03, -0.02, 0.0])
+        if rng.random() < 0.003:
+            e = e + rng.choice([-1.0, 1.0]) * 3.0
+        return e
+    rows, _ = _flight(seconds, lambda t: np.column_stack([0.8 * np.sin(0.4 * t), 0.6 * np.sin(0.3 * t), 0.0 * t]),
+                      gyro=jam, seed=seed)
+    rows = [(t, tuple(round(x, 6) for x in v)) for t, v in rows]
+    out = []
+    for i, (t, v) in enumerate(rows):                 # gaps, a missing burst, stuck runs, duplicates, zero tail
+        if 3000 < i < 3040 or (i > 2000 and i % 1499 == 0):
+            continue
+        if i > 2000 and i % 997 == 0:
+            out += [(t, v)] + [(rows[i + j][0], v) for j in range(1, 6)]
+            continue
+        if out and t <= out[-1][0]:
+            continue
+        out.append((t, v))
+        if i % 1201 == 0:
+            out.append((t, v))
+    out += [(out[-1][0] + DT_NS * (k + 1), (0.0,) * 6) for k in range(200)]
+    return out
+
+
+@pytest.mark.parametrize("lag", [True, False])
+@pytest.mark.parametrize("case", ["jammed", "clean_forced", "degraded_forced"])
+def test_reference_and_pathfinder_agree(tmp_path, monkeypatch, case, lag):
+    import test_core_equivalence as tce
+    from test_core_equivalence import _compare, _write_rows
+    from test_faults import _degraded_rows
+    pf = tce.main
+    for mod in (wx, pf):
+        monkeypatch.setattr(mod, "TILT_ON", True)
+        monkeypatch.setattr(mod, "TILT_LAG", lag)
+        monkeypatch.setattr(mod, "TILT_TAU", 6.0)
+        if case.endswith("forced"):
+            monkeypatch.setattr(mod, "TILT_G_LO", -1.0)
+            monkeypatch.setattr(mod, "TILT_G_HI", 0.0)
+    if case == "jammed":
+        rows = _jam_rows()
+    elif case == "clean_forced":
+        rows, _ = _flight(40.0, _circle())       # not rounded: exact repeats at rest would read as a dead sensor
+    else:
+        rows = _degraded_rows()
+    src = _write_rows(tmp_path / "imu.csv", rows)
+    log = []
+    wx.estimate([(t, v) for t, v in rows], log=log)
+    assert any(d["tup"] for d in log)                 # the tilt update ran
+    _compare(src, tmp_path, monkeypatch)
+
+
+def test_parameters_identical():
+    import test_core_equivalence as tce
+    for name in ("TILT_ON", "TILT_TAU", "TILT_G_LO", "TILT_G_HI", "TILT_MED_TICKS", "TILT_R_K", "TILT_DV",
+                 "TILT_WALK_K", "TILT_LAG", "TILT_GATE_A"):
+        assert getattr(tce.main, name) == getattr(wx, name), name
+
+
+@pytest.mark.parametrize("case", ["jammed", "degraded_forced"])
+def test_lab_copy_matches_pathfinder_with_tilt_on(tmp_path, monkeypatch, case):
+    """tools/pathfinder_lab.py (pathfinder + switched-off experiments) carries L2 too: with TILT_ON and every
+    experiment off it writes the same bytes as pathfinder.py (its meter is the JAM meter's sums)."""
+    import test_core_equivalence as tce
+    from test_core_equivalence import _write_rows
+    from test_faults import _degraded_rows
+    pf, lab = tce.main, tce.LAB
+    for mod in (pf, lab):
+        monkeypatch.setattr(mod, "TILT_ON", True)
+        if case.endswith("forced"):
+            monkeypatch.setattr(mod, "TILT_G_LO", -1.0)
+            monkeypatch.setattr(mod, "TILT_G_HI", 0.0)
+    src = _write_rows(tmp_path / "imu.csv", _jam_rows() if case == "jammed" else _degraded_rows())
+    a, b = tmp_path / "pf.txt", tmp_path / "lab.txt"
+    pf.run(str(src), str(a))
+    lab.run(str(src), str(b))
+    assert a.read_bytes() == b.read_bytes()
+    monkeypatch.setattr(pf, "TILT_ON", False)
+    c = tmp_path / "off.txt"
+    pf.run(str(src), str(c))
+    assert c.read_bytes() != a.read_bytes()            # the switch did something on this input
