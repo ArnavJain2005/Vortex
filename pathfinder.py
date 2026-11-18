@@ -18,7 +18,7 @@ STATUS (steps 7a + 6c + 8a + 6d + 6e): self-calibration on the longest still run
 backward integration from mid-run over the rows before it (dead reckoning, no witnesses), then a
 forward error-state Kalman filter (15 states, one covariance step per 0.25 s tick) with the
 witnesses V1 stillness (ZUPT + gyro bias) and V2 flight envelope (speed and volume); dropouts and
-gaps add covariance learned from the recent motion (GAP_ON); a noise meter (JAM_ON) is built but off;
+gaps add covariance learned from the recent motion (GAP_ON);
 dead sensors (stuck or all-zero rows) are treated as missing (DEAD_ON) and velocity decays toward 0 in gaps (FC_ON);
 rows before the anchor keep the anchor's position, attitude from the backward pass (PRE_HOLD);
 if no still run passes the strict test, calibration retries with the white noise removed (CAL_NOISE_ON);
@@ -81,34 +81,24 @@ V2_SIGMA_V = 0.3
 V2P_SIGMA_H = 5.0
 V2P_SIGMA_V = 2.0
 V2P_TAU = 10.0
-LEARN_ON = False             # Step 4: envelope learned per file (vortex/core/witness.py learn_env)
-LEARN_FRAC = 0.3
-LEARN_ITERS = 2
-LEARN_K = 1.0
-LEARN_MIN = (0.1, 0.05, 0.3, 0.1)
-LEARN_MAX = (4.0, 1.0, 10.0, 4.0)
 V1_ON = True
 V2_ON = True
 V2P_ON = True
-JAM_TAU = 2.0
 GAP_H_TICKS = 8
 GAP_TAU = 20.0
-JAM_ON = False
 GAP_ON = True
 STUCK_ROWS = 5
 DEAD_ON = True
 FC_TAU = 0.5
 FC_ON = True
 PRE_HOLD = True
-RESET_ON = False
 REFRESH_ON = True
 P0V_ON = True
 SMOOTH_ON = True             # Step 6: ON (rule passed 18 Nov 2026); fixed-interval (RTS) smoother at the tick (vortex/core/witness.py smooth_*)
 SMOOTH_MAX_BLOCKS = 1024     # stored blocks (fixed cap; a full store merges adjacent pairs): <= 1.05 MB of floats
 N = 15
 
-LAST = {"pre_rows": 0, "calibrated": False, "zupt_ticks": 0, "ba": (0.0, 0.0, 0.0), "jam": (-1.0, -1.0),
-        "tilt2": -1.0}  # for tests/benchmarks
+LAST = {"pre_rows": 0, "calibrated": False, "zupt_ticks": 0, "ba": (0.0, 0.0, 0.0), "tilt2": -1.0}  # tests/benchmarks
 
 
 def _slow_fields(p):
@@ -648,22 +638,6 @@ def _inject(qw, qx, qy, qz, px, py, pz, vx, vy, vz, bgx, bgy, bgz, bax, bay, baz
             bax + dx[12], bay + dx[13], baz + dx[14])
 
 
-def _kf_reset(P, ex, ey, ez):
-    """witness.kf_reset (Step F): P <- G P G^T, G = I + [dth / 2]x on the attitude block."""
-    hx, hy, hz = 0.5 * ex, 0.5 * ey, 0.5 * ez
-    o6, o7, o8 = 6 * N, 7 * N, 8 * N
-    for c in range(N):
-        a, b, d = P[o6 + c], P[o7 + c], P[o8 + c]
-        P[o6 + c] = a - hz * b + hy * d
-        P[o7 + c] = b + hz * a - hx * d
-        P[o8 + c] = d - hy * a + hx * b
-    for rr in range(0, N * N, N):
-        a, b, d = P[rr + 6], P[rr + 7], P[rr + 8]
-        P[rr + 6] = a - hz * b + hy * d
-        P[rr + 7] = b + hz * a - hx * d
-        P[rr + 8] = d - hy * a + hx * b
-
-
 def _rotate(w, x, y, z, vx, vy, vz):
     """strapdown.rotate: R(q) v."""
     tx = 2.0 * (y * vz - z * vy)
@@ -962,378 +936,40 @@ def _fe_canonical_lines(path, lay):
             yield b",".join([ts] + [x.strip() for x in g] + a) + b"\n"
 
 
-# ---- fault front end (Step 3): copy of vortex/core/faults.py, same rules (tests/test_faults.py) ----
-FF_STUCK6_ON = False
-FF_SPIKE_ON = False
-FF_SPIKE_ZHI = 100.0          # z needed on the triple that is far out (chosen on MH_01/02, 17 Nov)
-FF_SPIKE_ZLO = 3.0            # z needed on the other triple (chosen on MH_01/02, 17 Nov)
-FF_SPIKE_ALPHA = 0.01         # running mean weight after the warm-up (about 100 rows, 0.5 s at 200 Hz)
-FF_SPIKE_WARM = 50            # tested rows before any row can be judged a spike
-FF_SPIKE_CLIP = 10.0          # after the warm-up a row moves the running mean by at most this many times it
-                           # (an undetected spike would otherwise raise the scale and hide the next ones)
-FF_SPIKE_SPAN_NS = 50_000_000  # G..N span above which P is not judged (10 rows at 200 Hz)
-FF_SPIKE_FLOOR_G2 = 0.005 ** 2  # rad^2/s^2: deviations below this are never spikes (noiseless input)
-FF_SPIKE_FLOOR_A2 = 0.05 ** 2   # m^2/s^4
-FF_MISSING = b"nan,nan,nan,nan,nan,nan,m"
-
-
-def _ff_parse(line):
-    """(t_ns or None, six floats or None, ts text) of a data line."""
-    p = line.strip().split(b",")
-    ts = p[0].strip()
-    t = int(ts) if ts.isdigit() else None
-    if len(p) < 7:
-        return t, None, ts
-    try:
-        v = (float(p[1]), float(p[2]), float(p[3]), float(p[4]), float(p[5]), float(p[6]))
-    except ValueError:
-        return t, None, ts
-    s = v[0] * v[0] + v[1] * v[1] + v[2] * v[2] + v[3] * v[3] + v[4] * v[4] + v[5] * v[5]
-    if not s < 1e8:
-        return t, None, ts
-    return t, v, ts
-
-
-def _ff_filter_lines(lines, stuck=None, spike=None, stats=None):
-    """Yields the lines with stuck repeats and spikes rewritten as missing samples. Non-data lines are
-    passed on at once; data rows keep their order and number. stats (dict, optional) gets counts."""
-    stuck = FF_STUCK6_ON if stuck is None else stuck
-    spike = FF_SPIKE_ON if spike is None else spike
-    zhi, zlo = FF_SPIKE_ZHI, FF_SPIKE_ZLO
-    st = {"stuck": 0, "spike": 0, "zero_mid": 0, "blind_rows": 0, "tested": 0}
-    pend = None          # (t, v, ts, line): the row waiting for its next neighbour
-    reps = []            # lines repeating pend exactly
-    zeros = []           # buffered all-zero rows (lines, ts)
-    gt = None            # last accepted row: time and values
-    gv = None
-    eg = ea = 0.0        # running mean squared deviations (gyro, accel)
-    nw = 0
-
-    def resolve(nt, nv):
-        """Emit pend (spike-tested against gt..next) and its repeats."""
-        nonlocal gt, gv, eg, ea, nw
-        t, v, ts, line = pend
-        flag = False
-        if spike and gv is not None and nv is not None and t is not None and nt - gt <= FF_SPIKE_SPAN_NS:
-            d0 = v[0] - 0.5 * (gv[0] + nv[0])
-            d1 = v[1] - 0.5 * (gv[1] + nv[1])
-            d2 = v[2] - 0.5 * (gv[2] + nv[2])
-            dg = d0 * d0 + d1 * d1 + d2 * d2
-            d0 = v[3] - 0.5 * (gv[3] + nv[3])
-            d1 = v[4] - 0.5 * (gv[4] + nv[4])
-            d2 = v[5] - 0.5 * (gv[5] + nv[5])
-            da = d0 * d0 + d1 * d1 + d2 * d2
-            if (nw >= FF_SPIKE_WARM and dg > FF_SPIKE_FLOOR_G2 and da > FF_SPIKE_FLOOR_A2
-                    and ((dg > zhi * eg and da > zlo * ea) or (da > zhi * ea and dg > zlo * eg))):
-                flag = True
-                st["spike"] += 1
-            else:
-                nw += 1
-                st["tested"] += 1
-                if nw <= FF_SPIKE_WARM:
-                    eg += (dg - eg) / nw
-                    ea += (da - ea) / nw
-                else:
-                    eg += (min(dg, FF_SPIKE_CLIP * eg) - eg) * FF_SPIKE_ALPHA
-                    ea += (min(da, FF_SPIKE_CLIP * ea) - ea) * FF_SPIKE_ALPHA
-        out = [ts + b"," + FF_MISSING + b"\n" if flag else line]
-        for rl, rts in reps:
-            out.append(rts + b"," + FF_MISSING + b"\n")
-            st["stuck"] += 1
-        if not flag and t is not None:
-            gt, gv = t, v
-        return out
-
-    for line in lines:
-        s = line.strip()
-        if not s or s[0] == 35:
-            yield line
-            continue
-        if line[-1:] != b"\n":
-            line = line + b"\n"
-        t, v, ts = _ff_parse(line)
-        if v is not None and t is not None and not (v[0] or v[1] or v[2] or v[3] or v[4] or v[5]):
-            if pend is not None:
-                yield from resolve(None, None)
-                pend, reps = None, []
-            zeros.append((line, ts))
-            continue
-        if zeros:                               # an all-zero run that is not at the end: a fault
-            for zl, zts in zeros:
-                if stuck:
-                    yield zts + b"," + FF_MISSING + b"\n"
-                    st["zero_mid"] += 1
-                else:
-                    yield zl
-            zeros = []
-        if v is None or t is None:              # invalid row: passed on as it is
-            if pend is not None:
-                yield from resolve(None, None)
-                pend, reps = None, []
-            yield line
-            continue
-        if stuck and pend is not None and v == pend[1]:
-            reps.append((line, ts))
-            continue
-        if pend is not None:
-            yield from resolve(t, v)
-        pend, reps = (t, v, ts, line), []
-    if pend is not None:
-        yield from resolve(None, None)
-    for zl, _ in zeros:                         # trailing all-zero run: the blind window, untouched
-        yield zl
-    st["blind_rows"] = len(zeros)
-    if stats is not None:
-        stats.update(st)
-
-
-def _learn_env(acc, t0, t1):
-    """Copy of witness.learn_env: acc holds 5 numbers per tick (t_ns, vh2, vv2, ph2, pv2)."""
-    lim = t0 + LEARN_FRAC * (t1 - t0)
-    n = 0
-    s = [0.0, 0.0, 0.0, 0.0]
-    for i in range(0, len(acc), 5):
-        if acc[i] <= lim:
-            n += 1
-            s[0] += acc[i + 1]
-            s[1] += acc[i + 2]
-            s[2] += acc[i + 3]
-            s[3] += acc[i + 4]
-    if n == 0:
-        return (V2_SIGMA_H, V2_SIGMA_V, V2P_SIGMA_H, V2P_SIGMA_V)
-    out = []
-    for k in range(4):
-        x = LEARN_K * math.sqrt(s[k] / n)
-        out.append(LEARN_MIN[k] if x < LEARN_MIN[k] else LEARN_MAX[k] if x > LEARN_MAX[k] else x)
-    return tuple(out)
-
-
-def _ts_span(src):
-    """First and last integer timestamp (ns) of the data rows, in file order (None if none)."""
-    t0 = t1 = None
-    with _open_rows(src) as f:
-        for line in f:
-            if line[0] < 48:
-                line = line.strip()
-                if not line or line[0] == 35:
-                    continue
-            ts = line.split(b",", 1)[0]
-            if not ts.isdigit():
-                ts = ts.strip()
-                if not ts.isdigit():
-                    continue
-            t1 = int(ts)
-            if t0 is None:
-                t0 = t1
-    return t0, t1
-
-
-def _run_learned(src, dst, write, integrate):
-    """_run, with the envelope learned per file first when LEARN_ON (LEARN_ITERS passes), and with the
-    smoother (SMOOTH_ON): one pass that stores the smoother's blocks, then the pass that writes, each row
-    corrected by the smoothed error (Step 6)."""
-    env = None
-    if LEARN_ON and integrate:
-        t0, t1 = _ts_span(src)
-        for _ in range(LEARN_ITERS):
-            acc = array("d")
-            _run(src, dst, False, True, env=env, collect=acc)
-            env = _learn_env(acc, t0, t1) if t0 is not None else None
-        LAST["env"] = env
-    LAST["smooth_blocks"] = None
-    corr = None
-    if SMOOTH_ON and integrate and write:
-        st = {}
-        _run(src, dst, False, True, env=env, store=st)
-        LAST["smooth_blocks"] = len(st["blocks"])
-        if st["blocks"]:
-            corr = _smooth_segments(st["blocks"], st["t_end"], st["d_end"])
-        st = None
-    return _run(src, dst, write, integrate, env=env, corr=corr)
-
-
-INTERP_ON = False            # Step 3: skip rows marked missing and integrate steps up to INTERP_MAX_S
-INTERP_MAX_S = 0.3           # s; the script's bursts are 5-50 rows (<= 0.25 s at 200 Hz)
-
-
-# ---- Step L1: positions scaled about their centroid, alpha per noise class (vortex/core/shrink.py) ----
-SHRINK_ON = False
-SHRINK_NOISE = 0.10          # rad/s per sample: class threshold (physics, not tuned)
-SHRINK_WIN_S = 20.0
-SHRINK_BLIND_S = 5.0
-SHRINK_BIN_S = 0.25
-SHRINK_BIN_MIN = 5
-SHRINK_MAX_DT = 0.1
-SHRINK_ALPHA_LO = 0.10       # high-noise class: lowest tuning objective, MH_01/02 a (tools/shrink_tune.py)
-SHRINK_ALPHA_HI = 0.20       # low-noise class: lowest tuning objective, MH_01/02 b + clean (flat: 59.85 vs 61.76 at 1.0)
-SH_FMT = b"%s %.6f %.6f %.6f %s"
-
-
-def _sh_noise(src):
-    """Median per-bin gyro white-noise sigma in the meter window (shrink.gyro_noise); -1.0 if no bin."""
-    fl = float
-    bin_ns = int(SHRINK_BIN_S * 1e9)
-    max_dt = int(SHRINK_MAX_DT * 1e9)
-    t0 = None
-    t_last = None
-    h1 = h2 = None
-    bins = []
-    cur = -1
-    s = 0.0
-    c = 0
-    with _open_rows(src) as f:
-        for line in f:
-            if line[0] < 48:
-                line = line.strip()
-                if not line or line[0] == 35:
-                    continue
-            p = line.split(b",")
-            ts = p[0]
-            if not ts.isdigit():
-                ts = ts.strip()
-                if not ts.isdigit():
-                    continue
-            t = int(ts)
-            t_last = t
-            try:
-                gx = fl(p[1]); gy = fl(p[2]); gz = fl(p[3])
-                ax = fl(p[4]); ay = fl(p[5]); az = fl(p[6])
-            except (ValueError, IndexError):
-                h1 = h2 = None
-                continue
-            if not (gx - gx == 0.0 and gy - gy == 0.0 and gz - gz == 0.0 and ax - ax == 0.0
-                    and ay - ay == 0.0 and az - az == 0.0 and (ax != 0.0 or ay != 0.0 or az != 0.0)):
-                h1 = h2 = None
-                continue
-            if t0 is None:
-                t0 = t
-            if h1 is not None and 0 < t - h1[0] <= max_dt:
-                if h2 is not None:
-                    d1 = h1[0] - h2[0]
-                    d2 = t - h1[0]
-                    if 4 * abs(d2 - d1) <= d1:
-                        e0 = gx - 2.0 * h1[1] + h2[1]
-                        e1 = gy - 2.0 * h1[2] + h2[2]
-                        e2 = gz - 2.0 * h1[3] + h2[3]
-                        b = (t - t0) // bin_ns
-                        if b != cur:
-                            if c >= SHRINK_BIN_MIN:
-                                bins.append((cur, s / c))
-                            cur = b
-                            s = 0.0
-                            c = 0
-                        s += e0 * e0 + e1 * e1 + e2 * e2
-                        c += 1
-                h2 = h1
-            else:
-                h2 = None
-            h1 = (t, gx, gy, gz)
-    if c >= SHRINK_BIN_MIN:
-        bins.append((cur, s / c))
-    if t0 is None:
-        return -1.0
-    hi = t_last - int(SHRINK_BLIND_S * 1e9)
-    lo = hi - int(SHRINK_WIN_S * 1e9)
-    sel = sorted(m for b, m in bins if t0 + b * bin_ns >= lo and t0 + (b + 1) * bin_ns <= hi)
-    if not sel:
-        return -1.0
-    k = len(sel) // 2
-    med = sel[k] if len(sel) % 2 else 0.5 * (sel[k - 1] + sel[k])
-    return math.sqrt(med / 18.0)
-
-
-def _sh_apply(dst, alpha):
-    """Rewrite dst with positions scaled by alpha about their centroid (timestamps, attitude unchanged)."""
-    if alpha == 1.0:
-        return
-    fl = float
-    sx = sy = sz = 0.0
-    n = 0
-    with open(dst, "rb") as f:
-        for line in f:
-            p = line.split(b" ", 4)
-            sx += fl(p[1])
-            sy += fl(p[2])
-            sz += fl(p[3])
-            n += 1
-    if not n:
-        return
-    cx = sx / n
-    cy = sy / n
-    cz = sz / n
-    fmt = SH_FMT
-    tmp = dst + ".vortex_sh"
-    out = []
-    ap = out.append
-    k = CHUNK
-    with open(dst, "rb") as f, open(tmp, "wb") as g:
-        w = g.write
-        for line in f:
-            p = line.split(b" ", 4)
-            ap(fmt % (p[0], cx + alpha * (fl(p[1]) - cx), cy + alpha * (fl(p[2]) - cy),
-                      cz + alpha * (fl(p[3]) - cz), p[4]))
-            k -= 1
-            if not k:
-                w(b"".join(out))
-                out.clear()
-                k = CHUNK
-        if out:
-            w(b"".join(out))
-    os.replace(tmp, dst)
-
-
-def _shrink(src, dst, write, integrate):
-    LAST["shrink"] = None
-    if not (SHRINK_ON and write and integrate):
-        return
-    sigma = _sh_noise(src)
-    alpha = SHRINK_ALPHA_LO if sigma > SHRINK_NOISE else SHRINK_ALPHA_HI
-    LAST["shrink"] = (sigma, alpha)
-    _sh_apply(dst, alpha)
-
-
 def run(src, dst, write=True, integrate=True):
-    """Stream src -> dst. Returns the number of data rows. With FRONT_ON a file that is not canonical, and
-    with FF_STUCK6_ON / FF_SPIKE_ON every file, is first rewritten (canonical, faults marked missing) next to
-    dst (dst + '.vortex_in.csv', removed afterwards). With SHRINK_ON dst is then rewritten once more with
-    the positions scaled about their centroid (Step L1)."""
+    """Stream src -> dst. Returns the number of data rows. With FRONT_ON a file that is not canonical is
+    first rewritten canonically next to dst (dst + '.vortex_in.csv', removed afterwards)."""
     LAST["frontend"] = None
-    LAST["faults"] = None
-    lines = None
     if FRONT_ON:
         lay = _fe_detect(src)
         LAST["frontend"] = lay
         if not lay["canonical"]:
-            lines = _fe_canonical_lines(src, lay)
-    f = None
-    if FF_STUCK6_ON or FF_SPIKE_ON:
-        if lines is None:
-            f = open(src, "rb")
-            lines = f
+            tmp = dst + ".vortex_in.csv"
+            with open(tmp, "wb") as g:
+                g.writelines(_fe_canonical_lines(src, lay))
+            try:
+                return _run_smoothed(tmp, dst, write, integrate)
+            finally:
+                os.remove(tmp)
+    return _run_smoothed(src, dst, write, integrate)
+
+
+def _run_smoothed(src, dst, write, integrate):
+    """_run with the smoother (SMOOTH_ON): one pass that stores the smoother's blocks, then the pass that
+    writes, each row corrected by the smoothed error (Step 6)."""
+    LAST["smooth_blocks"] = None
+    corr = None
+    if SMOOTH_ON and integrate and write:
         st = {}
-        LAST["faults"] = st
-        lines = _ff_filter_lines(lines, stats=st)
-    LAST["env"] = None
-    if lines is None:
-        n = _run_learned(src, dst, write, integrate)
-        _shrink(src, dst, write, integrate)
-        return n
-    tmp = dst + ".vortex_in.csv"
-    try:
-        with open(tmp, "wb") as g:
-            g.writelines(lines)
-    finally:
-        if f is not None:
-            f.close()
-    try:
-        n = _run_learned(tmp, dst, write, integrate)
-        _shrink(tmp, dst, write, integrate)
-        return n
-    finally:
-        os.remove(tmp)
+        _run(src, dst, False, True, store=st)
+        LAST["smooth_blocks"] = len(st["blocks"])
+        if st["blocks"]:
+            corr = _smooth_segments(st["blocks"], st["t_end"], st["d_end"])
+        st = None
+    return _run(src, dst, write, integrate, corr=corr)
 
 
-def _run(src, dst, write=True, integrate=True, env=None, collect=None, store=None, corr=None):
+def _run(src, dst, write=True, integrate=True, store=None, corr=None):
     """Stream src -> dst. Returns the number of data rows.
     write=False: no output (benchmarks); integrate=False: identity poses (benchmarks). store: a dict that
     gets the smoother's blocks (Step 6); corr: _smooth_segments() output, applied to every written row."""
@@ -1344,10 +980,9 @@ def _run(src, dst, write=True, integrate=True, env=None, collect=None, store=Non
     cos = math.cos
     sin = math.sin
     exp = math.exp
-    interp = INTERP_ON
-    max_dt = INTERP_MAX_S if interp else MAX_DT
-    e = env if env is not None else (V2_SIGMA_H, V2_SIGMA_V, V2P_SIGMA_H, V2P_SIGMA_V)
-    s2vh, s2vv, s2ph, s2pv = e[0] * e[0], e[1] * e[1], e[2] * e[2], e[3] * e[3]
+    max_dt = MAX_DT
+    s2vh, s2vv = V2_SIGMA_H * V2_SIGMA_H, V2_SIGMA_V * V2_SIGMA_V
+    s2ph, s2pv = V2P_SIGMA_H * V2P_SIGMA_H, V2P_SIGMA_V * V2P_SIGMA_V
     max_jump = MAX_JUMP_S
     max_ss = MAX_SUMSQ
     n = 0
@@ -1401,13 +1036,8 @@ def _run(src, dst, write=True, integrate=True, env=None, collect=None, store=Non
     bq0 = bq1 = bq2 = bq3 = bq4 = bq5 = 0.0
     pn, ps, pss, pstill = 0, None, None, False
     ccx = ccy = ccz = 0.0
-    jam, gap_on = JAM_ON, GAP_ON
-    hn = 0                                   # raw rows in the meter's history (0, 1, 2+)
-    hgx = hgy = hgz = hax = hay = haz = 0.0  # last raw row
-    kgx = kgy = kgz = kax = kay = kaz = 0.0  # the one before
-    nd = 0
-    dg = da = fdt = gap = 0.0
-    jg = ja = -1.0
+    gap_on = GAP_ON
+    gap = 0.0
     ring = []
     tilt2 = -1.0
     dv2 = [0.0, 0.0, 0.0]
@@ -1415,7 +1045,7 @@ def _run(src, dst, write=True, integrate=True, env=None, collect=None, store=Non
     sg = sa = 0                              # current run of identical gyro / accel triples
     sgx = sgy = sgz = sax = say = saz = NAN
     fc, tau = FC_ON, FC_TAU
-    reset, refresh = RESET_ON, REFRESH_ON
+    refresh = REFRESH_ON
     zupt_ticks = 0
     zs2, zm2 = ZUPT_SIGMA * ZUPT_SIGMA, ZARU_SIGMA_MIN * ZARU_SIGMA_MIN
     t = tl = 0
@@ -1518,19 +1148,6 @@ def _run(src, dst, write=True, integrate=True, env=None, collect=None, store=Non
                                         _gap_inflate(P, gap, tilt2, dv2)
                                     ad2 = ACC_NOISE * ACC_NOISE
                                     gd2 = GYRO_NOISE * GYRO_NOISE
-                                    if jam:
-                                        if nd >= BLOCK_MIN_ROWS and fn:
-                                            ds = fdt / fn / (18.0 * nd)
-                                            if jg < 0.0:
-                                                jg, ja = dg * ds, da * ds
-                                            else:
-                                                b = T / JAM_TAU if T < JAM_TAU else 1.0
-                                                jg += (dg * ds - jg) * b
-                                                ja += (da * ds - ja) * b
-                                        if jg > gd2:
-                                            gd2 = jg
-                                        if ja > ad2:
-                                            ad2 = ja
                                     if fn:
                                         _kf_propagate(P, r, fsx / fn, fsy / fn, fsz / fn, T, ad2, gd2)
                                         if smooth:
@@ -1578,24 +1195,15 @@ def _run(src, dst, write=True, integrate=True, env=None, collect=None, store=Non
                                     (qw, qx, qy, qz, px, py, pz, vx, vy, vz, bgx, bgy, bgz, bax, bay,
                                      baz) = _inject(qw, qx, qy, qz, px, py, pz, vx, vy, vz, bgx, bgy, bgz,
                                                     bax, bay, baz, dx)
-                                    if reset or refresh:
+                                    if refresh:
                                         chk = 0.0
                                         for e in dx:
                                             chk += e
                                         if chk - chk == 0.0:
-                                            if reset:
-                                                _kf_reset(P, dx[6], dx[7], dx[8])
-                                            if refresh and has_prev:
+                                            if has_prev:
                                                 (pcx, pcy, pcz, pfx, pfy, pfz) = _refresh_prev(
                                                     pcx, pcy, pcz, pfx, pfy, pfz, ow, ox, oy, oz, qw, qx, qy, qz, dx)
                                     dx = [0.0] * N
-                                if collect is not None:
-                                    d0 = px - ccx
-                                    d1 = py - ccy
-                                    d2 = pz - ccz
-                                    collect.extend((tl, 0.5 * (vx * vx + P[48] + vy * vy + P[64]),
-                                                    vz * vz + P[80], 0.5 * (d0 * d0 + P[0] + d1 * d1 + P[16]),
-                                                    d2 * d2 + P[32]))
                                 if smooth:
                                     chk = 0.0
                                     if sdx is not None:
@@ -1630,8 +1238,7 @@ def _run(src, dst, write=True, integrate=True, env=None, collect=None, store=Non
                                 t_tick = tl
                                 fsx = fsy = fsz = 0.0
                                 fn = 0
-                                nd = 0
-                                dg = da = fdt = gap = 0.0
+                                gap = 0.0
                                 pn, ps, pss, pstill = bn, bs, bss, still
                                 bn = 0
                                 bs0 = bs1 = bs2 = bs3 = bs4 = bs5 = 0.0
@@ -1640,24 +1247,6 @@ def _run(src, dst, write=True, integrate=True, env=None, collect=None, store=Non
                             bs0 += gx; bs1 += gy; bs2 += gz; bs3 += ax; bs4 += ay; bs5 += az
                             bq0 += gx * gx; bq1 += gy * gy; bq2 += gz * gz
                             bq3 += ax * ax; bq4 += ay * ay; bq5 += az * az
-                            if jam:
-                                # ---- noise meter: second differences of the raw values ----
-                                if dt <= max_dt and has_prev:
-                                    if hn >= 2:
-                                        d0 = gx - 2.0 * hgx + kgx
-                                        d1 = gy - 2.0 * hgy + kgy
-                                        d2 = gz - 2.0 * hgz + kgz
-                                        dg += d0 * d0 + d1 * d1 + d2 * d2
-                                        d0 = ax - 2.0 * hax + kax
-                                        d1 = ay - 2.0 * hay + kay
-                                        d2 = az - 2.0 * haz + kaz
-                                        da += d0 * d0 + d1 * d1 + d2 * d2
-                                        nd += 1
-                                    kgx = hgx; kgy = hgy; kgz = hgz; kax = hax; kay = hay; kaz = haz
-                                    hn += 1
-                                else:
-                                    hn = 1
-                                hgx = gx; hgy = gy; hgz = gz; hax = ax; hay = ay; haz = az
                             ax = ax - bax; ay = ay - bay; az = az - baz
                             if dt <= max_dt and has_prev:
                                 # ---- strapdown step (trapezoid), as strapdown._step ----
@@ -1701,7 +1290,6 @@ def _run(src, dst, write=True, integrate=True, env=None, collect=None, store=Non
                                     pfx = fwx; pfy = fwy; pfz = fwz
                                     fsx += fwx; fsy += fwy; fsz += fwz
                                     fn += 1
-                                    fdt += dt
                                 else:
                                     has_prev = False
                             else:
@@ -1733,8 +1321,6 @@ def _run(src, dst, write=True, integrate=True, env=None, collect=None, store=Non
                         bs0 += gx; bs1 += gy; bs2 += gz; bs3 += ax; bs4 += ay; bs5 += az
                         bq0 += gx * gx; bq1 += gy * gy; bq2 += gz * gz
                         bq3 += ax * ax; bq4 += ay * ay; bq5 += az * az
-                        hn = 1
-                        hgx = gx; hgy = gy; hgz = gz; hax = ax; hay = ay; haz = az
                         ax = ax - bax; ay = ay - bay; az = az - baz
                         pcx = gx - bgx; pcy = gy - bgy; pcz = gz - bgz
                         ux = 2.0 * (qy * az - qz * ay)
@@ -1744,7 +1330,7 @@ def _run(src, dst, write=True, integrate=True, env=None, collect=None, store=Non
                         pfy = ay + qw * uy + (qz * ux - qx * uz)
                         pfz = az + qw * uz + (qx * uy - qy * ux)
                         has_prev = True
-                elif have_t and not (interp and len(p) > 7 and p[7][:1] == b"m"):
+                elif have_t:
                     dt = (t - tl) * 1e-9
                     if 0 < dt <= max_jump:
                         if fc:
@@ -1757,7 +1343,6 @@ def _run(src, dst, write=True, integrate=True, env=None, collect=None, store=Non
                         tl = t
                         has_prev = False
                         gap += dt
-                        hn = 0
             if write:
                 if cr:
                     if tok:
@@ -1808,7 +1393,6 @@ def _run(src, dst, write=True, integrate=True, env=None, collect=None, store=Non
         store["d_end"] = sd_prev
     LAST["zupt_ticks"] = zupt_ticks
     LAST["ba"] = (bax, bay, baz)
-    LAST["jam"] = (jg, ja)
     LAST["tilt2"] = tilt2
     return n
 

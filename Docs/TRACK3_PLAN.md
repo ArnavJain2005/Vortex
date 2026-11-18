@@ -88,6 +88,7 @@ Deadline **22 Nov 2026, 11:59 PM IST**, confirmed by the FAQ (Q1 closed). Full-t
 | R6 | Batch forward-backward smoother at the 0.25 s tick (`SMOOTH_ON`, Step E code in the reference) | **Done (verified): ON** by the pre-registered rule (18 Nov, rule at 8da205d): held-out APE -7.8 %, gap RMSE -10.7 %, clean -2.7 %; ported to `pathfinder.py`, bit-identical (max difference 0.0 on real files) | Held-out APE and gap RMSE improve >= 2 %; clean not worse |
 | F | Filter fixes from the 16-17 Nov reviews: gyro-bias cap on every still test (`BGCAP_ON`), covariance reset after injection (`RESET_ON`), refresh of the cached previous sample (`REFRESH_ON`), fallback velocity uncertainty (`P0V_ON`); four switches | **Done** (17 Nov): BGCAP, P0V, REFRESH pass and ship on; RESET fails (reading a APE +1.8 %) and ships off. Held-out mean APE 4.972 -> 4.962 m; floor 3.745 m | Each switch judged on 36 fresh held-out copies (seeds 4-6) by the no-harm rule |
 | L1 | Positions scaled about their centroid, alpha per gyro-noise class (`SHRINK_ON`); null floor = the estimate reversed in time (`eval_euroc.py --reverse`) | **Done (verified): OFF** by the pre-registered rule (18 Nov, rule at d56c875): both arms improve the mean objective (reading a -49.5 %, reading b -23.9 %) but fail sequence consistency (4 and 3 of 6); LO also loses to its reversed output. Shipped output unchanged | Each arm judged on 36 fresh held-out copies (seeds 7-9) |
+| Lean | Switched-off experiments moved from `pathfinder.py` to `tools/pathfinder_lab.py` (not shipped) to cut compile memory | **Done (verified)** 18 Nov: output byte-identical on all 144 real inputs; no-bytecode heap 6,055 -> 4,935 KB (3.14), 6,431 -> 6,309 KB (3.13); gate PASS | `tests/test_lab.py`; gates PASS |
 
 ## Open questions (Q1 to Q5 are in the email drafted for prism@samsung.com on 15 Nov)
 
@@ -1492,7 +1493,21 @@ one-sided as before, that test alone: 1 passed (18.5 min, four 3 to 15 min runs 
 conflict (the shrink is a post-pass after the smoothed write). L1 was judged with the smoother off and ships
 off, so it was not re-judged. After the merge: the smoother, shrink, TUM-VI, witness, core-equivalence and
 main tests: 101 passed (memory test deselected, it was unchanged by the merge); gate PASS
-(`Docs/budget/step6m-win-py314.json`). The full suite was not re-run after the merge.
+(`Docs/budget/step6m-win-py314.json`; no cached bytecode 7,665.6 KB, the full pre-lean file).
+
+**Merged with the lean pathfinder** (#57: switched-off experiments moved to `tools/pathfinder_lab.py`). The
+smoother is ported into both: the lab is this branch's full `pathfinder.py` plus the lab header; the lean
+`pathfinder.py` gets the same smoother code, with `_run_smoothed` (store pass, then the writing pass) in
+place of `_run_learned` (LEARN is lab-only). `tests/test_smoother_port.py` now checks both against the
+reference (caps 1024, 16, 15) and the learned envelope on the lab (8 tests). Lean `pathfinder.py` and the lab
+write byte-identical output on MH_01_easy_b_s1, MH_04_difficult_a_s2, V1_03_difficult_b_s3 and clean
+MH_03_medium (scratch script); the lab is the pre-merge Step 6 file, so the numbers above stand.
+After this merge: **pytest 329 passed** (full suite, Windows 3.14: main's 321 + the 8 smoother port tests).
+Gate PASS (`Docs/budget/step6-lean-win-py314*.json`): `python -S main.py` 35.79 us/row SYNTHETIC, 32.01
+MH_01_easy_b_s1 (other sessions' tests were running at the same time); heap in-process 1,059.8 / 1,231.8 KB,
+whole run 1,632.3 / 1,795.9 KB; **no cached bytecode 5,579.7 KB** (lean without the smoother: 4,934.5; the
+smoother's code costs about 645 KB of compile memory). Under the 8 MB limit by 2.5 MB; still over the 4 MB
+target when compiled from source.
 
 
 ## Step L1: trust-scaled shrinkage about the centroid (18 Nov 2026, branch `track3/stepL1-shrink`)
@@ -1630,3 +1645,40 @@ efficiency step; not done here.
 
 Not checked: TUM-VI (not downloaded); Linux/WSL timing; how the organisers start tracemalloc (we assume
 before `main.py` runs). The reversed-null floor is one realisation per copy.
+
+
+## Lean pathfinder: switched-off experiments moved to a lab copy (18 Nov 2026, branch `track3/step-lean-pathfinder`)
+
+**Why.** An evaluator without our bytecode compiles `pathfinder.py` while tracemalloc runs, and the
+switched-off experiments were compiled with it: the no-bytecode heap reading had grown to 6,055 KB (3.14) and
+6,431 KB (3.13) by Step L1 (18 Nov review, item 7).
+
+**Change.** No estimator change.
+- `tools/pathfinder_lab.py` (new, not shipped): the full estimator as of dc162ac, with every experiment and its
+  switch (fault pass `FF_*`, learned envelope `LEARN_*`, `INTERP_*`, noise meter `JAM_*`, covariance reset
+  `RESET_ON` / `_kf_reset`, shrinkage `SHRINK_*`), all off. Re-run an experiment with
+  `tools/eval_euroc.py --main tools/pathfinder_lab.py --set NAME=VALUE`.
+- `pathfinder.py`: those pieces removed (1,640 -> 1,214 lines). The shipped switches stay (`GAP_ON`, `DEAD_ON`,
+  `FC_ON`, `PRE_HOLD`, `CAL_NOISE_ON`, `BGCAP_ON`, `REFRESH_ON`, `P0V_ON`, `FRONT_ON`, V1/V2). The
+  reference (`vortex/core`) is unchanged and still holds every experiment.
+- Tests of the experiments now run against the lab copy (`test_faults`, `test_shrink`, `test_stepF`, the
+  LEARN test in `test_witness`, the JAM test in `test_core_equivalence`, and `test_ccore`, whose frozen C core
+  still declares the JAM constants). New `tests/test_lab.py` (7): the experiments are off in the lab and absent
+  from `pathfinder.py`; every shared constant is equal; lab with everything off writes byte-identical output on
+  five SYNTHETIC files (messy, degraded, move-rest-move, accelerometer-first, empty).
+
+| Item | Result | Where |
+|---|---|---|
+| `pathfinder.py` vs lab copy (all off), every real input on disk | **byte-identical on all 144** (8 clean EuRoC + 136 official copies; V2 excluded) | scratch script, Windows 3.14 |
+| `pytest` | 317 passed (310 + 7 `test_lab.py`; g++ on PATH); 321 after merging `main` with #54 (4 TUM-VI tests) | Windows, Python 3.14.7 |
+| Compile peak, `compile()` of the source in-process | 5,640 -> 4,536 KB | Windows 3.14 |
+| Budget, `python -S benchmark.py --runs 15 --gate` | PASS on all three. Heap in-process / whole run / no bytecode: Win 3.14 synthetic 506 / 997 / **4,935** KB (Step L1: 6,055); Win 3.14 MH_01_easy_b_s1 587 / 1,084 / **4,935** KB; Win 3.13 synthetic 393 / 1,368 / **6,309** KB (Step L1: 6,431). Time 12.9, 13.2, 13.1 us/row | `Docs/BUDGET.md` `lean-*` |
+
+**Reading.** On 3.14 the no-bytecode reading falls 1.1 MB, back under the 4 MB design target only with the
+shipped bytecode (as before) and 3.2 MB under the 8 MB limit without it. On 3.13 it falls only 122 KB: the
+3.13 peak has stayed near 6.3 MB since Step 1 (6,310 KB then, with a smaller file), so it does not track the
+source size. Not investigated; the largest single function (`_run`, about 600 lines) is a candidate. The time
+change (about -15 %) is inside this laptop's run-to-run spread and is not claimed.
+
+Not checked: Linux / WSL; the Docker image (unchanged Dockerfile; `pathfinder.py` content changed, output
+identical); what dominates the 3.13 compile peak.

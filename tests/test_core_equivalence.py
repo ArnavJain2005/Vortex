@@ -38,6 +38,16 @@ def _load_main():
 main = _load_main()
 
 
+def _load_lab():
+    spec = importlib.util.spec_from_file_location("vortex_lab_equiv", ROOT / "tools" / "pathfinder_lab.py")
+    mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+    return mod
+
+
+LAB = _load_lab()   # the switched-off experiments (JAM_ON here) live in the lab copy since 18 Nov
+
+
 def _compare(src, tmp_path, monkeypatch, reference=None):
     monkeypatch.setattr(main, "FMT", FULL)
     dst = tmp_path / "est.txt"
@@ -70,7 +80,7 @@ def test_parameters_identical():
     for name in ("TICK_S", "GYRO_NOISE", "ACC_NOISE", "GYRO_WALK", "ACC_WALK", "P0_VEL", "P0_TILT", "P0_YAW",
                  "P0_BG", "P0_BA", "P0_TILT_FALLBACK", "P0_BG_FALLBACK", "ZUPT_SIGMA", "ZARU_SIGMA_MIN",
                  "V2_SIGMA_H", "V2_SIGMA_V", "V2P_SIGMA_H", "V2P_SIGMA_V", "V2P_TAU", "V1_ON", "V2_ON",
-                 "V2P_ON", "JAM_TAU", "GAP_H_TICKS", "GAP_TAU", "JAM_ON", "GAP_ON", "STUCK_ROWS", "DEAD_ON", "FC_TAU",
+                 "V2P_ON", "GAP_H_TICKS", "GAP_TAU", "GAP_ON", "STUCK_ROWS", "DEAD_ON", "FC_TAU",
                  "FC_ON", "PRE_HOLD", "N"):
         assert getattr(main, name) == getattr(wx, name), name
 
@@ -180,17 +190,18 @@ def noisy_gappy_rows():
 
 @pytest.mark.parametrize("jam, gap", [(True, True), (True, False), (False, True), (False, False)])
 def test_meter_and_gap_match(tmp_path, monkeypatch, noisy_gappy_rows, jam, gap):
-    for mod in (main, wx):
+    monkeypatch.setitem(globals(), "main", LAB)
+    for mod in (LAB, wx):
         monkeypatch.setattr(mod, "JAM_ON", jam)
         monkeypatch.setattr(mod, "GAP_ON", gap)
     src = _write_rows(tmp_path / "imu.csv", noisy_gappy_rows)
     dp, dq = _compare(src, tmp_path, monkeypatch)
     assert dp < 1e-9                                         # same arithmetic order: rounding only
     if jam:
-        assert main.LAST["jam"][0] > main.GYRO_NOISE ** 2 and main.LAST["jam"][1] > main.ACC_NOISE ** 2
+        assert LAB.LAST["jam"][0] > LAB.GYRO_NOISE ** 2 and LAB.LAST["jam"][1] > LAB.ACC_NOISE ** 2
     else:
-        assert main.LAST["jam"] == (-1.0, -1.0)
-    assert (main.LAST["tilt2"] > 0.0) == gap
+        assert LAB.LAST["jam"] == (-1.0, -1.0)
+    assert (LAB.LAST["tilt2"] > 0.0) == gap
 
 
 @pytest.fixture(scope="module")

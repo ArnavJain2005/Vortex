@@ -416,7 +416,7 @@ def test_learned_envelope_reference_and_pathfinder_agree(tmp_path, monkeypatch):
     from test_core_equivalence import _compare, _write_rows
     from test_strapdown import _move_rest_move
     root = Path(__file__).resolve().parents[1]
-    spec = importlib.util.spec_from_file_location("vortex_pf_learn", root / "pathfinder.py")
+    spec = importlib.util.spec_from_file_location("vortex_pf_learn", root / "tools" / "pathfinder_lab.py")  # LEARN lives in the lab copy
     pf = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(pf)
     rows, _, _ = _move_rest_move(bias=(0.01, -0.02, 0.08), gyro_noise=0.002, acc_noise=0.02, seed=5)

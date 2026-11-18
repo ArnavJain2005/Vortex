@@ -1,5 +1,6 @@
-"""Step 6: the smoother (SMOOTH_ON) in pathfinder.py against the reference (vortex/core/witness.py), on
-SYNTHETIC files: storage, merging under a small cap, row corrections. Also the switch-off path."""
+"""Step 6: the smoother (SMOOTH_ON) in pathfinder.py and in tools/pathfinder_lab.py against the reference
+(vortex/core/witness.py), on SYNTHETIC files: storage, merging under a small cap, row corrections; with the
+learned envelope (lab only: LEARN is not in the lean pathfinder.py). Also the switch-off path."""
 
 import importlib.util
 import sys
@@ -16,14 +17,15 @@ from test_core_equivalence import _compare, _write_rows  # noqa: E402
 from test_strapdown import _move_rest_move  # noqa: E402
 
 
-def _load_pf():
-    spec = importlib.util.spec_from_file_location("vortex_pf_smooth", ROOT / "pathfinder.py")
+def _load(name, path):
+    spec = importlib.util.spec_from_file_location(name, path)
     mod = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(mod)
     return mod
 
 
-pf = _load_pf()
+pf = _load("vortex_pf_smooth", ROOT / "pathfinder.py")
+lab = _load("vortex_pf_lab_smooth", ROOT / "tools" / "pathfinder_lab.py")
 
 
 def _rows(seed=7, gap=True):
@@ -33,23 +35,25 @@ def _rows(seed=7, gap=True):
     return rows
 
 
+@pytest.mark.parametrize("which", ["pathfinder", "lab"])
 @pytest.mark.parametrize("cap", [1024, 16, 15])
-def test_smoother_reference_and_pathfinder_agree(tmp_path, monkeypatch, cap):
+def test_smoother_reference_and_pathfinder_agree(tmp_path, monkeypatch, cap, which):
+    mod_ = pf if which == "pathfinder" else lab
     src = _write_rows(tmp_path / "imu.csv", _rows())
-    for mod in (wx, pf):
+    for mod in (wx, mod_):
         monkeypatch.setattr(mod, "SMOOTH_ON", True)
         monkeypatch.setattr(mod, "SMOOTH_MAX_BLOCKS", cap)
-    monkeypatch.setattr(tce, "main", pf)
+    monkeypatch.setattr(tce, "main", mod_)
     _compare(src, tmp_path, monkeypatch, reference=wx.estimate_file)
-    assert pf.LAST["smooth_blocks"] <= cap
+    assert mod_.LAST["smooth_blocks"] <= cap
 
 
 def test_smoother_with_learned_envelope_agrees(tmp_path, monkeypatch):
     src = _write_rows(tmp_path / "imu.csv", _rows(seed=8))
-    for mod in (wx, pf):
+    for mod in (wx, lab):
         monkeypatch.setattr(mod, "SMOOTH_ON", True)
         monkeypatch.setattr(mod, "LEARN_ON", True)
-    monkeypatch.setattr(tce, "main", pf)
+    monkeypatch.setattr(tce, "main", lab)
     _compare(src, tmp_path, monkeypatch, reference=wx.estimate_file)
 
 
