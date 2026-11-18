@@ -34,14 +34,34 @@ V1_01..03 were extracted on 17 Nov 2026 (IMU 200 Hz, 145.6 / 85.5 / 107.5 s).
 
 ## TUM-VI
 
-Schubert et al., *The TUM VI Benchmark for Evaluating Visual-Inertial Odometry*, IROS 2018. Hand-held
-rig, BMI160 IMU at 200 Hz, motion-capture ground truth for part of each sequence.
+Schubert et al., *The TUM VI Benchmark for Evaluating Visual-Inertial Odometry*, IROS 2018 (arXiv:1804.06120).
+Hand-held rig, BMI160 IMU at ~199.4 Hz (`dt` 5.016 ms), 120 Hz motion-capture ground truth.
 
 1. Go to https://cvg.cit.tum.de/data/datasets/vi-dataset.
-2. Download the **Euroc / DSO 512x512** tar for `room1` (smallest useful sequence), e.g.
-   `dataset-room1_512_16.tar`.
-3. Extract to `data/tumvi/dataset-room1_512_16/mav0/`. You need `imu0/data.csv` and the motion-capture
-   ground truth under `mav0/` (folder name not yet checked by us; tell Claude what you see).
+2. Download the **Euroc / DSO 512x512** tars for `room1`..`room6` (`dataset-room1_512_16.tar` .. `dataset-room6_512_16.tar`).
+3. Extract `mav0/imu0/data.csv` and `mav0/mocap0/data.csv` into `data/tumvi/dataset-roomN_512_16/mav0/`.
+   (`vortex/data/euroc.py` reads `mav0/imu0/data.csv` and `mav0/mocap0/data.csv` directly.)
+
+**Mocap ground-truth frame.** In the calibrated EuRoC/DSO exports, `mav0/mocap0/data.csv` poses are **in the
+IMU body frame** (hand-eye calibration `T_MI` and clock offset already applied; no marker lever arm).
+Citation: TUM-VI benchmark website (https://cvg.cit.tum.de/data/datasets/vi-dataset, *"All sequences have
+been processed to have: ... ground truth poses in the IMU frame"* and *"the calibrated datasets already have
+corrected IMU measurements and Ground Truth in IMU frame"*); Schubert et al., IROS 2018, Section IV-B.
+Verified directly in `dataset-room1_512_16.tar`: all 16,541 data rows of `mav0/mocap0/data.csv` are
+byte-for-byte identical to `dso/gt_imu.csv`.
+
+Extracted 18 Nov 2026 (`python tools/tumvi_inspect.py --root data/tumvi`):
+
+| Sequence | IMU rows | Length | IMU rate | Time gaps | Ground-truth rows | Ground truth covers |
+|---|---|---|---|---|---|---|
+| dataset-room1_512_16 | 28,122 | 141.1 s | 199.4 Hz (dt 5.016 ms) | none (max dt 5.04 ms) | 16,541 | 0.01..141.03 s (100.0%, 120 Hz, 9 gaps >50 ms, max 1.06 s) |
+| dataset-room2_512_16 | 28,732 | 144.1 s | 199.4 Hz (dt 5.016 ms) | none (max dt 5.04 ms) | 15,477 | 0.01..144.08 s (100.0%, 120 Hz, 22 gaps >50 ms, max 2.49 s) |
+| dataset-room3_512_16 | 28,124 | 141.1 s | 199.4 Hz (dt 5.016 ms) | none (max dt 5.04 ms) | 15,200 | 0.01..141.03 s (100.0%, 120 Hz, 31 gaps >50 ms, max 1.99 s) |
+| dataset-room4_512_16 | 22,212 | 111.4 s | 199.4 Hz (dt 5.016 ms) | none (max dt 5.04 ms) | 13,075 | 0.02..111.39 s (100.0%, 120 Hz, 13 gaps >50 ms, max 0.48 s) |
+| dataset-room5_512_16 | 28,381 | 142.3 s | 199.4 Hz (dt 5.016 ms) | none (max dt 5.04 ms) | 16,999 | 0.01..142.33 s (100.0%, 120 Hz, 3 gaps >50 ms, max 0.17 s) |
+| dataset-room6_512_16 | 26,281 | 131.8 s | 199.4 Hz (dt 5.016 ms) | none (max dt 5.04 ms) | 15,244 | 0.97..131.79 s (99.3%, 120 Hz, 5 gaps >50 ms, max 3.15 s) |
+
+Tuning sequences: `dataset-room1_512_16`, `dataset-room2_512_16`. Held out: `room3..room6`.
 
 ## ADVIO (earlier direction, optional)
 

@@ -23,7 +23,7 @@ from test_strapdown import _move_rest_move  # noqa: E402
 
 
 def _load_pf():
-    spec = importlib.util.spec_from_file_location("vortex_pf_stepF", ROOT / "pathfinder.py")
+    spec = importlib.util.spec_from_file_location("vortex_pf_stepF", ROOT / "tools" / "pathfinder_lab.py")  # RESET_ON lives in the lab copy
     mod = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(mod)
     return mod

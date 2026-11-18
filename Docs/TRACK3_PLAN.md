@@ -1,8 +1,8 @@
 # Track 3 plan: Path Finder (trajectory estimation under sensor degradation)
 
 Running record of what is done, verified, blocked and unknown. Dates are IST. Update this file in the
-same commit as the work it describes. The full PRD, day-by-day plan and risk table live in the team doc
-"Vortex: Track 3 PRD, Plan of Action and Checklist".
+same commit as the work it describes. The PRD, day-by-day plan, work split and risk table live in
+`Docs/PRD.md` (v2, 18 Nov 2026; supersedes the 15 Nov team doc).
 
 Status vocabulary: **Done (verified)** = run with the stated result; **Done (unverified)** = written but
 not run on its real input; **Blocked**; **Not started**.
@@ -87,6 +87,9 @@ Deadline **22 Nov 2026, 11:59 PM IST**, confirmed by the FAQ (Q1 closed). Full-t
 | R5 | Rotor drag (V3): drag rule v2 stages A and B as pre-registered (c1b594c) on V1_01..03; build V3 only if stage A passes | **Done (verified): NO-GO, V3 not built.** Stage A re-run 17 Nov reproduces the Step B result exactly (1 of 3 sequences pass, 2 needed); stage B not reached | Stage A on 2 of 3 Vicon Room 1 sequences |
 | F | Filter fixes from the 16-17 Nov reviews: gyro-bias cap on every still test (`BGCAP_ON`), covariance reset after injection (`RESET_ON`), refresh of the cached previous sample (`REFRESH_ON`), fallback velocity uncertainty (`P0V_ON`); four switches | **Done** (17 Nov): BGCAP, P0V, REFRESH pass and ship on; RESET fails (reading a APE +1.8 %) and ships off. Held-out mean APE 4.972 -> 4.962 m; floor 3.745 m | Each switch judged on 36 fresh held-out copies (seeds 4-6) by the no-harm rule |
 | L1 | Positions scaled about their centroid, alpha per gyro-noise class (`SHRINK_ON`); null floor = the estimate reversed in time (`eval_euroc.py --reverse`) | **Done (verified): OFF** by the pre-registered rule (18 Nov, rule at d56c875): both arms improve the mean objective (reading a -49.5 %, reading b -23.9 %) but fail sequence consistency (4 and 3 of 6); LO also loses to its reversed output. Shipped output unchanged | Each arm judged on 36 fresh held-out copies (seeds 7-9) |
+| Lean | Switched-off experiments moved from `pathfinder.py` to `tools/pathfinder_lab.py` (not shipped) to cut compile memory | **Done (verified)** 18 Nov: output byte-identical on all 144 real inputs; no-bytecode heap 6,055 -> 4,935 KB (3.14), 6,431 -> 6,309 KB (3.13); gate PASS | `tests/test_lab.py`; gates PASS |
+| PRD v2 | PRD v2 (18 Nov) in the repo (`Docs/PRD.md`): levers L1 shrinkage, L2 slow gravity alignment, L3 blind window, L4 hardening, L5 TUM-VI; paired, sequence-level judging (rules G and H); work split Claude Code / Antigravity / ChatGPT. Fallback zip frozen | **Done (verified)** 18 Nov (K0): `dist/vortex_v0.9.zip` from `main` da14417, eval input `data/official/MH_03_medium_b_s1` (placeholder), 26,106 rows, 3.19 ms per IMU-s, heap 1,013 KB; `verify` PASS on Win 3.13 and 3.14; SHA-256 0e558440a397ef4b78426cc471ac8d3fd17f8c658b28a6cd40aeb5a3ba555d6b | Zip verified; never deleted |
+| NUMBERS (K6, early) | `tools/make_numbers.py` -> `Docs/NUMBERS.md` + `Docs/numbers/numbers.json`: every number the deck, script and README may quote, as `key | value | source tag | date`, generated from committed result, TUM-VI, budget and pytest files. Keys are stable (ChatGPT's `[[N:key]]`); when the shipped build changes, `SOURCES` in the script points at the new tags | **Done (verified)** 18 Nov: headline keys reproduce the Step F verdict to the digit (held-out 4.962 vs floor 3.745 m; reading a 6.181, b 3.744; gap 5.036; blind 6.992). Budget from a fresh lean run (`lean-win-py314-mh01-b-s1`) | `tests/test_numbers.py` (3); `--check` in the suite |
 
 ## Open questions (Q1 to Q5 are in the email drafted for prism@samsung.com on 15 Nov)
 
@@ -1499,3 +1502,40 @@ efficiency step; not done here.
 
 Not checked: TUM-VI (not downloaded); Linux/WSL timing; how the organisers start tracemalloc (we assume
 before `main.py` runs). The reversed-null floor is one realisation per copy.
+
+
+## Lean pathfinder: switched-off experiments moved to a lab copy (18 Nov 2026, branch `track3/step-lean-pathfinder`)
+
+**Why.** An evaluator without our bytecode compiles `pathfinder.py` while tracemalloc runs, and the
+switched-off experiments were compiled with it: the no-bytecode heap reading had grown to 6,055 KB (3.14) and
+6,431 KB (3.13) by Step L1 (18 Nov review, item 7).
+
+**Change.** No estimator change.
+- `tools/pathfinder_lab.py` (new, not shipped): the full estimator as of dc162ac, with every experiment and its
+  switch (fault pass `FF_*`, learned envelope `LEARN_*`, `INTERP_*`, noise meter `JAM_*`, covariance reset
+  `RESET_ON` / `_kf_reset`, shrinkage `SHRINK_*`), all off. Re-run an experiment with
+  `tools/eval_euroc.py --main tools/pathfinder_lab.py --set NAME=VALUE`.
+- `pathfinder.py`: those pieces removed (1,640 -> 1,214 lines). The shipped switches stay (`GAP_ON`, `DEAD_ON`,
+  `FC_ON`, `PRE_HOLD`, `CAL_NOISE_ON`, `BGCAP_ON`, `REFRESH_ON`, `P0V_ON`, `FRONT_ON`, V1/V2). The
+  reference (`vortex/core`) is unchanged and still holds every experiment.
+- Tests of the experiments now run against the lab copy (`test_faults`, `test_shrink`, `test_stepF`, the
+  LEARN test in `test_witness`, the JAM test in `test_core_equivalence`, and `test_ccore`, whose frozen C core
+  still declares the JAM constants). New `tests/test_lab.py` (7): the experiments are off in the lab and absent
+  from `pathfinder.py`; every shared constant is equal; lab with everything off writes byte-identical output on
+  five SYNTHETIC files (messy, degraded, move-rest-move, accelerometer-first, empty).
+
+| Item | Result | Where |
+|---|---|---|
+| `pathfinder.py` vs lab copy (all off), every real input on disk | **byte-identical on all 144** (8 clean EuRoC + 136 official copies; V2 excluded) | scratch script, Windows 3.14 |
+| `pytest` | 317 passed (310 + 7 `test_lab.py`; g++ on PATH); 321 after merging `main` with #54 (4 TUM-VI tests) | Windows, Python 3.14.7 |
+| Compile peak, `compile()` of the source in-process | 5,640 -> 4,536 KB | Windows 3.14 |
+| Budget, `python -S benchmark.py --runs 15 --gate` | PASS on all three. Heap in-process / whole run / no bytecode: Win 3.14 synthetic 506 / 997 / **4,935** KB (Step L1: 6,055); Win 3.14 MH_01_easy_b_s1 587 / 1,084 / **4,935** KB; Win 3.13 synthetic 393 / 1,368 / **6,309** KB (Step L1: 6,431). Time 12.9, 13.2, 13.1 us/row | `Docs/BUDGET.md` `lean-*` |
+
+**Reading.** On 3.14 the no-bytecode reading falls 1.1 MB, back under the 4 MB design target only with the
+shipped bytecode (as before) and 3.2 MB under the 8 MB limit without it. On 3.13 it falls only 122 KB: the
+3.13 peak has stayed near 6.3 MB since Step 1 (6,310 KB then, with a smaller file), so it does not track the
+source size. Not investigated; the largest single function (`_run`, about 600 lines) is a candidate. The time
+change (about -15 %) is inside this laptop's run-to-run spread and is not claimed.
+
+Not checked: Linux / WSL; the Docker image (unchanged Dockerfile; `pathfinder.py` content changed, output
+identical); what dominates the 3.13 compile peak.

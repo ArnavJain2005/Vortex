@@ -1,0 +1,336 @@
+"""TUM-VI baseline table: shipped estimator against never-moving floor, clean and official seeds 1..3.
+
+Patterned after tools/baseline_table.py (which belongs to Claude Code). Reads JSON results from
+Docs/tumvi/ (written by tools/eval_euroc.py --root data/tumvi) and collects LAST + calibrated gyro
+bias diagnostics vs BG_MAX = 0.15 rad/s; writes Docs/TUMVI_BASELINE.md. Never edit by hand.
+
+    python tools/tumvi_table.py [--collect-calib]
+"""
+from __future__ import annotations
+
+import argparse
+import json
+import math
+import os
+import sys
+import tempfile
+
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, ROOT)
+import pathfinder as pf  # noqa: E402
+
+TUMVI_DOCS = os.path.join(ROOT, "Docs", "tumvi")
+TUMVI_DATA = os.path.join(ROOT, "data", "tumvi")
+TUMVI_OFFICIAL = os.path.join(ROOT, "data", "official_tumvi")
+TUNING_PREFIXES = ("dataset-room1", "dataset-room2")
+
+
+def is_tuning(name: str) -> bool:
+    return name.startswith(TUNING_PREFIXES)
+
+
+def load(path: str) -> dict:
+    with open(path, encoding="utf-8") as f:
+        return json.load(f)
+
+
+def mean(xs):
+    xs = [x for x in xs if x is not None]
+    return sum(xs) / len(xs) if xs else None
+
+
+def fmt(x, d=2):
+    return "-" if x is None else "%.*f" % (d, x)
+
+
+def group(results, base, reading, seeds):
+    return [r for r in results if "error" not in r and r["base"] == base
+            and r["reading"] == reading and r["seed"] in seeds]
+
+
+def _canonical_path(src: str, tmp_dir: str) -> str:
+    """Replicate pathfinder.run's front-end rewrite (without mutating estimator settings) for _calibrate."""
+    lines = None
+    if pf.FRONT_ON:
+        lay = pf._fe_detect(src)
+        if not lay["canonical"]:
+            lines = pf._fe_canonical_lines(src, lay)
+    f = None
+    if getattr(pf, "FF_STUCK6_ON", False) or getattr(pf, "FF_SPIKE_ON", False):  # fault pass: lab copy only since 18 Nov
+        if lines is None:
+            f = open(src, "rb")
+            lines = f
+        lines = pf._ff_filter_lines(lines)
+    if lines is None:
+        return src
+    tmp_in = os.path.join(tmp_dir, "calib_in.csv")
+    try:
+        with open(tmp_in, "wb") as g:
+            g.writelines(lines)
+    finally:
+        if f is not None:
+            f.close()
+    return tmp_in
+
+
+def diagnose_imu(imu_path: str) -> dict:
+    """Run pathfinder on one IMU CSV and inspect LAST, calibrated gyro bias, and BG_MAX gate."""
+    with tempfile.TemporaryDirectory(prefix="vortex_tumvi_diag_") as tmp_dir:
+        out_txt = os.path.join(tmp_dir, "est.txt")
+        pf.run(imu_path, out_txt)
+        last = dict(pf.LAST)
+        canon = _canonical_path(imu_path, tmp_dir)
+        cal = pf._calibrate(canon)
+        uncapped_bg_norm = None
+        if cal is not None:
+            bg = [float(cal[5]), float(cal[6]), float(cal[7])]
+            bg_norm = math.sqrt(sum(x * x for x in bg))
+            cal_source = "still_run"
+        else:
+            init = pf._initialise(pf._init_window(canon))
+            bg = [float(init[4]), float(init[5]), float(init[6])]
+            bg_norm = math.sqrt(sum(x * x for x in bg))
+            cal_source = "init_window_still" if init[8] else "fallback_zero"
+            prev_cap = pf.BGCAP_ON
+            pf.BGCAP_ON = False
+            try:
+                cal_uncapped = pf._calibrate(canon)
+            finally:
+                pf.BGCAP_ON = prev_cap
+            if cal_uncapped is not None:
+                ubg = cal_uncapped[5:8]
+                uncapped_bg_norm = math.sqrt(sum(x * x for x in ubg))
+        fe = last.get("frontend") or {}
+        return {
+            "calibrated": bool(last.get("calibrated")),
+            "cal_source": cal_source,
+            "pre_rows": int(last.get("pre_rows", 0)),
+            "zupt_ticks": int(last.get("zupt_ticks", 0)),
+            "bg": bg,
+            "bg_norm_rad_s": bg_norm,
+            "bg_max_rad_s": float(pf.BG_MAX),
+            "exceeds_bg_max": bool(bg_norm > pf.BG_MAX),
+            "uncapped_still_bg_norm_rad_s": uncapped_bg_norm,
+            "frontend_order": fe.get("order"),
+            "frontend_order_from": fe.get("order_from"),
+            "frontend_canonical": fe.get("canonical"),
+            "gyro_suspect": fe.get("gyro_suspect"),
+        }
+
+
+def collect_calib(clean_est: dict, off_est: dict, clean_root: str = TUMVI_DATA,
+                  official_root: str = TUMVI_OFFICIAL) -> dict:
+    """Collect LAST and gyro-bias diagnostics for every clean and official seed 1..3 run."""
+    clean_diag = {}
+    for r in clean_est["results"]:
+        seq = r["sequence"]
+        imu = os.path.join(clean_root, seq, "mav0", "imu0", "data.csv")
+        if os.path.isfile(imu):
+            clean_diag[seq] = diagnose_imu(imu)
+
+    official_diag = {}
+    for r in off_est["results"]:
+        copy = r["sequence"]
+        imu = os.path.join(official_root, copy, "mav0", "imu0", "data.csv")
+        if os.path.isfile(imu):
+            d = diagnose_imu(imu)
+            d["base"] = r.get("base")
+            d["reading"] = r.get("reading")
+            d["seed"] = r.get("seed")
+            official_diag[copy] = d
+
+    return {
+        "bg_max_rad_s": float(pf.BG_MAX),
+        "bgcap_on": bool(pf.BGCAP_ON),
+        "clean": clean_diag,
+        "official": official_diag,
+    }
+
+
+def build(est: dict, flo: dict, ce: dict, cf: dict, calib: dict | None = None) -> str:
+    """Build Docs/TUMVI_BASELINE.md from eval JSONs and calibration diagnostics."""
+    bases = sorted({r["base"] for r in est["results"] if "base" in r})
+    cleanE = {r["sequence"]: r for r in ce["results"] if "error" not in r}
+    cleanF = {r["sequence"]: r for r in cf["results"] if "error" not in r}
+    all_clean_seqs = sorted(set(cleanE) | set(cleanF))
+
+    L = [
+        "# TUM-VI baseline: shipped estimator against the never-moving floor "
+        "(generated by `python tools/tumvi_table.py`; do not edit by hand)",
+        "",
+        "Estimator: `main.py` at %s (unchanged shipped settings). Floor: `tools/baseline_still.py` "
+        "(one identity pose per row at the origin), scored the same way. APE = RMSE after SE3 Umeyama "
+        "fitted on the run being scored. RPE 1 s = relative translation error over 200 frames. "
+        "Gap = mean RMSE inside missing-row bursts (>= 5 rows). Blind = RMSE over the last 5 s "
+        "(exact zeros). Official copies: the organisers' `degrade_imu.py` via `tools/official_degrade.py` "
+        "(`--root data/tumvi`, seeds 1..3 only; seeds 7..12 are generated on disk and held out for Claude Code). "
+        "Tuning rooms: `room1`, `room2`; held out: `room3..room6` (`BG_MAX = %.2f rad/s`)."
+        % (est.get("commit", "?"), pf.BG_MAX),
+        "",
+        "## Clean (undegraded) rooms: estimator / floor",
+        "",
+        "| Sequence | Set | Contract | APE SE3 m | RPE 1 s m | Wall s | LAST calibrated | Calibrated ‖bg‖ (rad/s) vs BG_MAX=0.15 |",
+        "|---|---|---|---|---|---|---|---|",
+    ]
+
+    cal_clean = (calib or {}).get("clean", {})
+    for s in all_clean_seqs:
+        re_s = cleanE.get(s, {})
+        rf_s = cleanF.get(s, {})
+        cd = cal_clean.get(s, {})
+        cal_txt = "-" if not cd else ("True (%s)" % cd["cal_source"] if cd["calibrated"] else "False (%s)" % cd["cal_source"])
+        if not cd:
+            bg_txt = "-"
+        elif cd["uncapped_still_bg_norm_rad_s"] is not None:
+            bg_txt = "%.4f (uncapped still %.4f > 0.15)" % (cd["bg_norm_rad_s"], cd["uncapped_still_bg_norm_rad_s"])
+        else:
+            bg_txt = "%.4f (%s)" % (cd["bg_norm_rad_s"], "> 0.15" if cd["exceeds_bg_max"] else "<= 0.15")
+        L.append("| %s | %s | %s | %s / %s | %s / %s | %.2f / %.2f | %s | %s |" % (
+            s,
+            "tuning" if is_tuning(s) else "held out",
+            re_s.get("contract", "ERROR"),
+            fmt(re_s.get("ate_se3_rmse")), fmt(rf_s.get("ate_se3_rmse")),
+            fmt(re_s.get("rpe200_rmse"), 3), fmt(rf_s.get("rpe200_rmse"), 3),
+            re_s.get("wall_s", 0.0), rf_s.get("wall_s", 0.0),
+            cal_txt,
+            bg_txt,
+        ))
+
+    L += [
+        "",
+        "## Official-script copies (seeds 1..3): per room & reading, estimator / floor",
+        "",
+        "| Sequence | Set | Reading | Copies | Contract | APE SE3 m | RPE 1 s m | Gap RMSE m | Blind RMSE m | Blind growth m |",
+        "|---|---|---|---|---|---|---|---|---|---|",
+    ]
+    for b in bases:
+        for reading in ("a", "b"):
+            rs = group(est["results"], b, reading, (1, 2, 3))
+            fs = group(flo["results"], b, reading, (1, 2, 3))
+            if not rs:
+                continue
+            ok = sum(r["contract"] == "PASS" for r in rs)
+            cells = [
+                "%s / %s" % (fmt(mean([r[k] for r in rs]), d), fmt(mean([r[k] for r in fs]), d))
+                for k, d in (("ape_se3_rmse", 2), ("rpe200_rmse", 3), ("gap_rmse_mean", 2),
+                             ("blind_rmse", 2), ("blind_growth", 2))
+            ]
+            L.append("| %s | %s | %s | %d | %d/%d PASS | %s |" % (
+                b, "tuning" if is_tuning(b) else "held out", reading, len(rs), ok, len(rs), " | ".join(cells)
+            ))
+
+    L += [
+        "",
+        "## Means by reading and set: estimator / floor (seeds 1..3)",
+        "",
+        "| Set | Reading | Seeds | Copies | APE SE3 m | RPE 1 s m | Gap RMSE m | Blind RMSE m | Blind growth m | Contract |",
+        "|---|---|---|---|---|---|---|---|---|---|",
+    ]
+    for setname, sel in (("held out", lambda b: not is_tuning(b)),
+                         ("tuning", is_tuning),
+                         ("all", lambda b: True)):
+        for r_label, readings in (("a", ("a",)), ("b", ("b",)), ("a+b", ("a", "b"))):
+            rs = [r for b in bases if sel(b) for rd in readings for r in group(est["results"], b, rd, (1, 2, 3))]
+            fs = [r for b in bases if sel(b) for rd in readings for r in group(flo["results"], b, rd, (1, 2, 3))]
+            if not rs:
+                continue
+            cells = [
+                "%s / %s" % (fmt(mean([r[k] for r in rs]), d), fmt(mean([r[k] for r in fs]), d))
+                for k, d in (("ape_se3_rmse", 2), ("rpe200_rmse", 3), ("gap_rmse_mean", 2),
+                             ("blind_rmse", 2), ("blind_growth", 2))
+            ]
+            ok = sum(r["contract"] == "PASS" for r in rs)
+            L.append("| %s | %s | 1..3 | %d | %s | %d/%d PASS |" % (
+                setname, r_label, len(rs), " | ".join(cells), ok, len(rs)
+            ))
+
+    ce_ok = [r for r in ce["results"] if "error" not in r]
+    L += [
+        "",
+        "## Clean (undegraded) means: estimator / floor",
+        "",
+        "| Set | Sequences | APE SE3 m | RPE 1 s m |",
+        "|---|---|---|---|",
+    ]
+    for setname, sel in (("held out", lambda s: not is_tuning(s)),
+                         ("tuning", is_tuning),
+                         ("all", lambda s: True)):
+        names = [r["sequence"] for r in ce_ok if sel(r["sequence"])]
+        if not names:
+            continue
+        L.append("| %s | %d | %s / %s | %s / %s |" % (
+            setname,
+            len(names),
+            fmt(mean([cleanE[n]["ate_se3_rmse"] for n in names])),
+            fmt(mean([cleanF[n]["ate_se3_rmse"] for n in names if n in cleanF])),
+            fmt(mean([cleanE[n]["rpe200_rmse"] for n in names]), 3),
+            fmt(mean([cleanF[n]["rpe200_rmse"] for n in names if n in cleanF]), 3),
+        ))
+
+    if calib and calib.get("official"):
+        L += [
+            "",
+            "## Calibration (`LAST`) and gyro bias vs `BG_MAX = %.2f rad/s` (official copies, seeds 1..3)" % pf.BG_MAX,
+            "",
+            "| Copy | Frontend order (from) | LAST calibrated | pre_rows | zupt_ticks | ‖bg‖ rad/s | vs BG_MAX (0.15) | Uncapped still ‖bg‖ |",
+            "|---|---|---|---|---|---|---|---|",
+        ]
+        for copy in sorted(calib["official"]):
+            d = calib["official"][copy]
+            uc = "-" if d["uncapped_still_bg_norm_rad_s"] is None else "%.4f" % d["uncapped_still_bg_norm_rad_s"]
+            L.append("| %s | %s (%s) | %s (%s) | %d | %d | %.4f | %s | %s |" % (
+                copy,
+                d.get("frontend_order") or "-",
+                d.get("frontend_order_from") or "-",
+                d["calibrated"],
+                d["cal_source"],
+                d["pre_rows"],
+                d["zupt_ticks"],
+                d["bg_norm_rad_s"],
+                "> 0.15" if d["exceeds_bg_max"] else "<= 0.15",
+                uc,
+            ))
+
+    errs = [r["sequence"] for t in (est, flo, ce, cf) for r in t["results"] if "error" in r]
+    L += ["", "Runs with errors: %s" % (", ".join(errs) if errs else "none"), ""]
+    return "\n".join(L)
+
+
+def main(argv=None) -> int:
+    ap = argparse.ArgumentParser(description=__doc__.split("\n")[0])
+    ap.add_argument("--est", default="tumvi-off")
+    ap.add_argument("--floor", default="tumvi-floor-off")
+    ap.add_argument("--clean", default="tumvi-clean")
+    ap.add_argument("--floor-clean", default="tumvi-floor-clean")
+    ap.add_argument("--calib", default="tumvi-calib")
+    ap.add_argument("--docs-dir", default=TUMVI_DOCS)
+    ap.add_argument("--tumvi-root", default=TUMVI_DATA)
+    ap.add_argument("--official-root", default=TUMVI_OFFICIAL)
+    ap.add_argument("--out", default=os.path.join(ROOT, "Docs", "TUMVI_BASELINE.md"))
+    ap.add_argument("--collect-calib", action="store_true", help="Run pathfinder diagnostics and write calib JSON")
+    a = ap.parse_args(argv)
+
+    est = load(os.path.join(a.docs_dir, a.est + ".json"))
+    flo = load(os.path.join(a.docs_dir, a.floor + ".json"))
+    ce = load(os.path.join(a.docs_dir, a.clean + ".json"))
+    cf = load(os.path.join(a.docs_dir, a.floor_clean + ".json"))
+
+    calib_path = os.path.join(a.docs_dir, a.calib + ".json")
+    if a.collect_calib or not os.path.isfile(calib_path):
+        calib = collect_calib(ce, est, clean_root=a.tumvi_root, official_root=a.official_root)
+        os.makedirs(a.docs_dir, exist_ok=True)
+        with open(calib_path, "w", encoding="utf-8", newline="\n") as fh:
+            json.dump(calib, fh, indent=1, sort_keys=True)
+            fh.write("\n")
+    else:
+        calib = load(calib_path)
+
+    text = build(est, flo, ce, cf, calib)
+    with open(a.out, "w", encoding="utf-8", newline="\n") as fh:
+        fh.write(text)
+    print(text)
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

@@ -131,8 +131,9 @@ def make_copy(seq_dir, reading, seed, out_root=OUT, max_level=None, gamma=None, 
 def main(argv=None):
     ap = argparse.ArgumentParser(description=__doc__.split("\n")[0])
     ap.add_argument("seq", nargs="?", help="a clean sequence folder (data/euroc/<seq>)")
-    ap.add_argument("--all", action="store_true", help="every data/euroc sequence except V2_*")
-    ap.add_argument("--seqs", help="comma list of sequence names under data/euroc (with --all)")
+    ap.add_argument("--all", action="store_true", help="every sequence under --root except V2_*")
+    ap.add_argument("--root", default=DATA, help="clean sequence root directory (default: data/euroc)")
+    ap.add_argument("--seqs", help="comma list of sequence names under --root (with --all)")
     ap.add_argument("--reading", default=None, help="a or b (single copy)")
     ap.add_argument("--readings", default="a,b")
     ap.add_argument("--seed", type=int, default=None)
@@ -145,17 +146,20 @@ def main(argv=None):
     if a.all:
         if a.final and not a.seqs:
             ap.error("--final with --all requires explicit --seqs")
-        names = a.seqs.split(",") if a.seqs else sorted(os.listdir(DATA))
+        names = a.seqs.split(",") if a.seqs else sorted(
+            n for n in os.listdir(a.root) if os.path.isdir(os.path.join(a.root, n))
+        )
         for n in names:
             guard_final(n, a.final)
-        seq_dirs = [os.path.join(DATA, n) for n in names if a.final or not n.startswith(FINAL_PREFIX)]
+        seq_dirs = [os.path.join(a.root, n) for n in names if a.final or not n.startswith(FINAL_PREFIX)]
         readings = a.readings.split(",")
         seeds = [int(s) for s in a.seeds.split(",")]
     else:
         if not a.seq:
             ap.error("give a sequence folder or --all")
         guard_final(os.path.basename(os.path.normpath(a.seq)), a.final)
-        seq_dirs = [a.seq]
+        seq_dir = a.seq if os.path.exists(a.seq) or not os.path.exists(os.path.join(a.root, a.seq)) else os.path.join(a.root, a.seq)
+        seq_dirs = [seq_dir]
         readings = [a.reading or "a"]
         seeds = [a.seed if a.seed is not None else 42]
     mod = load_script()
