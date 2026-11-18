@@ -11,6 +11,7 @@ venv/
 
 # Generated outputs
 /results/
+/media/
 
 # OS and editor clutter
 .DS_Store

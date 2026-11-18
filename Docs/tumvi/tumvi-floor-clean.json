@@ -1,0 +1,90 @@
+{
+ "commit": "da14417",
+ "date": "2026-11-18",
+ "degraded": false,
+ "main": "tools\\baseline_still.py",
+ "official": false,
+ "python": "3.14.7",
+ "results": [
+  {
+   "ate_none_rmse": 1.6857455040068958,
+   "ate_origin_rmse": 1.1275800399723674,
+   "ate_se3_rmse": 1.000984275658339,
+   "ate_sim3_rmse": NaN,
+   "contract": "PASS",
+   "final_se3": 0.27910539446302696,
+   "rows": 28122,
+   "rpe200_rmse": 1.323848706979612,
+   "sequence": "dataset-room1_512_16",
+   "sim3_scale": NaN,
+   "wall_s": 0.13981969997985289
+  },
+  {
+   "ate_none_rmse": 1.7801189105073842,
+   "ate_origin_rmse": 1.2918038899776678,
+   "ate_se3_rmse": 1.2182498532182253,
+   "ate_sim3_rmse": NaN,
+   "contract": "PASS",
+   "final_se3": 0.3966253197540384,
+   "rows": 28732,
+   "rpe200_rmse": 1.61846555334199,
+   "sequence": "dataset-room2_512_16",
+   "sim3_scale": NaN,
+   "wall_s": 0.18108899999060668
+  },
+  {
+   "ate_none_rmse": 1.8372801477440974,
+   "ate_origin_rmse": 1.5694530564852123,
+   "ate_se3_rmse": 1.2503585847492074,
+   "ate_sim3_rmse": NaN,
+   "contract": "PASS",
+   "final_se3": 0.7138291363052603,
+   "rows": 28124,
+   "rpe200_rmse": 1.6766406955622355,
+   "sequence": "dataset-room3_512_16",
+   "sim3_scale": NaN,
+   "wall_s": 0.19005020000622608
+  },
+  {
+   "ate_none_rmse": 1.7463658778038498,
+   "ate_origin_rmse": 1.1950835626146235,
+   "ate_se3_rmse": 1.0764123011534292,
+   "ate_sim3_rmse": NaN,
+   "contract": "PASS",
+   "final_se3": 0.6081745874509892,
+   "rows": 22212,
+   "rpe200_rmse": 0.8415053407796446,
+   "sequence": "dataset-room4_512_16",
+   "sim3_scale": NaN,
+   "wall_s": 0.15324310000869446
+  },
+  {
+   "ate_none_rmse": 1.7019309410248906,
+   "ate_origin_rmse": 1.0060761866286574,
+   "ate_se3_rmse": 0.9328031341353459,
+   "ate_sim3_rmse": NaN,
+   "contract": "PASS",
+   "final_se3": 0.5687949927355408,
+   "rows": 28381,
+   "rpe200_rmse": 1.0736322248791705,
+   "sequence": "dataset-room5_512_16",
+   "sim3_scale": NaN,
+   "wall_s": 0.16862219999893568
+  },
+  {
+   "ate_none_rmse": 1.71284075540039,
+   "ate_origin_rmse": 1.04838745727668,
+   "ate_se3_rmse": 0.9854514598320728,
+   "ate_sim3_rmse": NaN,
+   "contract": "PASS",
+   "final_se3": 0.3429686752372527,
+   "rows": 26281,
+   "rpe200_rmse": 0.8638901152746322,
+   "sequence": "dataset-room6_512_16",
+   "sim3_scale": NaN,
+   "wall_s": 0.16147460002684966
+  }
+ ],
+ "set": {},
+ "tag": "tumvi-floor-clean"
+}

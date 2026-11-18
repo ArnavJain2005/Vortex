@@ -22,6 +22,9 @@ Usage:
                              ORGANISERS' degrade_imu.py; named <sequence>_<reading a|b>_s<seed>. APE with SE3
                              Umeyama fitted on the run being scored, as the organisers do; RPE 1 s; error
                              inside missing-row bursts and in the blind 5 s from degrade.json)
+  python tools/eval_euroc.py --tag NAME --official --reverse [--set ...]
+                            (Step L1 null floor: the estimate's positions reversed in time before
+                             scoring; same spread and smoothness, no information about the flight)
   python tools/eval_euroc.py --render
 
 Vicon Room 2 (V2_*) is the final test set: it is skipped when no --seqs are given, and naming it in
@@ -71,9 +74,22 @@ def command(main_path, imu, est):
 CBIN = "cbin:"
 
 
-def wrapper(main_path, sets, tmp):
+REVERSE_CODE = """code = m.main(sys.argv)
+if code == 0:
+    with open(sys.argv[2], 'rb') as f:
+        P = [l.split(b' ', 4) for l in f]
+    with open(sys.argv[2], 'wb') as f:
+        f.write(b''.join(b' '.join((P[i][0], P[-1 - i][1], P[-1 - i][2], P[-1 - i][3], P[i][4]))
+                         for i in range(len(P))))
+sys.exit(code)"""
+
+
+def wrapper(main_path, sets, tmp, reverse=False):
     """A temporary script that imports main_path, sets module constants, then runs it. The constants of
-    main.py live in pathfinder.py next to it (main.py is a stub since step 9a), so that file is loaded."""
+    main.py live in pathfinder.py next to it (main.py is a stub since step 9a), so that file is loaded.
+    reverse=True (Step L1 null floor): the output's positions are then reversed in time (row i gets the
+    position of row N-1-i; timestamps and attitude unchanged). Same spread and smoothness as the estimate,
+    no information about the flight: what SE3 Umeyama alone can fit."""
     core = os.path.join(os.path.dirname(main_path), "pathfinder.py")
     if os.path.basename(main_path) == "main.py" and os.path.exists(core):
         main_path = core
@@ -83,15 +99,15 @@ def wrapper(main_path, sets, tmp):
     for name, value in sets:
         lines.append("assert hasattr(m, %r), 'no constant %s'" % (name, name))
         lines.append("m.%s = %s" % (name, value))
-    lines.append("sys.exit(m.main(sys.argv))")
+    lines.append(REVERSE_CODE if reverse else "sys.exit(m.main(sys.argv))")
     path = os.path.join(tmp, "wrapped_main.py")
     with open(path, "w", encoding="utf-8") as f:
         f.write("\n".join(lines) + "\n")
     return path
 
 
-def evaluate(main_path, seq, tmp):
-    imu = os.path.join(DATA, seq, "mav0", "imu0", "data.csv")
+def evaluate(main_path, seq, tmp, root=DATA):
+    imu = os.path.join(root, seq, "mav0", "imu0", "data.csv")
     est = os.path.join(tmp, seq + ".txt")
     t0 = time.perf_counter()
     p = subprocess.run(command(main_path, imu, est), capture_output=True, text=True)
@@ -99,7 +115,7 @@ def evaluate(main_path, seq, tmp):
     if p.returncode != 0:
         return {"sequence": seq, "error": p.stderr[-400:]}
     chk = check_output.check(imu, est)
-    ref = scoring.read_ground_truth(os.path.join(DATA, seq))
+    ref = scoring.read_ground_truth(os.path.join(root, seq))
     e, _ = scoring.read_tum(est)
     r_se3 = scoring.score(ref, e, align="se3", rpe_deltas=(200,))
     r_sim3 = scoring.score(ref, e, align="sim3", rpe_deltas=(200,))
@@ -117,17 +133,17 @@ def run_main(main_path, imu, est):
     return p, time.perf_counter() - t0
 
 
-def evaluate_degraded(main_path, name, tmp, clean_cache):
+def evaluate_degraded(main_path, name, tmp, clean_cache, root=DATA, degraded_dir=DEGRADED):
     """One degraded copy: score with the alignment fitted on the clean run of the same main."""
     base = name.rsplit("_s", 1)[0]
-    seq_dir = os.path.join(DEGRADED, name)
+    seq_dir = os.path.join(degraded_dir, name)
     imu = os.path.join(seq_dir, "mav0", "imu0", "data.csv")
     with open(os.path.join(seq_dir, "degrade.json"), encoding="utf-8") as f:
         events = json.load(f)
-    ref = scoring.read_ground_truth(os.path.join(DATA, base))
+    ref = scoring.read_ground_truth(os.path.join(root, base))
     if base not in clean_cache:
         clean_est = os.path.join(tmp, base + "_clean.txt")
-        p, _ = run_main(main_path, os.path.join(DATA, base, "mav0", "imu0", "data.csv"), clean_est)
+        p, _ = run_main(main_path, os.path.join(root, base, "mav0", "imu0", "data.csv"), clean_est)
         if p.returncode != 0:
             return {"sequence": name, "error": "clean run: " + p.stderr[-400:]}
         clean_cache[base] = scoring.fit_alignment(ref, scoring.read_tum(clean_est)[0], "se3")
@@ -157,14 +173,14 @@ def official_base(name):
     return base, reading, int(seed)
 
 
-def evaluate_official(main_path, name, tmp):
+def evaluate_official(main_path, name, tmp, root=DATA, official_dir=OFFICIAL):
     """One official-script copy, scored as the organisers score it: SE3 fitted on this run."""
     base, reading, seed = official_base(name)
-    seq_dir = os.path.join(OFFICIAL, name)
+    seq_dir = os.path.join(official_dir, name)
     imu = os.path.join(seq_dir, "mav0", "imu0", "data.csv")
     with open(os.path.join(seq_dir, "degrade.json"), encoding="utf-8") as f:
         events = json.load(f)
-    ref = scoring.read_ground_truth(os.path.join(DATA, base))
+    ref = scoring.read_ground_truth(os.path.join(root, base))
     est = os.path.join(tmp, name + ".txt")
     p, wall = run_main(main_path, imu, est)
     if p.returncode != 0:
@@ -358,22 +374,41 @@ def main(argv=None):
         return 2
     degraded = "--degraded" in argv
     official = "--official" in argv
+    root = os.path.normpath(os.path.abspath(get("--root", DATA)))
+    is_default_root = os.path.normcase(root) == os.path.normcase(os.path.normpath(os.path.abspath(DATA)))
+    if is_default_root:
+        degraded_dir, official_dir, out_dir = DEGRADED, OFFICIAL, OUT_DIR
+    else:
+        parent = os.path.dirname(root)
+        base_name = os.path.basename(root)
+        cand_off = os.path.join(parent, "official_" + base_name)
+        official_dir = cand_off if os.path.isdir(cand_off) else (
+            os.path.join(root, "official") if os.path.isdir(os.path.join(root, "official")) else OFFICIAL)
+        cand_deg = os.path.join(parent, "degraded_" + base_name)
+        degraded_dir = cand_deg if os.path.isdir(cand_deg) else DEGRADED
+        out_dir = os.path.join(os.path.dirname(OUT_DIR), base_name)
     seqs = get("--seqs", None)
-    seqs = select(os.listdir(OFFICIAL if official else DEGRADED if degraded else DATA),
-                  seqs.split(",") if seqs else None, "--final" in argv)
+    scan_dir = official_dir if official else degraded_dir if degraded else root
+    entries = [n for n in os.listdir(scan_dir) if os.path.isdir(os.path.join(scan_dir, n))] if not seqs else []
+    seqs = select(entries, seqs.split(",") if seqs else None, "--final" in argv)
     commit = get("--commit", None) or subprocess.run(["git", "rev-parse", "--short", "HEAD"], cwd=ROOT,
                                                       capture_output=True, text=True).stdout.strip()
     tmp = tempfile.mkdtemp(prefix="vortex_eval_")
-    run_path = CBIN + cbin if cbin else (wrapper(main_path, sets, tmp) if sets else main_path)
+    reverse = "--reverse" in argv
+    if cbin and reverse:
+        print("--reverse needs the Python main")
+        return 2
+    run_path = CBIN + cbin if cbin else (wrapper(main_path, sets, tmp, reverse) if sets or reverse else main_path)
     if cbin:
         main_path = cbin
     results = []
     clean_cache = {}
     for s in seqs:
         if official:
-            r = evaluate_official(run_path, s, tmp)
+            r = evaluate_official(run_path, s, tmp, root=root, official_dir=official_dir)
         else:
-            r = evaluate_degraded(run_path, s, tmp, clean_cache) if degraded else evaluate(run_path, s, tmp)
+            r = (evaluate_degraded(run_path, s, tmp, clean_cache, root=root, degraded_dir=degraded_dir)
+                 if degraded else evaluate(run_path, s, tmp, root=root))
         results.append(r)
         if "error" in r:
             print("%-16s ERROR %s" % (s, r["error"]))
@@ -387,14 +422,15 @@ def main(argv=None):
             print("%-16s %s  APE se3 %9.2f m  final %9.2f m  APE sim3 %6.2f m (scale %.3g)  RPE 1 s %.3f m" % (
                 s, r["contract"], r["ate_se3_rmse"], r["final_se3"], r["ate_sim3_rmse"], r["sim3_scale"],
                 r["rpe200_rmse"]))
-    os.makedirs(OUT_DIR, exist_ok=True)
-    with open(os.path.join(OUT_DIR, tag + ".json"), "w", encoding="utf-8", newline="\n") as f:
+    os.makedirs(out_dir, exist_ok=True)
+    out_json = os.path.join(out_dir, tag + ".json")
+    with open(out_json, "w", encoding="utf-8", newline="\n") as f:
         json.dump({"tag": tag, "commit": commit, "date": time.strftime("%Y-%m-%d"), "main": os.path.relpath(
             main_path, ROOT) if main_path.startswith(ROOT) else os.path.basename(main_path),
-            "set": {k: v for k, v in sets}, "degraded": degraded, "official": official,
+            "set": {k: v for k, v in sets}, "degraded": degraded, "official": official, "reverse": reverse,
             "python": sys.version.split()[0], "results": results}, f, indent=1, sort_keys=True)
         f.write("\n")
-    print("wrote", os.path.relpath(render(), ROOT))
+    print("wrote", os.path.relpath(render() if is_default_root else out_json, ROOT))
     return 0
 
 
