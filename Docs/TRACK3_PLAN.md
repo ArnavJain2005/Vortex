@@ -85,7 +85,7 @@ Deadline **22 Nov 2026, 11:59 PM IST**, confirmed by the FAQ (Q1 closed). Full-t
 | R3 | Fault front end: stuck rows, spikes, bridging of missing samples (three switches), blind-window protection | **Done (verified): all three switches OFF** by the pre-registered rule (17 Nov, rule at 99bf25b); shipped output unchanged | Each switch judged on 36 held-out copies |
 | R4 | Envelope (V2 speed and volume sigmas) learned per flight instead of fixed values chosen on Machine Hall (`LEARN_ON`) | **Done (verified): OFF** by the pre-registered rule (17 Nov, rule at c1769cb): held-out APE 3.739 m vs floor 3.748 (passes), clean +6.7 % (fails); shipped output unchanged | Held-out mean APE <= never-moving floor; clean no worse |
 | R5 | Rotor drag (V3): drag rule v2 stages A and B as pre-registered (c1b594c) on V1_01..03; build V3 only if stage A passes | **Done (verified): NO-GO, V3 not built.** Stage A re-run 17 Nov reproduces the Step B result exactly (1 of 3 sequences pass, 2 needed); stage B not reached | Stage A on 2 of 3 Vicon Room 1 sequences |
-| R6 | Batch forward-backward smoother at the 0.25 s tick (`SMOOTH_ON`, Step E code in the reference) | **In progress**: end-rest check done (no end anchor); rule committed before the held-out run (18 Nov) | Held-out APE and gap RMSE improve >= 2 %; clean not worse |
+| R6 | Batch forward-backward smoother at the 0.25 s tick (`SMOOTH_ON`, Step E code in the reference) | **Done (verified): ON** by the pre-registered rule (18 Nov, rule at 8da205d): held-out APE -7.8 %, gap RMSE -10.7 %, clean -2.7 %; ported to `pathfinder.py`, bit-identical (max difference 0.0 on real files) | Held-out APE and gap RMSE improve >= 2 %; clean not worse |
 | F | Filter fixes from the 16-17 Nov reviews: gyro-bias cap on every still test (`BGCAP_ON`), covariance reset after injection (`RESET_ON`), refresh of the cached previous sample (`REFRESH_ON`), fallback velocity uncertainty (`P0V_ON`); four switches | **Done** (17 Nov): BGCAP, P0V, REFRESH pass and ship on; RESET fails (reading a APE +1.8 %) and ships off. Held-out mean APE 4.972 -> 4.962 m; floor 3.745 m | Each switch judged on 36 fresh held-out copies (seeds 4-6) by the no-harm rule |
 
 ## Open questions (Q1 to Q5 are in the email drafted for prism@samsung.com on 15 Nov)
@@ -1395,7 +1395,7 @@ T^2 / 2 = (9.8 x 0.05 + 0.1) x 0.25^2 / 2 = 0.02 m within a tick, against a 0.3 
 **Storage** (Step E layout, computed, not measured): 1,028 bytes per stored block (15 x 15 gain + two
 15-vectors in single precision + time), at most `SMOOTH_MAX_BLOCKS` = 1024 blocks = 1,052,672 bytes for any
 file length; a 15 min file (3,600 ticks) ends with blocks of 4 ticks (1 s). Only the reference has it
-(Python lists, so its own footprint is larger); not ported to `pathfinder.py` unless it passes.
+(Python lists, so its own footprint is larger); written before the rule; ported after it passed (see Port).
 
 **Decision rule, committed before any held-out run of the smoother.** Setting: the Step E smoother as it
 is (shipped envelope, cap 1024, linear correction between ticks), reference estimator, both from
@@ -1409,4 +1409,81 @@ Reported, not deciding: per reading, RPE 1 s, blind RMSE, the never-moving floor
 same copies, seed 42. If it passed it would be ported to `pathfinder.py` (bit-identical, budget gate) before
 shipping. Expected from tuning: condition 3 fails. `python tools/judge_step6.py --h step6-H --c step6-C
 --floor step2-floor-off --r42 step6-R42`. No constant changes after this commit.
+
+**Outcome** (18 Nov; `python tools/judge_step6.py --h step6-H --c step6-C --floor step2-floor-off --r42
+step6-R42`; `Docs/smooth/step6-{H,C,R42}.json`):
+
+| Condition | Value | Result |
+|---|---|---|
+| 1 mean APE over H improves >= 2 % | 5.071 -> 4.677 m (-7.78 %) | pass |
+| 2 mean gap RMSE over H improves >= 2 % | 4.849 -> 4.329 m (-10.73 %) | pass |
+| 3 clean mean APE not worse by > 0.5 % | 3.655 -> 3.555 m (-2.73 %) | pass |
+
+**Verdict: `SMOOTH_ON` ships ON** (reference and `pathfinder.py`).
+
+Reported only, off -> on (never-moving floor on the same copies): APE reading a 6.289 -> 5.757 m (3.748),
+reading b 3.853 -> 3.597 m (3.748); RPE 1 s 0.929 -> 0.715 m (0.938); blind RMSE 7.115 -> 7.458 m (+4.8 %;
+2.509); gap RMSE a 6.193 -> 5.491, b 3.506 -> 3.167 (3.351). Seed 42: reading a 7.332 -> 6.574, reading b
+3.808 -> 3.555 m.
+
+Per sequence, clean APE off -> on (m): MH_01 3.911 -> 4.232 (+8 %), MH_02 3.846 -> 4.541 (+18 %), MH_03 3.530
+-> 2.710 (-23 %), MH_04 6.378 -> 6.265, MH_05 6.547 -> 6.557, V1_01 1.761 -> 1.886 (+7 %), V1_02 1.718 -> 1.028
+(-40 %), V1_03 1.548 -> 1.222 (-21 %). Held-out copies, mean of seeds 1..3, reading a / b: MH_03 -16 / -20 %,
+MH_04 +6 / -1 %, MH_05 -5 / +0.3 %, V1_01 -13 / +5 %, V1_02 -23 / -24 %, V1_03 -15 / -15 %.
+
+**Reading.** The tuning set (MH_01/02) was the worst case: both get worse, and the held-out set is better on
+the whole. The smoother is a clear gain on MH_03, V1_02, V1_03 and on reading a; it costs on MH_01/02, V1_01
+(clean and reading b) and the blind window (+4.8 %: the smoothed state the blind forecast starts from is
+unchanged, but the trajectory before it moves, so the SE3 fit moves). Held-out reading b is now below
+the never-moving floor (3.597 against 3.748 m; Step 2: 3.86, above it); reading a (5.757) is still above it. Tuning results did not predict this; the rule, not the tuning, decides.
+
+**Port** (`pathfinder.py`: `_phi_entries`, `_smooth_gain`, `_smooth_merge`, `_smooth_push` (merging in place),
+`_smooth_segments`; `_run(..., store, corr)`; `_run_learned` runs a storing pass, then the writing pass with
+the correction): pass 1 stores the blocks exactly as the reference (single precision, same arithmetic, the
+built-in `sum()` in the backward recursion as in the reference, since 3.12 compensated), pass 2 recomputes
+the forward pass and corrects each row as it is written (only the six components a pose needs are
+interpolated). Memory is the block store (capped) plus 12 doubles and 2 times per block for the segments; it
+never grows with the file. Full-precision check against `witness.estimate_file` (smoother on): max
+difference 0.0 in position and attitude on MH_01_easy_b_s1, MH_02_easy_a_s2 and clean MH_01_easy.
+`tests/test_smoother_port.py`: 5 tests (caps 1024, 16 and 15 so the merge runs, odd and even; with the
+learned envelope; the switch changes the output; the last row keeps the filtered pose).
+
+**Cost** (`python -S`, in-process `run()`, Windows 3.14):
+
+| File | Off: us/row, heap | On: us/row, heap | Blocks at the end |
+|---|---|---|---|
+| SYNTHETIC 15 min (180,000 rows, `tools/synth_euroc.py --rows 180000`) | 9.25, 505 KB | 32.6, 1,479 KB | 527 (merged twice) |
+| MH_01_easy_b_s1 (35,697 rows) | 9.36, 592 KB | 21.9, 1,232 KB | 608 |
+
+Bytes per stored block: 255 single-precision floats (1,020 bytes of data) + the time; with Python's array
+and tuple headers about 1.3 KB; worst case 1024 blocks, about 1.35 MB, reached on any file longer than 256 s.
+Measured peak on the 15 min file: 1.48 MB in-process (the 4 MB target holds).
+
+Heap peak against flight length (SYNTHETIC, `tools/synth_euroc.py`, in-process `run()`, tracemalloc,
+scratch script): 3 / 6 / 9 / 15 min = 1,118 / 1,453 / 1,479 / 1,479 KB with the smoother (719 / 927 / 623 /
+527 blocks at the end); 508 / 506 / 506 / 506 KB without it. The store grows until it first fills (1024
+ticks, 256 s) and is flat after that.
+
+**Gates** (18 Nov, Windows 3.14, `python -S benchmark.py --runs 9 --gate`, `Docs/budget/step6-win-py314*.json`):
+PASS on both inputs. `python -S main.py`: 35.54 us/row SYNTHETIC 180 s (Step 4 merge: 12.62), 30.19 us/row
+MH_01_easy_b_s1; heap peak in-process 1,060.0 / 1,232.3 KB, whole run 1,654.3 / 1,818.2 KB (4 MB target
+holds). **Whole run with no cached bytecode: 7,337.7 KB** (Step 4 merge: 5,730.7 KB): compiling the longer
+`pathfinder.py` costs 1.6 MB more. Under the 8 MB hard limit with 0.8 MB to spare, over the 4 MB target; the
+bundle carries cached bytecode (Step 9a), so the shipped run is the 1.8 MB figure. To watch in Step 9.
+
+**Shipped `main.py` scored** (`python tools/eval_euroc.py --tag step6-shipped-clean --main main.py`, `--tag
+step6-shipped-official --main main.py --official`; `Docs/RESULTS.md`): on the same 36 held-out copies APE
+4.677 m, gap RMSE 4.329, RPE 1 s 0.715, blind RMSE 7.458, reading a 5.757, b 3.597; clean mean 3.555 m:
+the reference numbers of the judged run, to the digit.
+
+**Tests changed by shipping it on.** Contracts that are about the filter alone now set the smoother off
+(it is a post-pass; with zero corrections it still renormalises each quaternion, a last-bit change):
+`test_witness.py` and `test_core_equivalence.py::test_witnesses_off_equals_step_6b` (witnesses off =
+plain strapdown); `test_ccore.py` (the C core is frozen before Step F; `SMOOTH_ON` joins the Step F switches
+set off in its private copy). `test_main.py::test_memory_gate_bounded_and_flat`: was 15 min at most 64 KB
+above 3 min; now 15 min at most 64 KB above 9 min with the smoother (in the suite: 1,515 vs 1,590 KB), and
+15 min at most 64 KB above 3 min with it off.
+`test_witness.py::test_smooth_default_is_on_and_the_switch_works` replaces the off-by-default test.
+Full suite (Windows 3.14): 291 passed, 1 failed (the memory test, then two-sided); after making it
+one-sided as before, that test alone: 1 passed (18.5 min, four 3 to 15 min runs under tracemalloc). 292 tests.
 

@@ -80,7 +80,7 @@ not verified.
 
 ```
 pip install -e .[dev]
-pytest                                        # 18 Nov 2026: 287 passed (Steps 3-5 merged with Step F) (Windows, Python 3.14; test_ccore.py, the C-core experiment, needs g++ on PATH)
+pytest                                        # 18 Nov 2026: 292 passed (Step 6, smoother ON; 291 in the full run + the memory test rerun alone) (Windows, Python 3.14; test_ccore.py, the C-core experiment, needs g++ on PATH)
 python -S main.py IMU.csv estimated_trajectory.txt                       # submission entry point: a stub importing pathfinder.py (the estimator, stdlib only)
 python -S benchmark.py --runs 15 --gate [--input IMU.csv] --tag NAME      # gate: heap (tracemalloc) <= 4 MB, <= 50 us/row, checker PASS; RSS reported only
 python tools/make_bundle.py stage                                        # once per Python to carry bytecode for (py -3.13, py -3.14, python3 in WSL)
@@ -96,6 +96,8 @@ python tools/official_degrade.py --all --readings a,b --seeds 1,2,3,42      # OR
 python tools/eval_euroc.py --tag NAME --official [--seqs MH_03_medium_b_s1,...]  # every data/official copy; APE SE3 fitted on the run being scored
 python tools/judge_step3.py --name X --h-off TAG --h-on TAG --c-off TAG --c-on TAG  # Step 3 rule (17 Nov: STUCK6, SPIKE, INTERP all OFF)
 python tools/judge_step4.py --h-on TAG --floor TAG --h-off TAG --c-off TAG --c-on TAG  # Step 4 rule (17 Nov: LEARN_ON OFF; held-out ties the floor, clean +6.7 %)
+python tools/end_rest.py [--official --seqs A,B]                          # Step 6: last still tick before the blind window (18 Nov: none near the end on MH/V1; no end anchor)
+python tools/judge_step6.py --h step6-H --c step6-C --floor step2-floor-off --r42 step6-R42  # Step 6 rule (18 Nov: SMOOTH_ON ON; held-out APE -7.8 %, gap -10.7 %, clean -2.7 %)
 python tools/baseline_table.py --est TAG --floor TAG --clean TAG --floor-clean TAG --out NAME  # estimator vs floor per sequence/reading; Docs/NAME.md
 python -m vortex.degrade data/euroc/MH_03_medium data/degraded/MH_03_medium_s4 --seed 4  # HISTORY: our own fault model (not the official one); <seq>_s<seed>
 python tools/eval_euroc.py --tag NAME --degraded [--seqs MH_03_medium_s4,...]  # every data/degraded copy; alignment from the clean run

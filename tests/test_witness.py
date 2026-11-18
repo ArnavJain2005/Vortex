@@ -68,7 +68,8 @@ def test_rot_matrix_matches_geometry():
 
 def test_witnesses_off_equals_step_6b():
     rows, _, _ = _move_rest_move(bias=(0.01, -0.02, 0.08), gyro_noise=0.002, acc_noise=0.02)
-    assert wx.estimate(rows, v1=False, v2=False, v2p=False, pre_hold=False) == sd.estimate(rows)
+    # the smoother is a separate post-pass (with zero corrections it still renormalises the quaternions)
+    assert wx.estimate(rows, v1=False, v2=False, v2p=False, pre_hold=False, smooth=False) == sd.estimate(rows)
 
 
 # ---------- synthetic profile with a second rest and a bias step after calibration ----------
@@ -450,7 +451,7 @@ def test_learn_off_changes_nothing(tmp_path):
     assert wx.estimate_learned(rows) == wx.estimate(rows)
 
 
-# ---------- step E: fixed-interval (RTS) smoother, reference only (SMOOTH_ON off) ----------
+# ---------- step E / Step 6: fixed-interval (RTS) smoother (SMOOTH_ON, on since Step 6) ----------
 
 def test_smooth_gain_matches_dense():
     rng = np.random.default_rng(5)
@@ -467,10 +468,11 @@ def test_smooth_gain_matches_dense():
     assert wx.smooth_gain([float(x) for x in Pp.ravel()], [], [0.0] * 225) is None   # not positive definite
 
 
-def test_smooth_off_by_default_changes_nothing(second_rest):
+def test_smooth_default_is_on_and_the_switch_works(second_rest):
     rows, _, _ = second_rest
-    assert wx.SMOOTH_ON is False
-    assert wx.estimate(rows) == wx.estimate(rows, smooth=False)
+    assert wx.SMOOTH_ON is True                 # Step 6: ships on (rule passed on held-out copies, 18 Nov)
+    assert wx.estimate(rows) == wx.estimate(rows, smooth=True)
+    assert wx.estimate(rows) != wx.estimate(rows, smooth=False)
 
 
 def test_smoother_carries_the_second_rest_back(second_rest):

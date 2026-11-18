@@ -45,9 +45,9 @@ def _load_pf():
 
 pf = _load_pf()
 # The C core is a recorded experiment frozen before Step F (CLAUDE.md: kept, never extended). It is compared
-# with pathfinder.py as it was then: the Step F switches (shipped on since 17 Nov 2026) are set back off in
-# this private copy of the module only.
-STEP_F_OFF = ("BGCAP_ON", "P0V_ON", "REFRESH_ON", "RESET_ON")
+# with pathfinder.py as it was then: the Step F switches (shipped on since 17 Nov 2026) and the Step 6
+# smoother (shipped on since 18 Nov 2026) are set back off in this private copy of the module only.
+STEP_F_OFF = ("BGCAP_ON", "P0V_ON", "REFRESH_ON", "RESET_ON", "SMOOTH_ON")
 for _name in STEP_F_OFF:
     assert hasattr(pf, _name), _name
     setattr(pf, _name, False)
