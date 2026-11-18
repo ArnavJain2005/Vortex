@@ -1,0 +1,41 @@
+{
+ "commit": "dda57fd",
+ "date": "2026-11-18",
+ "degraded": false,
+ "main": "tools\\pathfinder_lab.py",
+ "official": false,
+ "python": "3.14.7",
+ "results": [
+  {
+   "ate_none_rmse": 1.703076626801738,
+   "ate_origin_rmse": 0.8094845863993445,
+   "ate_se3_rmse": 0.5520984817061316,
+   "ate_sim3_rmse": 0.5474509772001208,
+   "contract": "PASS",
+   "final_se3": 0.3730044512350275,
+   "rows": 28122,
+   "rpe200_rmse": 0.3450156378798917,
+   "sequence": "dataset-room1_512_16",
+   "sim3_scale": 0.921401360426313,
+   "wall_s": 1.3877768999664113
+  },
+  {
+   "ate_none_rmse": 1.686412533983155,
+   "ate_origin_rmse": 1.2056147713686909,
+   "ate_se3_rmse": 1.0827579466846151,
+   "ate_sim3_rmse": 1.072245059157053,
+   "contract": "PASS",
+   "final_se3": 0.6550962717575017,
+   "rows": 28732,
+   "rpe200_rmse": 1.4360782435839368,
+   "sequence": "dataset-room2_512_16",
+   "sim3_scale": 1.3518584064314294,
+   "wall_s": 1.3505894999834709
+  }
+ ],
+ "reverse": false,
+ "set": {
+  "LEARN_ON": "True"
+ },
+ "tag": "step7-grid-learn-clean"
+}
