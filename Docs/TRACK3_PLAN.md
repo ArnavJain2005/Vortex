@@ -1525,7 +1525,7 @@ switched-off experiments were compiled with it: the no-bytecode heap reading had
 | Item | Result | Where |
 |---|---|---|
 | `pathfinder.py` vs lab copy (all off), every real input on disk | **byte-identical on all 144** (8 clean EuRoC + 136 official copies; V2 excluded) | scratch script, Windows 3.14 |
-| `pytest` | 317 passed (310 + 7 `test_lab.py`; g++ on PATH) | Windows, Python 3.14.7 |
+| `pytest` | 317 passed (310 + 7 `test_lab.py`; g++ on PATH); 321 after merging `main` with #54 (4 TUM-VI tests) | Windows, Python 3.14.7 |
 | Compile peak, `compile()` of the source in-process | 5,640 -> 4,536 KB | Windows 3.14 |
 | Budget, `python -S benchmark.py --runs 15 --gate` | PASS on all three. Heap in-process / whole run / no bytecode: Win 3.14 synthetic 506 / 997 / **4,935** KB (Step L1: 6,055); Win 3.14 MH_01_easy_b_s1 587 / 1,084 / **4,935** KB; Win 3.13 synthetic 393 / 1,368 / **6,309** KB (Step L1: 6,431). Time 12.9, 13.2, 13.1 us/row | `Docs/BUDGET.md` `lean-*` |
 
