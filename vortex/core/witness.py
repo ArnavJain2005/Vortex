@@ -63,15 +63,16 @@ Step 6d (PRE_HOLD): the rows before the anchor keep the anchor's position (0, 0,
 comes from the backward gyro integration. Backward dead reckoning without witnesses was worse than
 standing still on clean MH_01/02 and could reach hundreds of metres when a dropout fell before the anchor.
 
-Step E (SMOOTH_ON, reference only, OFF): fixed-interval Rauch-Tung-Striebel smoother at the filter tick.
+Step E / Step 6 (SMOOTH_ON, ON since 18 Nov 2026, also in pathfinder.py): fixed-interval Rauch-Tung-Striebel smoother at the filter tick.
 At each tick close the gain C = P+ Phi^T (P-)^-1 (previous posterior, this prior) and the correction
 injected at the previous tick are stored as a block (t, C, b, d) in single precision; a full store
 (SMOOTH_MAX_BLOCKS) merges adjacent blocks pairwise by composing their affine maps e'_start = A e'_end + b,
 so memory never grows. After the forward pass, the backward recursion gives the smoothed error at every
 stored tick, and each row from the anchor on is corrected linearly in time between its two bracketing
 ticks. Rows before the anchor and after the last tick (the blind window) are unchanged. Works on
-SYNTHETIC data (second rest carried back: 12.2 -> 0.8 m), but on MH_01/02 it lowers RPE 1 s and raises
-APE and dropout growth in every envelope setting tried (Docs/TRACK3_PLAN.md step E), so it is not shipped.
+SYNTHETIC data (second rest carried back: 12.2 -> 0.8 m). On the clean tuning runs MH_01/02 it raised
+APE (Docs/TRACK3_PLAN.md step E), but on the official degraded copies it passed the Step 6 rule committed
+before the held-out run (held-out APE -7.8 %, gap RMSE -10.7 %, clean APE -2.7 %), so it ships on.
 """
 
 from __future__ import annotations
@@ -157,7 +158,7 @@ ZUPT_DEN_BINS = 4            # ticks (1 s = MIN_STILL_S): MH_01/02 study, false 
 ZUPT_DEN_ON = False          # V1 also fires after ZUPT_DEN_BINS denoised-still, steady ticks in a row
 PRE_HOLD = True              # rule passed 16 Nov; rows before the anchor keep the anchor position (attitude still from the backward pass)
 # step E (reference only until its pre-registered rule passes, Docs/TRACK3_PLAN.md step E)
-SMOOTH_ON = False            # fixed-interval (RTS) smoother at the filter tick; non-causal (offline)
+SMOOTH_ON = True             # Step 6: ON (pre-registered rule passed on held-out copies, 18 Nov 2026); RTS smoother at the filter tick; non-causal (offline)
 SMOOTH_MAX_BLOCKS = 1024     # blocks stored (fixed cap): 256 s at one tick per block; longer files merge
                              # adjacent blocks pairwise. Single precision: 4 x (225 + 15 + 15) bytes + 8 per block
 # Step F (rule in Docs/TRACK3_PLAN.md, Step F; judged 17 Nov 2026 on held-out seeds 4-6): REFRESH, P0V and

@@ -1,572 +1,572 @@
 {
  "heldout_copies_n": {
   "value": "36",
-  "source": "stepF-H-p0v-refresh vs stepF-H-floor",
-  "date": "2026-11-17"
+  "source": "step6-H46 vs stepF-H-floor",
+  "date": "2026-11-18"
  },
  "heldout_contract_pass_n": {
   "value": "36/36",
-  "source": "stepF-H-p0v-refresh",
-  "date": "2026-11-17"
+  "source": "step6-H46",
+  "date": "2026-11-18"
  },
  "heldout_ape_m": {
-  "value": "4.962",
-  "source": "stepF-H-p0v-refresh vs stepF-H-floor",
-  "date": "2026-11-17"
+  "value": "4.648",
+  "source": "step6-H46 vs stepF-H-floor",
+  "date": "2026-11-18"
  },
  "heldout_ape_floor_m": {
   "value": "3.745",
-  "source": "stepF-H-p0v-refresh vs stepF-H-floor",
-  "date": "2026-11-17"
+  "source": "step6-H46 vs stepF-H-floor",
+  "date": "2026-11-18"
  },
  "heldout_ape_vs_floor_pct": {
-  "value": "+32.5",
-  "source": "stepF-H-p0v-refresh vs stepF-H-floor",
-  "date": "2026-11-17"
+  "value": "+24.1",
+  "source": "step6-H46 vs stepF-H-floor",
+  "date": "2026-11-18"
  },
  "heldout_gap_m": {
-  "value": "5.036",
-  "source": "stepF-H-p0v-refresh vs stepF-H-floor",
-  "date": "2026-11-17"
+  "value": "4.582",
+  "source": "step6-H46 vs stepF-H-floor",
+  "date": "2026-11-18"
  },
  "heldout_gap_floor_m": {
   "value": "3.626",
-  "source": "stepF-H-p0v-refresh vs stepF-H-floor",
-  "date": "2026-11-17"
+  "source": "step6-H46 vs stepF-H-floor",
+  "date": "2026-11-18"
  },
  "heldout_gap_vs_floor_pct": {
-  "value": "+38.9",
-  "source": "stepF-H-p0v-refresh vs stepF-H-floor",
-  "date": "2026-11-17"
+  "value": "+26.4",
+  "source": "step6-H46 vs stepF-H-floor",
+  "date": "2026-11-18"
  },
  "heldout_blind_m": {
-  "value": "6.992",
-  "source": "stepF-H-p0v-refresh vs stepF-H-floor",
-  "date": "2026-11-17"
+  "value": "7.559",
+  "source": "step6-H46 vs stepF-H-floor",
+  "date": "2026-11-18"
  },
  "heldout_blind_floor_m": {
   "value": "2.504",
-  "source": "stepF-H-p0v-refresh vs stepF-H-floor",
-  "date": "2026-11-17"
+  "source": "step6-H46 vs stepF-H-floor",
+  "date": "2026-11-18"
  },
  "heldout_blind_vs_floor_pct": {
-  "value": "+179.2",
-  "source": "stepF-H-p0v-refresh vs stepF-H-floor",
-  "date": "2026-11-17"
+  "value": "+201.8",
+  "source": "step6-H46 vs stepF-H-floor",
+  "date": "2026-11-18"
  },
  "heldout_rpe1s_m": {
-  "value": "0.907",
-  "source": "stepF-H-p0v-refresh vs stepF-H-floor",
-  "date": "2026-11-17"
+  "value": "0.696",
+  "source": "step6-H46 vs stepF-H-floor",
+  "date": "2026-11-18"
  },
  "heldout_rpe1s_floor_m": {
   "value": "0.941",
-  "source": "stepF-H-p0v-refresh vs stepF-H-floor",
-  "date": "2026-11-17"
+  "source": "step6-H46 vs stepF-H-floor",
+  "date": "2026-11-18"
  },
  "heldout_rpe1s_vs_floor_pct": {
-  "value": "-3.5",
-  "source": "stepF-H-p0v-refresh vs stepF-H-floor",
-  "date": "2026-11-17"
+  "value": "-26.0",
+  "source": "step6-H46 vs stepF-H-floor",
+  "date": "2026-11-18"
  },
  "heldout_seqs_beat_floor_n": {
-  "value": "0/6",
-  "source": "stepF-H-p0v-refresh vs stepF-H-floor",
-  "date": "2026-11-17"
+  "value": "1/6",
+  "source": "step6-H46 vs stepF-H-floor",
+  "date": "2026-11-18"
  },
  "heldout_a_ape_m": {
-  "value": "6.181",
-  "source": "stepF-H-p0v-refresh vs stepF-H-floor",
-  "date": "2026-11-17"
+  "value": "5.782",
+  "source": "step6-H46 vs stepF-H-floor",
+  "date": "2026-11-18"
  },
  "heldout_a_ape_floor_m": {
   "value": "3.745",
-  "source": "stepF-H-p0v-refresh vs stepF-H-floor",
-  "date": "2026-11-17"
+  "source": "step6-H46 vs stepF-H-floor",
+  "date": "2026-11-18"
  },
  "heldout_a_ape_vs_floor_pct": {
-  "value": "+65.0",
-  "source": "stepF-H-p0v-refresh vs stepF-H-floor",
-  "date": "2026-11-17"
+  "value": "+54.4",
+  "source": "step6-H46 vs stepF-H-floor",
+  "date": "2026-11-18"
  },
  "heldout_a_gap_m": {
-  "value": "6.525",
-  "source": "stepF-H-p0v-refresh vs stepF-H-floor",
-  "date": "2026-11-17"
+  "value": "5.606",
+  "source": "step6-H46 vs stepF-H-floor",
+  "date": "2026-11-18"
  },
  "heldout_a_gap_floor_m": {
   "value": "3.626",
-  "source": "stepF-H-p0v-refresh vs stepF-H-floor",
-  "date": "2026-11-17"
+  "source": "step6-H46 vs stepF-H-floor",
+  "date": "2026-11-18"
  },
  "heldout_a_gap_vs_floor_pct": {
-  "value": "+80.0",
-  "source": "stepF-H-p0v-refresh vs stepF-H-floor",
-  "date": "2026-11-17"
+  "value": "+54.6",
+  "source": "step6-H46 vs stepF-H-floor",
+  "date": "2026-11-18"
  },
  "heldout_a_blind_m": {
-  "value": "11.148",
-  "source": "stepF-H-p0v-refresh vs stepF-H-floor",
-  "date": "2026-11-17"
+  "value": "11.756",
+  "source": "step6-H46 vs stepF-H-floor",
+  "date": "2026-11-18"
  },
  "heldout_a_blind_floor_m": {
   "value": "2.504",
-  "source": "stepF-H-p0v-refresh vs stepF-H-floor",
-  "date": "2026-11-17"
+  "source": "step6-H46 vs stepF-H-floor",
+  "date": "2026-11-18"
  },
  "heldout_a_blind_vs_floor_pct": {
-  "value": "+345.1",
-  "source": "stepF-H-p0v-refresh vs stepF-H-floor",
-  "date": "2026-11-17"
+  "value": "+369.4",
+  "source": "step6-H46 vs stepF-H-floor",
+  "date": "2026-11-18"
  },
  "heldout_a_rpe1s_m": {
-  "value": "0.978",
-  "source": "stepF-H-p0v-refresh vs stepF-H-floor",
-  "date": "2026-11-17"
+  "value": "0.872",
+  "source": "step6-H46 vs stepF-H-floor",
+  "date": "2026-11-18"
  },
  "heldout_a_rpe1s_floor_m": {
   "value": "0.941",
-  "source": "stepF-H-p0v-refresh vs stepF-H-floor",
-  "date": "2026-11-17"
+  "source": "step6-H46 vs stepF-H-floor",
+  "date": "2026-11-18"
  },
  "heldout_a_rpe1s_vs_floor_pct": {
-  "value": "+4.0",
-  "source": "stepF-H-p0v-refresh vs stepF-H-floor",
-  "date": "2026-11-17"
+  "value": "-7.3",
+  "source": "step6-H46 vs stepF-H-floor",
+  "date": "2026-11-18"
  },
  "heldout_a_seqs_beat_floor_n": {
-  "value": "0/6",
-  "source": "stepF-H-p0v-refresh vs stepF-H-floor",
-  "date": "2026-11-17"
+  "value": "1/6",
+  "source": "step6-H46 vs stepF-H-floor",
+  "date": "2026-11-18"
  },
  "heldout_b_ape_m": {
-  "value": "3.744",
-  "source": "stepF-H-p0v-refresh vs stepF-H-floor",
-  "date": "2026-11-17"
+  "value": "3.515",
+  "source": "step6-H46 vs stepF-H-floor",
+  "date": "2026-11-18"
  },
  "heldout_b_ape_floor_m": {
   "value": "3.745",
-  "source": "stepF-H-p0v-refresh vs stepF-H-floor",
-  "date": "2026-11-17"
+  "source": "step6-H46 vs stepF-H-floor",
+  "date": "2026-11-18"
  },
  "heldout_b_ape_vs_floor_pct": {
-  "value": "-0.0",
-  "source": "stepF-H-p0v-refresh vs stepF-H-floor",
-  "date": "2026-11-17"
+  "value": "-6.2",
+  "source": "step6-H46 vs stepF-H-floor",
+  "date": "2026-11-18"
  },
  "heldout_b_gap_m": {
-  "value": "3.548",
-  "source": "stepF-H-p0v-refresh vs stepF-H-floor",
-  "date": "2026-11-17"
+  "value": "3.559",
+  "source": "step6-H46 vs stepF-H-floor",
+  "date": "2026-11-18"
  },
  "heldout_b_gap_floor_m": {
   "value": "3.626",
-  "source": "stepF-H-p0v-refresh vs stepF-H-floor",
-  "date": "2026-11-17"
+  "source": "step6-H46 vs stepF-H-floor",
+  "date": "2026-11-18"
  },
  "heldout_b_gap_vs_floor_pct": {
-  "value": "-2.1",
-  "source": "stepF-H-p0v-refresh vs stepF-H-floor",
-  "date": "2026-11-17"
+  "value": "-1.8",
+  "source": "step6-H46 vs stepF-H-floor",
+  "date": "2026-11-18"
  },
  "heldout_b_blind_m": {
-  "value": "2.836",
-  "source": "stepF-H-p0v-refresh vs stepF-H-floor",
-  "date": "2026-11-17"
+  "value": "3.363",
+  "source": "step6-H46 vs stepF-H-floor",
+  "date": "2026-11-18"
  },
  "heldout_b_blind_floor_m": {
   "value": "2.504",
-  "source": "stepF-H-p0v-refresh vs stepF-H-floor",
-  "date": "2026-11-17"
+  "source": "step6-H46 vs stepF-H-floor",
+  "date": "2026-11-18"
  },
  "heldout_b_blind_vs_floor_pct": {
-  "value": "+13.2",
-  "source": "stepF-H-p0v-refresh vs stepF-H-floor",
-  "date": "2026-11-17"
+  "value": "+34.3",
+  "source": "step6-H46 vs stepF-H-floor",
+  "date": "2026-11-18"
  },
  "heldout_b_rpe1s_m": {
-  "value": "0.836",
-  "source": "stepF-H-p0v-refresh vs stepF-H-floor",
-  "date": "2026-11-17"
+  "value": "0.520",
+  "source": "step6-H46 vs stepF-H-floor",
+  "date": "2026-11-18"
  },
  "heldout_b_rpe1s_floor_m": {
   "value": "0.941",
-  "source": "stepF-H-p0v-refresh vs stepF-H-floor",
-  "date": "2026-11-17"
+  "source": "step6-H46 vs stepF-H-floor",
+  "date": "2026-11-18"
  },
  "heldout_b_rpe1s_vs_floor_pct": {
-  "value": "-11.1",
-  "source": "stepF-H-p0v-refresh vs stepF-H-floor",
-  "date": "2026-11-17"
+  "value": "-44.7",
+  "source": "step6-H46 vs stepF-H-floor",
+  "date": "2026-11-18"
  },
  "heldout_b_seqs_beat_floor_n": {
-  "value": "3/6",
-  "source": "stepF-H-p0v-refresh vs stepF-H-floor",
-  "date": "2026-11-17"
+  "value": "4/6",
+  "source": "step6-H46 vs stepF-H-floor",
+  "date": "2026-11-18"
  },
  "heldout_mh03_a_ape_m": {
-  "value": "7.902",
-  "source": "stepF-H-p0v-refresh vs stepF-H-floor",
-  "date": "2026-11-17"
+  "value": "6.600",
+  "source": "step6-H46 vs stepF-H-floor",
+  "date": "2026-11-18"
  },
  "heldout_mh03_a_ape_floor_m": {
   "value": "3.579",
-  "source": "stepF-H-p0v-refresh vs stepF-H-floor",
-  "date": "2026-11-17"
+  "source": "step6-H46 vs stepF-H-floor",
+  "date": "2026-11-18"
  },
  "heldout_mh03_b_ape_m": {
-  "value": "3.544",
-  "source": "stepF-H-p0v-refresh vs stepF-H-floor",
-  "date": "2026-11-17"
+  "value": "2.971",
+  "source": "step6-H46 vs stepF-H-floor",
+  "date": "2026-11-18"
  },
  "heldout_mh03_b_ape_floor_m": {
   "value": "3.579",
-  "source": "stepF-H-p0v-refresh vs stepF-H-floor",
-  "date": "2026-11-17"
+  "source": "step6-H46 vs stepF-H-floor",
+  "date": "2026-11-18"
  },
  "heldout_mh04_a_ape_m": {
-  "value": "8.123",
-  "source": "stepF-H-p0v-refresh vs stepF-H-floor",
-  "date": "2026-11-17"
+  "value": "8.701",
+  "source": "step6-H46 vs stepF-H-floor",
+  "date": "2026-11-18"
  },
  "heldout_mh04_a_ape_floor_m": {
   "value": "6.813",
-  "source": "stepF-H-p0v-refresh vs stepF-H-floor",
-  "date": "2026-11-17"
+  "source": "step6-H46 vs stepF-H-floor",
+  "date": "2026-11-18"
  },
  "heldout_mh04_b_ape_m": {
-  "value": "6.454",
-  "source": "stepF-H-p0v-refresh vs stepF-H-floor",
-  "date": "2026-11-17"
+  "value": "6.295",
+  "source": "step6-H46 vs stepF-H-floor",
+  "date": "2026-11-18"
  },
  "heldout_mh04_b_ape_floor_m": {
   "value": "6.813",
-  "source": "stepF-H-p0v-refresh vs stepF-H-floor",
-  "date": "2026-11-17"
+  "source": "step6-H46 vs stepF-H-floor",
+  "date": "2026-11-18"
  },
  "heldout_mh05_a_ape_m": {
-  "value": "8.471",
-  "source": "stepF-H-p0v-refresh vs stepF-H-floor",
-  "date": "2026-11-17"
+  "value": "8.892",
+  "source": "step6-H46 vs stepF-H-floor",
+  "date": "2026-11-18"
  },
  "heldout_mh05_a_ape_floor_m": {
   "value": "6.865",
-  "source": "stepF-H-p0v-refresh vs stepF-H-floor",
-  "date": "2026-11-17"
+  "source": "step6-H46 vs stepF-H-floor",
+  "date": "2026-11-18"
  },
  "heldout_mh05_b_ape_m": {
-  "value": "6.536",
-  "source": "stepF-H-p0v-refresh vs stepF-H-floor",
-  "date": "2026-11-17"
+  "value": "6.555",
+  "source": "step6-H46 vs stepF-H-floor",
+  "date": "2026-11-18"
  },
  "heldout_mh05_b_ape_floor_m": {
   "value": "6.865",
-  "source": "stepF-H-p0v-refresh vs stepF-H-floor",
-  "date": "2026-11-17"
+  "source": "step6-H46 vs stepF-H-floor",
+  "date": "2026-11-18"
  },
  "heldout_v101_a_ape_m": {
-  "value": "8.526",
-  "source": "stepF-H-p0v-refresh vs stepF-H-floor",
-  "date": "2026-11-17"
+  "value": "7.095",
+  "source": "step6-H46 vs stepF-H-floor",
+  "date": "2026-11-18"
  },
  "heldout_v101_a_ape_floor_m": {
   "value": "1.854",
-  "source": "stepF-H-p0v-refresh vs stepF-H-floor",
-  "date": "2026-11-17"
+  "source": "step6-H46 vs stepF-H-floor",
+  "date": "2026-11-18"
  },
  "heldout_v101_b_ape_m": {
-  "value": "2.061",
-  "source": "stepF-H-p0v-refresh vs stepF-H-floor",
-  "date": "2026-11-17"
+  "value": "2.100",
+  "source": "step6-H46 vs stepF-H-floor",
+  "date": "2026-11-18"
  },
  "heldout_v101_b_ape_floor_m": {
   "value": "1.854",
-  "source": "stepF-H-p0v-refresh vs stepF-H-floor",
-  "date": "2026-11-17"
+  "source": "step6-H46 vs stepF-H-floor",
+  "date": "2026-11-18"
  },
  "heldout_v102_a_ape_m": {
-  "value": "1.898",
-  "source": "stepF-H-p0v-refresh vs stepF-H-floor",
-  "date": "2026-11-17"
+  "value": "1.335",
+  "source": "step6-H46 vs stepF-H-floor",
+  "date": "2026-11-18"
  },
  "heldout_v102_a_ape_floor_m": {
   "value": "1.778",
-  "source": "stepF-H-p0v-refresh vs stepF-H-floor",
-  "date": "2026-11-17"
+  "source": "step6-H46 vs stepF-H-floor",
+  "date": "2026-11-18"
  },
  "heldout_v102_b_ape_m": {
-  "value": "1.791",
-  "source": "stepF-H-p0v-refresh vs stepF-H-floor",
-  "date": "2026-11-17"
+  "value": "1.229",
+  "source": "step6-H46 vs stepF-H-floor",
+  "date": "2026-11-18"
  },
  "heldout_v102_b_ape_floor_m": {
   "value": "1.778",
-  "source": "stepF-H-p0v-refresh vs stepF-H-floor",
-  "date": "2026-11-17"
+  "source": "step6-H46 vs stepF-H-floor",
+  "date": "2026-11-18"
  },
  "heldout_v103_a_ape_m": {
-  "value": "2.165",
-  "source": "stepF-H-p0v-refresh vs stepF-H-floor",
-  "date": "2026-11-17"
+  "value": "2.066",
+  "source": "step6-H46 vs stepF-H-floor",
+  "date": "2026-11-18"
  },
  "heldout_v103_a_ape_floor_m": {
   "value": "1.581",
-  "source": "stepF-H-p0v-refresh vs stepF-H-floor",
-  "date": "2026-11-17"
+  "source": "step6-H46 vs stepF-H-floor",
+  "date": "2026-11-18"
  },
  "heldout_v103_b_ape_m": {
-  "value": "2.075",
-  "source": "stepF-H-p0v-refresh vs stepF-H-floor",
-  "date": "2026-11-17"
+  "value": "1.937",
+  "source": "step6-H46 vs stepF-H-floor",
+  "date": "2026-11-18"
  },
  "heldout_v103_b_ape_floor_m": {
   "value": "1.581",
-  "source": "stepF-H-p0v-refresh vs stepF-H-floor",
-  "date": "2026-11-17"
+  "source": "step6-H46 vs stepF-H-floor",
+  "date": "2026-11-18"
  },
  "heldout79_copies_n": {
   "value": "36",
-  "source": "stepL1-H-off vs stepL1-H-floor",
+  "source": "step6-H79 vs stepL1-H-floor",
   "date": "2026-11-18"
  },
  "heldout79_contract_pass_n": {
   "value": "36/36",
-  "source": "stepL1-H-off",
+  "source": "step6-H79",
   "date": "2026-11-18"
  },
  "heldout79_ape_m": {
-  "value": "4.736",
-  "source": "stepL1-H-off vs stepL1-H-floor",
+  "value": "4.516",
+  "source": "step6-H79 vs stepL1-H-floor",
   "date": "2026-11-18"
  },
  "heldout79_ape_floor_m": {
   "value": "3.748",
-  "source": "stepL1-H-off vs stepL1-H-floor",
+  "source": "step6-H79 vs stepL1-H-floor",
   "date": "2026-11-18"
  },
  "heldout79_ape_vs_floor_pct": {
-  "value": "+26.4",
-  "source": "stepL1-H-off vs stepL1-H-floor",
+  "value": "+20.5",
+  "source": "step6-H79 vs stepL1-H-floor",
   "date": "2026-11-18"
  },
  "heldout79_gap_m": {
-  "value": "4.611",
-  "source": "stepL1-H-off vs stepL1-H-floor",
+  "value": "4.465",
+  "source": "step6-H79 vs stepL1-H-floor",
   "date": "2026-11-18"
  },
  "heldout79_gap_floor_m": {
   "value": "3.256",
-  "source": "stepL1-H-off vs stepL1-H-floor",
+  "source": "step6-H79 vs stepL1-H-floor",
   "date": "2026-11-18"
  },
  "heldout79_gap_vs_floor_pct": {
-  "value": "+41.6",
-  "source": "stepL1-H-off vs stepL1-H-floor",
+  "value": "+37.2",
+  "source": "step6-H79 vs stepL1-H-floor",
   "date": "2026-11-18"
  },
  "heldout79_blind_m": {
-  "value": "6.116",
-  "source": "stepL1-H-off vs stepL1-H-floor",
+  "value": "6.574",
+  "source": "step6-H79 vs stepL1-H-floor",
   "date": "2026-11-18"
  },
  "heldout79_blind_floor_m": {
   "value": "2.505",
-  "source": "stepL1-H-off vs stepL1-H-floor",
+  "source": "step6-H79 vs stepL1-H-floor",
   "date": "2026-11-18"
  },
  "heldout79_blind_vs_floor_pct": {
-  "value": "+144.1",
-  "source": "stepL1-H-off vs stepL1-H-floor",
+  "value": "+162.4",
+  "source": "step6-H79 vs stepL1-H-floor",
   "date": "2026-11-18"
  },
  "heldout79_rpe1s_m": {
-  "value": "0.920",
-  "source": "stepL1-H-off vs stepL1-H-floor",
+  "value": "0.711",
+  "source": "step6-H79 vs stepL1-H-floor",
   "date": "2026-11-18"
  },
  "heldout79_rpe1s_floor_m": {
   "value": "0.943",
-  "source": "stepL1-H-off vs stepL1-H-floor",
+  "source": "step6-H79 vs stepL1-H-floor",
   "date": "2026-11-18"
  },
  "heldout79_rpe1s_vs_floor_pct": {
-  "value": "-2.5",
-  "source": "stepL1-H-off vs stepL1-H-floor",
+  "value": "-24.5",
+  "source": "step6-H79 vs stepL1-H-floor",
   "date": "2026-11-18"
  },
  "heldout79_seqs_beat_floor_n": {
-  "value": "0/6",
-  "source": "stepL1-H-off vs stepL1-H-floor",
+  "value": "1/6",
+  "source": "step6-H79 vs stepL1-H-floor",
   "date": "2026-11-18"
  },
  "heldout79_a_ape_m": {
-  "value": "5.653",
-  "source": "stepL1-H-off vs stepL1-H-floor",
+  "value": "5.445",
+  "source": "step6-H79 vs stepL1-H-floor",
   "date": "2026-11-18"
  },
  "heldout79_a_ape_floor_m": {
   "value": "3.748",
-  "source": "stepL1-H-off vs stepL1-H-floor",
+  "source": "step6-H79 vs stepL1-H-floor",
   "date": "2026-11-18"
  },
  "heldout79_a_ape_vs_floor_pct": {
-  "value": "+50.8",
-  "source": "stepL1-H-off vs stepL1-H-floor",
+  "value": "+45.3",
+  "source": "step6-H79 vs stepL1-H-floor",
   "date": "2026-11-18"
  },
  "heldout79_a_gap_m": {
-  "value": "5.829",
-  "source": "stepL1-H-off vs stepL1-H-floor",
+  "value": "5.579",
+  "source": "step6-H79 vs stepL1-H-floor",
   "date": "2026-11-18"
  },
  "heldout79_a_gap_floor_m": {
   "value": "3.256",
-  "source": "stepL1-H-off vs stepL1-H-floor",
+  "source": "step6-H79 vs stepL1-H-floor",
   "date": "2026-11-18"
  },
  "heldout79_a_gap_vs_floor_pct": {
-  "value": "+79.0",
-  "source": "stepL1-H-off vs stepL1-H-floor",
+  "value": "+71.4",
+  "source": "step6-H79 vs stepL1-H-floor",
   "date": "2026-11-18"
  },
  "heldout79_a_blind_m": {
-  "value": "8.972",
-  "source": "stepL1-H-off vs stepL1-H-floor",
+  "value": "9.548",
+  "source": "step6-H79 vs stepL1-H-floor",
   "date": "2026-11-18"
  },
  "heldout79_a_blind_floor_m": {
   "value": "2.505",
-  "source": "stepL1-H-off vs stepL1-H-floor",
+  "source": "step6-H79 vs stepL1-H-floor",
   "date": "2026-11-18"
  },
  "heldout79_a_blind_vs_floor_pct": {
-  "value": "+258.1",
-  "source": "stepL1-H-off vs stepL1-H-floor",
+  "value": "+281.1",
+  "source": "step6-H79 vs stepL1-H-floor",
   "date": "2026-11-18"
  },
  "heldout79_a_rpe1s_m": {
-  "value": "0.999",
-  "source": "stepL1-H-off vs stepL1-H-floor",
+  "value": "0.890",
+  "source": "step6-H79 vs stepL1-H-floor",
   "date": "2026-11-18"
  },
  "heldout79_a_rpe1s_floor_m": {
   "value": "0.943",
-  "source": "stepL1-H-off vs stepL1-H-floor",
+  "source": "step6-H79 vs stepL1-H-floor",
   "date": "2026-11-18"
  },
  "heldout79_a_rpe1s_vs_floor_pct": {
-  "value": "+5.9",
-  "source": "stepL1-H-off vs stepL1-H-floor",
+  "value": "-5.6",
+  "source": "step6-H79 vs stepL1-H-floor",
   "date": "2026-11-18"
  },
  "heldout79_a_seqs_beat_floor_n": {
-  "value": "0/6",
-  "source": "stepL1-H-off vs stepL1-H-floor",
+  "value": "1/6",
+  "source": "step6-H79 vs stepL1-H-floor",
   "date": "2026-11-18"
  },
  "heldout79_b_ape_m": {
-  "value": "3.820",
-  "source": "stepL1-H-off vs stepL1-H-floor",
+  "value": "3.588",
+  "source": "step6-H79 vs stepL1-H-floor",
   "date": "2026-11-18"
  },
  "heldout79_b_ape_floor_m": {
   "value": "3.748",
-  "source": "stepL1-H-off vs stepL1-H-floor",
+  "source": "step6-H79 vs stepL1-H-floor",
   "date": "2026-11-18"
  },
  "heldout79_b_ape_vs_floor_pct": {
-  "value": "+1.9",
-  "source": "stepL1-H-off vs stepL1-H-floor",
+  "value": "-4.3",
+  "source": "step6-H79 vs stepL1-H-floor",
   "date": "2026-11-18"
  },
  "heldout79_b_gap_m": {
-  "value": "3.394",
-  "source": "stepL1-H-off vs stepL1-H-floor",
+  "value": "3.352",
+  "source": "step6-H79 vs stepL1-H-floor",
   "date": "2026-11-18"
  },
  "heldout79_b_gap_floor_m": {
   "value": "3.256",
-  "source": "stepL1-H-off vs stepL1-H-floor",
+  "source": "step6-H79 vs stepL1-H-floor",
   "date": "2026-11-18"
  },
  "heldout79_b_gap_vs_floor_pct": {
-  "value": "+4.3",
-  "source": "stepL1-H-off vs stepL1-H-floor",
+  "value": "+3.0",
+  "source": "step6-H79 vs stepL1-H-floor",
   "date": "2026-11-18"
  },
  "heldout79_b_blind_m": {
-  "value": "3.259",
-  "source": "stepL1-H-off vs stepL1-H-floor",
+  "value": "3.600",
+  "source": "step6-H79 vs stepL1-H-floor",
   "date": "2026-11-18"
  },
  "heldout79_b_blind_floor_m": {
   "value": "2.505",
-  "source": "stepL1-H-off vs stepL1-H-floor",
+  "source": "step6-H79 vs stepL1-H-floor",
   "date": "2026-11-18"
  },
  "heldout79_b_blind_vs_floor_pct": {
-  "value": "+30.1",
-  "source": "stepL1-H-off vs stepL1-H-floor",
+  "value": "+43.7",
+  "source": "step6-H79 vs stepL1-H-floor",
   "date": "2026-11-18"
  },
  "heldout79_b_rpe1s_m": {
-  "value": "0.841",
-  "source": "stepL1-H-off vs stepL1-H-floor",
+  "value": "0.532",
+  "source": "step6-H79 vs stepL1-H-floor",
   "date": "2026-11-18"
  },
  "heldout79_b_rpe1s_floor_m": {
   "value": "0.943",
-  "source": "stepL1-H-off vs stepL1-H-floor",
+  "source": "step6-H79 vs stepL1-H-floor",
   "date": "2026-11-18"
  },
  "heldout79_b_rpe1s_vs_floor_pct": {
-  "value": "-10.8",
-  "source": "stepL1-H-off vs stepL1-H-floor",
+  "value": "-43.5",
+  "source": "step6-H79 vs stepL1-H-floor",
   "date": "2026-11-18"
  },
  "heldout79_b_seqs_beat_floor_n": {
-  "value": "4/6",
-  "source": "stepL1-H-off vs stepL1-H-floor",
+  "value": "3/6",
+  "source": "step6-H79 vs stepL1-H-floor",
   "date": "2026-11-18"
  },
  "clean_seqs_n": {
   "value": "8",
-  "source": "stepL1-C-off vs step2-floor-clean",
+  "source": "step6-shipped-clean vs step2-floor-clean",
   "date": "2026-11-18"
  },
  "clean_ape_m": {
-  "value": "3.655",
-  "source": "stepL1-C-off vs step2-floor-clean",
+  "value": "3.555",
+  "source": "step6-shipped-clean vs step2-floor-clean",
   "date": "2026-11-18"
  },
  "clean_ape_floor_m": {
   "value": "3.930",
-  "source": "stepL1-C-off vs step2-floor-clean",
+  "source": "step6-shipped-clean vs step2-floor-clean",
   "date": "2026-11-18"
  },
  "clean_ape_vs_floor_pct": {
-  "value": "-7.0",
-  "source": "stepL1-C-off vs step2-floor-clean",
+  "value": "-9.5",
+  "source": "step6-shipped-clean vs step2-floor-clean",
   "date": "2026-11-18"
  },
  "clean_rpe1s_m": {
-  "value": "0.728",
-  "source": "stepL1-C-off vs step2-floor-clean",
+  "value": "0.399",
+  "source": "step6-shipped-clean vs step2-floor-clean",
   "date": "2026-11-18"
  },
  "clean_rpe1s_floor_m": {
   "value": "0.813",
-  "source": "stepL1-C-off vs step2-floor-clean",
+  "source": "step6-shipped-clean vs step2-floor-clean",
   "date": "2026-11-18"
  },
  "clean_rpe1s_vs_floor_pct": {
-  "value": "-10.5",
-  "source": "stepL1-C-off vs step2-floor-clean",
+  "value": "-51.0",
+  "source": "step6-shipped-clean vs step2-floor-clean",
   "date": "2026-11-18"
  },
  "clean_seqs_beat_floor_n": {
-  "value": "8/8",
-  "source": "stepL1-C-off vs step2-floor-clean",
+  "value": "7/8",
+  "source": "step6-shipped-clean vs step2-floor-clean",
   "date": "2026-11-18"
  },
  "tumvi_copies_n": {
@@ -1046,107 +1046,107 @@
  },
  "budget_input": {
   "value": "official/MH_01_easy_b_s1/mav0/imu0/data.csv",
-  "source": "lean-win-py314-mh01-b-s1",
+  "source": "step6-lean-win-py314-mh01-b-s1",
   "date": "2026-11-18"
  },
  "budget_rows_n": {
   "value": "35697",
-  "source": "lean-win-py314-mh01-b-s1",
+  "source": "step6-lean-win-py314-mh01-b-s1",
   "date": "2026-11-18"
  },
  "budget_python": {
   "value": "3.14.7",
-  "source": "lean-win-py314-mh01-b-s1",
+  "source": "step6-lean-win-py314-mh01-b-s1",
   "date": "2026-11-18"
  },
  "budget_heap_kb": {
-  "value": "587",
-  "source": "lean-win-py314-mh01-b-s1",
+  "value": "1232",
+  "source": "step6-lean-win-py314-mh01-b-s1",
   "date": "2026-11-18"
  },
  "budget_heap_whole_run_kb": {
-  "value": "1084",
-  "source": "lean-win-py314-mh01-b-s1",
+  "value": "1796",
+  "source": "step6-lean-win-py314-mh01-b-s1",
   "date": "2026-11-18"
  },
  "budget_heap_no_bytecode_kb": {
-  "value": "4936",
-  "source": "lean-win-py314-mh01-b-s1",
+  "value": "5580",
+  "source": "step6-lean-win-py314-mh01-b-s1",
   "date": "2026-11-18"
  },
  "budget_us_per_row_us": {
-  "value": "12.5",
-  "source": "lean-win-py314-mh01-b-s1",
+  "value": "30.4",
+  "source": "step6-lean-win-py314-mh01-b-s1",
   "date": "2026-11-18"
  },
  "budget_cpu_ms_per_imu_s_ms": {
-  "value": "2.29",
-  "source": "lean-win-py314-mh01-b-s1",
+  "value": "5.77",
+  "source": "step6-lean-win-py314-mh01-b-s1",
   "date": "2026-11-18"
  },
  "budget_wall_ms_per_imu_s_ms": {
-  "value": "2.42",
-  "source": "lean-win-py314-mh01-b-s1",
+  "value": "5.89",
+  "source": "step6-lean-win-py314-mh01-b-s1",
   "date": "2026-11-18"
  },
  "budget313_input": {
   "value": "SYNTHETIC (tools/synth_euroc.py, seed 0)",
-  "source": "lean-win-py313",
+  "source": "step6-lean-win-py313",
   "date": "2026-11-18"
  },
  "budget313_rows_n": {
   "value": "36000",
-  "source": "lean-win-py313",
+  "source": "step6-lean-win-py313",
   "date": "2026-11-18"
  },
  "budget313_python": {
   "value": "3.13.5",
-  "source": "lean-win-py313",
+  "source": "step6-lean-win-py313",
   "date": "2026-11-18"
  },
  "budget313_heap_kb": {
-  "value": "393",
-  "source": "lean-win-py313",
+  "value": "940",
+  "source": "step6-lean-win-py313",
   "date": "2026-11-18"
  },
  "budget313_heap_whole_run_kb": {
-  "value": "1368",
-  "source": "lean-win-py313",
+  "value": "1984",
+  "source": "step6-lean-win-py313",
   "date": "2026-11-18"
  },
  "budget313_heap_no_bytecode_kb": {
-  "value": "6310",
-  "source": "lean-win-py313",
+  "value": "6309",
+  "source": "step6-lean-win-py313",
   "date": "2026-11-18"
  },
  "budget313_us_per_row_us": {
-  "value": "14.1",
-  "source": "lean-win-py313",
+  "value": "22.9",
+  "source": "step6-lean-win-py313",
   "date": "2026-11-18"
  },
  "budget313_cpu_ms_per_imu_s_ms": {
-  "value": "2.69",
-  "source": "lean-win-py313",
+  "value": "4.51",
+  "source": "step6-lean-win-py313",
   "date": "2026-11-18"
  },
  "budget313_wall_ms_per_imu_s_ms": {
-  "value": "2.81",
-  "source": "lean-win-py313",
+  "value": "4.58",
+  "source": "step6-lean-win-py313",
   "date": "2026-11-18"
  },
  "pytest_passed_n": {
-  "value": "324",
-  "source": "pytest Windows 11, Python 3.14.7, commit 15bc72d",
+  "value": "335",
+  "source": "pytest Windows 11, Python 3.14.7, commit eba7c81",
   "date": "2026-11-18"
  },
  "pytest_failed_n": {
   "value": "0",
-  "source": "pytest Windows 11, Python 3.14.7, commit 15bc72d",
+  "source": "pytest Windows 11, Python 3.14.7, commit eba7c81",
   "date": "2026-11-18"
  },
  "pytest_skipped_n": {
   "value": "0",
-  "source": "pytest Windows 11, Python 3.14.7, commit 15bc72d",
+  "source": "pytest Windows 11, Python 3.14.7, commit eba7c81",
   "date": "2026-11-18"
  },
  "experiments_off_n": {
@@ -1200,7 +1200,7 @@
   "date": "-"
  },
  "switches_on": {
-  "value": "V1_ON, V2_ON, V2P_ON, GAP_ON, DEAD_ON, FC_ON, PRE_HOLD, BGCAP_ON, REFRESH_ON, P0V_ON, FRONT_ON",
+  "value": "V1_ON, V2_ON, V2P_ON, GAP_ON, DEAD_ON, FC_ON, PRE_HOLD, BGCAP_ON, REFRESH_ON, P0V_ON, FRONT_ON, SMOOTH_ON",
   "source": "pathfinder.py",
   "date": "-"
  }

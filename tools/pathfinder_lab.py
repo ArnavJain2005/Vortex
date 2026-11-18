@@ -2,10 +2,11 @@
 
 LAB COPY (18 Nov 2026): the full estimator with every switched-off experiment (fault pass FF_*, learned
 envelope LEARN_*, INTERP, noise meter JAM_ON, covariance reset RESET_ON, shrinkage SHRINK_*), frozen at
-commit dc162ac. It is NOT shipped: pathfinder.py carries only the shipped code, so an evaluator that compiles
-it from source pays less compile memory. tests/test_lab.py checks that this copy with every experiment off
-is byte-identical to pathfinder.py; the experiment tests (test_faults, test_shrink, test_stepF, the LEARN and
-JAM tests) run against this copy. To re-run an experiment: tools/eval_euroc.py --main tools/pathfinder_lab.py
+commit dc162ac, plus the Step 6 smoother (SMOOTH_ON, shipped on, 18 Nov 2026). It is NOT shipped:
+pathfinder.py carries only the shipped code, so an evaluator that compiles it from source pays less compile
+memory. tests/test_lab.py checks that this copy with every experiment off is byte-identical to
+pathfinder.py; the experiment tests (test_faults, test_shrink, test_stepF, the LEARN and JAM tests) run
+against this copy. To re-run an experiment: tools/eval_euroc.py --main tools/pathfinder_lab.py
 --set NAME=VALUE.
 
     python -S main.py <imu0/data.csv> <estimated_trajectory.txt>
@@ -111,6 +112,8 @@ PRE_HOLD = True
 RESET_ON = False
 REFRESH_ON = True
 P0V_ON = True
+SMOOTH_ON = True             # Step 6: ON (rule passed 18 Nov 2026); fixed-interval (RTS) smoother at the tick (vortex/core/witness.py smooth_*)
+SMOOTH_MAX_BLOCKS = 1024     # stored blocks (fixed cap; a full store merges adjacent pairs): <= 1.05 MB of floats
 N = 15
 
 LAST = {"pre_rows": 0, "calibrated": False, "zupt_ticks": 0, "ba": (0.0, 0.0, 0.0), "jam": (-1.0, -1.0),
@@ -699,6 +702,115 @@ FE_CANON_HEADER = ("#timestamp [ns],w_RS_S_x [rad s^-1],w_RS_S_y [rad s^-1],w_RS
 FE_SHIFT = {"s": 9, "ms": 6, "us": 3, "ns": 0}
 
 
+def _phi_entries(r, fx, fy, fz, T):
+    """Copy of witness.phi_entries: the non-zero entries (row, col, value) of A in Phi = I + A."""
+    A = [(0, 3, T), (1, 4, T), (2, 5, T),
+         (3, 7, T * fz), (3, 8, -T * fy), (4, 6, -T * fz), (4, 8, T * fx), (5, 6, T * fy), (5, 7, -T * fx)]
+    for i in range(3):
+        for j in range(3):
+            a = -T * r[3 * i + j]
+            A.append((3 + i, 12 + j, a))
+            A.append((6 + i, 9 + j, a))
+    return A
+
+
+def _smooth_gain(Pp, A, Pm):
+    """Copy of witness.smooth_gain: RTS gain C = Pp Phi^T Pm^-1 (row-major), None if Pm is not positive
+    definite."""
+    M = Pp[:]
+    for i, j, a in A:
+        oi, oj = i * N, j * N
+        for c in range(N):
+            M[oi + c] += a * Pp[oj + c]
+    L = [0.0] * (N * N)
+    for i in range(N):
+        for j in range(i + 1):
+            s = 0.5 * (Pm[i * N + j] + Pm[j * N + i])
+            for k in range(j):
+                s -= L[i * N + k] * L[j * N + k]
+            if i == j:
+                if not s > 0.0:
+                    return None
+                L[i * N + i] = math.sqrt(s)
+            else:
+                L[i * N + j] = s / L[j * N + j]
+    C = [0.0] * (N * N)
+    y = [0.0] * N
+    for col in range(N):
+        for i in range(N):
+            s = M[i * N + col]
+            for k in range(i):
+                s -= L[i * N + k] * y[k]
+            y[i] = s / L[i * N + i]
+        for i in range(N - 1, -1, -1):
+            s = y[i]
+            for k in range(i + 1, N):
+                s -= L[k * N + i] * y[k]
+            y[i] = s / L[i * N + i]
+        for i in range(N):
+            C[col * N + i] = y[i]
+    return C
+
+
+def _smooth_merge(b1, b2):
+    """Copy of witness.smooth_merge: compose two adjacent blocks (t, A, b, d), stored in single precision."""
+    t1, A1, c1, d1 = b1
+    A2, c2 = b2[1], b2[2]
+    A = [0.0] * (N * N)
+    c = list(c1)
+    for i in range(N):
+        oi = i * N
+        for k in range(N):
+            a = A1[oi + k]
+            if a != 0.0:
+                ok = k * N
+                for j in range(N):
+                    A[oi + j] += a * A2[ok + j]
+                c[i] += a * c2[k]
+    return (t1, array("f", A), array("f", c), d1)
+
+
+def _smooth_push(blocks, blk, cap):
+    """witness.smooth_push, merging in place (same blocks, no second list while merging)."""
+    if len(blocks) == cap:
+        m = 0
+        for i in range(0, cap - 1, 2):
+            blocks[m] = _smooth_merge(blocks[i], blocks[i + 1])
+            m += 1
+        if cap % 2:
+            blocks[m] = blocks[cap - 1]
+            m += 1
+        del blocks[m:]
+    blocks.append(blk)
+
+
+SMOOTH_K = (0, 1, 2, 6, 7, 8)   # the error components a pose needs: position, attitude
+
+
+def _smooth_segments(blocks, t_end, d_end):
+    """witness.smooth_apply's backward recursion. Per block j: start / end time (ns) and, for the six
+    components in SMOOTH_K, the smoothed error just after the start tick (relative to the forward posterior)
+    and just before the end tick (relative to the forward prior): 12 doubles."""
+    nb = len(blocks)
+    st0 = array("q", [0]) * nb
+    st1 = array("q", [0]) * nb
+    ev = array("d", [0.0]) * (12 * nb)
+    ep = list(d_end)
+    t_next = t_end
+    for jb in range(nb - 1, -1, -1):
+        t0, A, b, d = blocks[jb]
+        es = [b[i] + sum(A[i * N + k] * ep[k] for k in range(N)) for i in range(N)]
+        st0[jb] = t0
+        st1[jb] = t_next
+        o = 12 * jb
+        for m in range(6):
+            i = SMOOTH_K[m]
+            ev[o + m] = es[i] - d[i]
+            ev[o + 6 + m] = ep[i]
+        ep, t_next = es, t0
+    return st0, st1, ev, t_end
+
+
 def _fe_is_data(line):
     s = line.strip()
     return bool(s) and s[0] != 35
@@ -1026,17 +1138,27 @@ def _ts_span(src):
 
 
 def _run_learned(src, dst, write, integrate):
-    """_run, with the envelope learned per file first when LEARN_ON (LEARN_ITERS passes)."""
-    if not (LEARN_ON and integrate):
-        return _run(src, dst, write, integrate)
-    t0, t1 = _ts_span(src)
+    """_run, with the envelope learned per file first when LEARN_ON (LEARN_ITERS passes), and with the
+    smoother (SMOOTH_ON): one pass that stores the smoother's blocks, then the pass that writes, each row
+    corrected by the smoothed error (Step 6)."""
     env = None
-    for _ in range(LEARN_ITERS):
-        acc = array("d")
-        _run(src, dst, False, True, env=env, collect=acc)
-        env = _learn_env(acc, t0, t1) if t0 is not None else None
-    LAST["env"] = env
-    return _run(src, dst, write, integrate, env=env)
+    if LEARN_ON and integrate:
+        t0, t1 = _ts_span(src)
+        for _ in range(LEARN_ITERS):
+            acc = array("d")
+            _run(src, dst, False, True, env=env, collect=acc)
+            env = _learn_env(acc, t0, t1) if t0 is not None else None
+        LAST["env"] = env
+    LAST["smooth_blocks"] = None
+    corr = None
+    if SMOOTH_ON and integrate and write:
+        st = {}
+        _run(src, dst, False, True, env=env, store=st)
+        LAST["smooth_blocks"] = len(st["blocks"])
+        if st["blocks"]:
+            corr = _smooth_segments(st["blocks"], st["t_end"], st["d_end"])
+        st = None
+    return _run(src, dst, write, integrate, env=env, corr=corr)
 
 
 INTERP_ON = False            # Step 3: skip rows marked missing and integrate steps up to INTERP_MAX_S
@@ -1220,9 +1342,10 @@ def run(src, dst, write=True, integrate=True):
         os.remove(tmp)
 
 
-def _run(src, dst, write=True, integrate=True, env=None, collect=None):
+def _run(src, dst, write=True, integrate=True, env=None, collect=None, store=None, corr=None):
     """Stream src -> dst. Returns the number of data rows.
-    write=False: no output (benchmarks); integrate=False: identity poses (benchmarks)."""
+    write=False: no output (benchmarks); integrate=False: identity poses (benchmarks). store: a dict that
+    gets the smoother's blocks (Step 6); corr: _smooth_segments() output, applied to every written row."""
     fl = float
     fmt = FMT
     slow = _slow_fields
@@ -1264,6 +1387,19 @@ def _run(src, dst, write=True, integrate=True, env=None, collect=None):
     bax = bay = baz = 0.0
     P = _kf_init(still0)
     dx = [0.0] * N
+    smooth = store is not None
+    blocks = []                              # Step 6: (t, C, b, d) per stored block
+    sPp = P[:]                               # posterior covariance at the last tick
+    sd_prev = array("f", [0.0] * N)          # correction injected at the last tick
+    st_prev = None                           # time of the last tick
+    sC = None
+    zero_c = [0.0] * (N * N)
+    cr = corr is not None
+    if cr:
+        cs0, cs1, cev, c_end = corr
+        cj = 0
+        cn = len(cs0)
+    tr = None                                # last row timestamp from the anchor on (smoother correction)
     tick_ns = int(TICK_S * 1e9)
     tick_end = t_tick = 0
     r0 = _rot_matrix(qw, qx, qy, qz)
@@ -1406,8 +1542,16 @@ def _run(src, dst, write=True, integrate=True, env=None, collect=None):
                                             ad2 = ja
                                     if fn:
                                         _kf_propagate(P, r, fsx / fn, fsy / fn, fsz / fn, T, ad2, gd2)
+                                        if smooth:
+                                            sA = _phi_entries(r, fsx / fn, fsy / fn, fsz / fn, T)
                                     else:
                                         _kf_propagate(P, r, 0.0, 0.0, g, T, ad2, gd2)
+                                        if smooth:
+                                            sA = _phi_entries(r, 0.0, 0.0, g, T)
+                                elif smooth:
+                                    sA = []
+                                if smooth:
+                                    sC = _smooth_gain(sPp, sA, P)
                                 bs = [bs0, bs1, bs2, bs3, bs4, bs5]
                                 bss = [bq0, bq1, bq2, bq3, bq4, bq5]
                                 still = _bin_still(bn, bs, bss)
@@ -1436,7 +1580,9 @@ def _run(src, dst, write=True, integrate=True, env=None, collect=None):
                                     kf_update(P, dx, 0, ccx - px, s2ph)
                                     kf_update(P, dx, 1, ccy - py, s2ph)
                                     kf_update(P, dx, 2, ccz - pz, s2pv)
+                                sdx = None
                                 if zupt or v2 or v2p:
+                                    sdx = dx
                                     ow, ox, oy, oz = qw, qx, qy, qz
                                     (qw, qx, qy, qz, px, py, pz, vx, vy, vz, bgx, bgy, bgz, bax, bay,
                                      baz) = _inject(qw, qx, qy, qz, px, py, pz, vx, vy, vz, bgx, bgy, bgz,
@@ -1459,6 +1605,15 @@ def _run(src, dst, write=True, integrate=True, env=None, collect=None):
                                     collect.extend((tl, 0.5 * (vx * vx + P[48] + vy * vy + P[64]),
                                                     vz * vz + P[80], 0.5 * (d0 * d0 + P[0] + d1 * d1 + P[16]),
                                                     d2 * d2 + P[32]))
+                                if smooth:
+                                    chk = 0.0
+                                    if sdx is not None:
+                                        for e in sdx:
+                                            chk += e
+                                    sd_new = array("f", sdx if sdx is not None and chk - chk == 0.0 else [0.0] * N)
+                                    _smooth_push(blocks, (st_prev, array("f", sC if sC is not None else zero_c),
+                                                          sd_prev, sd_prev), SMOOTH_MAX_BLOCKS)
+                                    sd_prev, st_prev, sPp = sd_new, tl, P[:]
                                 r0 = _rot_matrix(qw, qx, qy, qz)
                                 if gap_on:
                                     if len(ring) == GAP_H_TICKS:
@@ -1582,6 +1737,7 @@ def _run(src, dst, write=True, integrate=True, env=None, collect=None):
                         have_t = True
                         tick_end = t + tick_ns
                         t_tick = t
+                        st_prev = t
                         bn += 1
                         bs0 += gx; bs1 += gy; bs2 += gz; bs3 += ax; bs4 += ay; bs5 += az
                         bq0 += gx * gx; bq1 += gy * gy; bq2 += gz * gz
@@ -1612,7 +1768,42 @@ def _run(src, dst, write=True, integrate=True, env=None, collect=None):
                         gap += dt
                         hn = 0
             if write:
-                ap(fmt % (sec, frac, px, py, pz, qx, qy, qz, qw))
+                if cr:
+                    if tok:
+                        tr = t
+                    if tr is not None and tr <= c_end:
+                        # ---- Step 6: smoothed error, linear in time inside the bracketing block ----
+                        while cj < cn - 1 and tr > cs1[cj]:
+                            cj += 1
+                        t0 = cs0[cj]
+                        t1 = cs1[cj]
+                        wt = 0.0 if t1 <= t0 or tr <= t0 else (tr - t0) / (t1 - t0)
+                        o = 12 * cj
+                        e0 = cev[o] + (cev[o + 6] - cev[o]) * wt
+                        e1 = cev[o + 1] + (cev[o + 7] - cev[o + 1]) * wt
+                        e2 = cev[o + 2] + (cev[o + 8] - cev[o + 2]) * wt
+                        ex = cev[o + 3] + (cev[o + 9] - cev[o + 3]) * wt
+                        ey = cev[o + 4] + (cev[o + 10] - cev[o + 4]) * wt
+                        ez = cev[o + 5] + (cev[o + 11] - cev[o + 5]) * wt
+                        th2 = (ex * ex + ey * ey + ez * ez) * 1.0 * 1.0
+                        if th2 < 1e-8:
+                            c = 1.0 - th2 / 8.0
+                            s = 0.5 * 1.0 * (1.0 - th2 / 24.0)
+                        else:
+                            th = sqrt(th2)
+                            c = cos(0.5 * th)
+                            s = sin(0.5 * th) * 1.0 / th
+                        kx = ex * s; ky = ey * s; kz = ez * s
+                        nw = c * qw - kx * qx - ky * qy - kz * qz
+                        nx = c * qx + kx * qw + ky * qz - kz * qy
+                        ny = c * qy - kx * qz + ky * qw + kz * qx
+                        nz = c * qz + kx * qy - ky * qx + kz * qw
+                        inv = 1.0 / sqrt(nw * nw + nx * nx + ny * ny + nz * nz)
+                        ap(fmt % (sec, frac, px + e0, py + e1, pz + e2, nx * inv, ny * inv, nz * inv, nw * inv))
+                    else:
+                        ap(fmt % (sec, frac, px, py, pz, qx, qy, qz, qw))
+                else:
+                    ap(fmt % (sec, frac, px, py, pz, qx, qy, qz, qw))
                 k -= 1
                 if not k:
                     w(b"".join(out))
@@ -1620,6 +1811,10 @@ def _run(src, dst, write=True, integrate=True, env=None, collect=None):
                     k = CHUNK
         if out:
             w(b"".join(out))
+    if smooth:
+        store["blocks"] = blocks
+        store["t_end"] = st_prev
+        store["d_end"] = sd_prev
     LAST["zupt_ticks"] = zupt_ticks
     LAST["ba"] = (bax, bay, baz)
     LAST["jam"] = (jg, ja)

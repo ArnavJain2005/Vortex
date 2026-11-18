@@ -187,15 +187,25 @@ def _traced_peak(src, dst):
         tracemalloc.stop()
 
 
-def test_memory_gate_bounded_and_flat(tmp_path):
-    """tracemalloc peak < 4 MB, and does not grow with flight length (3 min vs 15 min, SYNTHETIC)."""
-    short, long_ = tmp_path / "short.csv", tmp_path / "long.csv"
+def test_memory_gate_bounded_and_flat(tmp_path, monkeypatch):
+    """tracemalloc peak < 4 MB and does not grow with flight length (SYNTHETIC). Filter alone: flat from
+    3 min (3 vs 15 min). With the Step 6 smoother: its block store grows until it first fills
+    (SMOOTH_MAX_BLOCKS ticks, 256 s) and does not grow after that (9 vs 15 min; in the full suite on
+    18 Nov 2026: 1,590 vs 1,515 KB)."""
+    short, mid, long_ = tmp_path / "short.csv", tmp_path / "mid.csv", tmp_path / "long.csv"
     synth_euroc.write(short, rows=36_000, seed=0)
+    synth_euroc.write(mid, rows=108_000, seed=0)
     synth_euroc.write(long_, rows=180_000, seed=1)
-    p_short = _traced_peak(short, tmp_path / "o1.txt")
+    p_mid = _traced_peak(mid, tmp_path / "o1.txt")
     p_long = _traced_peak(long_, tmp_path / "o2.txt")
+    assert main.LAST["smooth_blocks"] is not None
     assert p_long < 4 * 2**20, p_long
-    assert p_long - p_short < 64 * 1024, (p_short, p_long)
+    assert p_long - p_mid < 64 * 1024, (p_mid, p_long)                  # no growth past the cap
+    monkeypatch.setattr(main, "SMOOTH_ON", False)
+    p_short = _traced_peak(short, tmp_path / "o3.txt")
+    p_long_off = _traced_peak(long_, tmp_path / "o4.txt")
+    assert p_long_off - p_short < 64 * 1024, (p_short, p_long_off)
+    assert p_long_off < p_long
 
 
 def _late_rest_file(path, before=11_000, rest=1_000, after=24_000, seed=7):
