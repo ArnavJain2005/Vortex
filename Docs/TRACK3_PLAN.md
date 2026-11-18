@@ -86,7 +86,7 @@ Deadline **22 Nov 2026, 11:59 PM IST**, confirmed by the FAQ (Q1 closed). Full-t
 | R4 | Envelope (V2 speed and volume sigmas) learned per flight instead of fixed values chosen on Machine Hall (`LEARN_ON`) | **Done (verified): OFF** by the pre-registered rule (17 Nov, rule at c1769cb): held-out APE 3.739 m vs floor 3.748 (passes), clean +6.7 % (fails); shipped output unchanged | Held-out mean APE <= never-moving floor; clean no worse |
 | R5 | Rotor drag (V3): drag rule v2 stages A and B as pre-registered (c1b594c) on V1_01..03; build V3 only if stage A passes | **Done (verified): NO-GO, V3 not built.** Stage A re-run 17 Nov reproduces the Step B result exactly (1 of 3 sequences pass, 2 needed); stage B not reached | Stage A on 2 of 3 Vicon Room 1 sequences |
 | R6 | Batch forward-backward smoother at the 0.25 s tick (`SMOOTH_ON`, Step E code in the reference) | **Done (verified): ON** by the pre-registered rule (18 Nov, rule at 8da205d): held-out APE -7.8 %, gap RMSE -10.7 %, clean -2.7 %; ported to `pathfinder.py`, bit-identical (max difference 0.0 on real files) | Held-out APE and gap RMSE improve >= 2 %; clean not worse |
-| R7 | TUM-VI: loader check and baseline; platform detector (multirotor / hand-held) from the accelerometer spectrum; hand-held envelope (`PLATFORM_ON`); V5 walking rhythm (time-boxed) | **Done (verified): ON** by the pre-registered rule (18 Nov, rule at 4064b3f): detector right on all 328 non-final files (multirotor >= 5.38, hand-held <= 0.160, threshold 1.0); held-out room3/4 seeds 7-9 APE 1.994 -> 1.127 m (-43.5 %; floor 1.164), gap -38.2 %, both rooms, clean -3.4 %; EuRoC byte-identical. V1 hand-held: not changed. V5: not started | Detector right everywhere; held-out APE -10 %, gap -5 %, both rooms; clean not worse > 5 % |
+| R7 | TUM-VI: loader check and baseline; platform detector (multirotor / hand-held) from the accelerometer spectrum; hand-held envelope (`PLATFORM_ON`); V5 walking rhythm (time-boxed) | **Done (verified): ON** by the pre-registered rule (18 Nov, rule at 4064b3f): detector right on all 328 non-final files (multirotor >= 5.38, hand-held <= 0.160, threshold 1.0); held-out room3/4 seeds 7-9 APE 1.994 -> 1.127 m (-43.5 %; floor 1.164), gap -38.2 %, both rooms, clean -3.4 %; EuRoC byte-identical. V1 hand-held: not changed. V5 (19 Nov): stopped at feasibility on room1/2, **off, not built** (direction from the acceleration axis at chance even with ground-truth attitude) | Detector right everywhere; held-out APE -10 %, gap -5 %, both rooms; clean not worse > 5 % |
 | F | Filter fixes from the 16-17 Nov reviews: gyro-bias cap on every still test (`BGCAP_ON`), covariance reset after injection (`RESET_ON`), refresh of the cached previous sample (`REFRESH_ON`), fallback velocity uncertainty (`P0V_ON`); four switches | **Done** (17 Nov): BGCAP, P0V, REFRESH pass and ship on; RESET fails (reading a APE +1.8 %) and ships off. Held-out mean APE 4.972 -> 4.962 m; floor 3.745 m | Each switch judged on 36 fresh held-out copies (seeds 4-6) by the no-harm rule |
 | L1 | Positions scaled about their centroid, alpha per gyro-noise class (`SHRINK_ON`); null floor = the estimate reversed in time (`eval_euroc.py --reverse`) | **Done (verified): OFF** by the pre-registered rule (18 Nov, rule at d56c875): both arms improve the mean objective (reading a -49.5 %, reading b -23.9 %) but fail sequence consistency (4 and 3 of 6); LO also loses to its reversed output. Shipped output unchanged | Each arm judged on 36 fresh held-out copies (seeds 7-9) |
 | Lean | Switched-off experiments moved from `pathfinder.py` to `tools/pathfinder_lab.py` (not shipped) to cut compile memory | **Done (verified)** 18 Nov: output byte-identical on all 144 real inputs; no-bytecode heap 6,055 -> 4,935 KB (3.14), 6,431 -> 6,309 KB (3.13); gate PASS | `tests/test_lab.py`; gates PASS |
@@ -1810,8 +1810,28 @@ us/row:
 - synthetic, Python 3.13: 940 / 2,252 / 6,309; 35.2 us/row
 The detector adds one pass over the file: synthetic +1.6 us/row against Step 6 (not separated from run-to-run noise); no-cache heap +223 KB (larger module).
 
-V1 hand-held: not changed (see above). V5 walking rhythm: not started in this step; it needs its own
-time-boxed session with a rule first.
+V1 hand-held: not changed (see above).
+
+**4. V5 walking rhythm (19 Nov, time-boxed to one session): stopped at feasibility on the tuning rooms; OFF, not
+built.** No held-out data and no seed was used; no rule was registered, because nothing reached a candidate
+setting. `python tools/v5_feasibility.py` (room1/room2 clean; reads mocap ground truth to judge the signals, an
+analysis tool, never an estimator input; `Docs/tumvi/v5-feasibility.json`):
+- Rhythm: present. A clear vertical-force peak in 87 % (room1) and 89 % (room2) of 4 s windows, at 1.00 and 1.75 Hz.
+  It says "walking", not "how fast": correlation with ground-truth speed is weak (step rate -0.12 / +0.17, bounce
+  +0.37 / +0.19), because the walker keeps an almost constant pace (mean about 1 m/s).
+- Direction (the plan's method: principal axis of the horizontal acceleration). Tested in the best case, with the
+  ground-truth attitude, against the ground-truth direction of travel (windows with mean speed >= 0.4 m/s; a
+  random axis gives median |cos| 0.71). Room1: 0.70 to 0.79 for 2 s and 4 s windows, raw or band-passed at the step
+  frequency: chance. Room2: 0.88 (2 s) and 0.99 (4 s, 19 windows of straight walking) raw, but 0.69 / 0.70 band-
+  passed: the axis comes from the walk's own speed changes on straight legs, not from the gait, and the windows
+  were picked with the ground-truth speed. With the filter's own attitude and the official noise it can only be
+  worse.
+- Speed (shipped build): room1 0.82 to 0.83 m/s against ground truth 0.96 (close); room2 0.24 to 0.29 against 1.07
+  (far too slow). So room2 has speed error a walking witness could remove, but only with a usable direction.
+Reading: a V5 velocity witness needs a direction, and the specified one carries none on room1 and only a selected
+subset on room2. Building the filter update, the port and a held-out rule on top would spend the time-box (and a
+seed set) on a feature that cannot pass. A speed-magnitude-only variant (along the filter's own velocity) was not
+built: on room2 the filter's direction is as unreliable as its speed.
 
 
 

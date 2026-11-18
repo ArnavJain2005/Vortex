@@ -103,6 +103,7 @@ python tools/judge_step3.py --name X --h-off TAG --h-on TAG --c-off TAG --c-on T
 python tools/judge_step4.py --h-on TAG --floor TAG --h-off TAG --c-off TAG --c-on TAG  # Step 4 rule (17 Nov: LEARN_ON OFF; held-out ties the floor, clean +6.7 %)
 python tools/platform_check.py [--identity N]                            # Step 7: detector on every non-final file (front end as in run()), EuRoC byte identity; Docs/tumvi/step7-detect.json (18 Nov: 328 files, 0 wrong)
 python tools/judge_step7.py                                               # Step 7 rule (18 Nov: PLATFORM_ON ON; held-out room3/4 APE 1.994 -> 1.127 m, floor 1.164)
+python tools/v5_feasibility.py                                            # Step 7 item 4 (19 Nov): V5 walking rhythm feasibility on room1/2 (reads mocap GT, analysis only): direction at chance; V5 off, not built
 python tools/end_rest.py [--official --seqs A,B]                          # Step 6: last still tick before the blind window (18 Nov: none near the end on MH/V1; no end anchor)
 python tools/judge_step6.py --h step6-H --c step6-C --floor step2-floor-off --r42 step6-R42  # Step 6 rule (18 Nov: SMOOTH_ON ON; held-out APE -7.8 %, gap -10.7 %, clean -2.7 %)
 python tools/tilt_eval.py --tag NAME [--main tools/ref_main.py --set TILT_ON=True] --seqs MH_01_easy_a_s1,...  # L2: roll/pitch error vs GT by phase; Docs/tilt/
