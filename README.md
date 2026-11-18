@@ -17,6 +17,8 @@
 
 ---
 
+> **Official-script held-out result:** Vortex is level with a never-moving trajectory under reading **b** (3.744 vs 3.745 m mean SE(3) APE) and worse under reading **a** (6.181 vs 3.745 m). Across both column readings: **4.962 vs 3.745 m**. It has not demonstrated useful motion recovery. [Recorded results](Docs/RESULTS.md) · [decision log](Docs/TRACK3_PLAN.md).
+
 ## The challenge
 
 An aircraft must navigate without GPS or cameras while its IMU becomes less reliable: noise and bias grow, readings disappear for up to two seconds, and the sensor eventually fails. The task is to reconstruct a **6-DoF pose for every input IMU row**, including the five seconds after failure, from a EuRoC-format `imu0/data.csv` alone. The evaluator uses EuRoC MAV and TUM-VI sequences with hidden ground truth.
@@ -27,83 +29,106 @@ An aircraft must navigate without GPS or cameras while its IMU becomes less reli
 
 The organisers' FAQ (17 Nov 2026) settled the open points: Python only (`main.py`; `main.cpp` is not accepted), the 8 MB limit is measured at algorithm / heap level rather than process RSS, non-causal smoothing is allowed, scoring uses SE(3) Umeyama alignment, dropouts are physically missing rows, and test data is any EuRoC or TUM-VI sequence degraded with their `degrade_imu.py`.
 
-Small attitude and bias errors grow rapidly under inertial integration. Vortex anchors calibration on a detected still interval, then combines inertial integration with a detected-stillness constraint (V1) and a flight-envelope **motion prior** (V2), which on every tick pulls velocity toward zero and position toward a slow-moving centre of the estimate's own recent track. V2 bounds drift; it is an assumption about the platform, not an independent measurement of motion. The current build also handles dropouts, detects zero or stuck IMU failure, and forecasts through missing data. On five **clean** EuRoC Machine Hall sequences, the mean of the five per-sequence SE(3)-aligned translational APE RMSEs is **4.84 m**, against 5.25 m for a never-moving trajectory; the per-sequence results below show this is not evidence of useful motion recovery, which remains an open problem. The estimator uses no camera, GPS, barometer, ground truth, or pretrained model.
+Small attitude and bias errors grow rapidly under inertial integration. Vortex uses two IMU-only velocity witnesses: **V1 stillness** and **V2 flight envelope**. V2 pulls velocity towards zero and position towards a running centre of the estimate; it bounds drift but is a prior, **not an independent motion measurement**. No camera, GPS, barometer, ground truth or pretrained model enters the estimator.
 
 ## Architecture
 
-**Implemented in the standalone submission entry point:**
+**Shipped Python path:**
 
 ```mermaid
 flowchart TD
-    A["EuRoC-format IMU CSV"] --> B["Stillness calibration in first 60 s"]
-    B --> C["Pre-anchor attitude + held position"]
-    B --> D["Forward strapdown + V1/V2 filter"]
-    D --> E["Gap and dead-sensor forecast"]
-    C --> F["One 6-DoF pose per input row"]
-    E --> F
+    A["IMU CSV"] --> B["Input front end"]
+    B --> C["Stillness calibration"]
+    C --> D["Pre-anchor attitude + held position"]
+    C --> E["Strapdown + 15-state V1/V2 filter"]
+    E --> F["Gap and blind forecast"]
+    D --> G["One pose per input row"]
+    F --> G
 ```
 
-`main.py` is the small submission launcher; it imports the standard-library estimator in [`pathfinder.py`](pathfinder.py). The estimator finds the longest usable still run in the first 60 seconds to estimate tilt, gravity magnitude, and gyro bias; when the strict test fails, a noise-tolerant second pass tries to recover a rest before falling back to first-second initialization. Before the anchor it holds position and integrates attitude backward. After the anchor it streams trapezoidal inertial integration through a 15-state error-state Kalman filter. Every input data row receives a pose. The [readable reference filter](vortex/core/witness.py) and optimized implementation agree exactly on recorded synthetic and real MH cases.
+`main.py` launches the standard-library estimator in [`pathfinder.py`](pathfinder.py). The **input front end** detects IMU column order, timestamp scale and acceleration units from the file, canonicalising non-standard input beside the output. It handled the eight clean sequences and 64 official-script copies in the [Step 2 record](Docs/TRACK3_PLAN.md); degrees/second versus fast radians/second motion cannot be resolved automatically. The estimator calibrates gravity, tilt and gyro bias on a still interval, holds pre-anchor position, and then runs a 15-state error-state Kalman filter. Missing rows increase uncertainty; exact zero/stuck failures and invalid samples trigger a 0.5 s velocity-decay forecast. Step F adds a gyro-bias cap, fallback velocity uncertainty and cached-sample refresh.
 
-The forward filter uses **V1 stillness** (zero-velocity and gyro-bias updates) and **V2 flight envelope** (speed and running-position-volume constraints). Dropouts add covariance; invalid, zero, and exactly stuck sensor rows coast with velocity decaying toward zero on a 0.5 s time constant. V2's values were chosen on MH_01/02; learning them from each healthy flight is still pending. The noise meter exists but is switched off after its validation rule failed. See the [implementation plan](Docs/TRACK3_PLAN.md).
-
-| IMU-only cue | Role | Status |
+| IMU-only cue | Role | Shipped state |
 |---|---|---|
-| V1 · Stillness | Zero-velocity and gyro-bias updates at detected rests | **On**; no in-flight rest on these MH runs |
-| V2 · Flight envelope | Speed prior and position constraint around a running centre | **On**; primarily responsible for bounded drift, but flattens real motion |
-| V3 · Rotor drag | Potential body-frame velocity from multirotor acceleration | **Off:** original rule returned NO-GO; a revised rule awaits Vicon Room validation |
-| Turn physics, walking rhythm, tilt response | Conditional cues for motion and platform | Future experiments; require held-out gains and budget checks |
+| V1 · Stillness | Zero-velocity and gyro-bias updates | **On**; little in-flight rest on MH |
+| V2 · Flight envelope | Speed and running-centre position priors | **On**; bounds drift but can flatten real motion |
+| V3 · Rotor drag | Proposed in-flight velocity cue | **Not built**; both registered signal rules returned NO-GO |
+| Turn physics, walking rhythm, tilt response | Conditional research ideas | Not shipped |
 
-After-rest MH rotor-drag fits are exploratory; the revised, pre-registered rule requires Vicon Room data and a separate estimator gain before V3 can ship. A denoised V1 variant also failed its held-out improvement rule and remains in the reference implementation only. See the [drag study](Docs/DRAG.md) and [plan](Docs/TRACK3_PLAN.md).
+The [reference filter](vortex/core/witness.py) retains rejected experiments. Presence in source does not mean a feature is enabled.
+
+### Switches
+
+Every `*_ON` assignment in the shipped `pathfinder.py` at `33b841e`:
+
+| Switch | State | Reason and record |
+|---|---|---|
+| `FRONT_ON` | **On** | Input format detection; [Step 2](Docs/TRACK3_PLAN.md). |
+| `CAL_NOISE_ON` | **On** | Noise-tolerant still calibration fallback; [Step 6e](Docs/TRACK3_PLAN.md). |
+| `BGCAP_ON` | **On** | Caps false stillness during steady rotation; [Step F](Docs/TRACK3_PLAN.md). |
+| `P0V_ON` | **On** | Wider initial velocity uncertainty without an anchor; [Step F](Docs/TRACK3_PLAN.md). |
+| `REFRESH_ON` | **On** | Refreshes cached sample after correction; [Step F](Docs/TRACK3_PLAN.md). |
+| `V1_ON` | **On** | Stillness witness; [Step 7a](Docs/TRACK3_PLAN.md). |
+| `V2_ON` | **On** | Speed prior; [Step 7a](Docs/TRACK3_PLAN.md). |
+| `V2P_ON` | **On** | Running-centre position prior; [Step 7a](Docs/TRACK3_PLAN.md). |
+| `GAP_ON` | **On** | Dropout covariance; [Step 6c](Docs/TRACK3_PLAN.md). |
+| `DEAD_ON` | **On** | Exact zero/stuck failure detection; [Step 8a](Docs/TRACK3_PLAN.md). |
+| `FC_ON` | **On** | Velocity decay during gaps and blind phase; [Step 8a](Docs/TRACK3_PLAN.md). |
+| `JAM_ON` | **Off** | Noise meter failed its rule; [Step 6c](Docs/TRACK3_PLAN.md). |
+| `RESET_ON` | **Off** | Covariance reset worsened held-out APE; [Step F](Docs/TRACK3_PLAN.md). |
+| `LEARN_ON` | **Off** | Per-flight envelope tied the degraded floor but raised clean APE 6.68%; [Step 4](Docs/TRACK3_PLAN.md). |
+| `FF_STUCK6_ON` | **Off** | Stuck-row rejection failed held-out checks; [Step 3](Docs/TRACK3_PLAN.md). |
+| `FF_SPIKE_ON` | **Off** | Spike rejection did not improve held-out APE; [Step 3](Docs/TRACK3_PLAN.md). |
+| `INTERP_ON` | **Off** | Interpolation worsened aggregate and reading-a scores; [Step 3](Docs/TRACK3_PLAN.md). |
+| `SHRINK_ON` | **Off** | Both shrinkage arms failed registered conditions; [Step L1](Docs/TRACK3_PLAN.md). |
+
+A forward-backward smoother and denoised V1 remain **off in the reference only**. An experimental per-row sigma did not rank error and is not submitted as calibrated confidence ([coverage study](Docs/COVERAGE.md)).
 
 ## Measured results
 
-**Five clean EuRoC Machine Hall sequences · whole-trajectory SE(3) aligned APE and 1 s RPE (metres).** MH_01/02 informed settings; MH_03–05 were used for held-out checks. These are recorded local runs, not hidden-evaluator scores.
+**Primary scoreboard — organisers' degradation script, held-out MH_03–05 and V1_01–03, readings a and b, seeds 4–6 (36 copies).** APE is the mean per-copy translational RMSE after SE(3) alignment fitted on each run. Reading **a** feeds raw gyro-first EuRoC columns to the script; reading **b** feeds accelerometer columns first. The actual evaluator order (Q9) remains unknown. [Step F](Docs/TRACK3_PLAN.md) · [generated results](Docs/RESULTS.md).
 
-| Estimator | Mean APE ↓ | Mean 1 s RPE ↓ | Reading |
-|---|---:|---:|---|
-| Never-moving trajectory | **5.25** | **0.878** | Essential sanity floor for these small-area flights |
-| Step 6b · calibrated dead reckoning | 732.78 | 26.768 | Still interval corrects the moving-start gyro-bias failure, but drift grows |
-| Step 7a · V1 + V2 | 5.29 | 0.936 | Drift bounded, but worse than the stationary floor |
-| **Current · pre-anchor hold + calibration fallback** | **4.84** | **0.854** | Below the floor on the five-sequence mean; MH_02 gives 40% of that margin |
+| Held-out input | Vortex APE ↓ | Never-moving APE ↓ | Blind 5 s RMSE: Vortex / floor ↓ |
+|---|---:|---:|---:|
+| Reading a · 18 copies | **6.181 m** | **3.745 m** | 11.148 / 2.504 m |
+| Reading b · 18 copies | **3.744 m** | **3.745 m** | 2.836 / 2.504 m |
+| **Both · 36 copies** | **4.962 m** | **3.745 m** | **6.992 / 2.504 m** |
 
-Current per-sequence APE: **MH_01 3.91 m · MH_02 3.85 m · MH_03 3.53 m · MH_04 6.38 m · MH_05 6.55 m**. Holding position before the anchor improves MH_02, a tuning sequence, from 5.97 to 3.85 m (95% of that change's gain). On MH_03–05 the effect is within about 0.6%, so the mean's small edge over the stationary floor is **not evidence of general motion reconstruction**. V2 drives the large gain over dead reckoning; V1 adds little during MH flight because it mainly fires at the ground rest. The [generated results ledger](Docs/RESULTS.md) includes the per-sequence scores and ablations.
+**Vortex does not beat standing still on the official degradation.** Reading b is effectively tied on APE; reading a and blind windows are worse. The input front end recognises the order, but it cannot undo accelerometer-sized faults applied to gyro columns under reading a. Ground truth is used only for scoring.
 
-**Organisers' degradation script (17 Nov, [baseline table](Docs/STEP2_BASELINE.md)):** on held-out sequences (MH_03–05, V1_01–03), copies made with the official `degrade_imu.py`, APE with SE(3) fitted on each run: with columns fed accelerometer first (reading b, seeds 1–3) the estimator scores **3.86 m against 3.75 m for a never-moving trajectory**; with the raw gyro-first EuRoC file fed straight in (reading a, the script then puts accelerometer-sized faults on the gyro) it scores **6.31 m against 3.75 m**. Both are worse than standing still; closing that gap is the current work. Which column order the organisers use is unknown, so both are tested.
+Clean-data history illustrates the limitation: across five clean MH sequences the estimator recorded **4.84 m** mean SE(3) APE versus **5.25 m** for never-moving, with much of the margin on MH_02, a tuning sequence. V2 is a prior rather than a measurement of velocity. Results from the project's own placeholder fault injector are historical workflow evidence and **not a proxy for the organisers' script**. [Clean results](Docs/RESULTS.md) · [Step 6d](Docs/TRACK3_PLAN.md).
 
-**Seeded degradation with our own placeholder fault model (history, not evidence: it does not match the organisers' `degrade_imu.py`; re-baselining on the official script is under way):** the current entry point passed the output contract on **60 degraded MH copies**; their recorded mean APE is **6.223 m**, 1 s RPE **1.084 m**, and five-second blind-window error growth **5.057 m**. These copies mix seeds and healthy-window lengths; the figures are not official challenge scores. In a separate held-out study of **54 seeded failure windows** on MH_03–05, with dead detection enabled in both readings, the 0.5 s velocity-decay forecast reduced mean blind growth from **8.643 to 4.368 m (49.5%)** against constant-velocity coasting; the blind RMSE fell from 8.380 to 7.137 m. This forecast primarily limits *new* error during failure; error already accumulated before failure remains. See the [degraded results](Docs/RESULTS.md) and [blind study](Docs/BLIND.md).
+**A negative control:** Step L1 trust-scaled shrinkage reduced the reading-a objective from **143.17 to 72.35**, but improved only **four of six** sequences where five were required. Its time-reversed output scored **69.75**, better than 72.35. Shrinking an estimate can improve SE(3)-aligned scores without demonstrating motion information. **`SHRINK_ON` remains off.** [Step L1](Docs/TRACK3_PLAN.md).
 
-| Other check | Recorded outcome |
+| Other recorded check | Outcome |
 |---|---|
-| Output and equivalence | All five MH runs pass the row contract; optimized `main.py` matches the reference on those sequences and synthetic cases ([tests](tests/test_core_equivalence.py)) |
-| Latest automated suite | **230 passing tests**, Windows/Python 3.14 (17 Nov) ([plan](Docs/TRACK3_PLAN.md)) |
-| Real MH_01 efficiency | **2.34 ms per IMU-second**, 11.7 µs/row, **1.06 MB heap peak** (tracemalloc over the whole run) on Windows/Python 3.14 ([budget ledger](Docs/BUDGET.md)) |
-| Submission packaging | Python-only bundle verified on Python 3.13/3.14 and its Docker image checked on MH_01 (17 Nov); earlier: same output bytes on all 65 clean and degraded MH inputs ([bundle guide](bundle/README.md)) |
-| Synthetic scoring cross-check | Worst reported difference **4.2 × 10⁻⁷ m** from independently installed evo ([ledger](Docs/EVO_CROSSCHECK.md)) |
+| Automated tests | **310 passed**, Windows/Python 3.14.7, 18 Nov; recorded, not rerun for this documentation change ([Step L1](Docs/TRACK3_PLAN.md)) |
+| Latest official-copy budget | **2.89 ms per IMU-second**; **1,117 KB** traced whole-run heap with matching bytecode, **6,055 KB** without, Windows/Python 3.14.7 ([Step L1 row](Docs/BUDGET.md)) |
+| V3 rotor drag | Revised rule passed only one of three Vicon Room 1 sequences; V3 **not built** ([Step 5](Docs/TRACK3_PLAN.md)) |
+| Per-row confidence | Reference sigma did not rank error on MH_01/02 tuning data: Spearman **−0.07** over 344,494 scored rows; no calibrated confidence claimed ([coverage](Docs/COVERAGE.md)) |
+| Submission bundle | Python-only launcher, estimator, version-matched bytecode, Dockerfile and manifest ([guide](bundle/README.md)) |
 
-The launcher loads matching, hash-checked bytecode shipped in the bundle. That matters for the heap too: without matching bytecode Python compiles the estimator first, and the parser and compiler add 4.4 to 6.3 MB to the traced heap (still under 8 MB); output stays identical. Compute is within the 20 ms/IMU-second limit on the measured laptop. Whole-process RSS (11 to 12 MiB, the interpreter included) is reported for the record but is not what the organisers measure. A plausible-noise or slowly freezing failure can evade the current dead-sensor detector. TUM-VI accuracy and real Galaxy S24 operation remain unverified. An earlier C core (`main.cpp`, 2.7 MB RSS) is kept in the repository as a recorded experiment and is not submitted.
-
-**Confidence study:** a per-row position sigma exists in the reference analysis, but it did not rank error on the MH_01/02 tuning set (Spearman correlation **−0.07** over 344,494 scored rows). It is not in the submission entry point, and no calibrated per-row confidence is claimed ([coverage ledger](Docs/COVERAGE.md)).
+The recorded 20 ms/IMU-second and 8 MB **heap** gates pass on the measured machine. Whole-process RSS includes the interpreter and is not the organisers' memory metric. Without matching bytecode, compilation raises the traced heap; the latest 3.13 no-cache reading is **6,431 KB**, still under 8 MB ([budget](Docs/BUDGET.md)). TUM-VI and untouched Vicon Room 2 have not been evaluated. L2 slow gravity alignment, L3 blind-window start state and submission hardening remain planned ([plan](Docs/TRACK3_PLAN.md)).
 
 ## Run Vortex
 
-Python 3.10+; `main.py` and `pathfinder.py` use only the standard library. Analysis and test tools use `pyproject.toml` dependencies.
+Python 3.12 is sufficient for the submission entry point; `main.py` and `pathfinder.py` use the standard library. Analysis and tests need the dependencies in `pyproject.toml`. Run these commands from the repository root.
 
 ```bash
 python -m pip install -e '.[dev]'
 pytest
 
-# Format and output-contract smoke test; this is synthetic, not a flight.
+# Synthetic format and output-contract check, not a navigation benchmark.
 python tools/synth_euroc.py imu.csv --rows 36000 --seed 0
 python -S main.py imu.csv estimated_trajectory.txt
 python -m vortex.check_output imu.csv estimated_trajectory.txt
 ```
 
-The checker should report `PASS: 36000 input rows, 36000 output rows`. The synthetic file exercises parsing and output; it does not establish navigation accuracy.
+The checker should report `PASS: 36000 input rows, 36000 output rows`. `python -S` skips site-package initialisation for the standard-library launcher; it does **not** provide a matching cached bytecode file. A source-only checkout still runs but incurs a higher compilation heap peak.
 
-For the submission artifact, [stage and verify the bundle](bundle/README.md) with `tools/make_bundle.py`. Run its `stage` step once under each Python version whose cached bytecode you want to include (tested: 3.12, 3.13, 3.14); `python tools/make_bundle.py zip --name NAME` creates `dist/NAME.zip`, and `python tools/make_bundle.py verify dist/NAME.zip` checks it. The bundle also includes a [Dockerfile](bundle/Dockerfile). A plain source checkout runs without staged bytecode, but has higher peak RSS.
+For the [submission bundle](bundle/README.md), run `python tools/make_bundle.py stage` under each target Python version, then `python tools/make_bundle.py zip --name NAME` and `python tools/make_bundle.py verify dist/NAME.zip`. Replace `NAME` with the submission name when known. Verification runs under the current interpreter. The bundle includes a [Dockerfile](bundle/Dockerfile).
 
-For a local EuRoC sequence, put `MH_01_easy` under the ignored `data/euroc/` directory ([data setup](Docs/DATA.md)). The data is not committed:
+EuRoC data and ground truth are **not shipped**. With a locally downloaded sequence under `data/euroc/` ([data setup](Docs/DATA.md)):
 
 ```bash
 python -S main.py data/euroc/MH_01_easy/mav0/imu0/data.csv estimated_trajectory.txt
@@ -111,26 +136,25 @@ python -m vortex.check_output data/euroc/MH_01_easy/mav0/imu0/data.csv estimated
 python score.py --gt data/euroc/MH_01_easy --est estimated_trajectory.txt
 ```
 
-To reproduce the five-sequence clean-data table with locally downloaded MH data and ground truth:
+The clean-data evaluator also requires local sequences and ground truth; its tag writes JSON and rebuilds `Docs/RESULTS.md`:
 
 ```bash
-python tools/eval_euroc.py --tag my-current-clean --seqs MH_01_easy,MH_02_easy,MH_03_medium,MH_04_difficult,MH_05_difficult
+python tools/eval_euroc.py --tag local-clean --seqs MH_01_easy,MH_02_easy,MH_03_medium,MH_04_difficult,MH_05_difficult
 ```
 
-This writes a tagged JSON record under `Docs/results/` and rebuilds `Docs/RESULTS.md`. Choose a new tag to keep the recorded runs intact.
-
-To create a reproducible degraded copy and score the healthy, degraded, dropout, and blind windows, use the [fault injector](vortex/degrade.py) and [evaluator](tools/eval_euroc.py):
+This is a **project-placeholder fault model**, useful for a workflow check but not interchangeable with the organisers' `degrade_imu.py`:
 
 ```bash
 python -m vortex.degrade data/euroc/MH_01_easy data/degraded/MH_01_easy_s1 --seed 1
-python tools/eval_euroc.py --tag my-current-degraded --degraded --seqs MH_01_easy_s1
+python tools/eval_euroc.py --tag local-placeholder --degraded --seqs MH_01_easy_s1
 ```
 
-The evaluator checks row coverage. These fault levels are project placeholders and do not match the organisers' `degrade_imu.py`; the official-script harness replaces them.
+The official script and FAQ files are not committed. The [official baseline](Docs/STEP2_BASELINE.md), [generated results](Docs/RESULTS.md) and [plan](Docs/TRACK3_PLAN.md) record both column readings; reproducing their official-copy scores requires that local script and data.
 
 ## Research notes
 
-- [Track 3 plan](Docs/TRACK3_PLAN.md) — current stage, real-sequence diagnostics, design, and acceptance criteria.
+- [Track 3 plan](Docs/TRACK3_PLAN.md) — registered decisions, open Q9 and next steps.
+- [Official-script baseline](Docs/STEP2_BASELINE.md) — original held-out floor comparison.
 - [Generated results](Docs/RESULTS.md) — clean and seeded degraded EuRoC metrics, stationary floor, and ablations.
 - [Blind-window study](Docs/BLIND.md) — dead-sensor detection and five-second forecast comparisons.
 - [Confidence coverage](Docs/COVERAGE.md) — why the experimental per-row sigma is not reported as calibrated confidence.
@@ -140,6 +164,6 @@ The evaluator checks row coverage. These fault levels are project placeholders a
 - [Scorer cross-check](Docs/EVO_CROSSCHECK.md) — evo comparison on synthetic trajectories.
 - [Data instructions](Docs/DATA.md) and [third-party notices](THIRD_PARTY.md) — datasets stay outside the repository.
 
-**Current solo entrant:** Arnav Jain. Vortex is a submission to the Samsung PRISM XR Hackathon Challenge 2026. Samsung Research and Samsung PRISM marks identify the challenge context.
+**Current solo entrant:** Arnav Jain · **Submission name:** `[TEAM_NAME]` · **College:** `[COLLEGE_NAME]`. Samsung Research and Samsung PRISM marks identify the challenge context; Vortex is Arnav's current solo entry.
 
 <sub>Project code: [MIT](LICENSE). Brand marks are Samsung's; [Research mark](https://cdn.codeground.org/nsr/images/layout/logo-sr.png) and [PRISM mark](https://www.samsungprism.com/assets/images/prism_logo.png) are reproduced from their official sites.</sub>
