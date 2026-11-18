@@ -163,7 +163,8 @@ def build(est: dict, flo: dict, ce: dict, cf: dict, calib: dict | None = None) -
         "fitted on the run being scored. RPE 1 s = relative translation error over 200 frames. "
         "Gap = mean RMSE inside missing-row bursts (>= 5 rows). Blind = RMSE over the last 5 s "
         "(exact zeros). Official copies: the organisers' `degrade_imu.py` via `tools/official_degrade.py` "
-        "(`--root data/tumvi`, seeds 1..3 only; seeds 7..12 are generated on disk and held out for Claude Code). "
+        "(`--root data/tumvi`, seeds 1..3 evaluated here; seeds 1..3 and 7..15 exist on disk under `data/official_tumvi/`; "
+        "seeds 7..9 are spent, seeds 10..15 are reserved for Claude Code's two judging rules, and seeds 16..18 are not generated and reserved for Claude Code). "
         "Tuning rooms: `room1`, `room2`; held out: `room3..room6` (`BG_MAX = %.2f rad/s`)."
         % (est.get("commit", "?"), pf.BG_MAX),
         "",
