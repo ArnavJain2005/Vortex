@@ -2,7 +2,7 @@
 
 **18 Nov 2026 (IST) · Arnav Jain (solo entrant) · supersedes "Vortex: Track 3 PRD, Plan of Action and Checklist" (15 Nov, `Vortex_Track3_PRD.pdf`)**
 
-Repository: github.com/ArnavJain2005/Vortex, `main` at 6f0f638 (merge of PR #48, Step F). This file lives at
+Repository: github.com/ArnavJain2005/Vortex, `main` at 33b841e (merge of PR #50, Step L1, 18 Nov 03:12 IST). This file lives at
 `Docs/PRD.md`; `Docs/TRACK3_PLAN.md` stays the step-by-step running record, `CLAUDE.md` the working rules.
 **Revised 18 Nov after ChatGPT's red-team review (C1):** L1 maths and centre variants made explicit, L2 redesigned as a slow
 gravity alignment, L3 detailed, judging rule made paired and sequence-level, cut order added (section 3.1). Where this
@@ -83,6 +83,8 @@ V3 rotor drag (NO-GO, rule v2), denoised V1 (7b), per-row confidence W6 (rank co
 RTS smoother (Step E, worse APE on the tuning set), noise meter `JAM_ON` (failed rule v2 on our old fault model;
 **never judged on the official script**), stuck/spike/interpolation front end (Step 3), covariance reset (Step F).
 
+**Added 18 Nov (PRs #49, #50):** the per-flight learned envelope (Step 4, `LEARN_ON`) ships off (held-out ties the floor, clean +6.7 %); the drag rule v2 re-run reproduces NO-GO and V3 is not built (Step 5); shrinkage about the centroid (Step L1, `SHRINK_ON`) was built, tuned on MH_01/02 and judged on seeds 7–9: both arms **failed** the pre-registered rule (4 of 6 and 3 of 6 sequences improved, 5 needed; arm LO also failed to beat its own time-reversed output, 72.35 vs 69.75). Reading a improved on the objective (143.17 to 72.35) but not credibly beyond what the alignment can fit. Shipped output is byte-identical to Step F. `pytest`: 310 passed (Windows, Python 3.14.7). **Seeds 7–9 are spent.**
+
 ## 3. Strategy for the last four days
 
 **Principle: never worse than standing still; better wherever the IMU still carries information.** A navigator that
@@ -96,7 +98,7 @@ Levers, in priority order (each a switch, default off, built in `vortex/core` fi
 
 | # | Lever | Why it should help | Points it targets | Owner |
 |---|---|---|---|---|
-| **L1** | **Trust-scaled shrinkage** `SHRINK_ON`: output position = c + α·(p − c), c the running (or whole-run) centre, α ≤ 1 from a fixed constant (L1a) or from the measured IMU noise level (L1b) | Under SE(3)-aligned ATE a constant scores the GT spread; our estimate carries weak signal plus a lot of noise, so a shrink factor below 1 should beat both. It also caps the blind and end-of-file error where severity is highest | Waypoints 30, blind 20, dropouts 10 | Claude Code |
+| **L1 (DONE 18 Nov, FAILED, ships off)** | **Trust-scaled shrinkage** `SHRINK_ON`: output position = c + α·(p − c), c the running (or whole-run) centre, α ≤ 1 from a fixed constant (L1a) or from the measured IMU noise level (L1b) | Under SE(3)-aligned ATE a constant scores the GT spread; our estimate carries weak signal plus a lot of noise, so a shrink factor below 1 should beat both. It also caps the blind and end-of-file error where severity is highest | Waypoints 30, blind 20, dropouts 10 | Claude Code |
 | **L2** | **Slow gravity alignment + gyro noise meter** `TILT_ON`: over a 10–20 s window the vehicle's mean world-frame acceleration is near zero (velocity is bounded), so the mean world-frame specific force must point along gravity; the residual corrects roll/pitch, weighted by the measured gyro jamming. Not an instantaneous accelerometer tilt | Under reading a the gyro is jammed and attitude is lost; the windowed residual is biased only by Δv/(g·T), about 1° for a 2 m/s change over 12 s | Waypoints, dropouts (reading a) | Claude Code |
 | | *Why not instantaneous tilt* | On a multirotor the accelerometer mostly measures thrust along body z plus drag, not gravity (Leishman et al.), so an instantaneous tilt reading erases the true 5–20° tilt (a g·sin θ projection error of 0.85–3.4 m/s², calculated, not measured on EuRoC). **L2 is the first lever cut** if its gain is unclear | | |
 | **L3** | **Blind window from a trusted state**: compare a few fixed lookback windows before the zero run (chosen on tuning), fit position and velocity robustly to the trusted states, pull velocity toward zero as trust falls, hold the last reliable attitude | Blind RMSE is set by the error at failure, not by the forecast; no window can remove an absolute offset that is unobservable | Blind 20 | Claude Code |
@@ -105,9 +107,9 @@ Levers, in priority order (each a switch, default off, built in `vortex/core` fi
 
 **Judging protocol (revised 18 Nov).** Seeds 1–3 decided Step 3 and seeds 4–6 decided Step F, so they are spent.
 The 36 copies per seed set are only **6 trajectories**, so every rule is paired and sequence-level:
-- **Rule G (L2, then L1)**, committed with every candidate setting frozen before one held-out run on **seeds 7–9**
+- **Rule G (L2)**, committed with every candidate setting frozen before one held-out run on **seeds 10–12** (seeds 7–9 were spent by L1)
   (MH_03..05, V1_01..03 × readings a, b), plus TUM-VI room3/room4 as a separate block once they exist.
-- **Rule H (L3)**, committed before one held-out run on **seeds 10–12**. Seeds 13–15 are the only reserve.
+- **Rule H (L3)**, committed before one held-out run on **seeds 13–15**. Seeds 16–18 are the reserve. Fresh seeds are not fresh trajectories: every MH/V1 seed reuses the same 6 flights, so adaptive overfitting at flight level is real. The only untouched data are TUM-VI room3/room4 and Vicon Room 2 (final table).
 - Ship conditions: held-out mean APE improves ≥ 2 % **and** the paired gain is positive on at least 4 of the 6 held-out
   sequences (readings pooled per sequence); neither reading worse by > 1 %; gap and blind RMSE not worse by > 2 %; clean
   mean APE not worse by > 0.5 %; contract PASS on every run; budget gates PASS. Rule H judges blind RMSE instead of APE
@@ -165,8 +167,12 @@ only when Arnav says "run the final table".
 |---|---|---|
 | Estimator (`pathfinder.py`, `main.py`, `vortex/core/*`), judging tools, `Docs/TRACK3_PLAN.md`, `Docs/RESULTS.md`, `Docs/BUDGET.md`, `README.md`, `CLAUDE.md`, `Docs/PRD.md`, `Docs/NUMBERS.md`, bundle and zips | **Claude Code** | Main clone, branches `track3/step*` |
 | TUM-VI and V2 downloads, `--root` option on `tools/eval_euroc.py` and `tools/official_degrade.py`, `Docs/TUMVI_BASELINE.md`, `tools/replay.py` + replay HTML, demo footage, clean-machine verification of the zip, video assembly | **Gemini (Antigravity)** | Separate git worktree `../Vortex-ag`, branches `ag/*` |
-| Technical red-team review, organiser email (Q9), deck, video script and narration, jury Q&A, README wording suggestions | **ChatGPT** | Chat only; no repo writes |
+| Independent tester and writer. **Repo:** `tests/independent/*` (black-box contract and adversarial tests), `tools/ape_check.py` (second, independently written scorer), `Docs/METHOD.md`, `Docs/NEGATIVE_RESULTS.md`, README.md draft (Claude Code verifies and commits it). **Chat:** pre-registration audits, PR claim audits, red-team review, Q9 email, deck, video script and shot list, jury Q&A | **ChatGPT** | Outputs complete files; Arnav commits them in worktree `../Vortex-gpt` on `gpt/*` branches; Claude Code reviews; never pushes itself |
 | Decisions, merges, sending email, voice-over, Google Form | **Arnav** | — |
+
+**README ownership (18 Nov):** ChatGPT writes the full README.md text from the repo's own docs and a change log naming a source for every changed claim; Arnav drops it into a `docs/readme-final` branch; Claude Code checks every number against `Docs/NUMBERS.md` or the Docs ledgers and commits it. Claude Code does not rewrite the README itself.
+
+**ChatGPT in the repo (18 Nov evening):** every existing test was written by the agent that wrote the estimator. ChatGPT writes a second, black-box suite from the organisers' spec alone and a second scorer from evo's definition, so shared assumptions get caught. Failing tests are committed as `xfail(strict=True)` findings, never weakened; Claude Code decides bug vs test. From Fri 20, `tests/independent` gates every merge and v1.0; `tools/ape_check.py` must agree with `tools/eval_euroc.py` within 1 mm before any further judging.
 
 ### Rules all three follow
 
@@ -188,9 +194,9 @@ only when Arnav says "run the final table".
 | When (IST) | Claude Code | Antigravity | ChatGPT | Arnav |
 |---|---|---|---|---|
 | **Wed 18, evening** | K0: commit this PRD, freeze **v0.9 zip** of `main`. K1: L1 shrinkage in the reference, tuning curves on MH_01/02 seeds 1–3 | G1: download TUM-VI room1..6 (512_16, EuRoC export) and V2_01..03; extract IMU + ground truth only | C1: red-team this PRD and L1/L2 maths. C2: draft the Q9 email | Send the Q9 email; start Antigravity on G1 |
-| **Thu 19, evening** | K2: L2 slow gravity alignment + gyro noise meter, tuning. L3 built and tuned. Write rule G (L2, L1) and rule H (L3) | G1 cont.: `--root` option, TUM-VI official copies (room1..4 × a, b × seeds 1–3, 7–9, 10–12), baselines, `Docs/TUMVI_BASELINE.md`; PR merged by 11 PM | C3: deck v1 (structure + text, placeholders) | Merge the G1 PR (the C1 review is already folded into this PRD and the prompts) |
-| **Fri 20** | AM: judge rule G on seeds 7–9 + TUM-VI room3/4. PM: judge rule H (L3) on seeds 10–12; TUM-VI no-harm fixes if the baseline shows failures. **9 PM: freeze v1.0** | G2: `tools/replay.py` (self-contained HTML), verified in the browser on MH_03 and room3 | C4: video script and shot list (2:45) | Review the verdicts; merge |
-| **Sat 21** | K5: L4 hardening (strip off-switches, compile heap), `Docs/NUMBERS.md`, README and RESULTS refresh. On Arnav's word: **final table on V2_01..03** | G3: footage (terminal run, checker, benchmark gate, replay page); G4: clean-machine check of the v1.0 zip (fresh venv + Docker) | C5: deck v2 with real numbers from `NUMBERS.md`; narration | Record voice-over; **6 PM: submission-ready checkpoint** |
+| **Thu 19, evening** | K2: L2 slow gravity alignment + gyro noise meter, tuning. L3 built and tuned. Write rule G (L2) and rule H (L3) | G1 cont.: `--root` option, TUM-VI official copies (room1..4 × a, b × seeds 1–3, 10–12, 13–15), baselines, `Docs/TUMVI_BASELINE.md`; PR merged by 11 PM | C3: deck v1. **C10** contract tests, **C11** `ape_check.py`, start **C12** adversarial tests (Arnav commits on `gpt/*`) | Merge the G1 PR (the C1 review is already folded into this PRD and the prompts) |
+| **Fri 20** | AM: judge rule G (L2) on seeds 10–12 + TUM-VI room3/4. PM: judge rule H (L3) on seeds 13–15; TUM-VI no-harm fixes if the baseline shows failures. **9 PM: freeze v1.0** | G2: `tools/replay.py` (self-contained HTML), verified in the browser on MH_03 and room3 | C4: video script and shot list. C12 finished; C10–C12 merged by 6 PM (before v1.0). **C13** METHOD and NEGATIVE_RESULTS drafts | Review the verdicts; merge |
+| **Sat 21** | K5: L4 hardening (strip off-switches, compile heap), `Docs/NUMBERS.md`, README and RESULTS refresh. On Arnav's word: **final table on V2_01..03** | G3: footage (terminal run, checker, benchmark gate, replay page); G4: clean-machine check of the v1.0 zip (fresh venv + Docker) | C5: deck v2 with real numbers from `NUMBERS.md`; narration; C13 final; C7b README sync | Record voice-over; **6 PM: submission-ready checkpoint** |
 | **Sun 22** | Final zip, `verify`, tag `v1.0-submitted`; fix only what G4 reports | G5: assemble the video with ffmpeg (≤ 3:00), captions | C6: jury Q&A sheet; final proofread of deck and README | **Submit the Google Form by 6 PM** (6 h buffer); upload deck and video |
 
 Anything not done by Sat 6 PM is cut, except the submission itself. Cut order: L2, then L3 (section 3.1).
@@ -245,13 +251,15 @@ about what is done, this addendum is the newer record (details in `Docs/TRACK3_P
   existed: **both arms fail** (sequence consistency 4/6 and 3/6 against 5/6 needed; the high-noise arm also loses to
   its reversed output), so `SHRINK_ON` ships off. L1a (one fixed alpha), the moving-centre variant and the
   APE^2(alpha) identity test against `score.py` were not built.
-- **Seeds 7-9 are therefore spent.** Rule G (section 3) cannot use them. Proposal, for Arnav to decide: rule G on
-  seeds 10-12, rule H on 13-15, reserve 16-18.
-- **L4's first part is done** (PR #51, stacked on #50): switched-off experiments moved from `pathfinder.py` to
+- **Seeds 7-9 are therefore spent.** Section 3 (updated 18 Nov) adopts the new split: rule G on seeds 10-12,
+  rule H on 13-15, reserve 16-18.
+- **L4's first part** (PR #51): switched-off experiments moved from `pathfinder.py` to
   `tools/pathfinder_lab.py` (not shipped; the reference in `vortex/core` keeps them too); output byte-identical on
   all 144 real inputs; no-bytecode heap 6,055 -> 4,935 KB (3.14), 6,431 -> 6,309 KB (3.13). The 4 MB target is not
-  met; the 3.13 peak does not track the source size (not investigated).
-- **Shared file:** PR #50 already adds `--reverse` to `tools/eval_euroc.py`, before Antigravity's `--root` change.
-  If #50 merges first, Antigravity rebases onto it.
+  met; the 3.13 peak does not track the source size (not investigated). **#51 was stacked on #50 and merged into
+  `track3/stepL1-shrink` after #50 had already landed, so it never reached `main`**; it is re-landed by a
+  separate PR from `main` (gates re-run there).
+- **Shared file:** PR #50 added `--reverse` to `tools/eval_euroc.py`; Antigravity's `--root` change (#54) landed
+  after it on `main`.
 - **v0.9 fallback zip** frozen from `main` da14417 (K0): `dist/vortex_v0.9.zip`, SHA-256
   0e558440a397ef4b78426cc471ac8d3fd17f8c658b28a6cd40aeb5a3ba555d6b.
