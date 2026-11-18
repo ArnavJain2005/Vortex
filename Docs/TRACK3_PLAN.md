@@ -86,6 +86,7 @@ Deadline **22 Nov 2026, 11:59 PM IST**, confirmed by the FAQ (Q1 closed). Full-t
 | R4 | Envelope (V2 speed and volume sigmas) learned per flight instead of fixed values chosen on Machine Hall (`LEARN_ON`) | **Done (verified): OFF** by the pre-registered rule (17 Nov, rule at c1769cb): held-out APE 3.739 m vs floor 3.748 (passes), clean +6.7 % (fails); shipped output unchanged | Held-out mean APE <= never-moving floor; clean no worse |
 | R5 | Rotor drag (V3): drag rule v2 stages A and B as pre-registered (c1b594c) on V1_01..03; build V3 only if stage A passes | **Done (verified): NO-GO, V3 not built.** Stage A re-run 17 Nov reproduces the Step B result exactly (1 of 3 sequences pass, 2 needed); stage B not reached | Stage A on 2 of 3 Vicon Room 1 sequences |
 | R6 | Batch forward-backward smoother at the 0.25 s tick (`SMOOTH_ON`, Step E code in the reference) | **Done (verified): ON** by the pre-registered rule (18 Nov, rule at 8da205d): held-out APE -7.8 %, gap RMSE -10.7 %, clean -2.7 %; ported to `pathfinder.py`, bit-identical (max difference 0.0 on real files) | Held-out APE and gap RMSE improve >= 2 %; clean not worse |
+| R7 | TUM-VI: loader check and baseline; platform detector (multirotor / hand-held) from the accelerometer spectrum; hand-held envelope (`PLATFORM_ON`); V5 walking rhythm (time-boxed) | **Done (verified): ON** by the pre-registered rule (18 Nov, rule at 4064b3f): detector right on all 328 non-final files (multirotor >= 5.38, hand-held <= 0.160, threshold 1.0); held-out room3/4 seeds 7-9 APE 1.994 -> 1.127 m (-43.5 %; floor 1.164), gap -38.2 %, both rooms, clean -3.4 %; EuRoC byte-identical. V1 hand-held: not changed. V5: not started | Detector right everywhere; held-out APE -10 %, gap -5 %, both rooms; clean not worse > 5 % |
 | F | Filter fixes from the 16-17 Nov reviews: gyro-bias cap on every still test (`BGCAP_ON`), covariance reset after injection (`RESET_ON`), refresh of the cached previous sample (`REFRESH_ON`), fallback velocity uncertainty (`P0V_ON`); four switches | **Done** (17 Nov): BGCAP, P0V, REFRESH pass and ship on; RESET fails (reading a APE +1.8 %) and ships off. Held-out mean APE 4.972 -> 4.962 m; floor 3.745 m | Each switch judged on 36 fresh held-out copies (seeds 4-6) by the no-harm rule |
 | L1 | Positions scaled about their centroid, alpha per gyro-noise class (`SHRINK_ON`); null floor = the estimate reversed in time (`eval_euroc.py --reverse`) | **Done (verified): OFF** by the pre-registered rule (18 Nov, rule at d56c875): both arms improve the mean objective (reading a -49.5 %, reading b -23.9 %) but fail sequence consistency (4 and 3 of 6); LO also loses to its reversed output. Shipped output unchanged | Each arm judged on 36 fresh held-out copies (seeds 7-9) |
 | Lean | Switched-off experiments moved from `pathfinder.py` to `tools/pathfinder_lab.py` (not shipped) to cut compile memory | **Done (verified)** 18 Nov: output byte-identical on all 144 real inputs; no-bytecode heap 6,055 -> 4,935 KB (3.14), 6,431 -> 6,309 KB (3.13); gate PASS | `tests/test_lab.py`; gates PASS |
@@ -1765,4 +1766,49 @@ room4 seeds 7-9.** `PLATFORM_ON` with the values above (frozen) ships on only if
   byte identity on SYNTHETIC files); also checked byte-identical on real EuRoC copies.
 Reported, not deciding: per reading, RPE 1 s, blind RMSE, the never-moving floor on the same copies.
 `python tools/judge_step7.py`. No constant changes after this commit.
+
+**Outcome** (18 Nov; `python tools/platform_check.py`, then `python tools/judge_step7.py`; `Docs/tumvi/step7-*.json`):
+
+| Condition | Value | Result |
+|---|---|---|
+| A detector right on every non-final file | 328 files, 0 wrong; smallest multirotor 5.376, largest hand-held 0.160 (threshold 1.0) | pass |
+| B1 held-out mean APE improves >= 10 % | 1.994 -> 1.127 m (-43.5 %) | pass |
+| B2 held-out mean gap RMSE improves >= 5 % | 1.800 -> 1.113 m (-38.2 %) | pass |
+| B3 each room improves | room3 2.275 -> 1.228, room4 1.713 -> 1.027 | pass |
+| B4 clean room3/4 not worse by > 5 % | 1.044 -> 1.008 m (-3.4 %) | pass |
+| C EuRoC byte-identical with the switch | 6 of 6 copies; the detector statistic inside `main.py` equals the check's on all 6 | pass |
+
+**Verdict: `PLATFORM_ON` ships ON** (reference, `pathfinder.py`, lab).
+
+**Part A needed a fix to the check tool, said plainly.** The first run of `tools/platform_check.py` gave 86 wrong
+files, all EuRoC reading-b copies, smallest "multirotor" 0.009: the tool called the detector on the raw file,
+and reading b has the accelerometer first, so it measured the gyro columns. `main.py` runs the input front end
+first (`run()` -> canonical rewrite -> `_run_smoothed` -> detector), so the estimator was not affected: the
+same run showed MH_01 reading-b copies byte-identical with the switch on, which needs a multirotor call. The
+tool now goes through the front end exactly as `run()` does and records the statistic `main.py` computes
+itself on the identity copies (equal on 6 of 6). No constant or estimator code changed between the rule
+commit and the verdict. The first run's output is kept outside the repository (scratch), not in `Docs/`.
+Also: 280 files on the first run, 328 on the second (official copies added on disk meanwhile by another session).
+
+Reported only (off -> on; never-moving floor on the same 12 copies): APE reading a 2.029 -> 1.126 m (1.164),
+reading b 1.959 -> 1.129 (1.164); RPE 1 s 1.050 -> 1.024 (1.265); blind RMSE 4.687 -> 1.277 (0.739); gap RMSE
+1.800 -> 1.113 (1.076). Clean: room3 0.702 -> 1.085 m (**+55 %**), room4 1.385 -> 0.930 (-33 %).
+
+**Reading.** On degraded hand-held data the shipped drone envelope lost to standing still by 70 %; the hand-held
+envelope brings it to a tie with the floor (1.127 against 1.164 m), not a clear win. The blind 5 s is still
+worse than standing still (1.28 against 0.74 m): Step 8. Clean room3 gets much worse; room4 better. The
+shipped build on room1..4 seeds 1-3 (reporting, `step7-shipped-tumvi`): tuning rooms 0.871 m (floor 1.110),
+held-out rooms 1.109 m (floor 1.164; build before Step 6: 2.599).
+
+**Cost and gates** (Windows, i7-14650HX, 9 runs each, `python -S benchmark.py --gate`; `Docs/budget/step7-*.json`;
+all GATE PASS, output check PASS): heap peak / whole run / whole run without cached bytecode (KB), `python -S main.py`
+us/row:
+- synthetic (hand-held path), Python 3.14: 1,060 / 1,639 / 5,803; 37.2 us/row (Step 6 lean: 1,060 / 1,632 / 5,580; 35.6)
+- MH_01_easy_b_s1 (multirotor path), 3.14: 1,232 / 1,802 / 5,802; 31.0 us/row
+- dataset-room1_512_16_b_s1 (hand-held path), 3.14: 861 / 1,427 / 5,802; 43.9 us/row (the slowest; under 50)
+- synthetic, Python 3.13: 940 / 2,252 / 6,309; 35.2 us/row
+The detector adds one pass over the file: synthetic +1.6 us/row against Step 6 (not separated from run-to-run noise); no-cache heap +223 KB (larger module).
+
+V1 hand-held: not changed (see above). V5 walking rhythm: not started in this step; it needs its own
+time-boxed session with a rule first.
 

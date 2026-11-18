@@ -58,8 +58,8 @@ def _stat_ref(src):
     return pl.hf_stat(sd.rows_from_raw(euroc.read_imu_csv(str(src))))
 
 
-def test_constants_match_the_reference_and_are_off():
-    assert pl.PLATFORM_ON is False
+def test_constants_match_the_reference_and_ship_on():
+    assert pl.PLATFORM_ON is True                   # Step 7 rule passed (18 Nov 2026)
     for mod in (pf, lab):
         for n in SHARED:
             assert getattr(mod, n) == getattr(pl, n), n
@@ -122,6 +122,7 @@ def test_switch_equals_the_envelope_set_by_hand(tmp_path, monkeypatch):
 
 def test_multirotor_output_unchanged_by_the_switch(tmp_path, monkeypatch):
     src = _write_rows(tmp_path / "imu.csv", _rotor_rows(seed=11))
+    monkeypatch.setattr(pf, "PLATFORM_ON", False)
     pf.run(str(src), str(tmp_path / "off.txt"))
     monkeypatch.setattr(pf, "PLATFORM_ON", True)
     pf.run(str(src), str(tmp_path / "on.txt"))

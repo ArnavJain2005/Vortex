@@ -96,7 +96,7 @@ REFRESH_ON = True
 P0V_ON = True
 SMOOTH_ON = True             # Step 6: ON (rule passed 18 Nov 2026); fixed-interval (RTS) smoother at the tick (vortex/core/witness.py smooth_*)
 SMOOTH_MAX_BLOCKS = 1024     # stored blocks (fixed cap; a full store merges adjacent pairs): <= 1.05 MB of floats
-PLATFORM_ON = False          # Step 7: hand-held envelope (HH_*) when the file is hand-held (vortex/core/platform.py)
+PLATFORM_ON = True           # Step 7: ON (rule passed 18 Nov 2026); hand-held envelope (HH_*) when the file is hand-held (vortex/core/platform.py)
 PLAT_WIN_NS = 1000000000     # ns, window of the detector statistic
 PLAT_Q = 0.75                # quantile of the window statistics
 PLAT_HF = 1.0                # (m/s^2)^2: below this the file is hand-held (rotor vibration is far above)

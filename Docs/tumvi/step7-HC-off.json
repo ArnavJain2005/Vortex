@@ -1,0 +1,41 @@
+{
+ "commit": "4064b3f",
+ "date": "2026-11-18",
+ "degraded": false,
+ "main": "main.py",
+ "official": false,
+ "python": "3.14.7",
+ "results": [
+  {
+   "ate_none_rmse": 1.6340615007785284,
+   "ate_origin_rmse": 1.2883196948625257,
+   "ate_se3_rmse": 0.7019881432719377,
+   "ate_sim3_rmse": 0.7019384828649764,
+   "contract": "PASS",
+   "final_se3": 0.8719024350052574,
+   "rows": 28124,
+   "rpe200_rmse": 0.5429447149712774,
+   "sequence": "dataset-room3_512_16",
+   "sim3_scale": 0.991995075774099,
+   "wall_s": 1.01894080004422
+  },
+  {
+   "ate_none_rmse": 2.5538050759231985,
+   "ate_origin_rmse": 1.6788137660678268,
+   "ate_se3_rmse": 1.3851923562757074,
+   "ate_sim3_rmse": 0.9008150863435053,
+   "contract": "PASS",
+   "final_se3": 2.171304557868986,
+   "rows": 22212,
+   "rpe200_rmse": 0.5309330206761249,
+   "sequence": "dataset-room4_512_16",
+   "sim3_scale": 0.3589576135777024,
+   "wall_s": 0.8872572999680415
+  }
+ ],
+ "reverse": false,
+ "set": {
+  "PLATFORM_ON": "False"
+ },
+ "tag": "step7-HC-off"
+}

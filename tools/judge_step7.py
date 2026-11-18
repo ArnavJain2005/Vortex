@@ -63,6 +63,9 @@ def judge(off, on, coff, con, floor, detect):
     chk.append(("C EuRoC byte-identical with PLATFORM_ON (%d copies)" % len(ident),
                 "%d of %d identical" % (sum(1 for x in ident if x["identical"]), len(ident)),
                 bool(ident) and all(x["identical"] for x in ident)))
+    if all("stat_equal" in x for x in ident):
+        print("  (detector statistic inside main.py's run equals the check's on %d of %d copies)" % (
+            sum(1 for x in ident if x["stat_equal"]), len(ident)))
     print("PLATFORM_ON (held-out room3/room4, seeds 7-9)")
     for t, v, p in chk:
         print("  %-52s %-58s %s" % (t, v, "pass" if p else "FAIL"))

@@ -28,9 +28,27 @@ def load():
     return mod
 
 
+def stat_as_run(pf, imu, tmp):
+    """The detector on the input exactly as run() gives it to _run_smoothed: with FRONT_ON a file that is
+    not canonical (reading b: accelerometer first) is rewritten canonically first. (The first run of this
+    tool, 18 Nov 2026, skipped this and measured the gyro columns of every reading-b copy.)"""
+    if pf.FRONT_ON:
+        lay = pf._fe_detect(imu)
+        if not lay["canonical"]:
+            path = os.path.join(tmp, "canon.csv")
+            with open(path, "wb") as g:
+                g.writelines(pf._fe_canonical_lines(imu, lay))
+            try:
+                return pf._plat_stat(path)
+            finally:
+                os.remove(path)
+    return pf._plat_stat(imu)
+
+
 def main(argv):
     n_id = int(argv[argv.index("--identity") + 1]) if "--identity" in argv else 6
     pf = load()
+    tmp = tempfile.mkdtemp(prefix="vortex_plat_")
     out = []
     for name, truth, d in SETS:
         if not os.path.isdir(d):
@@ -41,14 +59,13 @@ def main(argv):
             imu = os.path.join(d, s, "mav0", "imu0", "data.csv")
             if not os.path.isfile(imu):
                 continue
-            st = pf._plat_stat(imu)
+            st = stat_as_run(pf, imu, tmp)
             got = "handheld" if (st is not None and st < pf.PLAT_HF) else "multirotor"
             out.append({"set": name, "file": s, "truth": truth, "stat": st, "detected": got, "ok": got == truth})
             print("%-15s %-30s %-10s stat %s %s" % (name, s, got, "None" if st is None else "%.4f" % st,
                                                      "ok" if got == truth else "WRONG"), flush=True)
     ident = []
     eu = [r["file"] for r in out if r["set"] == "official"][:n_id]
-    tmp = tempfile.mkdtemp(prefix="vortex_plat_")
     for s in eu:
         imu = os.path.join(ROOT, "data", "official", s, "mav0", "imu0", "data.csv")
         res = []
@@ -58,9 +75,12 @@ def main(argv):
             pf.run(imu, dst)
             with open(dst, "rb") as f:
                 res.append(f.read())
+        in_run = pf.LAST["platform"]          # the statistic the estimator computed itself (PLATFORM_ON pass)
         pf.PLATFORM_ON = False
-        ident.append({"file": s, "identical": res[0] == res[1]})
-        print("identity %-30s %s" % (s, "identical" if res[0] == res[1] else "DIFFERENT"), flush=True)
+        want = [r["stat"] for r in out if r["set"] == "official" and r["file"] == s][0]
+        ident.append({"file": s, "identical": res[0] == res[1], "stat_in_run": in_run, "stat_equal": in_run == want})
+        print("identity %-30s %s; stat in run %.4f %s" % (s, "identical" if res[0] == res[1] else "DIFFERENT", in_run,
+                                                          "= check" if in_run == want else "!= CHECK"), flush=True)
     eu_stats = [r["stat"] for r in out if r["truth"] == "multirotor" and r["stat"] is not None]
     tv_stats = [r["stat"] for r in out if r["truth"] == "handheld" and r["stat"] is not None]
     summary = {"files": len(out), "wrong": [r["file"] for r in out if not r["ok"]],

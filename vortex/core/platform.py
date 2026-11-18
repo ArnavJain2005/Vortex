@@ -20,7 +20,7 @@ from __future__ import annotations
 
 from . import strapdown as sd
 
-PLATFORM_ON = False          # Step 7: hand-held envelope (HH_*) when the detector says hand-held
+PLATFORM_ON = True           # Step 7: ON (pre-registered rule passed, 18 Nov 2026); hand-held envelope (HH_*) when the detector says hand-held
 PLAT_WIN_NS = 1000000000     # ns, window length
 PLAT_Q = 0.75                # quantile of the window statistics
 PLAT_HF = 1.0                # (m/s^2)^2: below this the file is hand-held
