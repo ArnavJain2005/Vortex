@@ -176,7 +176,7 @@ P0V_ON = True                 # no still run (fallback init): initial velocity s
 # average over ticks (O(1) memory), rotated with every injected attitude correction so a corrected error is not
 # measured twice. Bias of the measurement: the window-mean true acceleration, about TILT_DV / (g TILT_TAU).
 # Trust: a gyro noise meter (per-sample white-noise sigma from second differences, median over TILT_MED_TICKS
-# ticks so spikes do not count) gives a weight w from 0 at TILT_G_LO to 1 at TILT_G_HI. With w = 0 nothing
+# ticks so spikes do not count; weight 0 until the ring is full) gives a weight w from 0 at TILT_G_LO to 1 at TILT_G_HI. With w = 0 nothing
 # changes. With w > 0 the tilt pseudo-measurements are applied with variance R / w and the gyro white-noise and
 # bias-walk densities are raised to the measured level (bias walk = TILT_WALK_K x measured white density).
 TILT_ON = False
@@ -189,6 +189,8 @@ TILT_R_K = 1.0               # variance multiplier for the overlapping windows (
 TILT_DV = 2.0                # m/s, velocity change bound for the bias term (the V2 speed envelope V2_SIGMA_H)
 TILT_WALK_K = 0.7            # gyro bias-walk density / white density when jammed: the organisers' script ratio
                              # 0.010 / (0.20 sqrt(0.005)) for the accelerometer-sized faults (reading a)
+TILT_LAG = True              # model the window's lag: the mean of an error ramping at -R dbg is dth + TILT_TAU R dbg
+                             # (exponential window), so the measurement row also has the gyro-bias states
 TILT_GATE_A = 0.5            # m/s^2: no tilt update while the filter's own window-mean horizontal acceleration
                              # (v - window-mean v) / TILT_TAU exceeds this (not small: a sustained manoeuvre)
 N = 15
@@ -330,6 +332,32 @@ def tilt_weight(ring):
     sg = math.sqrt(med)
     w = (sg - TILT_G_LO) / (TILT_G_HI - TILT_G_LO)
     return (0.0 if w < 0.0 else 1.0 if w > 1.0 else w), med
+
+
+def kf_update_row(P, dx, h, z, var):
+    """Scalar measurement z = sum_k h_k dx[k] + noise (variance var); h: list of (index, coefficient)."""
+    ph = [0.0] * N                              # P h
+    for i in range(N):
+        oi = i * N
+        a = 0.0
+        for k, c in h:
+            a += P[oi + k] * c
+        ph[i] = a
+    S = var
+    hx = 0.0
+    for k, c in h:
+        S += c * ph[k]
+        hx += c * dx[k]
+    if not S > 0.0:
+        return
+    inn = z - hx
+    for i in range(N):
+        Ki = ph[i] / S
+        if Ki != 0.0:
+            dx[i] += Ki * inn
+            oi = i * N
+            for j in range(N):
+                P[oi + j] -= Ki * ph[j]
 
 
 def tilt_var(s2, g, w):
@@ -607,7 +635,8 @@ def estimate(rows, v1=None, v2=None, v2p=None, log=None, jam=None, gap_on=None, 
                                 tring.append(dg / (18.0 * nd))
                                 if len(tring) > TILT_MED_TICKS:
                                     tring.pop(0)
-                                tw, med = tilt_weight(tring)
+                                if len(tring) == TILT_MED_TICKS:     # a full ring: the median is robust
+                                    tw, med = tilt_weight(tring)
                                 if tw > 0.0:
                                     d2 = med * fdt / fn
                                     if d2 > gd2:
@@ -674,8 +703,14 @@ def estimate(rows, v1=None, v2=None, v2p=None, log=None, jam=None, gap_on=None, 
                             ax_ = (v[0] - tV[0]) / TILT_TAU
                             ay_ = (v[1] - tV[1]) / TILT_TAU
                             if tw > 0.0 and tn >= tfull and ax_ * ax_ + ay_ * ay_ <= TILT_GATE_A * TILT_GATE_A:
-                                kf_update(P, dx, 6, tF[1] / g, tilt_var(tS[1], g, tw))
-                                kf_update(P, dx, 7, -tF[0] / g, tilt_var(tS[0], g, tw))
+                                if TILT_LAG:
+                                    kf_update_row(P, dx, [(6, 1.0)] + [(9 + j, TILT_TAU * r1[j]) for j in range(3)],
+                                                  tF[1] / g, tilt_var(tS[1], g, tw))
+                                    kf_update_row(P, dx, [(7, 1.0)] + [(9 + j, TILT_TAU * r1[3 + j]) for j in range(3)],
+                                                  -tF[0] / g, tilt_var(tS[0], g, tw))
+                                else:
+                                    kf_update(P, dx, 6, tF[1] / g, tilt_var(tS[1], g, tw))
+                                    kf_update(P, dx, 7, -tF[0] / g, tilt_var(tS[0], g, tw))
                                 tup = True
                         sdx = None
                         if zupt or v2 or v2p or tup:
@@ -691,6 +726,11 @@ def estimate(rows, v1=None, v2=None, v2p=None, log=None, jam=None, gap_on=None, 
                                         ex, ey, ez = dx[6], dx[7], dx[8]
                                         f0, f1, f2 = tF
                                         tF = [f0 + ey * f2 - ez * f1, f1 + ez * f0 - ex * f2, f2 + ex * f1 - ey * f0]
+                                        if TILT_LAG:        # the window's lag was built with the old gyro bias
+                                            u0 = TILT_TAU * g * (r1[0] * dx[9] + r1[1] * dx[10] + r1[2] * dx[11])
+                                            u1 = TILT_TAU * g * (r1[3] * dx[9] + r1[4] * dx[10] + r1[5] * dx[11])
+                                            tF[0] += u1
+                                            tF[1] -= u0
                                     if reset:
                                         kf_reset(P, dx[6], dx[7], dx[8])
                                     if refresh and prev is not None:
@@ -733,7 +773,8 @@ def estimate(rows, v1=None, v2=None, v2p=None, log=None, jam=None, gap_on=None, 
                         if log is not None:
                             log.append({"t": t_last, "zupt": zupt, "ba": ba, "bg": bg, "v": tuple(v),
                                         "jg": jg, "ja": ja, "gap": gap, "tilt2": tilt2, "dv2": tuple(dv2),
-                                        "pv": P[3 * N + 3], "ptilt": P[6 * N + 6], "zr": zr})
+                                        "pv": P[3 * N + 3], "ptilt": P[6 * N + 6], "zr": zr,
+                                        "tw": tw, "tring": len(tring), "tup": tup})
                         tick_end += tick_ns * ((t - tick_end) // tick_ns + 1)
                         t_tick = t_last
                         fs = [0.0, 0.0, 0.0]
