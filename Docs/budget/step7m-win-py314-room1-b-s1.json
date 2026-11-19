@@ -1,0 +1,103 @@
+{
+ "commit": "cb91920",
+ "cpu": "Intel(R) Core(TM) i7-14650HX",
+ "date": "2026-11-19",
+ "imu_seconds": 141.05560264333408,
+ "imu_seconds_source": "timestamps",
+ "input": "real: data/official_tumvi/dataset-room1_512_16_b_s1/mav0/imu0/data.csv",
+ "output_check": "PASS",
+ "passes": [
+  {
+   "pass": "calibration scan + backward pre-anchor pass + forward pass (no smoother yet)",
+   "us_per_row": 32.05897868709145
+  }
+ ],
+ "platform": "Windows",
+ "platform_release": "11",
+ "process": [
+  {
+   "case": "python -S main.py",
+   "cpu_ms_median": 875.0,
+   "cpu_ms_per_imu_s": 6.20322754717145,
+   "peak_private_mb_median": 7.65625,
+   "peak_rss_mb_max": 13.5234375,
+   "peak_rss_mb_median": 13.24609375,
+   "runs": 9,
+   "us_per_row": 33.38607065521065,
+   "wall_ms_median": 910.0708999903873,
+   "wall_ms_min": 894.2148999776691,
+   "wall_ms_per_imu_s": 6.4518592876565535
+  },
+  {
+   "case": "python main.py",
+   "cpu_ms_median": 906.25,
+   "cpu_ms_per_imu_s": 6.424771388141859,
+   "peak_private_mb_median": 9.609375,
+   "peak_rss_mb_max": 15.76953125,
+   "peak_rss_mb_median": 15.54296875,
+   "runs": 9,
+   "us_per_row": 34.6632671782548,
+   "wall_ms_median": 944.8860000120476,
+   "wall_ms_min": 898.7005000235513,
+   "wall_ms_per_imu_s": 6.698677559098717
+  },
+  {
+   "case": "python -S main.py, no cached bytecode",
+   "cpu_ms_median": 906.25,
+   "cpu_ms_per_imu_s": 6.424771388141859,
+   "peak_private_mb_median": 15.1171875,
+   "peak_rss_mb_max": 20.9921875,
+   "peak_rss_mb_median": 20.46875,
+   "runs": 9,
+   "us_per_row": 34.20805972334423,
+   "wall_ms_median": 932.4774999986403,
+   "wall_ms_min": 923.7556000007316,
+   "wall_ms_per_imu_s": 6.6107087029818645
+  },
+  {
+   "case": "python -S pathfinder.py",
+   "cpu_ms_median": 875.0,
+   "cpu_ms_per_imu_s": 6.20322754717145,
+   "peak_private_mb_median": 14.5234375,
+   "peak_rss_mb_max": 20.046875,
+   "peak_rss_mb_median": 19.98046875,
+   "runs": 9,
+   "us_per_row": 33.244928279571475,
+   "wall_ms_median": 906.2234999728389,
+   "wall_ms_min": 885.910100012552,
+   "wall_ms_per_imu_s": 6.4245835187721605
+  }
+ ],
+ "python": "3.14.7",
+ "rows": 27259,
+ "runs": 9,
+ "stages": [
+  {
+   "stage": "parse (read, split, 6 floats, timestamp)",
+   "us_per_row": 3.8347811721171836,
+   "us_per_row_min": 3.62907296664057
+  },
+  {
+   "stage": "parse + write (identity poses)",
+   "us_per_row": 4.693910268333291,
+   "us_per_row_min": 4.513617521179574
+  },
+  {
+   "stage": "parse + init + strapdown integrator",
+   "us_per_row": 13.370178656373708,
+   "us_per_row_min": 12.650478742057347
+  },
+  {
+   "stage": "parse + init + strapdown integrator + write (full main.py)",
+   "us_per_row": 32.05897868709145,
+   "us_per_row_min": 31.40578891444034
+  }
+ ],
+ "stored_bytes_per_block": 64,
+ "stored_bytes_this_run": 0,
+ "stored_bytes_worst_case": 960000,
+ "stored_rows": 0,
+ "tracemalloc_peak_kb": 863.28125,
+ "tracemalloc_process_nocache_peak_kb": 7188.3349609375,
+ "tracemalloc_process_peak_kb": 1440.0810546875
+}

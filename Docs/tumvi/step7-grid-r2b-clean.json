@@ -1,0 +1,44 @@
+{
+ "commit": "dda57fd",
+ "date": "2026-11-18",
+ "degraded": false,
+ "main": "main.py",
+ "official": false,
+ "python": "3.14.7",
+ "results": [
+  {
+   "ate_none_rmse": 1.5161478839138736,
+   "ate_origin_rmse": 0.6722486989386737,
+   "ate_se3_rmse": 0.4073920045442796,
+   "ate_sim3_rmse": 0.40379498881111037,
+   "contract": "PASS",
+   "final_se3": 0.11834935135954676,
+   "rows": 28122,
+   "rpe200_rmse": 0.3063602264733011,
+   "sequence": "dataset-room1_512_16",
+   "sim3_scale": 1.0626715849177497,
+   "wall_s": 1.1794198999996297
+  },
+  {
+   "ate_none_rmse": 1.693122399311175,
+   "ate_origin_rmse": 1.2005175201636413,
+   "ate_se3_rmse": 1.0944587009773783,
+   "ate_sim3_rmse": 1.0908580723099561,
+   "contract": "PASS",
+   "final_se3": 0.47384901896905,
+   "rows": 28732,
+   "rpe200_rmse": 1.4346192912386624,
+   "sequence": "dataset-room2_512_16",
+   "sim3_scale": 1.1955303363381302,
+   "wall_s": 1.3050991000491194
+  }
+ ],
+ "reverse": false,
+ "set": {
+  "V2P_SIGMA_H": "1.0",
+  "V2P_SIGMA_V": "0.3",
+  "V2P_TAU": "30.0",
+  "V2_SIGMA_H": "0.5"
+ },
+ "tag": "step7-grid-r2b-clean"
+}

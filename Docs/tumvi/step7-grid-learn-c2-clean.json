@@ -1,0 +1,44 @@
+{
+ "commit": "dda57fd",
+ "date": "2026-11-18",
+ "degraded": false,
+ "main": "tools\\pathfinder_lab.py",
+ "official": false,
+ "python": "3.14.7",
+ "results": [
+  {
+   "ate_none_rmse": 1.6854493050833794,
+   "ate_origin_rmse": 0.8407703701923392,
+   "ate_se3_rmse": 0.6130744042163842,
+   "ate_sim3_rmse": 0.6122289800035593,
+   "contract": "PASS",
+   "final_se3": 0.3086811134899513,
+   "rows": 28122,
+   "rpe200_rmse": 0.4799328832374011,
+   "sequence": "dataset-room1_512_16",
+   "sim3_scale": 0.960945259533427,
+   "wall_s": 1.3832763999816962
+  },
+  {
+   "ate_none_rmse": 1.7299713674014263,
+   "ate_origin_rmse": 1.2142344982847426,
+   "ate_se3_rmse": 1.069527526369264,
+   "ate_sim3_rmse": 1.0278662579975184,
+   "contract": "PASS",
+   "final_se3": 0.6637036616565194,
+   "rows": 28732,
+   "rpe200_rmse": 1.5001587446621554,
+   "sequence": "dataset-room2_512_16",
+   "sim3_scale": 1.824945535485892,
+   "wall_s": 1.3482512999908067
+  }
+ ],
+ "reverse": false,
+ "set": {
+  "LEARN_ON": "True",
+  "V2P_SIGMA_H": "1.0",
+  "V2P_SIGMA_V": "0.3",
+  "V2_SIGMA_H": "0.5"
+ },
+ "tag": "step7-grid-learn-c2-clean"
+}

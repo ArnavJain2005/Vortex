@@ -1,0 +1,85 @@
+{
+ "chance_abs_cos_median": 0.7071,
+ "rooms": {
+  "dataset-room1_512_16": {
+   "rhythm": {
+    "windows": 93,
+    "freq_median_hz": 1.0,
+    "peak_share_median": 0.6424389884369482,
+    "share_gt_0p3": 0.8709677419354839,
+    "gt_speed_mean": 0.863996925021192,
+    "corr_freq_speed": -0.11871714633681728,
+    "corr_share_speed": 0.08070741713882644,
+    "corr_fzstd_speed": 0.3696625254268251
+   },
+   "direction_gt_attitude": {
+    "raw_2s": {
+     "windows": 81,
+     "abs_cos_median": 0.6989461298165869,
+     "share_abs_cos_gt_0p9": 0.345679012345679
+    },
+    "raw_4s": {
+     "windows": 25,
+     "abs_cos_median": 0.7934793880316786,
+     "share_abs_cos_gt_0p9": 0.24
+    },
+    "band_1p2_2p5hz_2s": {
+     "windows": 81,
+     "abs_cos_median": 0.7156114957749756,
+     "share_abs_cos_gt_0p9": 0.30864197530864196
+    },
+    "band_1p2_2p5hz_4s": {
+     "windows": 25,
+     "abs_cos_median": 0.7716036812483614,
+     "share_abs_cos_gt_0p9": 0.32
+    }
+   },
+   "speed": {
+    "gt_median": 0.9565889989104159,
+    "clean_median": 0.8315697272744691,
+    "a_s1_median": 0.8151266673235311,
+    "b_s1_median": 0.8209444632704856
+   }
+  },
+  "dataset-room2_512_16": {
+   "rhythm": {
+    "windows": 72,
+    "freq_median_hz": 1.75,
+    "peak_share_median": 0.8181895394631129,
+    "share_gt_0p3": 0.8888888888888888,
+    "gt_speed_mean": 0.8735405986639821,
+    "corr_freq_speed": 0.16568520912447857,
+    "corr_share_speed": 0.5752956435034893,
+    "corr_fzstd_speed": 0.186778007714345
+   },
+   "direction_gt_attitude": {
+    "raw_2s": {
+     "windows": 79,
+     "abs_cos_median": 0.8782365935414339,
+     "share_abs_cos_gt_0p9": 0.4177215189873418
+    },
+    "raw_4s": {
+     "windows": 19,
+     "abs_cos_median": 0.9905890898387566,
+     "share_abs_cos_gt_0p9": 0.9473684210526315
+    },
+    "band_1p2_2p5hz_2s": {
+     "windows": 79,
+     "abs_cos_median": 0.6856640884471271,
+     "share_abs_cos_gt_0p9": 0.189873417721519
+    },
+    "band_1p2_2p5hz_4s": {
+     "windows": 19,
+     "abs_cos_median": 0.6966329063417241,
+     "share_abs_cos_gt_0p9": 0.15789473684210525
+    }
+   },
+   "speed": {
+    "gt_median": 1.068980733592356,
+    "clean_median": 0.2902437004048264,
+    "a_s1_median": 0.25212011073451474,
+    "b_s1_median": 0.23938676102137355
+   }
+  }
+ }
+}
