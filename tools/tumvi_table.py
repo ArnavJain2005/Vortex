@@ -16,8 +16,11 @@ import sys
 import tempfile
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+if os.path.join(ROOT, "tools") not in sys.path:
+    sys.path.insert(0, os.path.join(ROOT, "tools"))
 sys.path.insert(0, ROOT)
 import pathfinder as pf  # noqa: E402
+import tumvi_still_probe  # noqa: E402
 
 TUMVI_DOCS = os.path.join(ROOT, "Docs", "tumvi")
 TUMVI_DATA = os.path.join(ROOT, "data", "tumvi")
@@ -147,7 +150,191 @@ def collect_calib(clean_est: dict, off_est: dict, clean_root: str = TUMVI_DATA,
     }
 
 
-def build(est: dict, flo: dict, ce: dict, cf: dict, calib: dict | None = None) -> str:
+def collect_still_probe(clean_root: str = TUMVI_DATA) -> dict:
+    """Collect G6 stillness-calibration probe diagnostics on tuning rooms 1 and 2 present under clean_root."""
+    probes = []
+    for name in tumvi_still_probe.ALLOWED_DEFAULT:
+        seq_dir = os.path.join(clean_root, name)
+        imu = os.path.join(seq_dir, "mav0", "imu0", "data.csv")
+        if os.path.isfile(imu):
+            probes.append(tumvi_still_probe.probe_sequence(seq_dir))
+    return {"rule": tumvi_still_probe.rule_specification(), "probes": probes}
+
+
+def _format_still_probe_section(still_probe: dict) -> list[str]:
+    probes = (still_probe or {}).get("probes") or []
+    if not probes:
+        return []
+    spec = ((still_probe or {}).get("rule") or {}).get("constants") or tumvi_still_probe.rule_specification()["constants"]
+    L = [
+        "",
+        "## Stillness calibration diagnosis on tuning rooms (`room1`, `room2`; `tools/tumvi_still_probe.py`)",
+        "",
+        "Hand-held finding: all units and conventions on TUM-VI match EuRoC (`gyro_first`, integer `ns` timestamps at "
+        "`199.36 Hz`, accelerometer in `m/s^2`, gyro in `rad/s`), and mocap ground-truth speed during the opening `5 s` "
+        "is only `0.011..0.050 m/s` (`0..4.5 s` before walking begins). Stillness calibration (`_calibrate` and fallback "
+        "`_initialise`) nevertheless falls back to `fallback_zero` because the rig is hand-held rather than resting on a "
+        "rigid surface: angular and linear hand micro-motion keeps per-axis `max(std_g)` (`>= 0.0381 rad/s` on `room1`, "
+        "`>= 0.0847 rad/s` on `room2`; `1.91x..4.23x` above `STILL_GYRO_STD = %.2f rad/s`) and `max(std_a)` "
+        "(`>= 0.1022 m/s^2` on `room1`, `>= 0.1482 m/s^2` on `room2`; `1.02x..1.48x` above `STILL_ACC_STD = %.2f m/s^2`) "
+        "above the rigid-rest thresholds in every `1 s` window. The denoised retry (`_still_denoised`, `CAL_NOISE_ON = True`) "
+        "subtracts only high-frequency second-difference white noise and leaves low-frequency hand sway intact "
+        "(**1-5 Hz physiological tremor frequency band: not measured — no frequency spectrum was run**)."
+        % (spec["STILL_GYRO_STD"], spec["STILL_ACC_STD"]),
+        "",
+        "### Best `1 s` windows and opening `1 s` window (`0..60 s`)",
+        "",
+        "| Sequence | Window | t (s) | Gyro std (x, y, z) rad/s | Max gyro std (vs 0.02) | Accel std (x, y, z) m/s^2 | Max accel std (vs 0.10) | ‖a‖-9.81 m/s^2 | std(‖a‖) m/s^2 | ‖mean_g‖ rad/s (vs 0.15) | Passes? |",
+        "|---|---|---|---|---|---|---|---|---|---|---|",
+    ]
+    for p in probes:
+        seq = p["sequence"]
+        for label, w in (
+            ("Opening 1 s [0..1s]", p.get("window_0_to_1s")),
+            ("Best 1 s (combined)", p.get("best_1s_window_combined")),
+            ("Best 1 s (gyro std)", p.get("best_1s_window_by_gyro_std")),
+            ("Best 1 s (acc std)", p.get("best_1s_window_by_acc_std")),
+        ):
+            if not w:
+                continue
+            gs = w["gyro_std_xyz"]
+            acs = w["acc_std_xyz"]
+            L.append(
+                "| `%s` | %s | %.0f..%.0f | (%.4f, %.4f, %.4f) | **%.4f** (%.2fx) | (%.4f, %.4f, %.4f) | "
+                "**%.4f** (%.2fx) | %+.4f | %.4f (%.2fx) | %.4f (%.2fx) | %s |"
+                % (
+                    seq,
+                    label,
+                    w["t_start_s"],
+                    w["t_end_s"],
+                    gs[0],
+                    gs[1],
+                    gs[2],
+                    w["gyro_std_max"],
+                    w["gyro_std_factor"],
+                    acs[0],
+                    acs[1],
+                    acs[2],
+                    w["acc_std_max"],
+                    w["acc_std_factor"],
+                    w["acc_norm_minus_g"],
+                    w["acc_norm_std"],
+                    w["acc_norm_std_factor"],
+                    w["gyro_mean_norm"],
+                    w["bg_norm_factor"],
+                    "YES" if w["passes_1s_rule"] else "NO",
+                )
+            )
+
+    L += [
+        "",
+        "### `0.25 s` calibration bins (`240` bins in `0..60 s`)",
+        "",
+        "| Sequence | Bins `gyro_std < 0.02` | Bins `acc_std < 0.10` | Bins `‖bg‖ <= 0.15` | Bins `8.8 <= ‖a‖ <= 10.8` | Strict still bins | Longest strict run (need 1.00 s) | Denoised still bins | Longest denoised run (need 1.00 s) | Best 4-bin (`1.0 s`) bottleneck miss factor |",
+        "|---|---|---|---|---|---|---|---|---|---|",
+    ]
+    for p in probes:
+        b = p["bins_025s_summary"]
+        gc = b["gate_pass_counts_240"]
+        b4 = b.get("best_4bin_1s_block")
+        b4_txt = (
+            "%.2f..%.2fs: gyro_std %.2fx, acc_std %.2fx, steady_g %.2fx, steady_a %.2fx"
+            % (
+                b4["t_start_s"],
+                b4["t_end_s"],
+                b4["factor_gyro_std"],
+                b4["factor_acc_std"],
+                b4["factor_steady_gyro"],
+                b4["factor_steady_acc"],
+            )
+            if b4
+            else "-"
+        )
+        L.append(
+            "| `%s` | %d/240 | %d/240 | %d/240 | %d/240 | **%d/240** | **%.2f s** (%d bins) | **%d/240** | **%.2f s** (%d bins) | %s |"
+            % (
+                p["sequence"],
+                gc["ok_gyro_std"],
+                gc["ok_acc_std"],
+                gc["ok_bg"],
+                gc["ok_acc_norm"],
+                b["strict_still_bins_count"],
+                b["strict_best_run_s"],
+                b["strict_best_run_bins"],
+                b["denoised_still_bins_count"],
+                b["denoised_best_run_s"],
+                b["denoised_best_run_bins"],
+                b4_txt,
+            )
+        )
+
+    L += [
+        "",
+        "### Units and conventions check against `pathfinder.py`",
+        "",
+        "| Sequence | Frontend order (`canonical`) | Timestamp unit (`median dt`, rate) | Rows / 0.25 s bin (need >=5) | Accel unit (median ‖a‖, p05..p95 m/s^2) | Opening 1 s mean accel (x, y, z) m/s^2 | Gyro unit (`gyro_suspect`, median ‖w‖ rad/s) | Opening 1 s mean gyro (x, y, z) rad/s |",
+        "|---|---|---|---|---|---|---|---|",
+    ]
+    for p in probes:
+        u = p["units_and_conventions"]
+        p05, p95 = u["accel_norm_p05_p95_m_s2"]
+        a0 = u["opening_1s_accel_mean_xyz"]
+        g0 = u["opening_1s_gyro_mean_xyz"]
+        fe = u["frontend_detect"]
+        L.append(
+            "| `%s` | `%s` (`%s`) | `%s` (`%.3f ms`, `%.2f Hz`) | `%.1f` | `%s` (`%.3f`, `%.2f..%.2f`) | `(%.3f, %.3f, %.3f)` | `rad/s` (`suspect=%s`, `%.3f`) | `(%.4f, %.4f, %.4f)` |"
+            % (
+                p["sequence"],
+                fe["order"],
+                fe["canonical"],
+                u["timestamp_unit"],
+                u["median_dt_ms"],
+                u["sample_rate_hz"],
+                u["rows_per_025s_bin"],
+                u["accel_unit_detected"],
+                u["accel_norm_median_m_s2"],
+                p05,
+                p95,
+                a0[0],
+                a0[1],
+                a0[2],
+                u["gyro_suspect_deg_s"],
+                u["gyro_norm_median_rad_s"],
+                g0[0],
+                g0[1],
+                g0[2],
+            )
+        )
+
+    if any(p.get("opening_5s_slices") for p in probes):
+        L += [
+            "",
+            "### Opening `5 s` profile (`0..5 s` in `0.5 s` slices, with mocap GT speed)",
+            "",
+            "| Sequence | Window (s) | Max gyro std (rad/s) | Mean ‖w‖ (rad/s) | Max accel std (m/s^2) | Mocap GT mean speed (m/s) | Mocap GT max speed (m/s) |",
+            "|---|---|---|---|---|---|---|",
+        ]
+        for p in probes:
+            for sl in p.get("opening_5s_slices") or []:
+                ta, tb = sl["t_window_s"]
+                L.append(
+                    "| `%s` | %.1f..%.1f | %.4f | %.4f | %.4f | %.4f | %.4f |"
+                    % (
+                        p["sequence"],
+                        ta,
+                        tb,
+                        sl["gyro_std_max_rad_s"],
+                        sl["gyro_rate_mean_rad_s"],
+                        sl["acc_std_max_m_s2"],
+                        sl["mocap_speed_mean_m_s"],
+                        sl["mocap_speed_max_m_s"],
+                    )
+                )
+    return L
+
+
+def build(est: dict, flo: dict, ce: dict, cf: dict, calib: dict | None = None,
+          still_probe: dict | None = None) -> str:
     """Build Docs/TUMVI_BASELINE.md from eval JSONs and calibration diagnostics."""
     bases = sorted({r["base"] for r in est["results"] if "base" in r})
     cleanE = {r["sequence"]: r for r in ce["results"] if "error" not in r}
@@ -292,6 +479,9 @@ def build(est: dict, flo: dict, ce: dict, cf: dict, calib: dict | None = None) -
                 uc,
             ))
 
+    if still_probe:
+        L += _format_still_probe_section(still_probe)
+
     errs = [r["sequence"] for t in (est, flo, ce, cf) for r in t["results"] if "error" in r]
     L += ["", "Runs with errors: %s" % (", ".join(errs) if errs else "none"), ""]
     return "\n".join(L)
@@ -304,11 +494,13 @@ def main(argv=None) -> int:
     ap.add_argument("--clean", default="tumvi-clean")
     ap.add_argument("--floor-clean", default="tumvi-floor-clean")
     ap.add_argument("--calib", default="tumvi-calib")
+    ap.add_argument("--still-probe", default="tumvi-still-probe")
     ap.add_argument("--docs-dir", default=TUMVI_DOCS)
     ap.add_argument("--tumvi-root", default=TUMVI_DATA)
     ap.add_argument("--official-root", default=TUMVI_OFFICIAL)
     ap.add_argument("--out", default=os.path.join(ROOT, "Docs", "TUMVI_BASELINE.md"))
     ap.add_argument("--collect-calib", action="store_true", help="Run pathfinder diagnostics and write calib JSON")
+    ap.add_argument("--collect-still-probe", action="store_true", help="Run G6 stillness probe and write probe JSON")
     a = ap.parse_args(argv)
 
     est = load(os.path.join(a.docs_dir, a.est + ".json"))
@@ -326,7 +518,18 @@ def main(argv=None) -> int:
     else:
         calib = load(calib_path)
 
-    text = build(est, flo, ce, cf, calib)
+    probe_path = os.path.join(a.docs_dir, a.still_probe + ".json")
+    if a.collect_still_probe or not os.path.isfile(probe_path):
+        still_probe = collect_still_probe(clean_root=a.tumvi_root)
+        if still_probe.get("probes"):
+            os.makedirs(a.docs_dir, exist_ok=True)
+            with open(probe_path, "w", encoding="utf-8", newline="\n") as fh:
+                json.dump(still_probe, fh, indent=1, sort_keys=True)
+                fh.write("\n")
+    else:
+        still_probe = load(probe_path)
+
+    text = build(est, flo, ce, cf, calib, still_probe=still_probe)
     with open(a.out, "w", encoding="utf-8", newline="\n") as fh:
         fh.write(text)
     print(text)
