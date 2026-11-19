@@ -1,4 +1,4 @@
-# LOOP_CC   updated 2026-11-20 01:30 IST   iteration 7
+# LOOP_CC   updated 2026-11-20 01:45 IST   iteration 8
 Three Claude Code sessions share the CC queue (agreed between them, 19 Nov ~20:20; earlier iterations' clock times in this file were wrong, read them as ~20:2x-20:3x):
 - CC-loop ("Vortex trajectory accuracy improvement", this file's owner): CC-0, CC-3, CC-4, CC-5.
 - CC-freeze ("Vortex Samsung PRISM hackathon review"): CC-1a on track3/freeze-build (single-file src/main.py,
@@ -34,6 +34,10 @@ NEEDS FROM AG: AG-0 seed inventory: do EuRoC MH_03..05/V1_01..03 a/b seed 13-15 
   on TUM-VI seeds 13-15? (blocks CC-2's judge, not its rule); AG-1 Docker compute ms/IMU-s (decides CC-1b)
 RULES COMMITTED: H at a5f5bd1 (track3/stepL3-blind, CC-L3; BLIND_* frozen), held-out copies may be generated: yes
   -> AG-2: make EuRoC MH_03..05, V1_01..03 x a,b x seeds 13,14,15 (36) and record SHA-256; CC-L3 told not to make them.
+  H' (no-fallback variant): ARNAV RELEASED SEEDS 22-24 (his words in chat, 20 Nov ~01:40 IST: "Release 22-24 for H'").
+  CC-L3 writes rule H' first. Until a line "RULES COMMITTED: H' at <hash>, held-out copies may be generated: yes" appears
+  here, AG must NOT generate any seed 22-24 copy. After it: EuRoC MH_03..05, V1_01..03 x a,b x s22-24 (36) and TUM-VI
+  room3/4 x a,b x s22-24 (12), with SHA-256 in LOOP_AG.md.
   K: not written (CC-3 parked); TUM-VI seeds 19-21 stay unspent: do not generate.
 NUMBERS (CC-loop's own run, AG-1 stand-in; main 550ba68 code = 86711a9 estimator; image python:3.12.7-slim-bookworm,
   inputs COPIED INTO the image, PYTHONDONTWRITEBYTECODE=1, stub main.py + pathfinder.py from source):
@@ -48,6 +52,5 @@ ESCALATION (section 6 item 2, from CC-L3, relayed by CC-loop): rule H condition 
   Cause: on a file with no dead run, the 5 s fallback (BLIND_FALLBACK_S) pulls the last 5 s to the centroid.
   Tempting variant H': dead-run only, no fallback. Clean output then stays byte-identical to OFF; official copies,
   which all end in a zero run, would be unchanged IF detection fires on every one (not yet checked).
-  Options for Arnav: (1) accept OFF; (2) release seeds 22-24 for H' with the rule committed first (~2-3 h, before
-  the v1.0 freeze at Fri 21:00). Recommendation: (2). Blind is 20 points and T shows the on build tying the floor.
-  Meanwhile: CC-L3 completes the seed 13-15 H runs and opens the PR recording OFF; no re-judge without Arnav.
+  ANSWERED by Arnav: option (2), seeds 22-24 released for H'. Rule H itself stays recorded as FAILED (OFF); CC-L3
+  still completes the seed 13-15 H runs for the record.
