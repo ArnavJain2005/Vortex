@@ -2144,6 +2144,28 @@ Informational: rule G's verdict (OFF, 5fd288c) stands as recorded; the decision 
   and the gate. The floor tag `stepG-H-floor` (5fd288c) is reused; the never-moving baseline does not depend on
   the estimator build.
 
+### Gate on the L2 build with TILT_ON shipped (19 Nov 2026; carried over after #61 merged)
+
+Measured on `track3/stepL2-tilt` after #61 was merged, so they arrive here in a follow-up PR. Build: TILT_ON and
+SMOOTH_ON on, before Step 7 (PLATFORM_ON) reached `main`. Tags `Docs/budget/stepL2on-*`; the older
+`stepL2-win-py314*` tags (5fd288c, TILT_ON off) are kept as they were. 15 runs each, `python -S benchmark.py
+--gate`: **PASS on all seven.**
+
+| Python | Input | commit | heap, estimator | whole run, bytecode / none | `python -S main.py` |
+|---|---|---|---|---|---|
+| Windows 3.14.7 | synthetic | 405109e | 1,062 KB | 1,646 / 6,031 KB | 37.3 us/row |
+| Windows 3.14.7 | MH_01_easy_b_s1 | 405109e | 1,234 KB | 1,809 / 6,032 KB | 27.3 us/row |
+| Windows 3.14.7 | MH_01_easy_a_s1 (L2 acts) | 405109e | 1,234 KB | 1,810 / 6,032 KB | 27.1 us/row |
+| Windows 3.13.5 | synthetic | 6084ec2 | 942 KB | 2,258 / 6,349 KB | 31.2 us/row |
+| Windows 3.13.5 | MH_01_easy_a_s1 | 6084ec2 | 1,114 KB | 2,424 / 6,349 KB | 24.7 us/row |
+| WSL2 Ubuntu 3.12.3 | synthetic | 6084ec2 * | 938 KB | 2,013 / 6,078 KB | 25.4 us/row |
+| WSL2 Ubuntu 3.12.3 | MH_01_easy_a_s1 | 6084ec2 * | 1,110 KB | 2,178 / 6,078 KB | 32.1 us/row |
+
+\* The WSL2 records carry `commit: null` (git inside WSL could not read the Windows checkout); they were run on
+6084ec2. All inside the 4 MB heap target and 50 us/row with bytecode; without bytecode, under 8 MB and above
+4 MB. 405109e and 6084ec2 differ only in documents. Not carried over: the branch's NUMBERS.md refresh, which #63
+superseded (NUMBERS.md now comes from the Step 7 + L2 build).
+
 ## CC-4: reading-a gap diagnosis and K8 (19 Nov 2026, loop task CC-4; analysis only, no code change)
 
 **Gap RMSE, reading a, seeds 7-9 (reporting only; `Docs/results/step7m-H79.json` against
