@@ -8,8 +8,15 @@ Three Claude Code sessions share the CC queue (agreed between them, 19 Nov ~20:2
 NOW: CC-loop: waiting for CC-freeze's two bundle layouts, then the add-on's measurement matrix (Win 3.13/3.14, WSL2 3.12,
      Docker 3.12.7); CC-5 at Fri 20 21:00. CC-1b NOT needed (Docker compute below 12 ms/IMU-s, see NUMBERS)
      CC-freeze: CC-1a PLAIN (finishing), then the CHUNKED add-on once Arnav confirms it IN THAT SESSION   track3/freeze-build
-     CC-L3: rule H (seed 13-15 H runs, verdict OFF on record) and rule H' (waits for AG's 48 s22-24 copies)   track3/stepL3-blind
+     CC-L3: rule H' judged on 1-7 (all pass); condition 8 gate waits for a quiet machine   track3/stepL3-blind
 DONE (newest first):
+- CC-L3 (04:30 IST, 20 Nov; CC-loop not live, posted by CC-L3): rule H' conditions 1-7 and the contract PASS at 3b3ad2e
+  (track3/stepL3-blind): H blind 3.072 -> 2.501 m (-18.6 %, floor 2.508), 6/6 sequences better, reading a -23.6 %,
+  b -13.0 %; APE 3.613 -> 3.554 (-1.6 %); gap +0.25 %; T blind 1.308 -> 0.734 (-43.9 %), T APE -4.7 %; clean EuRoC and
+  clean TUM-VI on = off byte for byte; 120 runs contract PASS. Dead-run detection 192/192 EuRoC, 108/108 TUM-VI.
+  Condition 8 (benchmark gate, both switches on) OPEN: two attempts on a loaded machine (my eval jobs, then CC-freeze's
+  rule K chain) gave 68-86 us/row for ON and the shipped OFF build alike (interleaved, same heap peak 1,062 KB synthetic,
+  1,234 KB MH_01_a_s1). Re-run on a quiet machine after CC-freeze's chain ends (~06:30 IST). Nothing flipped yet.
 - AG-2 seed 22-24 copies (rule H') re-hashed by CC-loop: 48/48 SHA-256 match LOOP_AG.md (36 EuRoC in data/official,
   12 room3/4 in data/official_tumvi); on disk 0 seed 19-21, 0 V2, 0 room1/2 s22-24. Sent to CC-L3 to judge H'.
 - Rule H JUDGED OFF (CC-L3, Docs/results/stepH-verdict.txt at d1aa245, read by CC-loop): H block blind 3.087 -> 2.499 m
