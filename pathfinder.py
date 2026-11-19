@@ -1768,6 +1768,11 @@ def main(argv):
         raise
     except BaseException as e:      # noqa: BLE001 (any failure of the estimator: fall back, never fail)
         LAST["fallback"] = "%s: %s" % (type(e).__name__, e)
+        tb = e.__traceback__                 # where it failed: the innermost frame (file, line)
+        while tb is not None and tb.tb_next is not None:
+            tb = tb.tb_next
+        if tb is not None:
+            LAST["fallback"] += " (%s line %d)" % (tb.tb_frame.f_code.co_filename, tb.tb_lineno)
         sys.stderr.write("main.py: the estimator failed (%s); writing a constant pose for every row\n"
                          % LAST["fallback"])
     try:

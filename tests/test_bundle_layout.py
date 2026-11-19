@@ -87,6 +87,10 @@ def test_injected_failure_in_the_estimator_names_main_py_and_pathfinders_line(im
         r = subprocess.run([sys.executable, "-S", str(p), str(imu), str(out)], capture_output=True, text=True)
         assert r.returncode == 0 and "ZeroDivisionError: forced at run time" in r.stderr, (layout, r.stderr)
         assert check_output.check(str(imu), str(out))["ok"]
+        if layout == "chunked":                     # stderr names main.py with pathfinder.py's line number
+            assert "(main.py line %d)" % line in r.stderr, r.stderr
+        else:
+            assert "main.py line " in r.stderr, r.stderr
     # the line number a traceback reports for the chunked file is pathfinder's
     text = make_bundle.chunked_text(120, source=src)
     p = _write(tmp_path, text)
