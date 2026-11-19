@@ -2009,3 +2009,25 @@ Informational: rule G's verdict (OFF, 5fd288c) stands as recorded; the decision 
 Under the 4 MB heap target and 50 us/row with bytecode. Without cached bytecode the compile heap is 6,031 KB:
 above the 4 MB target, under the 8 MB limit (Step 6 on `main` measured 7,338 KB at 8da205d). Tags
 `Docs/budget/stepL2-win-py314*.json`; `Docs/BUDGET.md` rendered.
+
+**Gate on the other Pythons (19 Nov 2026, 6084ec2, shipped build; 15 runs): PASS on all four.**
+
+| Python | Input | heap, estimator | whole run, bytecode / none | `python -S main.py` |
+|---|---|---|---|---|
+| Windows 3.13.5 | synthetic | 942 KB | 2,258 / 6,349 KB | 31.2 us/row |
+| Windows 3.13.5 | MH_01_easy_a_s1 | 1,114 KB | 2,424 / 6,349 KB | 24.7 us/row |
+| WSL2 Ubuntu 3.12.3 | synthetic | 938 KB | 2,013 / 6,078 KB | 25.4 us/row |
+| WSL2 Ubuntu 3.12.3 | MH_01_easy_a_s1 | 1,110 KB | 2,178 / 6,078 KB | 32.1 us/row |
+
+All inside the 4 MB heap target and 50 us/row with bytecode; without bytecode, under 8 MB, above 4 MB.
+
+**`Docs/NUMBERS.md` points at the shipped build (19 Nov).** New tags on 6084ec2, shipped defaults, the same
+copies as the Step 6 sources: `stepL2-H46` (seeds 4-6), `stepL2-H79` (seeds 7-9), `stepL2-shipped-clean`
+(identical to `stepG2-C-on`), `Docs/tumvi/stepL2-tumvi` (official seeds 1-3), `stepL2-tumvi-clean`; budget
+`stepL2-win-py314-mh01-b-s1` and `stepL2-win-py313`. Mean APE, Step 6 -> Step L2 (floor): seeds 4-6 4.648 ->
+3.480 (3.745); seeds 7-9 4.516 -> 3.566 (3.748); clean EuRoC 3.555 -> 3.570 (3.930); TUM-VI copies 2.313 ->
+2.188 (1.137); TUM-VI clean 0.997 -> 0.826 (1.077). The old TUM-VI tags were Antigravity's runs on the build
+before the smoother, so most of the TUM-VI change is likely the smoother: L2 changed nothing on the TUM-VI
+copies measured on/off (room1/2 tuning, G2's room3/4 seeds 16-18 and clean rooms); room3/4 seeds 1-3 were not
+run with L2 off on this build. Seeds 4-9 were spent
+on earlier rules; these are report numbers, not new evidence.
