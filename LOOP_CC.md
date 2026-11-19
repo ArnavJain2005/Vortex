@@ -1,12 +1,13 @@
-# LOOP_CC   updated 2026-11-19 22:20 IST   iteration 4
-Three Claude Code sessions share the CC queue (agreed between them, 19 Nov 20:25-20:40):
+# LOOP_CC   updated 2026-11-19 20:40 IST   iteration 5
+Three Claude Code sessions share the CC queue (agreed between them, 19 Nov ~20:20; earlier iterations' clock times in this file were wrong, read them as ~20:2x-20:3x):
 - CC-loop ("Vortex trajectory accuracy improvement", this file's owner): CC-0, CC-3, CC-4, CC-5.
 - CC-freeze ("Vortex Samsung PRISM hackathon review"): CC-1a on track3/freeze-build (single-file src/main.py,
   B1 forms, B4 fallback, B5 timestamps). Works from Arnav's "Freeze build requirements" prompt, not this loop.
 - CC-L3 ("Vortex trajectory estimation debugging"): CC-2 (L3 blind window, rule H) on track3/stepL3-blind.
   Works from Arnav's direct instruction; it has been sent the loop's rule H text.
-NOW: CC-loop: idle on estimator work (CC-3 parked, CC-4 done); next CC-5 at Fri 20 21:00 (v1.0 zip), CC-1b if AG-1 asks
-     CC-freeze: CC-1a   branch track3/freeze-build (not pushed yet)
+NOW: CC-loop: waiting for CC-freeze's two bundle layouts, then the add-on's measurement matrix (Win 3.13/3.14, WSL2 3.12,
+     Docker 3.12.7); CC-5 at Fri 20 21:00. CC-1b NOT needed (Docker compute below 12 ms/IMU-s, see NUMBERS)
+     CC-freeze: CC-1a PLAIN (finishing), then the CHUNKED add-on once Arnav confirms it IN THAT SESSION   track3/freeze-build
      CC-L3: CC-2, building candidates on tuning   branch track3/stepL3-blind
 DONE (newest first):
 - CC-4 reading-a gap: no bridging bug (error grows 1.5 cm across a burst, max 6 cm); gap RMSE = track error at burst
@@ -27,12 +28,18 @@ DONE (newest first):
 READY FOR ARNAV TO MERGE (in this order): #68 rules ledger + CC-3/CC-4 findings (docs + 1 exploratory tool). It conflicted
   with #67 (both appended to TRACK3_PLAN); main merged in at the branch tip, both sections kept, MERGEABLE now.
 MERGED: #67 (550ba68)
-GIVES TO AG: nothing yet. CC-1a bundle will come from CC-freeze (track3/freeze-build) for AG-3.
+GIVES TO AG: Docker timing above (AG-1 can confirm or replace it). CC-1a bundle will come from CC-freeze (track3/freeze-build) for AG-3.
 NEEDS FROM AG: AG-0 seed inventory: do EuRoC MH_03..05/V1_01..03 a/b seed 13-15 copies exist, and has anything run
   on TUM-VI seeds 13-15? (blocks CC-2's judge, not its rule); AG-1 Docker compute ms/IMU-s (decides CC-1b)
 RULES COMMITTED: none yet (H: by CC-L3, due Fri 20 13:00). K: not written (CC-3 parked); seeds 19-21 stay unspent
-NUMBERS: none new
+NUMBERS (CC-loop's own run, AG-1 stand-in; main 550ba68 code = 86711a9 estimator; image python:3.12.7-slim-bookworm,
+  inputs COPIED INTO the image, PYTHONDONTWRITEBYTECODE=1, stub main.py + pathfinder.py from source):
+  whole process `python -S main.py`, median of 7: MH_01_b_s1 8.87, MH_03_a_s1 8.55, MH_03_b_s1 8.50, room3_a_s1 9.09,
+  room3_b_s1 9.50 ms/IMU-s (44-49 us/row). benchmark.py in the container: 40.05 us/row (~7.8 ms/IMU-s compute),
+  estimator heap 1,110 KB, whole run FROM SOURCE 7,370 KB (MH_01_b_s1). CC-freeze reports from-source 7,514 KB (3.14)
+  and 7,963 KB (3.13) on MH_03_a_s1 for the plain single file: 0.23 MB under the 8 MB hard limit on 3.13.
 PARKED: split of pathfinder.py (ledger A1) | CC-3 hand-held calibration (best tuning gain 1.6 % < 2 %)
-ESCALATION: none from CC-loop. Note for Arnav: from-source heap on main is already 7,188 KB (3.14) / 7,551 KB (3.13)
+ESCALATION: none from CC-loop (heap is with CC-freeze/Arnav; the CHUNKED add-on is Arnav's answer: paste it into the
+  'Vortex Samsung PRISM hackathon review' session, which owns CC-1a and will not act on a relayed copy). Note for Arnav: from-source heap on main is already 7,188 KB (3.14) / 7,551 KB (3.13)
   per NUMBERS (budget_heap_no_bytecode_kb), above the loop's 7 MB gate; CC-freeze is escalating it with CC-1a.
   Likely fix: keep the generated single file under 16,384 tokens (parser step, -0.9 MB).
