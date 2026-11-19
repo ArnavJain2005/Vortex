@@ -93,6 +93,7 @@ Deadline **22 Nov 2026, 11:59 PM IST**, confirmed by the FAQ (Q1 closed). Full-t
 | PRD v2 | PRD v2 (18 Nov) in the repo (`Docs/PRD.md`): levers L1 shrinkage, L2 slow gravity alignment, L3 blind window, L4 hardening, L5 TUM-VI; paired, sequence-level judging (rules G and H); work split Claude Code / Antigravity / ChatGPT. Fallback zip frozen | **Done (verified)** 18 Nov (K0): `dist/vortex_v0.9.zip` from `main` da14417, eval input `data/official/MH_03_medium_b_s1` (placeholder), 26,106 rows, 3.19 ms per IMU-s, heap 1,013 KB; `verify` PASS on Win 3.13 and 3.14; SHA-256 0e558440a397ef4b78426cc471ac8d3fd17f8c658b28a6cd40aeb5a3ba555d6b | Zip verified; never deleted |
 | NUMBERS (K6, early) | `tools/make_numbers.py` -> `Docs/NUMBERS.md` + `Docs/numbers/numbers.json`: every number the deck, script and README may quote, as `key | value | source tag | date`, generated from committed result, TUM-VI, budget and pytest files. Keys are stable (ChatGPT's `[[N:key]]`); when the shipped build changes, `SOURCES` in the script points at the new tags | **Done (verified)** 18 Nov: headline keys reproduce the Step F verdict to the digit (held-out 4.962 vs floor 3.745 m; reading a 6.181, b 3.744; gap 5.036; blind 6.992). Budget from a fresh lean run (`lean-win-py314-mh01-b-s1`) | `tests/test_numbers.py` (3); `--check` in the suite |
 | L2 | Slow gravity alignment over a 4 s window with a lag model, weighted by a gyro noise meter (`TILT_ON`) | **Done (verified): ON** by rule G2 (18 Nov, rule at 3e2646e, seeds 16-18, base with the Step 6 smoother): all 13 checks pass, held-out APE 4.922 -> 3.575 m (floor 3.746), DiD null 1.347 vs 1.187 m. Rule G (seeds 10-12) had failed its level null; G2 was **written after seeing that: weaker evidence, same 6 flights** | Rule G2 on 36 fresh held-out copies + TUM-VI room3/4 |
+| L3 | Blind window from a trusted state (`BLIND_ON`, off): the last rows (trailing dead run, or the last 5 s) replaced from an anchor before the dead run; candidates B0-B3 | **In progress** (19 Nov): candidates and tuning criterion committed before the tuning run; rule H next | Rule H on 36 fresh held-out copies (seeds 13-15) + TUM-VI room3/4 |
 
 ## Open questions (Q1 to Q5 are in the email drafted for prism@samsung.com on 15 Nov)
 
@@ -2143,3 +2144,55 @@ Informational: rule G's verdict (OFF, 5fd288c) stands as recorded; the decision 
 - It agrees with the G2 decision (ship ON) and changes nothing. Not re-run on seeds 10-12: clean EuRoC, TUM-VI
   and the gate. The floor tag `stepG-H-floor` (5fd288c) is reused; the never-moving baseline does not depend on
   the estimator build.
+
+## Step L3: blind window from a trusted state (19-20 Nov 2026, branch `track3/stepL3-blind`)
+
+Base: `main` at 86711a9 (SMOOTH_ON, PLATFORM_ON, TILT_ON shipped). New switch `BLIND_ON`, default off; built in the
+reference (`vortex/core/witness.py`) first, then copied into `pathfinder.py` bit-identically. Candidates are Arnav's
+(loop prompt, 19 Nov, relayed by the Step 7 session), plus one of mine (B2 with beta = 1, below).
+
+**Disclosure (before anything below).** Before Arnav's grid and criterion reached this session, I ran an offline
+probe on the 24 tuning copies only: shipped output, blind rows rewritten, SE3 re-fitted and re-scored. No held-out
+data. Means over the 24 copies, blind RMSE (APE): shipped 4.026 (2.474); hold at failure 3.958 (2.469); hold at the
+mean of the last 2 / 5 / 10 / 20 s 3.888 / 3.775 / 3.743 / 3.652; jump to the estimate's centroid of the rows
+before failure 2.969 (2.426); pull toward it 0.5 x 3.441; exponential pull with tau 0.25 / 0.5 / 1 / 2 / 5 s
+3.042 / 3.110 / 3.232 / 3.405 / 3.653. Floor 2.984 (2.801). This is tuning before a written criterion: it is why
+beta = 1 is on the grid, and the criterion below, not the probe, picks the candidate.
+
+**Why the centroid can only tie the floor in the blind window.** SE3 alignment maps the estimate's centroid onto
+the ground truth's centroid (translation t = mu_gt - R mu_est), and the never-moving floor's constant output goes
+to the same point. Rows held at the estimate's centroid therefore score the same distance as the floor's rows. So
+beta = 1 is a **trust policy, not recovered motion**: it says the estimate at failure is worth less than nothing on
+these copies (MH_01/02: error at failure 6.6-7.1 m against the floor's 5.0 m), and it can never beat the floor in
+the blind window, only tie it.
+
+**Blind start (all candidates).** t_b = timestamp of the first row of the trailing run of rows the estimator
+rejects (not finite or absurd, all-zero accelerometer, or a triple repeated for STUCK_ROWS rows), if that run spans
+at least `BLIND_MIN_S` = 1.0 s. Otherwise fall back to the last 5 s by timestamp (organisers' FAQ A5):
+t_b = t_end - `BLIND_FALLBACK_S` (5.0 s). So the fallback changes the last 5 s of clean files too.
+
+**Candidates** (on the final output, after the smoother; anchor time t_a = t_b - L; anchor row = the last row
+with t < t_a; c = mean output position of the rows with t < t_a):
+- **B0**: shipped (velocity decays with FC_TAU = 0.5 s from the last tick). The control.
+- **B1(L)**, L in {1, 2, 3} s: every row with t >= t_a takes the anchor row's position and attitude.
+- **B2(L, beta)**, L in {1, 2, 3} s, beta in {0.25, 0.5, 0.75} (Arnav) and **1.0** (mine): rows with t >= t_a keep
+  the anchor's attitude; position a + w (c - a) with w = beta min(1, (t - t_a) / L), so the pull ramps over the
+  lookback span (no jump) and is full from t_b on.
+- **B3(L, tau)**, L in {1, 2, 3} s, tau in {0.25, 0.5, 1.0} s, W = 2 s (W was not given; fixed here): velocity =
+  per-axis median of the slopes between output positions sampled every 0.25 s in [t_a - W, t_a), 1 s apart; rows
+  with t >= t_a: position a + v tau (1 - exp(-(t - t_a) / tau)), attitude held.
+25 settings in all.
+
+**Tuning data:** MH_01/02 and TUM-VI room1/2 x readings a, b x seeds 1-3 (24 copies), by an offline harness
+(`tools/blind_tune.py`) that applies each candidate to the shipped output and re-scores (SE3 fitted on the run).
+Clean MH_01/02 and room1/2 are reported for information (the fallback acts on them).
+
+**Selection criterion (Arnav's, committed before the tuning run):** the lowest mean blind RMSE among the
+candidates whose mean tuning APE is not worse than B0's by more than 0.5 % and whose mean gap RMSE is not worse by
+more than 1 %. Error at the failure moment, blind growth and blind RMSE are reported separately. The chosen
+candidate is then built (reference, `pathfinder.py`) and must reproduce the harness numbers.
+
+**Seed 13-15 copies, status at this commit.** EuRoC: none exist (made after rule H is committed, SHA-256
+recorded). TUM-VI room1..4 x a, b x seeds 13-15: made by Antigravity on 18 Nov. The Step 7 platform detector
+(`tools/platform_check.py`, `Docs/tumvi/step7-detect.json`) has read their IMU files for its hand-held statistic;
+no ground truth was read and no estimate was scored on them. Nothing else has run on them.
