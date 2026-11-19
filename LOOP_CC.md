@@ -1,4 +1,4 @@
-# LOOP_CC   updated 2026-11-19 20:40 IST   iteration 5
+# LOOP_CC   updated 2026-11-20 01:05 IST   iteration 6
 Three Claude Code sessions share the CC queue (agreed between them, 19 Nov ~20:20; earlier iterations' clock times in this file were wrong, read them as ~20:2x-20:3x):
 - CC-loop ("Vortex trajectory accuracy improvement", this file's owner): CC-0, CC-3, CC-4, CC-5.
 - CC-freeze ("Vortex Samsung PRISM hackathon review"): CC-1a on track3/freeze-build (single-file src/main.py,
@@ -10,6 +10,8 @@ NOW: CC-loop: waiting for CC-freeze's two bundle layouts, then the add-on's meas
      CC-freeze: CC-1a PLAIN (finishing), then the CHUNKED add-on once Arnav confirms it IN THAT SESSION   track3/freeze-build
      CC-L3: CC-2, building candidates on tuning   branch track3/stepL3-blind
 DONE (newest first):
+- #68 full pytest (main 550ba68 + docs): 408 passed, 2 skipped, 1 xfailed, 1 h 41 min on a machine shared by 3 sessions;
+  test_memory_gate_bounded_and_flat alone 4,707 s under that load (memory gate with backward pass 341 s).
 - CC-4 reading-a gap: no bridging bug (error grows 1.5 cm across a burst, max 6 cm); gap RMSE = track error at burst
   times. No fix. K8: stuck detector kept (longest repeated gyro triplet in 312,179 clean rows = 2; detector needs 5).
   In TRACK3_PLAN "CC-4" on PR #68 (4dfa57d).
@@ -25,13 +27,14 @@ DONE (newest first):
   verify PASS on 3.14 and 3.13; sha256 85e3079bc57450dd582472654939fbd26ef2f752e0980aa8ff3e6dd2734a1c64
 - PARKED: my two-file split of pathfinder.py (compile peak 6.7 -> 4.4 MB) breaks ledger A1 (sibling import); patch kept
   outside the repo. The parser finding (token array doubles past 16,384 tokens, +0.92 MB) went to CC-freeze.
-READY FOR ARNAV TO MERGE (in this order): #68 rules ledger + CC-3/CC-4 findings (docs + 1 exploratory tool). It conflicted
-  with #67 (both appended to TRACK3_PLAN); main merged in at the branch tip, both sections kept, MERGEABLE now.
-MERGED: #67 (550ba68)
-GIVES TO AG: Docker timing above (AG-1 can confirm or replace it). CC-1a bundle will come from CC-freeze (track3/freeze-build) for AG-3.
+READY FOR ARNAV TO MERGE (in this order): none from CC-loop
+MERGED: #67 (550ba68), #68 (355de44)
+GIVES TO AG: rule H handshake above (AG-2 unblocked). CC-1a bundle still with CC-freeze (track3/freeze-build not pushed yet). CC-1a bundle will come from CC-freeze (track3/freeze-build) for AG-3.
 NEEDS FROM AG: AG-0 seed inventory: do EuRoC MH_03..05/V1_01..03 a/b seed 13-15 copies exist, and has anything run
   on TUM-VI seeds 13-15? (blocks CC-2's judge, not its rule); AG-1 Docker compute ms/IMU-s (decides CC-1b)
-RULES COMMITTED: none yet (H: by CC-L3, due Fri 20 13:00). K: not written (CC-3 parked); seeds 19-21 stay unspent
+RULES COMMITTED: H at a5f5bd1 (track3/stepL3-blind, CC-L3; BLIND_* frozen), held-out copies may be generated: yes
+  -> AG-2: make EuRoC MH_03..05, V1_01..03 x a,b x seeds 13,14,15 (36) and record SHA-256; CC-L3 told not to make them.
+  K: not written (CC-3 parked); TUM-VI seeds 19-21 stay unspent: do not generate.
 NUMBERS (CC-loop's own run, AG-1 stand-in; main 550ba68 code = 86711a9 estimator; image python:3.12.7-slim-bookworm,
   inputs COPIED INTO the image, PYTHONDONTWRITEBYTECODE=1, stub main.py + pathfinder.py from source):
   whole process `python -S main.py`, median of 7: MH_01_b_s1 8.87, MH_03_a_s1 8.55, MH_03_b_s1 8.50, room3_a_s1 9.09,
