@@ -64,6 +64,8 @@ Clean (undegraded) IMU input. APE = absolute position error after Umeyama alignm
 | stepG-C-on | 3.91 / 0.480 | 3.85 / 0.591 | 3.53 / 0.983 | 6.38 / 1.193 | 6.55 / 1.023 | 1.76 / 0.408 | 1.72 / 0.677 | 1.41 / 0.557 | 3.64 | 0.739 |
 | stepG2-C-off | 4.23 / 0.295 | 4.54 / 0.364 | 2.71 / 0.344 | 6.26 / 0.829 | 6.56 / 0.761 | 1.89 / 0.211 | 1.03 / 0.217 | 1.22 / 0.168 | 3.56 | 0.399 |
 | stepG2-C-on | 4.23 / 0.295 | 4.54 / 0.364 | 2.71 / 0.344 | 6.26 / 0.829 | 6.56 / 0.761 | 1.89 / 0.211 | 1.03 / 0.217 | 1.34 / 0.239 | 3.57 | 0.407 |
+| stepH-C-off | 4.23 / 0.295 | 4.54 / 0.364 | 2.71 / 0.344 | 6.26 / 0.829 | 6.56 / 0.761 | 1.89 / 0.211 | 1.03 / 0.217 | 1.34 / 0.239 | 3.57 | 0.407 |
+| stepH-C-on | 4.17 / 0.320 | 4.49 / 0.384 | 2.72 / 0.350 | 6.17 / 0.824 | 6.56 / 0.761 | 1.87 / 0.217 | 0.99 / 0.261 | 1.33 / 0.246 | 3.54 | 0.420 |
 | stepL1-C-hi | 4.21 / 0.488 | 4.47 / 0.544 | 3.52 / 1.127 | 6.71 / 1.132 | 6.80 / 1.022 | 1.82 / 0.426 | 1.72 / 0.890 | 1.54 / 0.657 | 3.85 | 0.786 |
 | stepL1-C-lo | 3.91 / 0.480 | 3.85 / 0.591 | 3.53 / 0.983 | 6.38 / 1.193 | 6.55 / 1.023 | 1.76 / 0.408 | 1.72 / 0.677 | 1.55 / 0.469 | 3.65 | 0.728 |
 | stepL1-C-off | 3.91 / 0.480 | 3.85 / 0.591 | 3.53 / 0.983 | 6.38 / 1.193 | 6.55 / 1.023 | 1.76 / 0.408 | 1.72 / 0.677 | 1.55 / 0.469 | 3.65 | 0.728 |
@@ -275,6 +277,22 @@ Clean (undegraded) IMU input. APE = absolute position error after Umeyama alignm
 | stepG2-C-on | V1_01_easy | 2.64 | 2.44 | 1.89 | 1.81 | 0.211 |
 | stepG2-C-on | V1_02_medium | 3.64 | 1.87 | 1.03 | 1.03 | 0.217 |
 | stepG2-C-on | V1_03_difficult | 2.99 | 2.18 | 1.34 | 1.34 | 0.239 |
+| stepH-C-off | MH_01_easy | 6.19 | 7.60 | 4.23 | 4.22 | 0.295 |
+| stepH-C-off | MH_02_easy | 6.59 | 8.57 | 4.54 | 4.53 | 0.364 |
+| stepH-C-off | MH_03_medium | 7.70 | 4.48 | 2.71 | 2.71 | 0.344 |
+| stepH-C-off | MH_04_difficult | 10.92 | 7.07 | 6.26 | 6.18 | 0.829 |
+| stepH-C-off | MH_05_difficult | 10.43 | 7.55 | 6.56 | 6.53 | 0.761 |
+| stepH-C-off | V1_01_easy | 2.64 | 2.44 | 1.89 | 1.81 | 0.211 |
+| stepH-C-off | V1_02_medium | 3.64 | 1.87 | 1.03 | 1.03 | 0.217 |
+| stepH-C-off | V1_03_difficult | 2.99 | 2.18 | 1.34 | 1.34 | 0.239 |
+| stepH-C-on | MH_01_easy | 6.19 | 7.58 | 4.17 | 4.17 | 0.320 |
+| stepH-C-on | MH_02_easy | 6.59 | 8.56 | 4.49 | 4.49 | 0.384 |
+| stepH-C-on | MH_03_medium | 7.66 | 4.46 | 2.72 | 2.72 | 0.350 |
+| stepH-C-on | MH_04_difficult | 10.89 | 7.04 | 6.17 | 5.99 | 0.824 |
+| stepH-C-on | MH_05_difficult | 10.44 | 7.55 | 6.56 | 6.53 | 0.761 |
+| stepH-C-on | V1_01_easy | 2.64 | 2.44 | 1.87 | 1.80 | 0.217 |
+| stepH-C-on | V1_02_medium | 3.61 | 1.81 | 0.99 | 0.99 | 0.261 |
+| stepH-C-on | V1_03_difficult | 2.98 | 2.18 | 1.33 | 1.33 | 0.246 |
 | stepL1-C-hi | MH_01_easy | 6.13 | 6.95 | 4.21 | 3.73 | 0.488 |
 | stepL1-C-hi | MH_02_easy | 6.48 | 7.64 | 4.47 | 3.02 | 0.544 |
 | stepL1-C-hi | MH_03_medium | 8.13 | 4.71 | 3.52 | 3.48 | 1.127 |
@@ -578,6 +596,22 @@ Clean (undegraded) IMU input. APE = absolute position error after Umeyama alignm
 | stepG2-C-on | main.py TILT_ON=True | 3e2646e | 2026-11-18 | V1_01_easy | PASS | 1.89 | 1.80 | 1.81 | 0.429 | 0.211 | 1.07 |
 | stepG2-C-on | main.py TILT_ON=True | 3e2646e | 2026-11-18 | V1_02_medium | PASS | 1.03 | 1.50 | 1.03 | 0.998 | 0.217 | 0.67 |
 | stepG2-C-on | main.py TILT_ON=True | 3e2646e | 2026-11-18 | V1_03_difficult | PASS | 1.34 | 1.25 | 1.34 | 0.971 | 0.239 | 0.75 |
+| stepH-C-off | main.py | a5f5bd1 | 2026-11-20 | MH_01_easy | PASS | 4.23 | 6.14 | 4.22 | 0.756 | 0.295 | 1.03 |
+| stepH-C-off | main.py | a5f5bd1 | 2026-11-20 | MH_02_easy | PASS | 4.54 | 5.76 | 4.53 | 0.759 | 0.364 | 0.91 |
+| stepH-C-off | main.py | a5f5bd1 | 2026-11-20 | MH_03_medium | PASS | 2.71 | 3.18 | 2.71 | 1.04 | 0.344 | 0.86 |
+| stepH-C-off | main.py | a5f5bd1 | 2026-11-20 | MH_04_difficult | PASS | 6.26 | 5.87 | 6.18 | 1.56 | 0.829 | 0.66 |
+| stepH-C-off | main.py | a5f5bd1 | 2026-11-20 | MH_05_difficult | PASS | 6.56 | 4.14 | 6.53 | 1.39 | 0.761 | 0.78 |
+| stepH-C-off | main.py | a5f5bd1 | 2026-11-20 | V1_01_easy | PASS | 1.89 | 1.80 | 1.81 | 0.429 | 0.211 | 1.02 |
+| stepH-C-off | main.py | a5f5bd1 | 2026-11-20 | V1_02_medium | PASS | 1.03 | 1.50 | 1.03 | 0.998 | 0.217 | 0.66 |
+| stepH-C-off | main.py | a5f5bd1 | 2026-11-20 | V1_03_difficult | PASS | 1.34 | 1.25 | 1.34 | 0.971 | 0.239 | 0.72 |
+| stepH-C-on | main.py BLIND_ON=True | a5f5bd1 | 2026-11-20 | MH_01_easy | PASS | 4.17 | 5.24 | 4.17 | 1.02 | 0.320 | 1.10 |
+| stepH-C-on | main.py BLIND_ON=True | a5f5bd1 | 2026-11-20 | MH_02_easy | PASS | 4.49 | 5.59 | 4.49 | 0.893 | 0.384 | 1.11 |
+| stepH-C-on | main.py BLIND_ON=True | a5f5bd1 | 2026-11-20 | MH_03_medium | PASS | 2.72 | 3.16 | 2.72 | 1.05 | 0.350 | 0.97 |
+| stepH-C-on | main.py BLIND_ON=True | a5f5bd1 | 2026-11-20 | MH_04_difficult | PASS | 6.17 | 3.85 | 5.99 | 1.83 | 0.824 | 0.78 |
+| stepH-C-on | main.py BLIND_ON=True | a5f5bd1 | 2026-11-20 | MH_05_difficult | PASS | 6.56 | 4.21 | 6.53 | 1.39 | 0.761 | 0.86 |
+| stepH-C-on | main.py BLIND_ON=True | a5f5bd1 | 2026-11-20 | V1_01_easy | PASS | 1.87 | 1.73 | 1.80 | 0.469 | 0.217 | 1.23 |
+| stepH-C-on | main.py BLIND_ON=True | a5f5bd1 | 2026-11-20 | V1_02_medium | PASS | 0.99 | 1.22 | 0.99 | 1.04 | 0.261 | 0.80 |
+| stepH-C-on | main.py BLIND_ON=True | a5f5bd1 | 2026-11-20 | V1_03_difficult | PASS | 1.33 | 1.34 | 1.33 | 1.01 | 0.246 | 0.85 |
 | stepL1-C-hi | main.py SHRINK_ALPHA_LO=1.0 SHRINK_ON=True | d56c875 | 2026-11-18 | MH_01_easy | PASS | 4.21 | 5.35 | 3.73 | 10.9 | 0.488 | 0.80 |
 | stepL1-C-hi | main.py SHRINK_ALPHA_LO=1.0 SHRINK_ON=True | d56c875 | 2026-11-18 | MH_02_easy | PASS | 4.47 | 5.54 | 3.02 | 15.3 | 0.544 | 0.64 |
 | stepL1-C-hi | main.py SHRINK_ALPHA_LO=1.0 SHRINK_ON=True | d56c875 | 2026-11-18 | MH_03_medium | PASS | 3.52 | 3.26 | 3.48 | 2.9 | 1.127 | 0.62 |

@@ -110,6 +110,7 @@ BLIND_MIN_S = 1.0            # s: a trailing run of rejected rows at least this 
 BLIND_FALLBACK_S = 5.0       # s: otherwise the last 5 s by timestamp (organisers' FAQ A5)
 BLIND_L = 3.0                # s, lookback before the blind start: the anchor
 BLIND_BETA = 1.0             # pull from the anchor toward the centroid of the rows before it, ramped over BLIND_L
+BLIND_DEAD_ONLY = False      # rule H': act only on a detected dead run (no BLIND_FALLBACK_S rows); off until H' decides
 SMOOTH_ON = True             # Step 6: ON (rule passed 18 Nov 2026); fixed-interval (RTS) smoother at the tick (vortex/core/witness.py smooth_*)
 SMOOTH_MAX_BLOCKS = 1024     # stored blocks (fixed cap; a full store merges adjacent pairs): <= 1.05 MB of floats
 PLATFORM_ON = True           # Step 7: ON (rule passed 18 Nov 2026); hand-held envelope (HH_*) when the file is hand-held (vortex/core/platform.py)
@@ -1695,7 +1696,8 @@ def _run(src, dst, write=True, integrate=True, store=None, corr=None, hh=False, 
         if out:
             w(b"".join(out))
     if bt and btz is not None:
-        store["blind_t"] = (bt0 if brun and btz - bt0 >= int(BLIND_MIN_S * 1e9)
+        bdet = brun and btz - bt0 >= int(BLIND_MIN_S * 1e9)
+        store["blind_t"] = (bt0 if bdet else None if BLIND_DEAD_ONLY
                             else btz - int(BLIND_FALLBACK_S * 1e9))
     if smooth:
         store["blocks"] = blocks

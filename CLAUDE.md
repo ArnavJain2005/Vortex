@@ -111,6 +111,7 @@ python tools/tilt_tune.py --tag stepL2-tune --reverse --grid "TILT_TAU=4"   # 18
 python tools/judge_stepG.py --floor T --off T --on T --on-rev T --c-off T --c-on T [--t-off T --t-on T --ct-off T --ct-on T] --gate PASS  # rule G (L2), seeds 10-12
 python tools/blind_tune.py --tag stepL3-tune                              # 19 Nov: L3 candidates B0-B3 on the 24 tuning copies (offline, shipped output); chose B2 L=3 beta=1
 python tools/judge_stepH.py --floor T --off T --on T --c-off T --c-on T --t-off T --t-on T --ct-off T --ct-on T [--t-floor T] --gate PASS  # rule H (L3), seeds 13-15
+python tools/judge_stepH.py --rule H' --floor T --off T ... --gate PASS                                  # rule H' (L3, BLIND_DEAD_ONLY), seeds 22-24; tags stepHP-*
 python tools/baseline_table.py --est TAG --floor TAG --clean TAG --floor-clean TAG --out NAME  # estimator vs floor per sequence/reading; Docs/NAME.md
 python -m vortex.degrade data/euroc/MH_03_medium data/degraded/MH_03_medium_s4 --seed 4  # HISTORY: our own fault model (not the official one); <seq>_s<seed>
 python tools/eval_euroc.py --tag NAME --degraded [--seqs MH_03_medium_s4,...]  # every data/degraded copy; alignment from the clean run

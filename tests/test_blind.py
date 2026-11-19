@@ -16,7 +16,7 @@ sys.path.insert(0, str(ROOT / "tests"))
 sys.path.insert(0, str(ROOT / "tools"))
 
 DT_NS = 5_000_000
-NAMES = ("BLIND_ON", "BLIND_MIN_S", "BLIND_FALLBACK_S", "BLIND_L", "BLIND_BETA")
+NAMES = ("BLIND_ON", "BLIND_MIN_S", "BLIND_FALLBACK_S", "BLIND_L", "BLIND_BETA", "BLIND_DEAD_ONLY")
 
 
 def _rows(seconds=40.0, dead_s=5.0, dead="zeros", seed=7):
@@ -40,6 +40,7 @@ def _times(rows):
 def test_shipped_state_off():
     import test_core_equivalence as tce
     assert wx.BLIND_ON is False and tce.main.BLIND_ON is False and tce.LAB.BLIND_ON is False
+    assert wx.BLIND_DEAD_ONLY is False and tce.main.BLIND_DEAD_ONLY is False and tce.LAB.BLIND_DEAD_ONLY is False
 
 
 def test_parameters_identical():
@@ -153,3 +154,46 @@ def test_built_switch_reproduces_the_tuning_harness():
     # the harness works in float seconds (resolution ~2e-7 s at 1.4e9 s), the estimator in integer ns
     np.testing.assert_allclose(p2, on[:, :3], atol=1e-6)
     np.testing.assert_allclose(R2, np.array([quat_to_matrix(q) for q in on[:, 3:]]), atol=1e-12)
+
+
+# Rule H' (BLIND_DEAD_ONLY): the same blend, but only when a trailing dead run >= BLIND_MIN_S is detected; no fallback.
+
+@pytest.mark.parametrize("dead", ["zeros", "nan"])
+def test_dead_only_same_as_blind_on_a_detected_run(monkeypatch, dead):
+    rows, _ = _rows(dead=dead)
+    on = wx.estimate(rows, blind=True)
+    monkeypatch.setattr(wx, "BLIND_DEAD_ONLY", True)
+    assert wx.estimate(rows, blind=True) == on
+
+
+@pytest.mark.parametrize("dead_s", [0.0, 0.5])
+def test_dead_only_leaves_a_file_without_a_detected_run_alone(monkeypatch, dead_s):
+    rows, _ = _rows(dead_s=dead_s)                                    # clean, or a 0.5 s run (< BLIND_MIN_S)
+    off = wx.estimate(rows, blind=False)
+    assert wx.estimate(rows, blind=True) != off                       # the fallback would act
+    monkeypatch.setattr(wx, "BLIND_DEAD_ONLY", True)
+    assert wx.estimate(rows, blind=True) == off
+
+
+@pytest.mark.parametrize("case", ["zeros", "fallback"])
+def test_dead_only_pathfinder_matches_reference_and_lab(tmp_path, monkeypatch, case):
+    import test_core_equivalence as tce
+    from test_core_equivalence import _compare, _write_rows
+    pf, lab = tce.main, tce.LAB
+    rows, k = _rows(dead_s=0.0 if case == "fallback" else 5.0)
+    src = _write_rows(tmp_path / "imu.csv", rows)
+    off = tmp_path / "off.txt"
+    pf.run(str(src), str(off))
+    for mod in (wx, pf, lab):
+        monkeypatch.setattr(mod, "BLIND_ON", True)
+        monkeypatch.setattr(mod, "BLIND_DEAD_ONLY", True)
+    a, b = tmp_path / "pf.txt", tmp_path / "lab.txt"
+    pf.run(str(src), str(a))
+    lab.run(str(src), str(b))
+    assert a.read_bytes() == b.read_bytes()
+    if case == "fallback":
+        assert pf.LAST["blind_t"] is None and a.read_bytes() == off.read_bytes()
+    else:
+        assert pf.LAST["blind_t"] == rows[k][0] and a.read_bytes() != off.read_bytes()
+    dp, dq = _compare(src, tmp_path, monkeypatch)                     # last: it sets full-precision output
+    assert dp < 1e-9

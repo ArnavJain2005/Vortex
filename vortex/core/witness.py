@@ -206,6 +206,7 @@ BLIND_MIN_S = 1.0            # s: a trailing run of rejected rows at least this 
 BLIND_FALLBACK_S = 5.0       # s: otherwise the last 5 s by timestamp (organisers' FAQ A5)
 BLIND_L = 3.0                # s, lookback: the anchor is the last row before t_b - BLIND_L (tuning: 1 / 2 / 3 s)
 BLIND_BETA = 1.0             # pull from the anchor toward the centroid of the rows before it, ramped over BLIND_L
+BLIND_DEAD_ONLY = False      # rule H': act only on a detected dead run (no BLIND_FALLBACK_S rows); off until H' decides
 N = 15
 
 
@@ -873,7 +874,9 @@ def estimate(rows, v1=None, v2=None, v2p=None, log=None, jam=None, gap_on=None, 
     if smooth:
         smooth_apply(out, rows, anchor, blocks, st_prev, sd_prev)
     if bon and btz is not None:
-        blind_apply(out, rows, bt0 if brun and btz - bt0 >= int(BLIND_MIN_S * 1e9) else btz - int(BLIND_FALLBACK_S * 1e9))
+        bdet = brun and btz - bt0 >= int(BLIND_MIN_S * 1e9)
+        if bdet or not BLIND_DEAD_ONLY:
+            blind_apply(out, rows, bt0 if bdet else btz - int(BLIND_FALLBACK_S * 1e9))
     return out
 
 

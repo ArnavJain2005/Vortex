@@ -20,6 +20,11 @@ floor in the blind window, never beat it. If the rule fails, BLIND_ON stays off 
     python tools/judge_stepH.py --floor stepH-H-floor --off stepH-H-off --on stepH-H-on --c-off stepH-C-off
         --c-on stepH-C-on --t-off ../tumvi/stepH-T-off --t-on ../tumvi/stepH-T-on --ct-off ../tumvi/stepH-CT-off
         --ct-on ../tumvi/stepH-CT-on [--t-floor ../tumvi/stepH-T-floor] --gate PASS
+
+Rule H' (written after rule H failed condition 7 on clean TUM-VI; weaker evidence): the same conditions 1-8 on seeds
+22-24, on = BLIND_ON and BLIND_DEAD_ONLY (no 5 s fallback: a file without a detected trailing dead run >= BLIND_MIN_S
+is left alone). Tags stepHP-*:
+    python tools/judge_stepH.py --rule H' --floor stepHP-H-floor --off stepHP-H-off --on stepHP-H-on ...
 """
 import math
 import os
@@ -29,6 +34,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from judge_stepG import SEQS, T_ROOMS, apem, load, mean  # noqa: E402
 
 SEEDS = (13, 14, 15)
+SEEDS_HP = (22, 23, 24)     # rule H'
 BLIND_GAIN = 0.02
 SEQ_MIN = 4
 READING = 0.01
@@ -39,14 +45,14 @@ T_APE = 0.005
 CLEAN = 0.005
 
 
-def judge(floor, off, on, c_off, c_on, t_off, t_on, ct_off, ct_on, gate, t_floor=None):
+def judge(floor, off, on, c_off, c_on, t_off, t_on, ct_off, ct_on, gate, t_floor=None, seeds=SEEDS, switch="BLIND_ON"):
     H = sorted(off)
     assert len(H) == 36 and set(H) == set(on) == set(floor), "H: 36 copies per tag"
-    assert all(int(n.rsplit("_s", 1)[1]) in SEEDS for n in H), "H must be the seed 13-15 copies"
+    assert all(int(n.rsplit("_s", 1)[1]) in seeds for n in H), "H must be the rule's seed copies"
     assert all(any(n.startswith(s) for s in SEQS) for n in H)
     assert len(c_off) == len(c_on) == 8, "C: the 8 clean EuRoC sequences"
     assert len(t_off) == len(t_on) == 12 and set(t_off) == set(t_on), "T: 12 TUM-VI copies"
-    assert all(any(n.startswith(r) for r in T_ROOMS) and int(n.rsplit("_s", 1)[1]) in SEEDS for n in t_off)
+    assert all(any(n.startswith(r) for r in T_ROOMS) and int(n.rsplit("_s", 1)[1]) in seeds for n in t_off)
     assert len(ct_off) == len(ct_on) == 4, "CT: clean TUM-VI room1..4"
     rel = lambda a, b: (b - a) / a  # noqa: E731
     checks = []
@@ -89,7 +95,8 @@ def judge(floor, off, on, c_off, c_on, t_off, t_on, ct_off, ct_on, gate, t_floor
     for c, v, p in checks:
         print("  %-46s %-38s %s" % (c, v, "pass" if p else "FAIL"))
     verdict = all(p for _, _, p in checks)
-    print("\nPer sequence (mean of 6 copies: readings a, b x seeds 13-15; MH/V1 seeds re-use the same 6 flights)")
+    print("\nPer sequence (mean of 6 copies: readings a, b x seeds %d-%d; MH/V1 seeds re-use the same 6 flights)"
+          % (seeds[0], seeds[-1]))
     print("| Sequence | blind off | blind on | paired blind effect | floor blind | APE off | APE on | floor APE |")
     print("|---|---|---|---|---|---|---|---|")
     gains = []
@@ -106,7 +113,7 @@ def judge(floor, off, on, c_off, c_on, t_off, t_on, ct_off, ct_on, gate, t_floor
     if t_floor is not None:
         print("TUM-VI block floor: blind %.3f m, APE %.3f m." % (mean(t_floor, "blind_rmse"), apem(t_floor)))
     print("A trust policy, not recovered motion: blind rows at the estimate's centroid tie the floor at best.")
-    print("VERDICT: %s" % ("BLIND_ON ships ON" if verdict else "BLIND_ON ships OFF (no re-judge; escalate to Arnav)"))
+    print("VERDICT: %s" % ("%s ships ON" % switch if verdict else "%s ships OFF (no re-judge; escalate to Arnav)" % switch))
     return verdict
 
 
@@ -119,7 +126,9 @@ def main(argv):
         print(__doc__)
         return 2
     tf = load(get("--t-floor")) if get("--t-floor") else None
-    return 0 if judge(*tabs, get("--gate", "not run"), t_floor=tf) else 1
+    hp = get("--rule") == "H'"
+    return 0 if judge(*tabs, get("--gate", "not run"), t_floor=tf, seeds=SEEDS_HP if hp else SEEDS,
+                      switch="BLIND_ON + BLIND_DEAD_ONLY" if hp else "BLIND_ON") else 1
 
 
 if __name__ == "__main__":

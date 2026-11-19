@@ -82,3 +82,23 @@ def test_wrong_seeds_refused():
     off = {k.replace("_s13", "_s10"): v for k, v in _h().items()}
     with pytest.raises(AssertionError):
         _run(off=off)
+
+
+def _reseed(tab):
+    out = {}
+    for k, v in tab.items():
+        n = k.replace("_s13", "_s22").replace("_s14", "_s23").replace("_s15", "_s24")
+        out[n] = dict(v, sequence=n, seed=int(n.rsplit("_s", 1)[1]))
+    return out
+
+
+def test_rule_hp_takes_seeds_22_24_only(capsys):
+    hp = (_reseed(_h(blind=2.5)), _reseed(_h()), _reseed(_h(blind=2.6)), _c(CLEAN, 3.6), _c(CLEAN, 3.6),
+          _reseed(_t()), _reseed(_t(blind=0.7)), _c(ROOMS, 0.83), _c(ROOMS, 0.83), "PASS")
+    assert jh.judge(*hp, seeds=jh.SEEDS_HP, switch="BLIND_ON + BLIND_DEAD_ONLY")
+    assert "BLIND_ON + BLIND_DEAD_ONLY ships ON" in capsys.readouterr().out
+    with pytest.raises(AssertionError):
+        jh.judge(*hp)                                        # rule H's seeds refuse the H' copies
+    with pytest.raises(AssertionError):
+        jh.judge(_h(blind=2.5), _h(), _h(blind=2.6), _c(CLEAN, 3.6), _c(CLEAN, 3.6), _t(), _t(blind=0.7),
+                 _c(ROOMS, 0.83), _c(ROOMS, 0.83), "PASS", seeds=jh.SEEDS_HP)   # and H' refuses seeds 13-15
