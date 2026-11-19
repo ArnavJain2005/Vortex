@@ -1,4 +1,4 @@
-# LOOP_CC   updated 2026-11-20 01:35 IST   iteration 10
+# LOOP_CC   updated 2026-11-20 01:40 IST   iteration 11
 Three Claude Code sessions share the CC queue (agreed between them, 19 Nov ~20:20; earlier iterations' clock times in this file were wrong, read them as ~20:2x-20:3x):
 - CC-loop ("Vortex trajectory accuracy improvement", this file's owner): CC-0, CC-3, CC-4, CC-5.
 - CC-freeze ("Vortex Samsung PRISM hackathon review"): CC-1a on track3/freeze-build (single-file src/main.py,
@@ -10,6 +10,8 @@ NOW: CC-loop: waiting for CC-freeze's two bundle layouts, then the add-on's meas
      CC-freeze: CC-1a PLAIN (finishing), then the CHUNKED add-on once Arnav confirms it IN THAT SESSION   track3/freeze-build
      CC-L3: rule H (seed 13-15 H runs, verdict OFF on record) and rule H' (waits for AG's 48 s22-24 copies)   track3/stepL3-blind
 DONE (newest first):
+- AG-2 seed 22-24 copies (rule H') re-hashed by CC-loop: 48/48 SHA-256 match LOOP_AG.md (36 EuRoC in data/official,
+  12 room3/4 in data/official_tumvi); on disk 0 seed 19-21, 0 V2, 0 room1/2 s22-24. Sent to CC-L3 to judge H'.
 - Rule H JUDGED OFF (CC-L3, Docs/results/stepH-verdict.txt at d1aa245, read by CC-loop): H block blind 3.087 -> 2.499 m
   (-19.1 %, floor 2.508), 5/6 sequences better, APE -1.4 %, gap -2.1 %; conditions 1-6 pass; 7 FAILS (clean TUM-VI
   +1.13 %); 8's benchmark gate not run. H' clean blocks at fb36d77: on = off exactly (C 3.5701, CT 0.8793 m).
