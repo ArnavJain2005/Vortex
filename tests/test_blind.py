@@ -37,6 +37,18 @@ def _times(rows):
     return np.array([t for t, _ in rows], dtype=float) * 1e-9
 
 
+@pytest.fixture(autouse=True)
+def _switches_off(request, monkeypatch):
+    """Each test starts from BLIND_ON and BLIND_DEAD_ONLY off and sets what it needs, whatever ships; the two
+    shipped-state tests read the real values."""
+    if request.node.name.startswith(("test_shipped_state", "test_parameters_identical")):
+        return
+    import test_core_equivalence as tce
+    for mod in (wx, tce.main, tce.LAB):
+        monkeypatch.setattr(mod, "BLIND_ON", False)
+        monkeypatch.setattr(mod, "BLIND_DEAD_ONLY", False)
+
+
 def test_shipped_state_off():
     import test_core_equivalence as tce
     assert wx.BLIND_ON is False and tce.main.BLIND_ON is False and tce.LAB.BLIND_ON is False
