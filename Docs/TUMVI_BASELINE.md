@@ -77,4 +77,60 @@ Estimator: `main.py` at da14417 (unchanged shipped settings). Floor: `tools/base
 | dataset-room4_512_16_b_s2 | accel_first (data) | False (fallback_zero) | 0 | 0 | 0.0000 | <= 0.15 | - |
 | dataset-room4_512_16_b_s3 | accel_first (data) | False (fallback_zero) | 0 | 0 | 0.0000 | <= 0.15 | - |
 
+## Stillness calibration diagnosis on tuning rooms (`room1`, `room2`; `tools/tumvi_still_probe.py`)
+
+Hand-held finding: all units and conventions on TUM-VI match EuRoC (`gyro_first`, integer `ns` timestamps at `199.36 Hz`, accelerometer in `m/s^2`, gyro in `rad/s`), and mocap ground-truth speed during the opening `5 s` is only `0.011..0.050 m/s` (`0..4.5 s` before walking begins). Stillness calibration (`_calibrate` and fallback `_initialise`) nevertheless falls back to `fallback_zero` because the rig is hand-held rather than resting on a rigid surface: angular and linear hand micro-motion keeps per-axis `max(std_g)` (`>= 0.0381 rad/s` on `room1`, `>= 0.0847 rad/s` on `room2`; `1.91x..4.23x` above `STILL_GYRO_STD = 0.02 rad/s`) and `max(std_a)` (`>= 0.1022 m/s^2` on `room1`, `>= 0.1482 m/s^2` on `room2`; `1.02x..1.48x` above `STILL_ACC_STD = 0.10 m/s^2`) above the rigid-rest thresholds in every `1 s` window. The denoised retry (`_still_denoised`, `CAL_NOISE_ON = True`) subtracts only high-frequency second-difference white noise and leaves low-frequency hand sway intact (**1-5 Hz physiological tremor frequency band: not measured — no frequency spectrum was run**).
+
+### Best `1 s` windows and opening `1 s` window (`0..60 s`)
+
+| Sequence | Window | t (s) | Gyro std (x, y, z) rad/s | Max gyro std (vs 0.02) | Accel std (x, y, z) m/s^2 | Max accel std (vs 0.10) | ‖a‖-9.81 m/s^2 | std(‖a‖) m/s^2 | ‖mean_g‖ rad/s (vs 0.15) | Passes? |
+|---|---|---|---|---|---|---|---|---|---|---|
+| `dataset-room1_512_16` | Opening 1 s [0..1s] | 0..1 | (0.0928, 0.1001, 0.1037) | **0.1037** (5.18x) | (0.1982, 0.2526, 0.2296) | **0.2526** (2.53x) | +0.0074 | 0.2327 (2.33x) | 0.0422 (0.28x) | NO |
+| `dataset-room1_512_16` | Best 1 s (combined) | 5..6 | (0.0329, 0.0281, 0.0381) | **0.0381** (1.91x) | (0.1379, 0.0667, 0.0718) | **0.1379** (1.38x) | -0.0307 | 0.0733 (0.73x) | 0.0333 (0.22x) | NO |
+| `dataset-room1_512_16` | Best 1 s (gyro std) | 5..6 | (0.0329, 0.0281, 0.0381) | **0.0381** (1.91x) | (0.1379, 0.0667, 0.0718) | **0.1379** (1.38x) | -0.0307 | 0.0733 (0.73x) | 0.0333 (0.22x) | NO |
+| `dataset-room1_512_16` | Best 1 s (acc std) | 4..5 | (0.0463, 0.0362, 0.0307) | **0.0463** (2.31x) | (0.0671, 0.0574, 0.1022) | **0.1022** (1.02x) | -0.0410 | 0.1043 (1.04x) | 0.0156 (0.10x) | NO |
+| `dataset-room2_512_16` | Opening 1 s [0..1s] | 0..1 | (0.0967, 0.0914, 0.1293) | **0.1293** (6.47x) | (0.4390, 0.4569, 0.2422) | **0.4569** (4.57x) | -0.0168 | 0.2495 (2.50x) | 0.0428 (0.29x) | NO |
+| `dataset-room2_512_16` | Best 1 s (combined) | 1..2 | (0.0782, 0.0847, 0.0489) | **0.0847** (4.23x) | (0.1946, 0.1501, 0.1946) | **0.1946** (1.95x) | -0.0490 | 0.1949 (1.95x) | 0.0216 (0.14x) | NO |
+| `dataset-room2_512_16` | Best 1 s (gyro std) | 1..2 | (0.0782, 0.0847, 0.0489) | **0.0847** (4.23x) | (0.1946, 0.1501, 0.1946) | **0.1946** (1.95x) | -0.0490 | 0.1949 (1.95x) | 0.0216 (0.14x) | NO |
+| `dataset-room2_512_16` | Best 1 s (acc std) | 3..4 | (0.1182, 0.0516, 0.0479) | **0.1182** (5.91x) | (0.0698, 0.1482, 0.1237) | **0.1482** (1.48x) | -0.0269 | 0.1235 (1.23x) | 0.0274 (0.18x) | NO |
+
+### `0.25 s` calibration bins (`240` bins in `0..60 s`)
+
+| Sequence | Bins `gyro_std < 0.02` | Bins `acc_std < 0.10` | Bins `‖bg‖ <= 0.15` | Bins `8.8 <= ‖a‖ <= 10.8` | Strict still bins | Longest strict run (need 1.00 s) | Denoised still bins | Longest denoised run (need 1.00 s) | Best 4-bin (`1.0 s`) bottleneck miss factor |
+|---|---|---|---|---|---|---|---|---|---|
+| `dataset-room1_512_16` | 1/240 | 12/240 | 27/240 | 119/240 | **1/240** | **0.25 s** (1 bins) | **1/240** | **0.25 s** (1 bins) | 3.25..4.25s: gyro_std 5.89x, acc_std 1.10x, steady_g 8.13x, steady_a 2.65x |
+| `dataset-room2_512_16` | 0/240 | 2/240 | 17/240 | 160/240 | **0/240** | **0.00 s** (0 bins) | **0/240** | **0.00 s** (0 bins) | 2.50..3.50s: gyro_std 4.23x, acc_std 1.59x, steady_g 12.83x, steady_a 1.07x |
+
+### Units and conventions check against `pathfinder.py`
+
+| Sequence | Frontend order (`canonical`) | Timestamp unit (`median dt`, rate) | Rows / 0.25 s bin (need >=5) | Accel unit (median ‖a‖, p05..p95 m/s^2) | Opening 1 s mean accel (x, y, z) m/s^2 | Gyro unit (`gyro_suspect`, median ‖w‖ rad/s) | Opening 1 s mean gyro (x, y, z) rad/s |
+|---|---|---|---|---|---|---|---|
+| `dataset-room1_512_16` | `gyro_first` (`True`) | `ns` (`5.016 ms`, `199.36 Hz`) | `49.8` | `m/s^2` (`9.967`, `6.57..13.50`) | `(-0.009, 0.225, 9.810)` | `rad/s` (`suspect=False`, `1.262`) | `(0.0219, -0.0361, -0.0014)` |
+| `dataset-room2_512_16` | `gyro_first` (`True`) | `ns` (`5.016 ms`, `199.36 Hz`) | `49.8` | `m/s^2` (`9.816`, `7.91..11.96`) | `(0.015, -0.379, 9.766)` | `rad/s` (`suspect=False`, `0.859`) | `(0.0274, -0.0258, -0.0203)` |
+
+### Opening `5 s` profile (`0..5 s` in `0.5 s` slices, with mocap GT speed)
+
+| Sequence | Window (s) | Max gyro std (rad/s) | Mean ‖w‖ (rad/s) | Max accel std (m/s^2) | Mocap GT mean speed (m/s) | Mocap GT max speed (m/s) |
+|---|---|---|---|---|---|---|
+| `dataset-room1_512_16` | 0.0..0.5 | 0.1173 | 0.1678 | 0.2657 | 0.0305 | 0.0791 |
+| `dataset-room1_512_16` | 0.5..1.0 | 0.0799 | 0.1363 | 0.2217 | 0.0281 | 0.0634 |
+| `dataset-room1_512_16` | 1.0..1.5 | 0.0650 | 0.1049 | 0.1598 | 0.0305 | 0.0549 |
+| `dataset-room1_512_16` | 1.5..2.0 | 0.0404 | 0.0789 | 0.0885 | 0.0213 | 0.0617 |
+| `dataset-room1_512_16` | 2.0..2.5 | 0.0646 | 0.0753 | 0.0704 | 0.0108 | 0.0369 |
+| `dataset-room1_512_16` | 2.5..3.0 | 0.0767 | 0.0905 | 0.1049 | 0.0188 | 0.0463 |
+| `dataset-room1_512_16` | 3.0..3.5 | 0.1493 | 0.1427 | 0.1741 | 0.0173 | 0.0353 |
+| `dataset-room1_512_16` | 3.5..4.0 | 0.0376 | 0.0594 | 0.1100 | 0.0160 | 0.0357 |
+| `dataset-room1_512_16` | 4.0..4.5 | 0.0280 | 0.0442 | 0.1081 | 0.0162 | 0.0455 |
+| `dataset-room1_512_16` | 4.5..5.0 | 0.0585 | 0.0797 | 0.0864 | 0.0338 | 0.0570 |
+| `dataset-room2_512_16` | 0.0..0.5 | 0.1019 | 0.1645 | 0.2669 | 0.0308 | 0.0856 |
+| `dataset-room2_512_16` | 0.5..1.0 | 0.1571 | 0.1845 | 0.5792 | 0.0497 | 0.1153 |
+| `dataset-room2_512_16` | 1.0..1.5 | 0.1162 | 0.1364 | 0.2571 | 0.0445 | 0.0756 |
+| `dataset-room2_512_16` | 1.5..2.0 | 0.0711 | 0.0966 | 0.1338 | 0.0370 | 0.0586 |
+| `dataset-room2_512_16` | 2.0..2.5 | 0.2530 | 0.2502 | 0.2868 | 0.0367 | 0.0731 |
+| `dataset-room2_512_16` | 2.5..3.0 | 0.0658 | 0.1154 | 0.1367 | 0.0215 | 0.0393 |
+| `dataset-room2_512_16` | 3.0..3.5 | 0.0741 | 0.1069 | 0.1081 | 0.0208 | 0.0387 |
+| `dataset-room2_512_16` | 3.5..4.0 | 0.1401 | 0.1506 | 0.1815 | 0.0193 | 0.0423 |
+| `dataset-room2_512_16` | 4.0..4.5 | 0.1647 | 0.1894 | 0.2662 | 0.0444 | 0.1596 |
+| `dataset-room2_512_16` | 4.5..5.0 | 0.1702 | 0.2525 | 0.3845 | 0.2664 | 0.4340 |
+
 Runs with errors: none
