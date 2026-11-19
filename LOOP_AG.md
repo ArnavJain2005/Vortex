@@ -1,15 +1,17 @@
-# LOOP_AG   updated 2026-11-20 01:29 IST   iteration 13
-NOW: AG-2(H') DONE (48 s22-24 copies generated & hashed); starting AG-4 independent re-score on Rule H verdict (`d1aa245`); waiting on `CC-1a` bundle handoff on `track3/freeze-build`   branch main@3ddb2a4
+# LOOP_AG   updated 2026-11-20 01:46 IST   iteration 13
+NOW: Waiting on Rule H' verdict (`track3/stepL3-blind`, for AG-4) and `CC-1a` bundle handoff (`track3/freeze-build`, for AG-3/AG-1); next poll in 10 min   branch ag/ag4-rule-h-crosscheck@d1fa73e
 DONE (newest first):
-- AG-2 Rule H' copies (iteration 13): after `LOOP_CC.md@4136ede` handshake (`RULES COMMITTED: H' at fb36d77, held-out copies may be generated: yes`), generated all 48 s22-24 copies: 36 EuRoC (`MH_03_medium..V1_03_difficult` x `a,b` x `s22,23,24` in `data/official/`, now 280) + 12 TUM-VI (`dataset-room3_512_16, dataset-room4_512_16` x `a,b` x `s22,23,24` in `data/official_tumvi/`, now 120) via `tools/official_degrade.py`. AG ran nothing on them. Verified 0 `V2_*`, 0 TUM-VI `s19-21`.
-- AG-2 Rule H copies (iteration 12): generated 36 EuRoC s13-15 copies (all 36 SHA-256 recorded in `loop/ag@ccbea32`, verified 36/36 match by CC-loop).
-- AG-5 pre-check (iteration 4): verified `tools/replay.py` (`tests/test_replay.py`: 3 passed) generates self-contained no-GT HTML on 5ba1c4b (`MH_03_b_s1` 171 KB, `room3_b_s1` 174 KB; `has_http=False`, `has_gt_true=False`). Verified `dist/vortex_v0.95.zip` SHA-256 `85e3079bc57450dd582472654939fbd26ef2f752e0980aa8ff3e6dd2734a1c64` matches LOOP_CC.md.
-- AG-3 prep & pre-CC-1a matrix (#73, merged 3ddb2a4): tools/clean_machine_check.py + tests (2 passed) + Docs/CLEAN_MACHINE.md. Verified 8 bare environments (Win 3.13/3.14, Docker Linux 3.10-3.14, v0.95-dockerfile) on MH_03_b_s1 & room3_b_s1: 16/16 check_output PASS, 100% byte-identical (`03ada1d088015775` & `d3a08d9ab2224404`).
-- AG-1 & AG-4 (#72, merged 61bf2fc): Docs/DOCKER_BENCH.md (15-run Linux Docker benchmark at 5ba1c4b, local FS; cProfile top 15; AG-4 ape_check.py vs score.py max diff 0.000000 mm across 14 trajectories). Compute 5.70-7.02 ms/IMU-s (<= 12 ms -> CC-1b NOT needed); whole process 5.88-7.22 ms/IMU-s cached / 5.99-7.50 ms/IMU-s from source.
+- AG-4 Rule H verdict cross-check (#74, ag/ag4-rule-h-crosscheck@d1fa73e): re-scored all 168 Rule H verdict runs (`H`, `T`, `C`, `CT`) + 24 Rule H' clean runs (`HP-C`, `HP-CT`) at `origin/track3/stepL3-blind@d1aa245` (`fb36d77`) with `tools/ape_check.py` vs CC-L3 JSONs and `score.py`: global max diff `8.88e-13 mm` (`0.000000 mm`, < 1 mm; 0 s22-24 touched). Also corrected `Docs/DOCKER_BENCH.md` Sec 4.1 `room3_{a,b}_s1` rows to true `main@3ddb2a4` (`1.185522` / `1.177312 m`, diff `0.000000 mm`).
+- AG-2 Rule H' copies (iteration 13): generated 48 s22-24 copies (36 EuRoC + 12 TUM-VI room3/4); CC-loop verified 48/48 SHA-256 (`LOOP_CC.md@72a912a`); 0 `V2_*`, 0 TUM-VI `s19-21`, 0 AG runs on `s22-24`.
+- AG-2 Rule H copies (iteration 12): generated 36 EuRoC s13-15 copies (`loop/ag@ccbea32`, verified 36/36 by CC-loop).
+- AG-5 pre-check (iteration 4): `tools/replay.py` (`tests/test_replay.py`: 3 passed) generates self-contained no-GT HTML (`MH_03_b_s1` 171 KB, `room3_b_s1` 174 KB); `dist/vortex_v0.95.zip` SHA-256 verified.
+- AG-3 prep & pre-CC-1a matrix (#73, merged 3ddb2a4): `tools/clean_machine_check.py` + `Docs/CLEAN_MACHINE.md`; 16/16 check_output PASS & byte-identical across Python 3.10-3.14 & `v0.95-dockerfile`.
+- AG-1 & AG-4 (#72, merged 61bf2fc): `Docs/DOCKER_BENCH.md` 15-run Linux Docker benchmark (`5ba1c4b`, local FS): compute 5.70-7.02 ms/IMU-s (CC-1b NOT needed); whole process 5.88-7.22 cached / 5.99-7.50 from source; cProfile top 15.
 - AG-0 G7 PRs (#70 merged 9b3306c, #71 merged d436d21): `tools/tumvi_l2_check.py` + `Docs/TUMVI_BASELINE.md` G6 tables.
-READY FOR ARNAV TO MERGE (in this order): none
+READY FOR ARNAV TO MERGE (in this order): #74 Docs/DOCKER_BENCH.md (AG-4 Rule H 192-run cross-check + Sec 4.1 room3 fix)
 MERGED: #70 (9b3306c), #71 (d436d21), #72 (61bf2fc), #73 (3ddb2a4) [and CC #68 (355de44)]
 GIVES TO CC:
+- AG-4 Rule H independent scorer cross-check (PR #74, `Docs/DOCKER_BENCH.md` Sec 4.2, `d1aa245`): 192/192 runs (`H`/`T`/`C`/`CT` + clean `HP-C`/`HP-CT`) match CC-L3 JSONs and `score.py` within `8.88e-13 mm` (`0.000000 mm`, < 1 mm; 0 s22-24 touched). Sec 4.1 `room3` rows fixed to true `main@3ddb2a4` (`1.185522` / `1.177312 m`).
 - AG-2 Rule H' held-out copies READY in `data/official/` (`Vortex\data\official`, 36 EuRoC) and `data/official_tumvi/` (`Vortex\data\official_tumvi`, 12 TUM-VI room3/4); zero runs by AG. SHA-256 of `mav0/imu0/data.csv`:
   - `MH_03_medium_a`: s22: `8df0ea52fb5311974941cc5a6361d5281b9a1c7424ba19e3866f46c39d2b2c97` | s23: `7ee3499fe6a4ab24a5a869349b20775df02f66ad9a2900bcb74dc0d2ef92f3f1` | s24: `f0e5cc5adc3ca0a708d00c23e1c6c951fb45af0edb49cb0a1a0aae249a7f0c99`
   - `MH_03_medium_b`: s22: `b94bf9de83febfa28252ffb25399553b2b968bca1513eaec70f8d5958ba2f50e` | s23: `607baa95ea80af476dc57e49e654523f366e4f67be05ddf72dff88152cb08d3e` | s24: `6be1ec3da83f8ac5377dc89a28e02f2464de4643c873dbf3132d4cc294b4f086`
@@ -32,7 +34,7 @@ GIVES TO CC:
 - AG-1 Linux Docker benchmark (PR #72 merged, Docs/DOCKER_BENCH.md, commit 5ba1c4b, python:3.12.7-slim-bookworm, 15 runs, local FS):
   - Compute only: 29.39-35.53 us/row = 5.70-7.02 ms/IMU-s (**CC-1b NOT needed**).
   - Whole process (`python -S main.py`): cached 5.88-7.22 ms/IMU-s; from source (`-B`) 5.99-7.50 ms/IMU-s; from-source heap 7367.2-7367.5 KB.
-- AG-4 scorer cross-check (`tools/ape_check.py` vs `score.py`, 5ba1c4b, 14 trajectories): max diff = 0.000000 mm. (Next: Rule H `d1aa245` re-score in progress.)
+- AG-4 scorer cross-check (`tools/ape_check.py` vs `score.py`, 5ba1c4b/3ddb2a4, 14 trajectories): max diff = 0.000000 mm.
 - Seed inventory (400 official copies on disk):
   - EuRoC `data/official/` (280): MH_01/02 a,b [1..3,42]; MH_03..05 & V1_01..03 a,b [1..18,22..24,42]; 0 `V2_*`.
   - TUM-VI `data/official_tumvi/` (120): room1/2 a,b [1..3,7..15]; room3/4 a,b [1..3,7..18,22..24]; 0 `s19-21` (K parked).
