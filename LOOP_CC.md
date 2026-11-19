@@ -1,4 +1,4 @@
-# LOOP_CC   updated 2026-11-20 01:05 IST   iteration 6
+# LOOP_CC   updated 2026-11-20 01:30 IST   iteration 7
 Three Claude Code sessions share the CC queue (agreed between them, 19 Nov ~20:20; earlier iterations' clock times in this file were wrong, read them as ~20:2x-20:3x):
 - CC-loop ("Vortex trajectory accuracy improvement", this file's owner): CC-0, CC-3, CC-4, CC-5.
 - CC-freeze ("Vortex Samsung PRISM hackathon review"): CC-1a on track3/freeze-build (single-file src/main.py,
@@ -42,7 +42,12 @@ NUMBERS (CC-loop's own run, AG-1 stand-in; main 550ba68 code = 86711a9 estimator
   estimator heap 1,110 KB, whole run FROM SOURCE 7,370 KB (MH_01_b_s1). CC-freeze reports from-source 7,514 KB (3.14)
   and 7,963 KB (3.13) on MH_03_a_s1 for the plain single file: 0.23 MB under the 8 MB hard limit on 3.13.
 PARKED: split of pathfinder.py (ledger A1) | CC-3 hand-held calibration (best tuning gain 1.6 % < 2 %)
-ESCALATION: none from CC-loop (heap is with CC-freeze/Arnav; the CHUNKED add-on is Arnav's answer: paste it into the
-  'Vortex Samsung PRISM hackathon review' session, which owns CC-1a and will not act on a relayed copy). Note for Arnav: from-source heap on main is already 7,188 KB (3.14) / 7,551 KB (3.13)
-  per NUMBERS (budget_heap_no_bytecode_kb), above the loop's 7 MB gate; CC-freeze is escalating it with CC-1a.
-  Likely fix: keep the generated single file under 16,384 tokens (parser step, -0.9 MB).
+ESCALATION (section 6 item 2, from CC-L3, relayed by CC-loop): rule H condition 7 FAILS, so BLIND_ON ships OFF.
+  Clean TUM-VI APE 0.8793 -> 0.8892 m (+1.13 %, limit +0.5 %); all 4 rooms worse. Clean EuRoC -0.92 %.
+  Block T passes (blind 1.114 -> 0.739 m, floor 0.738; APE -2.3 %). Contract PASS 24/24.
+  Cause: on a file with no dead run, the 5 s fallback (BLIND_FALLBACK_S) pulls the last 5 s to the centroid.
+  Tempting variant H': dead-run only, no fallback. Clean output then stays byte-identical to OFF; official copies,
+  which all end in a zero run, would be unchanged IF detection fires on every one (not yet checked).
+  Options for Arnav: (1) accept OFF; (2) release seeds 22-24 for H' with the rule committed first (~2-3 h, before
+  the v1.0 freeze at Fri 21:00). Recommendation: (2). Blind is 20 points and T shows the on build tying the floor.
+  Meanwhile: CC-L3 completes the seed 13-15 H runs and opens the PR recording OFF; no re-judge without Arnav.
