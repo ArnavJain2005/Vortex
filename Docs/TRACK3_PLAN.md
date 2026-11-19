@@ -2143,3 +2143,37 @@ Informational: rule G's verdict (OFF, 5fd288c) stands as recorded; the decision 
 - It agrees with the G2 decision (ship ON) and changes nothing. Not re-run on seeds 10-12: clean EuRoC, TUM-VI
   and the gate. The floor tag `stepG-H-floor` (5fd288c) is reused; the never-moving baseline does not depend on
   the estimator build.
+
+## Freeze build: one self-contained `src/main.py` (19 Nov 2026, branch `track3/freeze-build`)
+
+Arnav's freeze-build requirements (19 Nov; ledger `Docs/SUBMISSION_RULES.md` A1, B1-B7): one generated
+`src/main.py`, standard library only, no bytecode, no C, no ctypes; every invocation form; never fail
+(constant pose per row, exit 0); exact `s.nnnnnnnnn` timestamps; input variants that do not change the
+output; `metadata.json` with commit, flags, input, rows, `cal_source`, heap and time; Python 3.10-3.14.
+
+Without bytecode Python compiles the whole file inside the traced run. The PLAIN layout (pathfinder.py
+with docstrings, comments and the OFF side of every switch removed; 16,483 parser tokens, still above
+CPython's 16,384-token step) peaks at 7,514 KB (Win 3.14) and 7,963 KB (Win 3.13) over the whole run
+on MH_03_medium_a_s1, against the 8,192 KB limit. Main before this branch was already at 7,188 / 7,551 KB
+from source (Docs/NUMBERS.md at 86711a9; Step 7 crossed the token step).
+
+### Rule K (CHUNKED layout): committed BEFORE any measurement of the CHUNKED bundle
+
+Disclosure: one exploratory reading was taken before this rule: compiling the PLAIN file one top-level
+statement at a time inside a tracemalloc window (not the CHUNKED bundle, not a whole run) peaked at
+2,687 KB (3.14) / 2,593 KB (3.13), against 6,857 / 6,656 KB for compiling it whole.
+
+CHUNKED: a short loader (sys and builtins only), then pathfinder.py VERBATIM in one raw string; at run
+time each chunk of neighbouring top-level statements (up to N lines; N = 40, 120, 400 tried, the lowest
+peak kept) is compiled and executed in one namespace, line numbers kept, then `main(sys.argv)` runs. The
+loader's own fallback covers a failure of the exec loop. No estimator function is refactored or split.
+
+CHUNKED ships only if ALL hold, else PLAIN ships:
+- (a) output byte-identical to PLAIN and to the repo build on every official and clean copy on disk
+  (V2_* excluded), on Win 3.14 and WSL2 3.12;
+- (b) every B1/B2/B4/B5 test PLAIN passes also passes on CHUNKED;
+- (c) whole-run from-source heap peak at least 1.5 MB lower than PLAIN on MH_01_easy_b_s1 AND on the
+  longest official copy, on every Python measured (Win 3.14, Win 3.13, WSL2 3.12);
+- (d) us per row not worse than PLAIN by more than 5 % on the same inputs.
+The shipped layout must be <= 7 MB whole-run from source on every Python measured, or Arnav decides.
+Time box: 90 minutes after PLAIN passes; if exceeded, PLAIN ships and CHUNKED is marked PARKED.
