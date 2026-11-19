@@ -2177,3 +2177,86 @@ CHUNKED ships only if ALL hold, else PLAIN ships:
 - (d) us per row not worse than PLAIN by more than 5 % on the same inputs.
 The shipped layout must be <= 7 MB whole-run from source on every Python measured, or Arnav decides.
 Time box: 90 minutes after PLAIN passes; if exceeded, PLAIN ships and CHUNKED is marked PARKED.
+
+### Gate on the L2 build with TILT_ON shipped (19 Nov 2026; carried over after #61 merged)
+
+Measured on `track3/stepL2-tilt` after #61 was merged, so they arrive here in a follow-up PR. Build: TILT_ON and
+SMOOTH_ON on, before Step 7 (PLATFORM_ON) reached `main`. Tags `Docs/budget/stepL2on-*`; the older
+`stepL2-win-py314*` tags (5fd288c, TILT_ON off) are kept as they were. 15 runs each, `python -S benchmark.py
+--gate`: **PASS on all seven.**
+
+| Python | Input | commit | heap, estimator | whole run, bytecode / none | `python -S main.py` |
+|---|---|---|---|---|---|
+| Windows 3.14.7 | synthetic | 405109e | 1,062 KB | 1,646 / 6,031 KB | 37.3 us/row |
+| Windows 3.14.7 | MH_01_easy_b_s1 | 405109e | 1,234 KB | 1,809 / 6,032 KB | 27.3 us/row |
+| Windows 3.14.7 | MH_01_easy_a_s1 (L2 acts) | 405109e | 1,234 KB | 1,810 / 6,032 KB | 27.1 us/row |
+| Windows 3.13.5 | synthetic | 6084ec2 | 942 KB | 2,258 / 6,349 KB | 31.2 us/row |
+| Windows 3.13.5 | MH_01_easy_a_s1 | 6084ec2 | 1,114 KB | 2,424 / 6,349 KB | 24.7 us/row |
+| WSL2 Ubuntu 3.12.3 | synthetic | 6084ec2 * | 938 KB | 2,013 / 6,078 KB | 25.4 us/row |
+| WSL2 Ubuntu 3.12.3 | MH_01_easy_a_s1 | 6084ec2 * | 1,110 KB | 2,178 / 6,078 KB | 32.1 us/row |
+
+\* The WSL2 records carry `commit: null` (git inside WSL could not read the Windows checkout); they were run on
+6084ec2. All inside the 4 MB heap target and 50 us/row with bytecode; without bytecode, under 8 MB and above
+4 MB. 405109e and 6084ec2 differ only in documents. Not carried over: the branch's NUMBERS.md refresh, which #63
+superseded (NUMBERS.md now comes from the Step 7 + L2 build).
+
+## CC-4: reading-a gap diagnosis and K8 (19 Nov 2026, loop task CC-4; analysis only, no code change)
+
+**Gap RMSE, reading a, seeds 7-9 (reporting only; `Docs/results/step7m-H79.json` against
+`stepL1-H-floor.json`).** Reading a's mean gap RMSE is 3.373 m against b's 3.204 m and the floor's 3.256 m.
+Per copy it ranges from -34.7 % (V1_02 a s7) to +54.2 % (V1_01 a s7) against the floor.
+- The smoother bridges the bursts. The error grows by 0.015 m on average across a burst (max 0.047 m) on
+  reading a, and by 0.014 m (max 0.059 m) on b (`gap_growth_mean`). A burst that was bridged from one end only
+  would grow by metres over a burst of a second or more.
+- So gap RMSE is the estimate's position error at the moments the bursts fall, not an error made inside them.
+  Reading a loses where its whole track is off at those times: V1_01 a +54/+17/+31 %, MH_03 a s8/s9 +14/+12 %.
+  The paired difference against the floor correlates only weakly with the APE difference (r = 0.24 on a,
+  0.34 on b), because a few bursts sample a few moments of the track.
+- No plain bug, so no fix. Any gain here comes from lowering the track error (APE), which other steps already
+  target.
+
+**K8, the independent test F1 (exact constant yaw rate treated as stuck).** The behaviour is kept, and the
+test stays `xfail(strict=True)` with its reason (ChatGPT's file, unchanged).
+- The stuck detector fires on `STUCK_ROWS = 5` identical gyro triplets.
+- In the clean data we hold (MH_01..05, V1_01..03, TUM-VI room1..4; 312,179 rows; V2 and room5/6 not read),
+  the longest run of exactly repeated gyro triplets is 2 rows, and no run reaches 5.
+- A real IMU at 6-decimal resolution does not repeat a triplet five times unless it is stuck. Stuck runs are one
+  of the organisers' faults, so the detector is right for real input. Only a synthetic noiseless signal trips
+  it, and the noisy variant of the same test passes.
+
+## CC-3: TUM-VI hand-held calibration (19 Nov 2026, loop task CC-3): PARKED at tuning; rule K not written, seeds 19-21 unspent
+
+**Problem.** On every TUM-VI file the stillness search finds no still run, because the rooms start hand-held.
+Calibration then falls back: gravity direction comes from the mean of the first 1 s, and gyro bias is 0
+(`Docs/TUMVI_BASELINE.md`, G6).
+
+**Probe** (`tools/cc3_calprobe.py`, exploratory, outside `pathfinder.py`). It runs only when the shipped search
+returns nothing. It takes the quietest window of the opening H s, scored as std(|a|) + K * mean |w| over W s.
+From that window it calibrates either the gyro bias and gravity (`both`) or the gravity direction only (`dir`:
+bias 0, `G_DEFAULT`), and anchors the run there as a found still run would. `-m` keeps the moving-start
+covariance. The grid was run on the tuning rooms only: room1/2 x readings a, b x seeds 1-3, 12 copies. No
+criterion was written beforehand: this is exploration, and no held-out copy was touched. Results are in
+`Docs/tumvi/cc3x-*.json`, contract PASS on all 180 runs.
+
+| Variant (H s, W s, K) | mean APE m | room1 | room2 | gap m | blind m |
+|---|---|---|---|---|---|
+| shipped (fallback: bias 0) | 0.871 | 0.603 | 1.139 | 0.877 | 0.953 |
+| `both` 20, 1, 10 (also H 10/60, K 100) | 0.910 | 0.612 | 1.208 | 0.914 | 1.083 |
+| `both` 20, 2, 10 | 0.887 | 0.582 | 1.191 | 0.891 | 1.002 |
+| `both` 20, 1, 0 (accelerometer only) | 1.013 | 0.754 | 1.273 | 0.997 | 0.960 |
+| `both-m` 20, 1, 10 | 0.966 | 0.664 | 1.267 | 0.971 | 1.120 |
+| `dir` 20, 1, 10 (also H 5/60; W 2: 0.857; W 4: 0.856; K 0: 0.859) | 0.857 | 0.586 | 1.127 | 0.865 | 0.925 |
+| `dir-m` 20, 1, 10 | 0.905 | 0.627 | 1.183 | 0.914 | 1.007 |
+| never-moving floor | 1.110 | | | 1.063 | 0.677 |
+
+- A gyro bias taken from a hand-held window makes the result worse. The window mean is mostly the hand's own
+  rotation, not bias, and the filter's bias state does better starting from 0.
+- Gravity direction alone is the best variant: -1.6 % mean APE, both rooms and both readings better, gap
+  -1.4 %, blind -2.9 %. The gain disappears with the moving-start covariance (`dir-m` 0.905). So most of it
+  comes from anchoring with the calibrated (still-start) covariance, not from a better direction. That is a
+  covariance effect we cannot justify physically for a hand-held start.
+- **Decision: parked; rule K is not written and TUM-VI seeds 19-21 stay unspent.** Rule K needs at least a 2 %
+  gain on held-out copies. The best tuning gain is 1.6 % and rests on a covariance effect, so a pass is
+  unlikely, and a fail would spend seeds for nothing. No switch was added to `pathfinder.py`, so the shipped
+  build is unchanged. A later session can take this up with a better-founded calibration, and seeds 19-21
+  remain free for it.
