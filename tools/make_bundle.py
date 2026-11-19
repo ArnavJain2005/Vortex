@@ -80,17 +80,173 @@ def _commit():
 
 
 # ---------------------------------------------------------------- the single file
-def single_text():
-    """src/main.py: pathfinder.py with its module docstring replaced by a generated header. LF line ends."""
-    with open(os.path.join(ROOT, SOURCE), "rb") as f:
-        raw = f.read()
-    src = raw.decode("utf-8").replace("\r\n", "\n")
-    tree = ast.parse(src)
-    body = src
-    if tree.body and isinstance(tree.body[0], ast.Expr) and isinstance(getattr(tree.body[0], "value", None),
-                                                                       ast.Constant):
-        lines = src.split("\n")
-        body = "\n".join(lines[tree.body[0].end_lineno:]).lstrip("\n")
+def _switches(tree):
+    """Module-level `NAME = True/False` assigned once: the shipped on/off switches."""
+    seen, out = {}, {}
+    for n in ast.walk(tree):
+        for t in (n.targets if isinstance(n, ast.Assign) else [n.target] if isinstance(n, (ast.AugAssign, ast.AnnAssign)) else []):
+            for x in ast.walk(t):
+                if isinstance(x, ast.Name):
+                    seen[x.id] = seen.get(x.id, 0) + 1
+    for n in tree.body:
+        if (isinstance(n, ast.Assign) and len(n.targets) == 1 and isinstance(n.targets[0], ast.Name)
+                and isinstance(n.value, ast.Constant) and isinstance(n.value.value, bool)):
+            out[n.targets[0].id] = n.value.value
+    return {k: v for k, v in out.items() if seen.get(k) == 1}
+
+
+class _Fold(ast.NodeTransformer):
+    """Removes docstrings and folds `if`s whose test is decided by a shipped switch (also through a local
+    alias `x = SWITCH` / `a, b = S1, S2` that the function never reassigns)."""
+
+    def __init__(self, consts):
+        self.consts = [dict(consts)]
+
+    def _value(self, e):
+        """True / False if decided by the switches, else None."""
+        if isinstance(e, ast.Constant) and isinstance(e.value, bool):
+            return e.value
+        if isinstance(e, ast.Name):
+            for scope in reversed(self.consts):
+                if e.id in scope:
+                    return scope[e.id]
+            return None
+        if isinstance(e, ast.UnaryOp) and isinstance(e.op, ast.Not):
+            v = self._value(e.operand)
+            return None if v is None else not v
+        if isinstance(e, ast.BoolOp):
+            vals = [self._value(x) for x in e.values]
+            if isinstance(e.op, ast.And):
+                if False in vals:
+                    return False
+                return True if all(v is True for v in vals) else None
+            if True in vals:
+                return True
+            return False if all(v is False for v in vals) else None
+        return None
+
+    def _simplify(self, e):
+        """`a and SWITCH_ON` -> `a` (a bool test only: used where the value is read as a condition)."""
+        if isinstance(e, ast.BoolOp):
+            keep = [x for x in e.values if self._value(x) is None]
+            if len(keep) == 1:
+                return keep[0]
+            if keep and len(keep) < len(e.values):
+                return ast.BoolOp(op=e.op, values=keep)
+        return e
+
+    def _aliases(self, fn):
+        names, count = {}, {}
+        for n in ast.walk(fn):
+            targets = n.targets if isinstance(n, ast.Assign) else [n.target] if isinstance(
+                n, (ast.AugAssign, ast.AnnAssign, ast.For)) else []
+            for t in targets:
+                for x in ast.walk(t):
+                    if isinstance(x, ast.Name):
+                        count[x.id] = count.get(x.id, 0) + 1
+            if isinstance(n, ast.Assign) and len(n.targets) == 1:
+                t, v = n.targets[0], n.value
+                pairs = [(t, v)] if isinstance(t, ast.Name) else list(zip(t.elts, v.elts)) if (
+                    isinstance(t, ast.Tuple) and isinstance(v, ast.Tuple) and len(t.elts) == len(v.elts)) else []
+                for a, b in pairs:
+                    if isinstance(a, ast.Name):
+                        r = self._value(b)
+                        if r is not None:
+                            names[a.id] = r
+        args = {a.arg for a in fn.args.args + fn.args.kwonlyargs}
+        return {k: v for k, v in names.items() if count.get(k) == 1 and k not in args}
+
+    def _strip_doc(self, node):
+        b = node.body
+        if b and isinstance(b[0], ast.Expr) and isinstance(b[0].value, ast.Constant) and isinstance(b[0].value.value, str):
+            node.body = b[1:] or [ast.Pass()]
+
+    def visit_Module(self, node):
+        self._strip_doc(node)
+        self.generic_visit(node)
+        return node
+
+    def visit_FunctionDef(self, node):
+        self._strip_doc(node)
+        self.consts.append(self._aliases(node))
+        self.generic_visit(node)
+        self.consts.pop()
+        if not node.body:
+            node.body = [ast.Pass()]
+        return node
+
+    visit_ClassDef = visit_Module
+
+    def visit_If(self, node):
+        v = self._value(node.test)
+        if v is not None:
+            out = []
+            for s in (node.body if v else node.orelse):
+                r = self.visit(s)
+                out.extend(r if isinstance(r, list) else [r] if r is not None else [])
+            return out or None
+        node.test = self._simplify(node.test)
+        self.generic_visit(node)
+        if not node.body:
+            node.body = [ast.Pass()]
+        return node
+
+    def visit_IfExp(self, node):
+        v = self._value(node.test)
+        if v is not None:
+            return self.visit(node.body if v else node.orelse)
+        self.generic_visit(node)
+        return node
+
+
+def _drop_dead_assignments(tree):
+    """After folding: `x = NAME_OR_CONSTANT` (also tuple form) whose targets are never read anywhere are
+    removed, in functions and at module level (switch constants nothing reads any more). No side effects:
+    only names and constants on the right-hand side."""
+    loads = {n.id for n in ast.walk(tree) if isinstance(n, ast.Name) and isinstance(n.ctx, ast.Load)}
+    loads |= {n.attr for n in ast.walk(tree) if isinstance(n, ast.Attribute)}
+    for n in ast.walk(tree):                      # names read through globals()/getattr strings stay
+        if isinstance(n, ast.Constant) and isinstance(n.value, str):
+            loads.add(n.value)
+
+    def pure(v):
+        return isinstance(v, (ast.Name, ast.Constant)) or (
+            isinstance(v, ast.Tuple) and all(isinstance(e, (ast.Name, ast.Constant)) for e in v.elts))
+
+    def dead(s):
+        if not (isinstance(s, ast.Assign) and len(s.targets) == 1 and pure(s.value)):
+            return False
+        t = s.targets[0]
+        names = [t] if isinstance(t, ast.Name) else t.elts if isinstance(t, ast.Tuple) else None
+        return bool(names) and all(isinstance(x, ast.Name) and x.id not in loads for x in names)
+
+    for n in ast.walk(tree):
+        for f in ("body", "orelse", "finalbody"):
+            b = getattr(n, f, None)
+            if isinstance(b, list) and b and isinstance(b[0], ast.stmt):
+                keep = [s for s in b if not dead(s)]
+                if len(keep) != len(b):
+                    setattr(n, f, keep or [ast.Pass()])
+    return tree
+
+
+def single_text(source=None):
+    """src/main.py: pathfinder.py without docstrings, comments and the code of the shipped switches' OFF
+    side, under a generated header. LF line ends. Same behaviour by construction (`same` checks the bytes).
+    source: another estimator text (tests only)."""
+    if source is None:
+        with open(os.path.join(ROOT, SOURCE), "rb") as f:
+            raw = f.read()
+    else:
+        raw = source.encode("utf-8")
+    tree = ast.parse(raw.decode("utf-8"))
+    tree = _Fold(_switches(tree)).visit(tree)
+    for n in ast.walk(tree):                      # a block emptied by the folding still needs a statement
+        b = getattr(n, "body", None)
+        if isinstance(b, list) and not b:
+            n.body = [ast.Pass()]
+    tree = _drop_dead_assignments(tree)
+    body = ast.unparse(ast.fix_missing_locations(tree)) + "\n"
     head = ('"""Vortex, Samsung PRISM XR Hackathon 2026, Track 3: 6-DoF trajectory from a degraded IMU.\n\n'
             "    python main.py [IN [OUT]]            (also: --input IN --output OUT, -i IN -o OUT)\n\n"
             "IN: the IMU csv or a sequence folder (searched for imu0/data.csv, mav0/imu0/data.csv, data.csv,\n"
@@ -134,9 +290,189 @@ def check_single(text):
     return bad
 
 
-def write_single(path):
-    text = single_text()
-    bad = check_single(text)
+# ---------------------------------------------------------------- CHUNKED layout (rule K, Docs/TRACK3_PLAN.md)
+def _entry_free_source(source=None):
+    """pathfinder.py (LF) without its trailing `if __name__ == "__main__":` block: the text CHUNKED embeds."""
+    if source is None:
+        with open(os.path.join(ROOT, SOURCE), "rb") as f:
+            source = f.read().decode("utf-8")
+    src = source.replace("\r\n", "\n")
+    if "'''" in src or "\r" in src or src.rstrip("\n").endswith("\\"):
+        raise SystemExit("CHUNKED refused: the source holds ''' , a CR or ends in a backslash (cannot be a raw string)")
+    tree = ast.parse(src)
+    last = tree.body[-1]
+    if (isinstance(last, ast.If) and isinstance(last.test, ast.Compare) and isinstance(last.test.left, ast.Name)
+            and last.test.left.id == "__name__"):
+        src = "".join(src.splitlines(keepends=True)[:last.lineno - 1])
+        tree = ast.parse(src)
+    return src, tree
+
+
+def _chunks(src, tree, n):
+    """(char start, char end, first line) per chunk: neighbouring top-level statements merged while a chunk
+    stays within n lines (a longer statement is a chunk of its own). The chunks tile src exactly."""
+    lines = src.splitlines(keepends=True)
+    off = [0]
+    for l in lines:
+        off.append(off[-1] + len(l))
+    starts = [1] + [(s.decorator_list[0].lineno if getattr(s, "decorator_list", None) else s.lineno)
+                    for s in tree.body[1:]]
+    bounds = starts + [len(lines) + 1]
+    spans = [(bounds[i], bounds[i + 1]) for i in range(len(starts))]   # [first line, next first line)
+    out = []
+    a, b = spans[0]
+    for s, e in spans[1:]:
+        if e - a <= n:
+            b = e
+        else:
+            out.append((a, b))
+            a, b = s, e
+    out.append((a, b))
+    return tuple((off[x - 1], off[y - 1], x) for x, y in out)
+
+
+LOADER = '''# HOW THIS FILE RUNS: the estimator below (SRC) is our pathfinder.py VERBATIM, kept as plain source text.
+# Compiling a 1,700-line file in one go costs the Python parser about 7 MB of memory, so this short loader
+# compiles it one function (a few neighbouring statements) at a time instead, keeping parser memory low.
+# Line numbers in error messages are those of pathfinder.py. Standard library only; no bytecode ships.
+import sys
+
+CHUNKS = %s
+
+
+def _paths(argv):
+    """Minimal IN / OUT for the loader's own fallback (only if the estimator itself cannot be loaded)."""
+    a, src, dst, pos = list(argv[1:]), None, None, []
+    while a:
+        x = a.pop(0)
+        if x in ("-i", "--input") and a:
+            src = a.pop(0)
+        elif x in ("-o", "--output") and a:
+            dst = a.pop(0)
+        elif x.startswith("--input="):
+            src = x[8:]
+        elif x.startswith("--output="):
+            dst = x[9:]
+        else:
+            pos.append(x)
+    src = src or (pos[0] if pos else "data.csv")
+    dst = dst or (pos[1] if len(pos) > 1 else "estimated_trajectory.txt")
+    return src, dst
+
+
+def _constant_pose(argv, err):
+    tb = err.__traceback__
+    while tb is not None and tb.tb_next is not None:
+        tb = tb.tb_next
+    where = " (%%s line %%d)" %% (tb.tb_frame.f_code.co_filename, tb.tb_lineno) if tb is not None else ""
+    sys.stderr.write("main.py: the estimator could not be loaded: %%s: %%s%%s; writing a constant pose for "
+                     "every row\\n" %% (type(err).__name__, err, where))
+    src, dst = _paths(argv)
+    n, first, sec = 0, True, "0.000000000"
+    with open(src, "rb") as f, open(dst, "w", newline="\\n") as g:
+        for line in f:
+            s = line.strip().lstrip(b"\\xef\\xbb\\xbf").strip()
+            if not s or s[:1] == b"#":
+                continue
+            if first:
+                first = False
+                if s.upper() != s.lower() and all(not x.strip().replace(b".", b"").replace(b"-", b"").isdigit()
+                                                  for x in s.split(b",")):
+                    continue
+            t = s.split(b",", 1)[0].strip()
+            if t.isdigit():
+                t = int(t)
+                sec = "%%d.%%09d" %% (t // 1000000000, t %% 1000000000)
+            g.write(sec + " 0.000000 0.000000 0.000000 0.0000000 0.0000000 0.0000000 1.0000000\\n")
+            n += 1
+    return 0
+
+
+_G = None
+
+
+def main(argv):
+    global _G
+    try:
+        g = {"__name__": "pathfinder", "__builtins__": __builtins__}
+        for a, b, line in CHUNKS:
+            exec(compile("\\n" * (line - 1) + SRC[a:b], "main.py", "exec"), g)
+        _G = g
+    except KeyboardInterrupt:
+        raise
+    except BaseException as e:      # noqa: BLE001 (never fail: the estimator could not be loaded)
+        try:
+            return _constant_pose(argv, e)
+        except Exception as e2:     # noqa: BLE001
+            sys.stderr.write("main.py: %%s\\n" %% e2)
+            return 1
+    return g["main"](argv)
+
+
+SRC = r\'\'\'%s\'\'\'
+
+if __name__ == "__main__":
+    sys.exit(main(sys.argv))
+'''
+
+
+def chunked_text(n, source=None):
+    src, tree = _entry_free_source(source)
+    ch = _chunks(src, tree, n)
+    head = ('"""Vortex, Samsung PRISM XR Hackathon 2026, Track 3: 6-DoF trajectory from a degraded IMU.\n\n'
+            "    python main.py [IN [OUT]]            (also: --input IN --output OUT, -i IN -o OUT)\n\n"
+            "ONE self-contained file, standard library only, single thread, offline, deterministic; no bytecode.\n"
+            "GENERATED by tools/make_bundle.py (layout CHUNKED, %d chunks of at most %d lines) from the\n"
+            "repository's pathfinder.py (sha256 %s); do not edit.\n"
+            '"""\n' % (len(ch), n, hashlib.sha256(src.encode("utf-8")).hexdigest()[:16]))
+    return head + LOADER % (repr(ch), src)
+
+
+def check_chunked(text):
+    """CHUNKED: the loader may import only sys and is the only place exec/compile appear; the embedded
+    source must pass check_single (no exec, no C, no bytecode, stdlib only)."""
+    try:
+        tree = ast.parse(text, feature_version=(3, 10))
+    except SyntaxError as e:
+        return ["not valid Python 3.10 syntax: %s" % e]
+    src = [n.value.value for n in tree.body if isinstance(n, ast.Assign) and getattr(n.targets[0], "id", "") == "SRC"]
+    if len(src) != 1:
+        return ["no SRC string"]
+    bad = ["embedded source: " + p for p in check_single(src[0])]
+    for node in ast.walk(tree):
+        if isinstance(node, ast.Assign) and getattr(node.targets[0], "id", "") == "SRC":
+            continue
+        if isinstance(node, (ast.Import, ast.ImportFrom)):
+            mods = [a.name for a in node.names] if isinstance(node, ast.Import) else [node.module or "."]
+            if mods != ["sys"]:
+                bad.append("loader import %s" % mods)
+        name = node.id if isinstance(node, ast.Name) else node.attr if isinstance(node, ast.Attribute) else None
+        if name in FORBIDDEN_NAMES - {"exec", "compile"}:
+            bad.append("loader name %s" % name)
+        if isinstance(node, ast.Constant) and isinstance(node.value, str) and node.value is not src[0]:
+            for t in FORBIDDEN_TEXT:
+                if t in node.value:
+                    bad.append("loader text %r" % t)
+    return bad
+
+
+LAYOUTS = ("plain", "chunked")
+DEFAULT_LAYOUT = "plain"       # set by rule K (Docs/TRACK3_PLAN.md, "Freeze build")
+CHUNK_LINES = 120
+
+
+def bundle_text(layout=None, n=None):
+    layout = layout or DEFAULT_LAYOUT
+    return single_text() if layout == "plain" else chunked_text(n or CHUNK_LINES)
+
+
+def check_bundle(text):
+    return check_chunked(text) if "\nSRC = r'''" in text else check_single(text)
+
+
+def write_single(path, layout=None, n=None):
+    text = bundle_text(layout, n)
+    bad = check_bundle(text)
     if bad:
         raise SystemExit("single file REFUSED (%d problems): %s" % (len(bad), "; ".join(bad[:5])))
     os.makedirs(os.path.dirname(path) or ".", exist_ok=True)
@@ -157,7 +493,7 @@ def _compiled_files(d):
     return sorted(out)
 
 
-def stage(d):
+def stage(d, layout=None, n=None):
     os.makedirs(os.path.join(d, "src"), exist_ok=True)
     for src, dst in COPIED:
         s, t = os.path.join(ROOT, src), os.path.join(d, dst)
@@ -165,18 +501,18 @@ def stage(d):
             raise SystemExit("stage %s: %s differs from the repo; delete the stage folder and stage again" % (d, dst))
         shutil.copyfile(s, t)
     t = os.path.join(d, SINGLE)
-    text = single_text()
+    text = bundle_text(layout, n)
     if os.path.exists(t):
         with open(t, "rb") as f:
             if f.read() != text.encode("utf-8"):
                 raise SystemExit("stage %s: %s differs from a fresh build; delete the stage and stage again" % (d, SINGLE))
-    write_single(t)
+    write_single(t, layout, n)
     stale = _compiled_files(d)
     if stale:
         raise SystemExit("stage %s holds compiled or C files (%s); delete the stage folder and stage again"
                          % (d, ", ".join(stale)))
-    print("staged %s: %s (single file, %d lines, standard library only, reachability check passed)"
-          % (d, SINGLE, text.count("\n")))
+    print("staged %s: %s (layout %s, %d lines, standard library only, reachability check passed)"
+          % (d, SINGLE, layout or DEFAULT_LAYOUT, text.count("\n")))
 
 
 def _check_stage(d):
@@ -188,8 +524,10 @@ def _check_stage(d):
     if not os.path.exists(t):
         raise SystemExit("no %s in %s: run `stage` first" % (SINGLE, d))
     with open(t, "rb") as f:
-        if f.read() != single_text().encode("utf-8"):
-            raise SystemExit("%s differs from a fresh build of pathfinder.py; stage again" % SINGLE)
+        have = f.read()
+    if have not in (bundle_text("plain").encode("utf-8"), bundle_text("chunked").encode("utf-8")):
+        raise SystemExit("%s differs from a fresh build of pathfinder.py (plain, or chunked with %d lines); stage again"
+                         % (SINGLE, CHUNK_LINES))
     for src, dst in COPIED:
         if _sha(os.path.join(d, dst)) != _sha(os.path.join(ROOT, src)):
             raise SystemExit("%s differs from the repo's %s; stage again" % (dst, src))
@@ -231,9 +569,9 @@ def same(d, data, seqs, readings, seeds):
 
 
 # ---------------------------------------------------------------- eval, zip, verify
-def _build_flags(mod):
+def _build_flags(ns):
     """Every shipped on/off switch of the estimator (boolean UPPER_CASE constants)."""
-    return {k: getattr(mod, k) for k in sorted(dir(mod)) if k.isupper() and isinstance(getattr(mod, k), bool)}
+    return {k: v for k, v in sorted(ns.items()) if k.isupper() and isinstance(v, bool)}
 
 
 def _load_single(path):
@@ -265,20 +603,22 @@ def evaluate(d, imu, runs):
     mod = _load_single(main_py)
     probe = os.path.join(tempfile.mkdtemp(prefix="vortex_eval_"), "est.txt")
     mod.main(["main.py", imu, probe])
+    ns = mod._G if getattr(mod, "_G", None) else vars(mod)        # CHUNKED: the estimator's namespace
     if _sha(probe) != _sha(out):
         raise SystemExit("in-process run differs from the command-line run")
     shutil.rmtree(os.path.dirname(probe), ignore_errors=True)
-    cal = "still_run" if mod.LAST.get("calibrated") else "first_second"
+    cal = "still_run" if ns["LAST"].get("calibrated") else "first_second"
     imu_s, imu_src = benchmark.imu_seconds(imu)
     seq = os.path.basename(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(imu)))))
     meta = {"source_commit": _commit(), "single_file_sha256": _sha(main_py),
-            "build_flags": _build_flags(mod),
+            "layout": "chunked" if getattr(mod, "_G", None) else "plain",
+            "build_flags": _build_flags(ns),
             "input": seq or os.path.basename(imu), "input_file": os.path.basename(imu),
             "input_sha256": _sha(imu), "rows": rows,
             "cal_source": cal,
             "cal_source_meaning": "still_run: gyro bias, gravity and tilt from the longest still run in the first "
                                   "60 s; first_second: no still run passed, initialised from the first second",
-            "fallback": mod.LAST.get("fallback"),
+            "fallback": ns["LAST"].get("fallback"),
             "imu_seconds": imu_s, "imu_seconds_source": imu_src, "entry_point": "python -S src/main.py",
             "runs": runs, "wall_s_median": s["wall_ms_median"] / 1e3,
             "ms_compute_per_imu_second": s["wall_ms_median"] / imu_s, "cpu_s_median": s["cpu_ms_median"] / 1e3,
@@ -340,7 +680,7 @@ def verify(zpath):
         ok = False
     single = os.path.join(app, SINGLE)
     with open(single, encoding="utf-8") as f:
-        problems = check_single(f.read())
+        problems = check_bundle(f.read())
     if problems:
         print("src/main.py fails the reachability check: %s" % "; ".join(problems[:5]))
         ok = False
@@ -388,13 +728,15 @@ def main(argv=None):
     ap.add_argument("--seqs", default=",".join(DEFAULT_SEQS))
     ap.add_argument("--readings", default="a,b")
     ap.add_argument("--seeds", default="1,2,3")
+    ap.add_argument("--layout", choices=LAYOUTS, help="default: %s (rule K)" % DEFAULT_LAYOUT)
+    ap.add_argument("--chunk-lines", type=int, help="CHUNKED: lines per chunk (default %d)" % CHUNK_LINES)
     a = ap.parse_args(argv)
     if a.cmd == "single":
         out = a.out or os.path.join(a.dir, SINGLE)
-        text = write_single(out)
+        text = write_single(out, a.layout, a.chunk_lines)
         print("wrote %s (%d lines); reachability check passed" % (out, text.count("\n")))
     elif a.cmd == "stage":
-        stage(a.dir)
+        stage(a.dir, a.layout, a.chunk_lines)
     elif a.cmd == "same":
         seqs = a.seqs.split(",")
         if any(s.startswith("V2_") for s in seqs):
