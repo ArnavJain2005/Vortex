@@ -34,7 +34,7 @@ NEEDS FROM AG: AG-0 seed inventory: do EuRoC MH_03..05/V1_01..03 a/b seed 13-15 
   on TUM-VI seeds 13-15? (blocks CC-2's judge, not its rule); AG-1 Docker compute ms/IMU-s (decides CC-1b)
 RULES COMMITTED: H at a5f5bd1 (track3/stepL3-blind, CC-L3; BLIND_* frozen), held-out copies may be generated: yes
   -> AG-2: make EuRoC MH_03..05, V1_01..03 x a,b x seeds 13,14,15 (36) and record SHA-256; CC-L3 told not to make them.
-  H' (no-fallback variant): ARNAV RELEASED SEEDS 22-24 (his words in chat, 20 Nov ~01:40 IST: "Release 22-24 for H'").
+  H' (no-fallback variant): ARNAV RELEASED SEEDS 22-24 (Arnav's words in chat, 20 Nov ~01:40 IST: "Release 22-24 for H'").
   CC-L3 writes rule H' first. Until a line "RULES COMMITTED: H' at <hash>, held-out copies may be generated: yes" appears
   here, AG must NOT generate any seed 22-24 copy. After it: EuRoC MH_03..05, V1_01..03 x a,b x s22-24 (36) and TUM-VI
   room3/4 x a,b x s22-24 (12), with SHA-256 in LOOP_AG.md.
