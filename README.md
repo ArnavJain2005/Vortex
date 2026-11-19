@@ -220,6 +220,6 @@ The official script and FAQ files are not committed. The [official baseline](Doc
 - [Scorer cross-check](Docs/EVO_CROSSCHECK.md) — evo comparison on synthetic trajectories.
 - [Data instructions](Docs/DATA.md) and [third-party notices](THIRD_PARTY.md) — datasets stay outside the repository.
 
-**Current solo entrant:** Arnav Jain · **Submission name:** `[TEAM_NAME]` · **College:** `[COLLEGE_NAME]`. Samsung Research and Samsung PRISM marks identify the challenge context; Vortex is Arnav's current solo entry.
+**Current solo entrant:** Arnav Jain · **Submission name:** `VORTEX` · **College:** `MIT Manipal`. Samsung Research and Samsung PRISM marks identify the challenge context; Vortex is Arnav's current solo entry.
 
 <sub>Project code: [MIT](LICENSE). Brand marks are Samsung's; [Research mark](https://cdn.codeground.org/nsr/images/layout/logo-sr.png) and [PRISM mark](https://www.samsungprism.com/assets/images/prism_logo.png) are reproduced from their official sites.</sub>
