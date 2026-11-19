@@ -2143,3 +2143,27 @@ Informational: rule G's verdict (OFF, 5fd288c) stands as recorded; the decision 
 - It agrees with the G2 decision (ship ON) and changes nothing. Not re-run on seeds 10-12: clean EuRoC, TUM-VI
   and the gate. The floor tag `stepG-H-floor` (5fd288c) is reused; the never-moving baseline does not depend on
   the estimator build.
+
+## CC-4: reading-a gap diagnosis and K8 (19 Nov 2026, loop task CC-4; analysis only, no code change)
+
+**Gap RMSE, reading a, seeds 7-9 (reporting only; `Docs/results/step7m-H79.json` against
+`stepL1-H-floor.json`).** Reading a's mean gap RMSE is 3.373 m against b's 3.204 m and the floor's 3.256 m.
+Per copy it ranges from -34.7 % (V1_02 a s7) to +54.2 % (V1_01 a s7) against the floor.
+- The smoother bridges the bursts. The error grows by 0.015 m on average across a burst (max 0.047 m) on
+  reading a, and by 0.014 m (max 0.059 m) on b (`gap_growth_mean`). A burst that was bridged from one end only
+  would grow by metres over a burst of a second or more.
+- So gap RMSE is the estimate's position error at the moments the bursts fall, not an error made inside them.
+  Reading a loses where its whole track is off at those times: V1_01 a +54/+17/+31 %, MH_03 a s8/s9 +14/+12 %.
+  The paired difference against the floor correlates only weakly with the APE difference (r = 0.24 on a,
+  0.34 on b), because a few bursts sample a few moments of the track.
+- No plain bug, so no fix. Any gain here comes from lowering the track error (APE), which other steps already
+  target.
+
+**K8, the independent test F1 (exact constant yaw rate treated as stuck).** The behaviour is kept, and the
+test stays `xfail(strict=True)` with its reason (ChatGPT's file, unchanged).
+- The stuck detector fires on `STUCK_ROWS = 5` identical gyro triplets.
+- In the clean data we hold (MH_01..05, V1_01..03, TUM-VI room1..4; 312,179 rows; V2 and room5/6 not read),
+  the longest run of exactly repeated gyro triplets is 2 rows, and no run reaches 5.
+- A real IMU at 6-decimal resolution does not repeat a triplet five times unless it is stuck. Stuck runs are one
+  of the organisers' faults, so the detector is right for real input. Only a synthetic noiseless signal trips
+  it, and the noisy variant of the same test passes.
