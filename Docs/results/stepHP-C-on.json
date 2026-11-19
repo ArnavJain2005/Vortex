@@ -1,0 +1,120 @@
+{
+ "commit": "fb36d77",
+ "date": "2026-11-20",
+ "degraded": false,
+ "main": "main.py",
+ "official": false,
+ "python": "3.14.7",
+ "results": [
+  {
+   "ate_none_rmse": 6.1912835597810725,
+   "ate_origin_rmse": 7.596555331347341,
+   "ate_se3_rmse": 4.232142899937223,
+   "ate_sim3_rmse": 4.223234109643823,
+   "contract": "PASS",
+   "final_se3": 6.142436812802435,
+   "rows": 36820,
+   "rpe200_rmse": 0.2950785351211517,
+   "sequence": "MH_01_easy",
+   "sim3_scale": 0.7555343858736847,
+   "wall_s": 2.8374062999500893
+  },
+  {
+   "ate_none_rmse": 6.593014642232524,
+   "ate_origin_rmse": 8.57029393909116,
+   "ate_se3_rmse": 4.541131699651307,
+   "ate_sim3_rmse": 4.529168049390296,
+   "contract": "PASS",
+   "final_se3": 5.756903354796965,
+   "rows": 30400,
+   "rpe200_rmse": 0.3641025705188874,
+   "sequence": "MH_02_easy",
+   "sim3_scale": 0.7586488445397563,
+   "wall_s": 2.3605881999828853
+  },
+  {
+   "ate_none_rmse": 7.700821857146364,
+   "ate_origin_rmse": 4.4828024279803795,
+   "ate_se3_rmse": 2.7099476158430154,
+   "ate_sim3_rmse": 2.708090919689541,
+   "contract": "PASS",
+   "final_se3": 3.1750068880825757,
+   "rows": 27008,
+   "rpe200_rmse": 0.3436615250963928,
+   "sequence": "MH_03_medium",
+   "sim3_scale": 1.044752876830669,
+   "wall_s": 2.113038500014227
+  },
+  {
+   "ate_none_rmse": 10.916416795821448,
+   "ate_origin_rmse": 7.070322170112261,
+   "ate_se3_rmse": 6.264892692099578,
+   "ate_sim3_rmse": 6.177366694097863,
+   "contract": "PASS",
+   "final_se3": 5.865293562391983,
+   "rows": 20320,
+   "rpe200_rmse": 0.8289439230392469,
+   "sequence": "MH_04_difficult",
+   "sim3_scale": 1.564015707987249,
+   "wall_s": 1.6606994000030681
+  },
+  {
+   "ate_none_rmse": 10.434280422004566,
+   "ate_origin_rmse": 7.554120170381081,
+   "ate_se3_rmse": 6.556648667135561,
+   "ate_sim3_rmse": 6.5283909635191435,
+   "contract": "PASS",
+   "final_se3": 4.1382873435862715,
+   "rows": 22721,
+   "rpe200_rmse": 0.7609444232515853,
+   "sequence": "MH_05_difficult",
+   "sim3_scale": 1.389976215787725,
+   "wall_s": 1.9830329999676906
+  },
+  {
+   "ate_none_rmse": 2.6397903598432917,
+   "ate_origin_rmse": 2.4435835900780534,
+   "ate_se3_rmse": 1.885823831546093,
+   "ate_sim3_rmse": 1.8094627951471183,
+   "contract": "PASS",
+   "final_se3": 1.802587639241467,
+   "rows": 29120,
+   "rpe200_rmse": 0.2109655254204587,
+   "sequence": "V1_01_easy",
+   "sim3_scale": 0.42926099929166334,
+   "wall_s": 2.468783199961763
+  },
+  {
+   "ate_none_rmse": 3.640875508275238,
+   "ate_origin_rmse": 1.8725762238297174,
+   "ate_se3_rmse": 1.0282669088199103,
+   "ate_sim3_rmse": 1.0282630640726476,
+   "contract": "PASS",
+   "final_se3": 1.5017408905607916,
+   "rows": 17100,
+   "rpe200_rmse": 0.21677986997328869,
+   "sequence": "V1_02_medium",
+   "sim3_scale": 0.9980645182619344,
+   "wall_s": 1.7905163000104949
+  },
+  {
+   "ate_none_rmse": 2.9856651843450006,
+   "ate_origin_rmse": 2.1844714267770002,
+   "ate_se3_rmse": 1.3416503213157631,
+   "ate_sim3_rmse": 1.3414311590727475,
+   "contract": "PASS",
+   "final_se3": 1.254331548656894,
+   "rows": 21500,
+   "rpe200_rmse": 0.2387544543103256,
+   "sequence": "V1_03_difficult",
+   "sim3_scale": 0.9714017508178148,
+   "wall_s": 1.9252513999817893
+  }
+ ],
+ "reverse": false,
+ "set": {
+  "BLIND_DEAD_ONLY": "True",
+  "BLIND_ON": "True"
+ },
+ "tag": "stepHP-C-on"
+}

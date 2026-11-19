@@ -2286,6 +2286,15 @@ the last 5 s of a correct trajectory to its centroid. **Rule H therefore fails: 
 re-judge.** The H tags on seeds 13-15 are still run so that `Docs/results/stepH-verdict.txt` is complete.
 Arnav's decision, relayed by the Step 7 session (20 Nov, ~01:40 IST): "Release 22-24 for H'".
 
+### Rule H verdict (20 Nov): **OFF** (`Docs/results/stepH-verdict.txt`)
+
+The H block (36 copies, seeds 13-15, made by Antigravity after a5f5bd1; SHA-256 checked against LOOP_AG.md, 36 of
+36) was run at fb36d77 with BLIND_DEAD_ONLY off, which is the a5f5bd1 code. Conditions 1-6 pass: blind RMSE over H
+3.087 -> 2.499 m (-19.1 %, floor 2.508 m), better on 5 of 6 sequences (MH_05 -6.0 %), readings a -17.6 % and b
+-20.4 %, APE 3.482 -> 3.434 m (-1.4 %), gap RMSE -2.1 %. Condition 7 fails on clean TUM-VI (+1.13 %); the benchmark
+gate with BLIND_ON was not run for rule H (condition 7 had already failed). `BLIND_ON` stays off under rule H; no
+re-judge. The blind window now ties the floor, as the centroid argument predicts (on 2.499 m, floor 2.508 m).
+
 ### Rule H' (Step L3, seeds 22-24): **written after rule H failed condition 7; weaker evidence**
 
 Committed before any seed 22-24 copy exists (EuRoC or TUM-VI). Written after seeing rule H's clean and TUM-VI
