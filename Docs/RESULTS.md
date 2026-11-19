@@ -755,6 +755,8 @@ Copies made by `python tools/official_degrade.py --all` with the organisers' `de
 | stepL1-H-off | b | 1..3 | 18 | 3.820 | 0.841 | 3.394 | 0.030 | 3.259 | 0.529 | 18/18 PASS |
 | stepL1-tune-on | a | 1..3 | 6 | 4.270 | 0.555 | 3.471 | 0.024 | 4.466 | 0.500 | 6/6 PASS |
 | stepL1-tune-on | b | 1..3 | 6 | 4.350 | 0.534 | 3.787 | 0.017 | 5.677 | 0.509 | 6/6 PASS |
+| stepL3-tune-on | a | 1..3 | 6 | 3.712 | 0.517 | 3.545 | 0.016 | 5.259 | 0.507 | 6/6 PASS |
+| stepL3-tune-on | b | 1..3 | 6 | 4.222 | 0.421 | 3.777 | 0.022 | 5.272 | 0.507 | 6/6 PASS |
 
 ## Every official-copy run
 
@@ -2656,6 +2658,18 @@ Copies made by `python tools/official_degrade.py --all` with the organisers' `de
 | stepL1-tune-on | main.py SHRINK_ON=True | da14417 | MH_02_easy_b_s1 | PASS | 4.456 | 0.564 | 5.124 | 0.018 | 5.878 | 0.327 | 0.56 |
 | stepL1-tune-on | main.py SHRINK_ON=True | da14417 | MH_02_easy_b_s2 | PASS | 4.480 | 0.564 | 3.564 | 0.006 | 5.624 | 0.273 | 0.56 |
 | stepL1-tune-on | main.py SHRINK_ON=True | da14417 | MH_02_easy_b_s3 | PASS | 4.522 | 0.563 | 3.407 | 0.024 | 5.884 | 0.429 | 0.70 |
+| stepL3-tune-on | main.py BLIND_ON=True | 9400dce | MH_01_easy_a_s1 | PASS | 3.755 | 0.512 | 3.255 | 0.019 | 5.050 | 0.646 | 1.07 |
+| stepL3-tune-on | main.py BLIND_ON=True | 9400dce | MH_01_easy_a_s2 | PASS | 3.082 | 0.492 | 3.242 | 0.022 | 5.019 | 0.646 | 1.09 |
+| stepL3-tune-on | main.py BLIND_ON=True | 9400dce | MH_01_easy_a_s3 | PASS | 3.586 | 0.464 | 3.685 | 0.012 | 4.969 | 0.646 | 1.05 |
+| stepL3-tune-on | main.py BLIND_ON=True | 9400dce | MH_01_easy_b_s1 | PASS | 4.060 | 0.389 | 3.901 | 0.022 | 5.044 | 0.646 | 1.15 |
+| stepL3-tune-on | main.py BLIND_ON=True | 9400dce | MH_01_easy_b_s2 | PASS | 4.237 | 0.372 | 3.239 | 0.030 | 5.051 | 0.646 | 1.21 |
+| stepL3-tune-on | main.py BLIND_ON=True | 9400dce | MH_01_easy_b_s3 | PASS | 3.927 | 0.385 | 3.293 | 0.014 | 5.026 | 0.646 | 1.19 |
+| stepL3-tune-on | main.py BLIND_ON=True | 9400dce | MH_02_easy_a_s1 | PASS | 4.053 | 0.576 | 4.868 | 0.014 | 5.497 | 0.367 | 1.03 |
+| stepL3-tune-on | main.py BLIND_ON=True | 9400dce | MH_02_easy_a_s2 | PASS | 3.825 | 0.530 | 3.057 | 0.009 | 5.518 | 0.367 | 1.09 |
+| stepL3-tune-on | main.py BLIND_ON=True | 9400dce | MH_02_easy_a_s3 | PASS | 3.971 | 0.526 | 3.163 | 0.020 | 5.502 | 0.367 | 0.91 |
+| stepL3-tune-on | main.py BLIND_ON=True | 9400dce | MH_02_easy_b_s1 | PASS | 4.317 | 0.473 | 5.371 | 0.032 | 5.503 | 0.367 | 0.99 |
+| stepL3-tune-on | main.py BLIND_ON=True | 9400dce | MH_02_easy_b_s2 | PASS | 4.395 | 0.463 | 3.697 | 0.010 | 5.501 | 0.367 | 0.93 |
+| stepL3-tune-on | main.py BLIND_ON=True | 9400dce | MH_02_easy_b_s3 | PASS | 4.394 | 0.447 | 3.159 | 0.024 | 5.507 | 0.367 | 1.01 |
 
 # Degraded input
 

@@ -82,7 +82,7 @@ not verified.
 
 ```
 pip install -e .[dev]
-pytest                                        # 19 Nov 2026: 410 passed, 1 xfailed (Step 7 PLATFORM_ON + L2 TILT_ON, merged with main at 3559fe4) (Windows, Python 3.14; test_ccore.py, the C-core experiment, needs g++ on PATH)
+pytest                                        # 19 Nov 2026: 430 passed, 1 xfailed (Step L3 BLIND_* built, off; rule H committed) (Windows, Python 3.14; test_ccore.py, the C-core experiment, needs g++ on PATH)
 python -S main.py IMU.csv estimated_trajectory.txt                       # submission entry point: a stub importing pathfinder.py (the estimator, stdlib only)
 python -S benchmark.py --runs 15 --gate [--input IMU.csv] --tag NAME      # gate: heap (tracemalloc) <= 4 MB, <= 50 us/row, checker PASS; RSS reported only
 python tools/make_bundle.py stage                                        # once per Python to carry bytecode for (py -3.13, py -3.14, python3 in WSL)
@@ -109,6 +109,8 @@ python tools/judge_step6.py --h step6-H --c step6-C --floor step2-floor-off --r4
 python tools/tilt_eval.py --tag NAME [--main tools/ref_main.py --set TILT_ON=True] --seqs MH_01_easy_a_s1,...  # L2: roll/pitch error vs GT by phase; Docs/tilt/
 python tools/tilt_tune.py --tag stepL2-tune --reverse --grid "TILT_TAU=4"   # 18 Nov: L2 tuning grid (MH_01/02 + TUM-VI room1/2), reference via tools/ref_main.py; --render TAG
 python tools/judge_stepG.py --floor T --off T --on T --on-rev T --c-off T --c-on T [--t-off T --t-on T --ct-off T --ct-on T] --gate PASS  # rule G (L2), seeds 10-12
+python tools/blind_tune.py --tag stepL3-tune                              # 19 Nov: L3 candidates B0-B3 on the 24 tuning copies (offline, shipped output); chose B2 L=3 beta=1
+python tools/judge_stepH.py --floor T --off T --on T --c-off T --c-on T --t-off T --t-on T --ct-off T --ct-on T [--t-floor T] --gate PASS  # rule H (L3), seeds 13-15
 python tools/baseline_table.py --est TAG --floor TAG --clean TAG --floor-clean TAG --out NAME  # estimator vs floor per sequence/reading; Docs/NAME.md
 python -m vortex.degrade data/euroc/MH_03_medium data/degraded/MH_03_medium_s4 --seed 4  # HISTORY: our own fault model (not the official one); <seq>_s<seed>
 python tools/eval_euroc.py --tag NAME --degraded [--seqs MH_03_medium_s4,...]  # every data/degraded copy; alignment from the clean run
