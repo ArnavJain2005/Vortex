@@ -96,25 +96,54 @@ Total profiled time: `1.601 s` (`1,971,181` function calls).
 
 ---
 
-## 4. Independent Scorer Cross-Check (`AG-4`: `tools/ape_check.py` vs `score.py`, `commit = 5ba1c4b`)
+## 4. Independent Scorer Cross-Check (`AG-4`: `tools/ape_check.py` vs `score.py`)
 
-Every benchmarked trajectory (shipped estimator `main.py` at `5ba1c4b` and never-moving floor `tools/baseline_still.py`) was scored independently with `score.py` and `tools/ape_check.py` (SE(3) translational ATE RMSE):
+### 4.1 Benchmarked `main` Trajectories (`commit = 5ba1c4b` / `3ddb2a4`)
+
+Every benchmarked trajectory (shipped estimator `pathfinder.py` at `5ba1c4b` / `3ddb2a4`, identical estimator code, and never-moving floor `tools/baseline_still.py`) was scored independently with `score.py` (`vortex.scoring`) and `tools/ape_check.py` (SE(3) translational ATE RMSE). *(Correction, 20 Nov 2026: the initial revision of this table accidentally executed `main.py` from an older checkout `3559fe4` before Step 7 `PLATFORM_ON`, giving `3.746328` / `3.658338 m` on `room3_{a,b}_s1`; Sections 1–3 Docker runs genuinely used `5ba1c4b`. All 14 rows below were re-run directly against `origin/main@3ddb2a4`.)*
 
 | Input sequence / copy | Trajectory | `score.py` ATE RMSE (m) | `tools/ape_check.py` ATE RMSE (m) | Difference (mm) | Matched poses |
 |---|---|---:|---:|---:|---:|
-| `MH_01_easy_b_s1` | estimator (`5ba1c4b`) | 4.204419 | 4.204419 | 0.000000 | 35,233 |
+| `MH_01_easy_b_s1` | estimator (`5ba1c4b` / `3ddb2a4`) | 4.204419 | 4.204419 | 0.000000 | 35,233 |
 | `MH_01_easy_b_s1` | floor (`baseline_still.py`) | 4.321501 | 4.321501 | 0.000000 | 35,233 |
-| `MH_03_medium_a_s1` | estimator (`5ba1c4b`) | 3.236912 | 3.236912 | 0.000000 | 25,376 |
+| `MH_03_medium_a_s1` | estimator (`5ba1c4b` / `3ddb2a4`) | 3.236912 | 3.236912 | 0.000000 | 25,376 |
 | `MH_03_medium_a_s1` | floor (`baseline_still.py`) | 3.587666 | 3.587666 | 0.000000 | 25,376 |
-| `MH_03_medium_b_s1` | estimator (`5ba1c4b`) | 2.861685 | 2.861685 | 0.000000 | 25,376 |
+| `MH_03_medium_b_s1` | estimator (`5ba1c4b` / `3ddb2a4`) | 2.861685 | 2.861685 | 0.000000 | 25,376 |
 | `MH_03_medium_b_s1` | floor (`baseline_still.py`) | 3.587666 | 3.587666 | 0.000000 | 25,376 |
-| `dataset-room3_512_16_a_s1` | estimator (`5ba1c4b`) | 3.746328 | 3.746328 | 0.000000 | 15,059 |
+| `dataset-room3_512_16_a_s1` | estimator (`5ba1c4b` / `3ddb2a4`) | 1.185522 | 1.185522 | 0.000000 | 15,059 |
 | `dataset-room3_512_16_a_s1` | floor (`baseline_still.py`) | 1.248938 | 1.248938 | 0.000000 | 15,059 |
-| `dataset-room3_512_16_b_s1` | estimator (`5ba1c4b`) | 3.658338 | 3.658338 | 0.000000 | 15,059 |
+| `dataset-room3_512_16_b_s1` | estimator (`5ba1c4b` / `3ddb2a4`) | 1.177312 | 1.177312 | 0.000000 | 15,059 |
 | `dataset-room3_512_16_b_s1` | floor (`baseline_still.py`) | 1.248938 | 1.248938 | 0.000000 | 15,059 |
-| `MH_01_easy_b_s3` | estimator (`5ba1c4b`) | 4.032716 | 4.032716 | 0.000000 | 35,392 |
+| `MH_01_easy_b_s3` | estimator (`5ba1c4b` / `3ddb2a4`) | 4.032716 | 4.032716 | 0.000000 | 35,392 |
 | `MH_01_easy_b_s3` | floor (`baseline_still.py`) | 4.315114 | 4.315114 | 0.000000 | 35,392 |
-| `MH_01_easy` (clean) | estimator (`5ba1c4b`) | 4.232143 | 4.232143 | 0.000000 | 36,382 |
+| `MH_01_easy` (clean) | estimator (`5ba1c4b` / `3ddb2a4`) | 4.232143 | 4.232143 | 0.000000 | 36,382 |
 | `MH_01_easy` (clean) | floor (`baseline_still.py`) | 4.307574 | 4.307574 | 0.000000 | 36,382 |
 
-Largest difference across all 14 trajectories: **`0.000000 mm`** (well below the `1 mm` escalation threshold).
+Largest difference across all 14 trajectories: **`0.000000 mm`** (`0.0 mm`, well below the `1 mm` escalation threshold).
+
+### 4.2 Rule H Verdict Cross-Check (`AG-4`, `track3/stepL3-blind@d1aa245`, estimator `fb36d77` / `a5f5bd1`)
+
+After CC-L3 judged Rule H OFF (`Docs/results/stepH-verdict.txt` at `d1aa245`), AG regenerated all **168 Rule H verdict trajectories** (`H` EuRoC seeds `13–15` off/on/floor, `T` TUM-VI `room3/4` seeds `13–15` off/on/floor, clean `C` EuRoC off/on, clean `CT` TUM-VI off/on) plus all **24 Rule H' clean trajectories** (`HP-C`, `HP-CT`) directly from `origin/track3/stepL3-blind:pathfinder.py` (`fb36d77`), and compared `tools/ape_check.py` (ChatGPT's independent pure-Python SE(3) scorer, unchanged) against both CC-L3's committed JSON `ape_se3_rmse`/`ate_se3_rmse` values and `score.py`. No Rule H' held-out seed `22–24` or `V2_*` files were touched.
+
+| Block | CC-L3 JSON (`d1aa245`) | Runs | Max `\|CC JSON − ape_check\|` (mm) | Max `\|score.py − ape_check\|` (mm) | Worst-diff sequence |
+|---|---|---:|---:|---:|---|
+| `H-off` (EuRoC s13–15, `BLIND_ON=False`) | `Docs/results/stepH-H-off.json` | 36 | `0.000000` (`8.88e-13`) | `0.000000` (`8.88e-13`) | `V1_01_easy_a_s15` |
+| `H-on` (EuRoC s13–15, `BLIND_ON=True`) | `Docs/results/stepH-H-on.json` | 36 | `0.000000` (`8.88e-13`) | `0.000000` (`8.88e-13`) | `MH_05_difficult_b_s13` |
+| `H-flr` (EuRoC s13–15, floor) | `Docs/results/stepH-H-floor.json` | 36 | `0.000000` (`8.88e-13`) | `0.000000` (`8.88e-13`) | `MH_05_difficult_b_s13` |
+| `T-off` (TUM-VI room3/4 s13–15, OFF) | `Docs/tumvi/stepH-T-off.json` | 12 | `0.000000` (`2.22e-13`) | `0.000000` (`2.22e-13`) | `dataset-room3_512_16_b_s15` |
+| `T-on` (TUM-VI room3/4 s13–15, ON) | `Docs/tumvi/stepH-T-on.json` | 12 | `0.000000` (`2.22e-13`) | `0.000000` (`2.22e-13`) | `dataset-room3_512_16_b_s13` |
+| `T-flr` (TUM-VI room3/4 s13–15, floor) | `Docs/tumvi/stepH-T-floor.json` | 12 | `0.000000` (`0.0`) | `0.000000` (`0.0`) | `dataset-room4_512_16_b_s15` |
+| `C-off` (clean EuRoC, OFF) | `Docs/results/stepH-C-off.json` | 8 | `0.000000` (`8.88e-13`) | `0.000000` (`8.88e-13`) | `MH_04_difficult` |
+| `C-on` (clean EuRoC, ON) | `Docs/results/stepH-C-on.json` | 8 | `0.000000` (`8.88e-13`) | `0.000000` (`8.88e-13`) | `MH_02_easy` |
+| `CT-off` (clean TUM-VI, OFF) | `Docs/tumvi/stepH-CT-off.json` | 4 | `0.000000` (`0.0`) | `0.000000` (`0.0`) | `dataset-room4_512_16` |
+| `CT-on` (clean TUM-VI, ON) | `Docs/tumvi/stepH-CT-on.json` | 4 | `0.000000` (`0.0`) | `0.000000` (`0.0`) | `dataset-room4_512_16` |
+| `HP-C-off` (clean EuRoC, `DEAD_ONLY`, OFF) | `Docs/results/stepHP-C-off.json` | 8 | `0.000000` (`8.88e-13`) | `0.000000` (`8.88e-13`) | `MH_04_difficult` |
+| `HP-C-on` (clean EuRoC, `DEAD_ONLY`, ON) | `Docs/results/stepHP-C-on.json` | 8 | `0.000000` (`8.88e-13`) | `0.000000` (`8.88e-13`) | `MH_04_difficult` |
+| `HP-CT-off` (clean TUM-VI, `DEAD_ONLY`, OFF) | `Docs/tumvi/stepHP-CT-off.json` | 4 | `0.000000` (`0.0`) | `0.000000` (`0.0`) | `dataset-room4_512_16` |
+| `HP-CT-on` (clean TUM-VI, `DEAD_ONLY`, ON) | `Docs/tumvi/stepHP-CT-on.json` | 4 | `0.000000` (`0.0`) | `0.000000` (`0.0`) | `dataset-room4_512_16` |
+
+- **Global maximum difference across all 192 trajectories:** **`0.000000 mm`** (`8.88e-13 mm`, floating-point rounding only, well below the `1 mm` escalation limit; `HP-C-on` `MH_04_difficult`: `6.264892692099578` vs `6.264892692099577 m`).
+- **CLI spot-checks (`python tools/ape_check.py --gt ... --est ...`):**
+  - `H-on` `MH_04_difficult_b_s13`: `ATE RMSE m: 6.18326022834` (`19,674` matched poses; CC JSON `6.1832602283429985 m`).
+  - `T-on` `dataset-room3_512_16_b_s13`: `ATE RMSE m: 1.19618176002` (`15,118` matched poses; CC JSON `1.1961817600169873 m`).
+- **Not verified by `tools/ape_check.py`:** `tools/ape_check.py` checks full-trajectory SE(3) translational ATE RMSE only; it does not independently recompute phase-windowed `blind_rmse`, `gap_rmse_mean`, or `rpe200_rmse`. Rule H' held-out seeds `22–24` were not run here (reserved for AG-4 after CC-L3 posts the Rule H' verdict).
