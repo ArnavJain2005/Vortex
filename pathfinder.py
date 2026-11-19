@@ -1653,14 +1653,14 @@ def _run(src, dst, write=True, integrate=True, store=None, corr=None, hh=False):
     return n
 
 
-_USAGE = """usage: python main.py [IN [OUT]]   or   python main.py --input IN --output OUT   (-i IN -o OUT)
+_usage_text = """usage: python main.py [IN [OUT]]   or   python main.py --input IN --output OUT   (-i IN -o OUT)
   IN   the IMU csv, or a sequence folder (searched for imu0/data.csv, mav0/imu0/data.csv, data.csv,
        then a single *.csv). No IN: the current folder is searched the same way.
   OUT  the trajectory file, or a folder (estimated_trajectory.txt inside it).
        No OUT: estimated_trajectory.txt in the current folder.
 """
-_OUT_NAME = "estimated_trajectory.txt"
-_SEARCH = (("imu0", "data.csv"), ("mav0", "imu0", "data.csv"), ("data.csv",))
+_out_name = "estimated_trajectory.txt"
+_search_paths = (("imu0", "data.csv"), ("mav0", "imu0", "data.csv"), ("data.csv",))
 
 
 class _Usage(Exception):
@@ -1669,7 +1669,7 @@ class _Usage(Exception):
 
 def _find_input(folder):
     """The IMU csv of a folder: imu0/data.csv, mav0/imu0/data.csv, data.csv, else its only *.csv."""
-    for parts in _SEARCH:
+    for parts in _search_paths:
         p = os.path.join(folder, *parts)
         if os.path.isfile(p):
             return p
@@ -1678,7 +1678,7 @@ def _find_input(folder):
     if len(csvs) == 1:
         return os.path.join(folder, csvs[0])
     raise _Usage("no IMU csv found in %s (looked for %s, or a single *.csv; found %d *.csv)"
-                 % (os.path.abspath(folder), ", ".join("/".join(s) for s in _SEARCH), len(csvs)))
+                 % (os.path.abspath(folder), ", ".join("/".join(s) for s in _search_paths), len(csvs)))
 
 
 def _paths(argv):
@@ -1719,9 +1719,9 @@ def _paths(argv):
     elif os.path.isdir(src):
         src = _find_input(src)
     if dst is None:
-        dst = _OUT_NAME
+        dst = _out_name
     elif os.path.isdir(dst):
-        dst = os.path.join(dst, _OUT_NAME)
+        dst = os.path.join(dst, _out_name)
     return src, dst
 
 
@@ -1758,7 +1758,7 @@ def main(argv):
     except _Usage as e:
         if str(e):
             sys.stderr.write("main.py: %s\n" % e)
-        sys.stderr.write(_USAGE)
+        sys.stderr.write(_usage_text)
         return 0 if not str(e) else 2
     LAST["fallback"] = None
     try:
