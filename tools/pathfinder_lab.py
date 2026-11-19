@@ -877,6 +877,21 @@ def _fe_num(x):
         return float("nan")
 
 
+def _fe_text_header(line):
+    """A header written without '#' (e.g. `timestamp,w_x,...`): no comma field is a number. Only the first
+    data-like line of a file can be one (vortex/rowspec.py is_text_header); it is not a row. A line with
+    no letter at all (`,,,,,,`: every value missing) stays a row."""
+    if line.upper() == line.lower():
+        return False
+    for x in line.lstrip(b"\xef\xbb\xbf").split(b","):
+        try:
+            float(x)
+            return False
+        except ValueError:
+            pass
+    return True
+
+
 def _fe_median(xs):
     """Median of a non-empty list (sorted in place)."""
     xs.sort()
@@ -933,12 +948,18 @@ def _fe_detect(path):
     prev = None
     digits = True
     rows = 0
+    text_hdr = False
     with open(path, "rb") as f:
         if f.peek(3)[:3] == b"\xef\xbb\xbf":
             f.read(3)
         for line in f:
             if not _fe_is_data(line):
                 if header is None and rows == 0 and line.strip()[:1] == b"#":
+                    header = line.strip()
+                continue
+            if rows == 0 and not text_hdr and _fe_text_header(line):
+                text_hdr = True
+                if header is None:
                     header = line.strip()
                 continue
             rows += 1
@@ -980,8 +1001,9 @@ def _fe_detect(path):
         unit = "ns"
     lay = {"order": order, "order_from": src, "header_order": hdr, "ts_unit": unit, "ts_digits": digits,
            "accel_scale": FE_G_SCRIPT if g_unit else 1.0, "accel_unit": "g" if g_unit else "m/s^2",
-           "gyro_suspect": m_gyr == m_gyr and m_gyr > FE_GYRO_SUSPECT, "s1": s1, "s2": s2}
-    lay["canonical"] = order == "gyro_first" and unit == "ns" and digits and not g_unit
+           "gyro_suspect": m_gyr == m_gyr and m_gyr > FE_GYRO_SUSPECT, "s1": s1, "s2": s2,
+           "text_header": text_hdr}
+    lay["canonical"] = order == "gyro_first" and unit == "ns" and digits and not g_unit and not text_hdr
     return lay
 
 
@@ -1008,11 +1030,15 @@ def _fe_canonical_lines(path, lay):
     acc_first = lay["order"] == "accel_first"
     k = lay["accel_scale"]
     yield FE_CANON_HEADER.encode() + b"\n"
+    skip = lay.get("text_header", False)
     with open(path, "rb") as f:
         if f.peek(3)[:3] == b"\xef\xbb\xbf":
             f.read(3)
         for line in f:
             if not _fe_is_data(line):
+                continue
+            if skip:                                 # the header written without '#': not a row
+                skip = False
                 continue
             p = line.strip().split(b",")
             p += [b""] * (7 - len(p))
@@ -1517,6 +1543,8 @@ def _run(src, dst, write=True, integrate=True, env=None, collect=None, store=Non
                 if ts.isdigit():
                     if len(ts) > 9:
                         sec = ts[:-9]
+                        if sec[0] == 48:            # leading zeros: str(ns // 10**9), as the contract says
+                            sec = sec.lstrip(b"0") or b"0"
                         frac = ts[-9:]
                     else:
                         sec = b"0"
@@ -1549,6 +1577,8 @@ def _run(src, dst, write=True, integrate=True, env=None, collect=None, store=Non
                 tok = True
                 if len(ts) > 9:
                     sec = ts[:-9]
+                    if sec[0] == 48:                # leading zeros: str(ns // 10**9), as the contract says
+                        sec = sec.lstrip(b"0") or b"0"
                     frac = ts[-9:]
                 else:
                     sec = b"0"

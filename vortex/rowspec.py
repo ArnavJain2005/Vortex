@@ -23,7 +23,36 @@ def seconds_text(field) -> str | None:
         return None
     if len(s) <= 9:
         return "0." + s.rjust(9, "0")
-    return s[:-9] + "." + s[-9:]
+    return (s[:-9].lstrip("0") or "0") + "." + s[-9:]   # = str(ns // 10**9) + "." + 9-digit remainder
+
+
+def is_text_header(line) -> bool:
+    """A header written without '#' (e.g. `timestamp,w_x,...`): it has a letter and no comma field is a
+    number. Only the FIRST data-like line of a file can be one, and then it is not a row (data_lines)."""
+    s = line.decode("utf-8", "replace") if isinstance(line, (bytes, bytearray)) else line
+    s = s.lstrip("﻿")
+    if s.upper() == s.lower():
+        return False
+    for x in s.split(","):
+        try:
+            float(x)
+            return False
+        except ValueError:
+            pass
+    return True
+
+
+def data_lines(lines):
+    """The data rows of an iterable of lines: is_data_line, minus a first-line header without '#'."""
+    first = True
+    for line in lines:
+        if not is_data_line(line):
+            continue
+        if first:
+            first = False
+            if is_text_header(line):
+                continue
+        yield line
 
 
 BOM = b"\xef\xbb\xbf"

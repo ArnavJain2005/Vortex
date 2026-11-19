@@ -842,6 +842,21 @@ def _fe_num(x):
         return float("nan")
 
 
+def _fe_text_header(line):
+    """A header written without '#' (e.g. `timestamp,w_x,...`): no comma field is a number. Only the first
+    data-like line of a file can be one (vortex/rowspec.py is_text_header); it is not a row. A line with
+    no letter at all (`,,,,,,`: every value missing) stays a row."""
+    if line.upper() == line.lower():
+        return False
+    for x in line.lstrip(b"\xef\xbb\xbf").split(b","):
+        try:
+            float(x)
+            return False
+        except ValueError:
+            pass
+    return True
+
+
 def _fe_median(xs):
     """Median of a non-empty list (sorted in place)."""
     xs.sort()
@@ -898,12 +913,18 @@ def _fe_detect(path):
     prev = None
     digits = True
     rows = 0
+    text_hdr = False
     with open(path, "rb") as f:
         if f.peek(3)[:3] == b"\xef\xbb\xbf":
             f.read(3)
         for line in f:
             if not _fe_is_data(line):
                 if header is None and rows == 0 and line.strip()[:1] == b"#":
+                    header = line.strip()
+                continue
+            if rows == 0 and not text_hdr and _fe_text_header(line):
+                text_hdr = True
+                if header is None:
                     header = line.strip()
                 continue
             rows += 1
@@ -945,8 +966,9 @@ def _fe_detect(path):
         unit = "ns"
     lay = {"order": order, "order_from": src, "header_order": hdr, "ts_unit": unit, "ts_digits": digits,
            "accel_scale": FE_G_SCRIPT if g_unit else 1.0, "accel_unit": "g" if g_unit else "m/s^2",
-           "gyro_suspect": m_gyr == m_gyr and m_gyr > FE_GYRO_SUSPECT, "s1": s1, "s2": s2}
-    lay["canonical"] = order == "gyro_first" and unit == "ns" and digits and not g_unit
+           "gyro_suspect": m_gyr == m_gyr and m_gyr > FE_GYRO_SUSPECT, "s1": s1, "s2": s2,
+           "text_header": text_hdr}
+    lay["canonical"] = order == "gyro_first" and unit == "ns" and digits and not g_unit and not text_hdr
     return lay
 
 
@@ -973,11 +995,15 @@ def _fe_canonical_lines(path, lay):
     acc_first = lay["order"] == "accel_first"
     k = lay["accel_scale"]
     yield FE_CANON_HEADER.encode() + b"\n"
+    skip = lay.get("text_header", False)
     with open(path, "rb") as f:
         if f.peek(3)[:3] == b"\xef\xbb\xbf":
             f.read(3)
         for line in f:
             if not _fe_is_data(line):
+                continue
+            if skip:                                 # the header written without '#': not a row
+                skip = False
                 continue
             p = line.strip().split(b",")
             p += [b""] * (7 - len(p))
@@ -1142,6 +1168,8 @@ def _run(src, dst, write=True, integrate=True, store=None, corr=None):
                 if ts.isdigit():
                     if len(ts) > 9:
                         sec = ts[:-9]
+                        if sec[0] == 48:            # leading zeros: str(ns // 10**9), as the contract says
+                            sec = sec.lstrip(b"0") or b"0"
                         frac = ts[-9:]
                     else:
                         sec = b"0"
@@ -1174,6 +1202,8 @@ def _run(src, dst, write=True, integrate=True, store=None, corr=None):
                 tok = True
                 if len(ts) > 9:
                     sec = ts[:-9]
+                    if sec[0] == 48:                # leading zeros: str(ns // 10**9), as the contract says
+                        sec = sec.lstrip(b"0") or b"0"
                     frac = ts[-9:]
                 else:
                     sec = b"0"
@@ -1536,15 +1566,129 @@ def _run(src, dst, write=True, integrate=True, store=None, corr=None):
     return n
 
 
+_USAGE = """usage: python main.py [IN [OUT]]   or   python main.py --input IN --output OUT   (-i IN -o OUT)
+  IN   the IMU csv, or a sequence folder (searched for imu0/data.csv, mav0/imu0/data.csv, data.csv,
+       then a single *.csv). No IN: the current folder is searched the same way.
+  OUT  the trajectory file, or a folder (estimated_trajectory.txt inside it).
+       No OUT: estimated_trajectory.txt in the current folder.
+"""
+_OUT_NAME = "estimated_trajectory.txt"
+_SEARCH = (("imu0", "data.csv"), ("mav0", "imu0", "data.csv"), ("data.csv",))
+
+
+class _Usage(Exception):
+    pass
+
+
+def _find_input(folder):
+    """The IMU csv of a folder: imu0/data.csv, mav0/imu0/data.csv, data.csv, else its only *.csv."""
+    for parts in _SEARCH:
+        p = os.path.join(folder, *parts)
+        if os.path.isfile(p):
+            return p
+    csvs = [n for n in os.listdir(folder) if n.lower().endswith(".csv") and not n.endswith(".vortex_in.csv")
+            and os.path.isfile(os.path.join(folder, n))]
+    if len(csvs) == 1:
+        return os.path.join(folder, csvs[0])
+    raise _Usage("no IMU csv found in %s (looked for %s, or a single *.csv; found %d *.csv)"
+                 % (os.path.abspath(folder), ", ".join("/".join(s) for s in _SEARCH), len(csvs)))
+
+
+def _paths(argv):
+    """(src, dst) from the command line; raises _Usage. argv[0] is the script name."""
+    src = dst = None
+    pos = []
+    a = list(argv[1:])
+    while a:
+        x = a.pop(0)
+        for flags, key in ((("-i", "--input"), "i"), (("-o", "--output"), "o")):
+            hit = None
+            if x in flags:
+                if not a:
+                    raise _Usage("%s needs a value" % x)
+                hit = a.pop(0)
+            elif x.startswith(flags[1] + "="):
+                hit = x[len(flags[1]) + 1:]
+            if hit is not None:
+                if key == "i":
+                    src = hit
+                else:
+                    dst = hit
+                break
+        else:
+            if x in ("-h", "--help"):
+                raise _Usage("")
+            if x.startswith("-") and len(x) > 1:
+                raise _Usage("unknown option %s" % x)
+            pos.append(x)
+    if src is None and pos:
+        src = pos.pop(0)
+    if dst is None and pos:
+        dst = pos.pop(0)
+    if pos:
+        raise _Usage("too many arguments: %s" % " ".join(pos))
+    if src is None:
+        src = _find_input(os.getcwd())
+    elif os.path.isdir(src):
+        src = _find_input(src)
+    if dst is None:
+        dst = _OUT_NAME
+    elif os.path.isdir(dst):
+        dst = os.path.join(dst, _OUT_NAME)
+    return src, dst
+
+
+def _fallback(src, dst):
+    """A constant pose (origin, identity) for every data row, same timestamps rule as _run. Returns rows."""
+    n = 0
+    sec, frac = b"0", b"000000000"
+    first = True
+    with open(src, "rb", buffering=READ_BUF) as f, open(dst, "wb") as g:
+        if f.peek(3)[:3] == BOM:
+            f.read(3)
+        for line in f:
+            if not _fe_is_data(line):
+                continue
+            if first:
+                first = False
+                if _fe_text_header(line):
+                    continue
+            ts = line.split(b",", 1)[0].strip()
+            if ts.isdigit():
+                t = int(ts)
+                sec = str(t // 1000000000).encode()
+                frac = b"%09d" % (t % 1000000000)
+            g.write(b"%s.%s 0.000000 0.000000 0.000000 0.0000000 0.0000000 0.0000000 1.0000000\n" % (sec, frac))
+            n += 1
+    return n
+
+
 def main(argv):
-    if len(argv) != 3:
-        sys.stderr.write("usage: python main.py <imu.csv> <estimated_trajectory.txt>\n")
-        return 2
+    """Never fails on a readable input: if the estimator raises, every row gets a constant pose (exit 0).
+    Exit 2: bad arguments or no input found; 1: the input cannot be read or the output not written."""
     try:
-        run(argv[1], argv[2])
-    except OSError as e:
+        src, dst = _paths(argv)
+    except _Usage as e:
+        if str(e):
+            sys.stderr.write("main.py: %s\n" % e)
+        sys.stderr.write(_USAGE)
+        return 0 if not str(e) else 2
+    LAST["fallback"] = None
+    try:
+        run(src, dst)
+        return 0
+    except KeyboardInterrupt:
+        raise
+    except BaseException as e:      # noqa: BLE001 (any failure of the estimator: fall back, never fail)
+        LAST["fallback"] = "%s: %s" % (type(e).__name__, e)
+        sys.stderr.write("main.py: the estimator failed (%s); writing a constant pose for every row\n"
+                         % LAST["fallback"])
+    try:
+        rows = _fallback(src, dst)
+    except Exception as e:          # noqa: BLE001
         sys.stderr.write("main.py: %s\n" % e)
         return 1
+    sys.stderr.write("main.py: wrote %d constant poses to %s\n" % (rows, dst))
     return 0
 
 
