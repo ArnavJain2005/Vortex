@@ -11,7 +11,7 @@
 <p><strong>Samsung PRISM XR Hackathon Challenge 2026 · Track 3: Path Finder</strong></p>
 <p>IMU-only, 6-DoF trajectory estimation under sensor degradation.</p>
 
-[Challenge](#the-challenge) · [Architecture](#architecture) · [Measured results](#measured-results) · [Run](#run-vortex) · [Research notes](#research-notes)
+[Challenge](#the-challenge) · [Architecture](#architecture) · [Comparisons](#where-vortex-is-better) · [Measured results](#measured-results) · [Run](#run-vortex) · [Research notes](#research-notes)
 
 </div>
 
@@ -85,6 +85,39 @@ Every `*_ON` assignment in the shipped [`pathfinder.py`](pathfinder.py) on the c
 
 **Measured, left out:** stuck/spike rejection and interpolation (Step 3), learned envelope (Step 4), rotor drag V3 (Step 5, NO-GO), noise-meter gating (Step 6c), denoised V1 (Step 7b), covariance reset (Step F), and shrinkage (Step L1). Their rules and results are in the [plan](Docs/TRACK3_PLAN.md). An experimental per-row sigma did not rank error and is not submitted as calibrated confidence ([coverage study](Docs/COVERAGE.md)).
 
+## Where Vortex is better
+
+The comparison here is against the **never-moving trajectory** on the *same inputs*, after the same per-run SE(3) alignment. Lower error is better. These are measured improvements over that deliberately simple floor, **not a comparison with other teams, visual-inertial methods, or the hidden leaderboard**. [Source values and run tags](Docs/NUMBERS.md) · [scoring method](Docs/METHOD.md).
+
+| Test set and metric ↓ | Vortex | Never-moving floor | Relative error | Advantage |
+|---|---:|---:|---:|---|
+| EuRoC held-out, official degradation, seeds 4–6 · full APE (36 copies) | **3.480 m** | 3.745 m | **7.1% lower** | Full trajectory |
+| EuRoC held-out, official degradation, seeds 4–6 · 1 s RPE | **0.559 m** | 0.941 m | **40.6% lower** | Local motion |
+| EuRoC held-out, official degradation, seeds 4–6 · gap-window RMSE | **3.513 m** | 3.626 m | **3.1% lower** | Missing-row intervals |
+| EuRoC held-out, official degradation, seeds 7–9 · full APE (36 further copies) | **3.566 m** | 3.748 m | **4.8% lower** | Independent degradation seeds on the same six flights |
+| EuRoC held-out, official degradation, seeds 7–9 · 1 s RPE | **0.568 m** | 0.943 m | **39.8% lower** | Local motion replication |
+| EuRoC clean · full APE (8 sequences) | **3.570 m** | 3.930 m | **9.2% lower** | Clean trajectories |
+| EuRoC clean · 1 s RPE | **0.407 m** | 0.813 m | **49.9% lower** | Clean local motion |
+| TUM-VI held-out rooms 3–4, official degradation · full APE (12 copies) | **1.109 m** | 1.164 m | **4.7% lower** | Unseen hand-held rooms |
+| TUM-VI held-out rooms 3–4, official degradation · 1 s RPE | **1.022 m** | 1.260 m | **18.9% lower** | Hand-held local motion |
+| TUM-VI rooms 1–4, official degradation · full APE (24 copies) | **0.990 m** | 1.137 m | **12.9% lower** | Includes tuned rooms 1–2 |
+| TUM-VI rooms 1–4, official degradation · gap-window RMSE | **0.977 m** | 1.078 m | **9.4% lower** | Missing-row intervals |
+| TUM-VI rooms 1–4, clean · full APE (4 sequences) | **0.879 m** | 1.137 m | **22.6% lower** | Clean hand-held trajectories |
+
+**Coverage and limits:** EuRoC full-trajectory APE beats the floor on **5/6** held-out sequences for seeds 4–6; the seeds 7–9 aggregate wins on **5/6** when both readings are pooled (**4/6** in each reading separately). Clean EuRoC wins on **7/8**. TUM-VI wins on **2/2** held-out rooms and **4/4** measured rooms, with rooms 1–2 used for tuning. All **36/36** EuRoC primary copies, **36/36** replication copies and **24/24** TUM-VI copies pass the output contract. The output contract is coverage, not evidence of position accuracy. [Verified counts](Docs/NUMBERS.md).
+
+**Where it is weaker:** EuRoC blind-five-second RMSE is **3.017 vs 2.504 m** (20.5% higher) on seeds 4–6 and **3.110 vs 2.505 m** (24.1% higher) on seeds 7–9. The replication gap-window RMSE is **3.289 vs 3.256 m** (1.0% higher). Held-out TUM-VI blind error is **1.016 vs 0.741 m** (37.1% higher). V1_01 is the EuRoC sequence that does not beat the stationary floor in the primary set. These weaknesses matter for the challenge's blind and dropout scores. [Verified figures](Docs/NUMBERS.md).
+
+**Measured resource budget, shipped build:** the comparison below is against the challenge limits, not against the stationary trajectory (whose compute cost is a different baseline). The real-input measurements use MH_01_easy_b_s1, 35,697 rows, Windows 11, Python 3.14.7; heap values are traced whole-run peaks. [Budget record](Docs/BUDGET.md).
+
+| Parameter | Measured | Limit | Headroom / result |
+|---|---:|---:|---|
+| Wall time per IMU second | **5.55 ms** | 20 ms | 72.3% below limit |
+| Time per row | **28.6 µs** | 100 µs | 71.4% below limit |
+| Whole-run heap, matching bytecode | **1,816 KB** | 8 MB (8,192 KB) | 6,376 KB below limit |
+| Whole-run heap, source-only, no cached bytecode | **7,188 KB** | 8 MB (8,192 KB) | 1,004 KB below limit |
+| Automated tests, recorded on Python 3.14.7 | **410 passed** | — | 0 failed or skipped |
+
 ## Measured results
 
 **Primary scoreboard — current Step 7 + L2 build**, organisers' degradation script, held-out MH_03–05 and V1_01–03, readings a and b, seeds 4–6 (36 copies). APE is the mean per-copy translational RMSE after SE(3) alignment fitted on each run. Reading **a** feeds raw gyro-first EuRoC columns to the script; reading **b** feeds accelerometer columns first. The actual evaluator order (Q9) remains unknown. [Numbers and source tags](Docs/NUMBERS.md) · [generated results](Docs/RESULTS.md).
@@ -94,6 +127,24 @@ Every `*_ON` assignment in the shipped [`pathfinder.py`](pathfinder.py) on the c
 | Reading a · 18 copies | **3.539 m** | **3.745 m** | 2.849 / 2.504 m |
 | Reading b · 18 copies | **3.421 m** | **3.745 m** | 3.185 / 2.504 m |
 | **Both · 36 copies** | **3.480 m** | **3.745 m** | **3.017 / 2.504 m** |
+
+**Test parameters:** six EuRoC sequences (MH_03–05, V1_01–03); 2 column readings (a: gyro-first raw columns, b: accelerometer-first); 3 seeds per set (4–6, then 7–9); 18 copies per reading and 36 per set. The TUM-VI comparison uses rooms 1–4, both readings and seeds 1–3 (24 copies), with rooms 3–4 held out (12 copies). APE is per-copy translational RMSE after fitted SE(3); 1 s RPE measures local translation; gap and blind RMSE are reported separately. The official script adds noise/bias, missing rows and a final dead-sensor window; test-set composition and metric definitions are in the [method](Docs/METHOD.md) and [numbers](Docs/NUMBERS.md).
+
+| EuRoC held-out seeds 4–6, by reading ↓ | Vortex a / floor | Vortex b / floor | Reading a vs floor | Reading b vs floor |
+|---|---:|---:|---:|---:|
+| Full APE | 3.539 / 3.745 m | 3.421 / 3.745 m | 5.5% lower | 8.7% lower |
+| 1 s RPE | 0.601 / 0.941 m | 0.518 / 0.941 m | 36.1% lower | 45.0% lower |
+| Gap-window RMSE | 3.610 / 3.626 m | 3.417 / 3.626 m | 0.4% lower | 5.8% lower |
+| Blind-five-second RMSE | 2.849 / 2.504 m | 3.185 / 2.504 m | 13.8% higher | 27.2% higher |
+
+| EuRoC sequence, seeds 4–6 · full APE ↓ | Reading a: Vortex / floor | Reading b: Vortex / floor | Outcome |
+|---|---:|---:|---|
+| MH_03_medium | 3.291 / 3.579 m | 2.971 / 3.579 m | Both better |
+| MH_04_difficult | 6.336 / 6.813 m | 6.295 / 6.813 m | Both better |
+| MH_05_difficult | 6.648 / 6.865 m | 6.555 / 6.865 m | Both better |
+| V1_01_easy | 2.251 / 1.854 m | 2.100 / 1.854 m | Both worse |
+| V1_02_medium | 1.335 / 1.778 m | 1.229 / 1.778 m | Both better |
+| V1_03_difficult | 1.372 / 1.581 m | 1.372 / 1.581 m | Both better |
 
 On this set, aggregate APE is **7.1% lower** than standing still and **five of six sequences** beat the floor; the blind five-second error is **20.5% higher**. An additional 36 held-out copies using seeds 7–9 record **3.566 vs 3.748 m** APE and **3.110 vs 2.505 m** blind error. These seeds reuse the same six flights, so they are replication across degradations, not six new trajectories. Ground truth is used only for scoring.
 
