@@ -107,6 +107,16 @@ TILT_LAG = True
 TILT_GATE_A = 0.5
 SMOOTH_ON = True             # Step 6: ON (rule passed 18 Nov 2026); fixed-interval (RTS) smoother at the tick (vortex/core/witness.py smooth_*)
 SMOOTH_MAX_BLOCKS = 1024     # stored blocks (fixed cap; a full store merges adjacent pairs): <= 1.05 MB of floats
+PLATFORM_ON = True           # Step 7: ON (rule passed 18 Nov 2026); hand-held envelope (HH_*) when the file is hand-held (vortex/core/platform.py)
+PLAT_WIN_NS = 1000000000     # ns, window of the detector statistic
+PLAT_Q = 0.75                # quantile of the window statistics
+PLAT_HF = 1.0                # (m/s^2)^2: below this the file is hand-held (rotor vibration is far above)
+PLAT_MIN_TERMS = 100         # second differences a window needs to count
+HH_V2_SIGMA_H = 0.5          # m/s, hand-held envelope (TUM-VI room1/2): speed h
+HH_V2_SIGMA_V = 0.3          # m/s, speed v
+HH_V2P_SIGMA_H = 1.0         # m, volume h
+HH_V2P_SIGMA_V = 0.3         # m, volume v
+HH_V2P_TAU = 30.0            # s, running-centre time constant
 N = 15
 
 LAST = {"pre_rows": 0, "calibrated": False, "zupt_ticks": 0, "ba": (0.0, 0.0, 0.0), "tilt2": -1.0}  # tests/benchmarks
@@ -188,6 +198,75 @@ def _open_rows(src):
     if f.peek(3)[:3] == BOM:
         f.read(3)
     return f
+
+
+def _plat_stat(src):
+    """Step 7 detector statistic (vortex/core/platform.py hf_stat): per 1 s window the mean squared second
+    difference of the accelerometer, PLAT_Q quantile over windows; None if no window counts. Same row
+    rules as run(); an invalid or all-zero-accelerometer row, or a bad timestamp, ends the chain."""
+    es = []
+    t0 = None
+    k_cur = None
+    s = 0.0
+    n = 0
+    a1 = a2 = None
+    with _open_rows(src) as f:
+        for line in f:
+            if line[0] < 48:
+                line = line.strip()
+                if not line or line[0] == 35:
+                    continue
+            p = line.split(b",")
+            ts = p[0]
+            if not ts.isdigit():
+                ts = ts.strip()
+                if not ts.isdigit():
+                    a1 = a2 = None
+                    continue
+            try:
+                v = [float(p[1]), float(p[2]), float(p[3]), float(p[4]), float(p[5]), float(p[6])]
+            except (ValueError, IndexError):
+                v = _slow_fields(p)
+            if not (v[0] * v[0] + v[1] * v[1] + v[2] * v[2] + v[3] * v[3] + v[4] * v[4] + v[5] * v[5]
+                    < MAX_SUMSQ) or (v[3] == 0.0 and v[4] == 0.0 and v[5] == 0.0):
+                a1 = a2 = None
+                continue
+            t = int(ts)
+            if t0 is None:
+                t0 = t
+            k = (t - t0) // PLAT_WIN_NS
+            if k != k_cur:
+                if n >= PLAT_MIN_TERMS:
+                    es.append(s / (3.0 * n))
+                k_cur = k
+                s = 0.0
+                n = 0
+                a1 = a2 = None
+            x, y, z = v[3], v[4], v[5]
+            if a2 is not None:
+                d0 = x - 2.0 * a1[0] + a2[0]
+                d1 = y - 2.0 * a1[1] + a2[1]
+                d2 = z - 2.0 * a1[2] + a2[2]
+                s += d0 * d0 + d1 * d1 + d2 * d2
+                n += 1
+            a2 = a1
+            a1 = (x, y, z)
+    if n >= PLAT_MIN_TERMS:
+        es.append(s / (3.0 * n))
+    if not es:
+        return None
+    es.sort()
+    return es[int(PLAT_Q * (len(es) - 1))]
+
+
+def _plat_hh(src):
+    """True if PLATFORM_ON and the file is hand-held; LAST["platform"] gets the statistic."""
+    LAST["platform"] = None
+    if not PLATFORM_ON:
+        return False
+    st = _plat_stat(src)
+    LAST["platform"] = st
+    return st is not None and st < PLAT_HF
 
 
 def _tilt(fx, fy, fz):
@@ -523,12 +602,13 @@ def _rot_matrix(qw, qx, qy, qz):
             2.0 * (x * z - w * y), 2.0 * (y * z + w * x), 1.0 - 2.0 * (x * x + y * y))
 
 
-def _kf_init(still):
+def _kf_init(still, hh=False):
     tilt = P0_TILT if still else P0_TILT_FALLBACK
     bg = P0_BG if still else P0_BG_FALLBACK
     sig = (0.0, 0.0, 0.0, P0_VEL, P0_VEL, P0_VEL, tilt, tilt, P0_YAW, bg, bg, bg, P0_BA, P0_BA, P0_BA)
     if P0V_ON and not still:
-        sig = (0.0, 0.0, 0.0, V2_SIGMA_H, V2_SIGMA_H, V2_SIGMA_V) + sig[6:]
+        sh, sv = (HH_V2_SIGMA_H, HH_V2_SIGMA_V) if hh else (V2_SIGMA_H, V2_SIGMA_V)
+        sig = (0.0, 0.0, 0.0, sh, sh, sv) + sig[6:]
     P = [0.0] * (N * N)
     for i in range(N):
         P[i * N + i] = sig[i] * sig[i]
@@ -1011,19 +1091,20 @@ def run(src, dst, write=True, integrate=True):
 def _run_smoothed(src, dst, write, integrate):
     """_run with the smoother (SMOOTH_ON): one pass that stores the smoother's blocks, then the pass that
     writes, each row corrected by the smoothed error (Step 6)."""
+    hh = _plat_hh(src) if integrate else False
     LAST["smooth_blocks"] = None
     corr = None
     if SMOOTH_ON and integrate and write:
         st = {}
-        _run(src, dst, False, True, store=st)
+        _run(src, dst, False, True, store=st, hh=hh)
         LAST["smooth_blocks"] = len(st["blocks"])
         if st["blocks"]:
             corr = _smooth_segments(st["blocks"], st["t_end"], st["d_end"])
         st = None
-    return _run(src, dst, write, integrate, corr=corr)
+    return _run(src, dst, write, integrate, corr=corr, hh=hh)
 
 
-def _run(src, dst, write=True, integrate=True, store=None, corr=None):
+def _run(src, dst, write=True, integrate=True, store=None, corr=None, hh=False):
     """Stream src -> dst. Returns the number of data rows.
     write=False: no output (benchmarks); integrate=False: identity poses (benchmarks). store: a dict that
     gets the smoother's blocks (Step 6); corr: _smooth_segments() output, applied to every written row."""
@@ -1035,8 +1116,14 @@ def _run(src, dst, write=True, integrate=True, store=None, corr=None):
     sin = math.sin
     exp = math.exp
     max_dt = MAX_DT
-    s2vh, s2vv = V2_SIGMA_H * V2_SIGMA_H, V2_SIGMA_V * V2_SIGMA_V
-    s2ph, s2pv = V2P_SIGMA_H * V2P_SIGMA_H, V2P_SIGMA_V * V2P_SIGMA_V
+    if hh:
+        s2vh, s2vv = HH_V2_SIGMA_H * HH_V2_SIGMA_H, HH_V2_SIGMA_V * HH_V2_SIGMA_V
+        s2ph, s2pv = HH_V2P_SIGMA_H * HH_V2P_SIGMA_H, HH_V2P_SIGMA_V * HH_V2P_SIGMA_V
+        vtau = HH_V2P_TAU
+    else:
+        s2vh, s2vv = V2_SIGMA_H * V2_SIGMA_H, V2_SIGMA_V * V2_SIGMA_V
+        s2ph, s2pv = V2P_SIGMA_H * V2P_SIGMA_H, V2P_SIGMA_V * V2P_SIGMA_V
+        vtau = V2P_TAU
     max_jump = MAX_JUMP_S
     max_ss = MAX_SUMSQ
     n = 0
@@ -1065,7 +1152,7 @@ def _run(src, dst, write=True, integrate=True, store=None, corr=None):
     v1, v2, v2p = V1_ON, V2_ON, V2P_ON
     kf_update = _kf_update
     bax = bay = baz = 0.0
-    P = _kf_init(still0)
+    P = _kf_init(still0, hh)
     dx = [0.0] * N
     smooth = store is not None
     blocks = []                              # Step 6: (t, C, b, d) per stored block
@@ -1262,7 +1349,7 @@ def _run(src, dst, write=True, integrate=True, store=None, corr=None):
                                     kf_update(P, dx, 4, -vy, s2vh)
                                     kf_update(P, dx, 5, -vz, s2vv)
                                 if v2p and not zupt and T > 0.0:
-                                    a = T / V2P_TAU if T < V2P_TAU else 1.0
+                                    a = T / vtau if T < vtau else 1.0
                                     ccx += (px - ccx) * a
                                     ccy += (py - ccy) * a
                                     ccz += (pz - ccz) * a

@@ -1,0 +1,67 @@
+{
+ "commit": "dda57fd",
+ "date": "2026-11-18",
+ "degraded": false,
+ "main": "main.py",
+ "official": true,
+ "python": "3.14.7",
+ "results": [
+  {
+   "error": "Traceback (most recent call last):\n  File \"C:\\Users\\jaina\\AppData\\Local\\Temp\\vortex_eval_rwn7w7ah\\wrapped_main.py\", line 12, in <module>\n    assert hasattr(m, 'ZUPT_DEN_ON'), 'no constant ZUPT_DEN_ON'\n           ~~~~~~~^^^^^^^^^^^^^^^^^^\nAssertionError: no constant ZUPT_DEN_ON\n",
+   "sequence": "dataset-room1_512_16_a_s1"
+  },
+  {
+   "error": "Traceback (most recent call last):\n  File \"C:\\Users\\jaina\\AppData\\Local\\Temp\\vortex_eval_rwn7w7ah\\wrapped_main.py\", line 12, in <module>\n    assert hasattr(m, 'ZUPT_DEN_ON'), 'no constant ZUPT_DEN_ON'\n           ~~~~~~~^^^^^^^^^^^^^^^^^^\nAssertionError: no constant ZUPT_DEN_ON\n",
+   "sequence": "dataset-room1_512_16_a_s2"
+  },
+  {
+   "error": "Traceback (most recent call last):\n  File \"C:\\Users\\jaina\\AppData\\Local\\Temp\\vortex_eval_rwn7w7ah\\wrapped_main.py\", line 12, in <module>\n    assert hasattr(m, 'ZUPT_DEN_ON'), 'no constant ZUPT_DEN_ON'\n           ~~~~~~~^^^^^^^^^^^^^^^^^^\nAssertionError: no constant ZUPT_DEN_ON\n",
+   "sequence": "dataset-room1_512_16_a_s3"
+  },
+  {
+   "error": "Traceback (most recent call last):\n  File \"C:\\Users\\jaina\\AppData\\Local\\Temp\\vortex_eval_rwn7w7ah\\wrapped_main.py\", line 12, in <module>\n    assert hasattr(m, 'ZUPT_DEN_ON'), 'no constant ZUPT_DEN_ON'\n           ~~~~~~~^^^^^^^^^^^^^^^^^^\nAssertionError: no constant ZUPT_DEN_ON\n",
+   "sequence": "dataset-room1_512_16_b_s1"
+  },
+  {
+   "error": "Traceback (most recent call last):\n  File \"C:\\Users\\jaina\\AppData\\Local\\Temp\\vortex_eval_rwn7w7ah\\wrapped_main.py\", line 12, in <module>\n    assert hasattr(m, 'ZUPT_DEN_ON'), 'no constant ZUPT_DEN_ON'\n           ~~~~~~~^^^^^^^^^^^^^^^^^^\nAssertionError: no constant ZUPT_DEN_ON\n",
+   "sequence": "dataset-room1_512_16_b_s2"
+  },
+  {
+   "error": "Traceback (most recent call last):\n  File \"C:\\Users\\jaina\\AppData\\Local\\Temp\\vortex_eval_rwn7w7ah\\wrapped_main.py\", line 12, in <module>\n    assert hasattr(m, 'ZUPT_DEN_ON'), 'no constant ZUPT_DEN_ON'\n           ~~~~~~~^^^^^^^^^^^^^^^^^^\nAssertionError: no constant ZUPT_DEN_ON\n",
+   "sequence": "dataset-room1_512_16_b_s3"
+  },
+  {
+   "error": "Traceback (most recent call last):\n  File \"C:\\Users\\jaina\\AppData\\Local\\Temp\\vortex_eval_rwn7w7ah\\wrapped_main.py\", line 12, in <module>\n    assert hasattr(m, 'ZUPT_DEN_ON'), 'no constant ZUPT_DEN_ON'\n           ~~~~~~~^^^^^^^^^^^^^^^^^^\nAssertionError: no constant ZUPT_DEN_ON\n",
+   "sequence": "dataset-room2_512_16_a_s1"
+  },
+  {
+   "error": "Traceback (most recent call last):\n  File \"C:\\Users\\jaina\\AppData\\Local\\Temp\\vortex_eval_rwn7w7ah\\wrapped_main.py\", line 12, in <module>\n    assert hasattr(m, 'ZUPT_DEN_ON'), 'no constant ZUPT_DEN_ON'\n           ~~~~~~~^^^^^^^^^^^^^^^^^^\nAssertionError: no constant ZUPT_DEN_ON\n",
+   "sequence": "dataset-room2_512_16_a_s2"
+  },
+  {
+   "error": "Traceback (most recent call last):\n  File \"C:\\Users\\jaina\\AppData\\Local\\Temp\\vortex_eval_rwn7w7ah\\wrapped_main.py\", line 12, in <module>\n    assert hasattr(m, 'ZUPT_DEN_ON'), 'no constant ZUPT_DEN_ON'\n           ~~~~~~~^^^^^^^^^^^^^^^^^^\nAssertionError: no constant ZUPT_DEN_ON\n",
+   "sequence": "dataset-room2_512_16_a_s3"
+  },
+  {
+   "error": "Traceback (most recent call last):\n  File \"C:\\Users\\jaina\\AppData\\Local\\Temp\\vortex_eval_rwn7w7ah\\wrapped_main.py\", line 12, in <module>\n    assert hasattr(m, 'ZUPT_DEN_ON'), 'no constant ZUPT_DEN_ON'\n           ~~~~~~~^^^^^^^^^^^^^^^^^^\nAssertionError: no constant ZUPT_DEN_ON\n",
+   "sequence": "dataset-room2_512_16_b_s1"
+  },
+  {
+   "error": "Traceback (most recent call last):\n  File \"C:\\Users\\jaina\\AppData\\Local\\Temp\\vortex_eval_rwn7w7ah\\wrapped_main.py\", line 12, in <module>\n    assert hasattr(m, 'ZUPT_DEN_ON'), 'no constant ZUPT_DEN_ON'\n           ~~~~~~~^^^^^^^^^^^^^^^^^^\nAssertionError: no constant ZUPT_DEN_ON\n",
+   "sequence": "dataset-room2_512_16_b_s2"
+  },
+  {
+   "error": "Traceback (most recent call last):\n  File \"C:\\Users\\jaina\\AppData\\Local\\Temp\\vortex_eval_rwn7w7ah\\wrapped_main.py\", line 12, in <module>\n    assert hasattr(m, 'ZUPT_DEN_ON'), 'no constant ZUPT_DEN_ON'\n           ~~~~~~~^^^^^^^^^^^^^^^^^^\nAssertionError: no constant ZUPT_DEN_ON\n",
+   "sequence": "dataset-room2_512_16_b_s3"
+  }
+ ],
+ "reverse": false,
+ "set": {
+  "V2P_SIGMA_H": "1.0",
+  "V2P_SIGMA_V": "0.3",
+  "V2P_TAU": "30.0",
+  "V2_SIGMA_H": "0.5",
+  "ZUPT_DEN_ON": "True"
+ },
+ "tag": "step7-grid-r2b-zden"
+}

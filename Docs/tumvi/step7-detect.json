@@ -1,0 +1,2673 @@
+{
+ "summary": {
+  "files": 328,
+  "wrong": [],
+  "min_multirotor_stat": 5.375895289000796,
+  "max_handheld_stat": 0.1600228068371027,
+  "identity": [
+   {
+    "file": "MH_01_easy_a_s1",
+    "identical": true,
+    "stat_in_run": 6.109260276476551,
+    "stat_equal": true
+   },
+   {
+    "file": "MH_01_easy_a_s2",
+    "identical": true,
+    "stat_in_run": 6.17121126332342,
+    "stat_equal": true
+   },
+   {
+    "file": "MH_01_easy_a_s3",
+    "identical": true,
+    "stat_in_run": 6.239403471660605,
+    "stat_equal": true
+   },
+   {
+    "file": "MH_01_easy_a_s42",
+    "identical": true,
+    "stat_in_run": 6.009507369518707,
+    "stat_equal": true
+   },
+   {
+    "file": "MH_01_easy_b_s1",
+    "identical": true,
+    "stat_in_run": 6.248662002343374,
+    "stat_equal": true
+   },
+   {
+    "file": "MH_01_easy_b_s2",
+    "identical": true,
+    "stat_in_run": 6.423731943879975,
+    "stat_equal": true
+   }
+  ],
+  "threshold": 1.0
+ },
+ "results": [
+  {
+   "set": "euroc",
+   "file": "MH_01_easy",
+   "truth": "multirotor",
+   "stat": 6.4796817908803295,
+   "detected": "multirotor",
+   "ok": true
+  },
+  {
+   "set": "euroc",
+   "file": "MH_02_easy",
+   "truth": "multirotor",
+   "stat": 6.303430808028001,
+   "detected": "multirotor",
+   "ok": true
+  },
+  {
+   "set": "euroc",
+   "file": "MH_03_medium",
+   "truth": "multirotor",
+   "stat": 6.531640512356097,
+   "detected": "multirotor",
+   "ok": true
+  },
+  {
+   "set": "euroc",
+   "file": "MH_04_difficult",
+   "truth": "multirotor",
+   "stat": 5.6595363783524455,
+   "detected": "multirotor",
+   "ok": true
+  },
+  {
+   "set": "euroc",
+   "file": "MH_05_difficult",
+   "truth": "multirotor",
+   "stat": 5.621866496418004,
+   "detected": "multirotor",
+   "ok": true
+  },
+  {
+   "set": "euroc",
+   "file": "V1_01_easy",
+   "truth": "multirotor",
+   "stat": 10.769132214157553,
+   "detected": "multirotor",
+   "ok": true
+  },
+  {
+   "set": "euroc",
+   "file": "V1_02_medium",
+   "truth": "multirotor",
+   "stat": 12.802764587881233,
+   "detected": "multirotor",
+   "ok": true
+  },
+  {
+   "set": "euroc",
+   "file": "V1_03_difficult",
+   "truth": "multirotor",
+   "stat": 22.439837382517844,
+   "detected": "multirotor",
+   "ok": true
+  },
+  {
+   "set": "official",
+   "file": "MH_01_easy_a_s1",
+   "truth": "multirotor",
+   "stat": 6.109260276476551,
+   "detected": "multirotor",
+   "ok": true
+  },
+  {
+   "set": "official",
+   "file": "MH_01_easy_a_s2",
+   "truth": "multirotor",
+   "stat": 6.17121126332342,
+   "detected": "multirotor",
+   "ok": true
+  },
+  {
+   "set": "official",
+   "file": "MH_01_easy_a_s3",
+   "truth": "multirotor",
+   "stat": 6.239403471660605,
+   "detected": "multirotor",
+   "ok": true
+  },
+  {
+   "set": "official",
+   "file": "MH_01_easy_a_s42",
+   "truth": "multirotor",
+   "stat": 6.009507369518707,
+   "detected": "multirotor",
+   "ok": true
+  },
+  {
+   "set": "official",
+   "file": "MH_01_easy_b_s1",
+   "truth": "multirotor",
+   "stat": 6.248662002343374,
+   "detected": "multirotor",
+   "ok": true
+  },
+  {
+   "set": "official",
+   "file": "MH_01_easy_b_s2",
+   "truth": "multirotor",
+   "stat": 6.423731943879975,
+   "detected": "multirotor",
+   "ok": true
+  },
+  {
+   "set": "official",
+   "file": "MH_01_easy_b_s3",
+   "truth": "multirotor",
+   "stat": 6.356181657954616,
+   "detected": "multirotor",
+   "ok": true
+  },
+  {
+   "set": "official",
+   "file": "MH_01_easy_b_s42",
+   "truth": "multirotor",
+   "stat": 6.258399790980541,
+   "detected": "multirotor",
+   "ok": true
+  },
+  {
+   "set": "official",
+   "file": "MH_02_easy_a_s1",
+   "truth": "multirotor",
+   "stat": 5.97235036258661,
+   "detected": "multirotor",
+   "ok": true
+  },
+  {
+   "set": "official",
+   "file": "MH_02_easy_a_s2",
+   "truth": "multirotor",
+   "stat": 6.141065483095715,
+   "detected": "multirotor",
+   "ok": true
+  },
+  {
+   "set": "official",
+   "file": "MH_02_easy_a_s3",
+   "truth": "multirotor",
+   "stat": 6.029584778893117,
+   "detected": "multirotor",
+   "ok": true
+  },
+  {
+   "set": "official",
+   "file": "MH_02_easy_a_s42",
+   "truth": "multirotor",
+   "stat": 6.045186068959529,
+   "detected": "multirotor",
+   "ok": true
+  },
+  {
+   "set": "official",
+   "file": "MH_02_easy_b_s1",
+   "truth": "multirotor",
+   "stat": 6.058091326383808,
+   "detected": "multirotor",
+   "ok": true
+  },
+  {
+   "set": "official",
+   "file": "MH_02_easy_b_s2",
+   "truth": "multirotor",
+   "stat": 6.262525612018567,
+   "detected": "multirotor",
+   "ok": true
+  },
+  {
+   "set": "official",
+   "file": "MH_02_easy_b_s3",
+   "truth": "multirotor",
+   "stat": 6.145644895475262,
+   "detected": "multirotor",
+   "ok": true
+  },
+  {
+   "set": "official",
+   "file": "MH_02_easy_b_s42",
+   "truth": "multirotor",
+   "stat": 6.147379398922022,
+   "detected": "multirotor",
+   "ok": true
+  },
+  {
+   "set": "official",
+   "file": "MH_03_medium_a_s1",
+   "truth": "multirotor",
+   "stat": 6.135531711516539,
+   "detected": "multirotor",
+   "ok": true
+  },
+  {
+   "set": "official",
+   "file": "MH_03_medium_a_s10",
+   "truth": "multirotor",
+   "stat": 6.130335326307562,
+   "detected": "multirotor",
+   "ok": true
+  },
+  {
+   "set": "official",
+   "file": "MH_03_medium_a_s11",
+   "truth": "multirotor",
+   "stat": 6.211377545162204,
+   "detected": "multirotor",
+   "ok": true
+  },
+  {
+   "set": "official",
+   "file": "MH_03_medium_a_s12",
+   "truth": "multirotor",
+   "stat": 6.2226802606914795,
+   "detected": "multirotor",
+   "ok": true
+  },
+  {
+   "set": "official",
+   "file": "MH_03_medium_a_s16",
+   "truth": "multirotor",
+   "stat": 6.115020176083776,
+   "detected": "multirotor",
+   "ok": true
+  },
+  {
+   "set": "official",
+   "file": "MH_03_medium_a_s17",
+   "truth": "multirotor",
+   "stat": 6.149763955583574,
+   "detected": "multirotor",
+   "ok": true
+  },
+  {
+   "set": "official",
+   "file": "MH_03_medium_a_s18",
+   "truth": "multirotor",
+   "stat": 6.2025554759003985,
+   "detected": "multirotor",
+   "ok": true
+  },
+  {
+   "set": "official",
+   "file": "MH_03_medium_a_s2",
+   "truth": "multirotor",
+   "stat": 6.13836629555384,
+   "detected": "multirotor",
+   "ok": true
+  },
+  {
+   "set": "official",
+   "file": "MH_03_medium_a_s3",
+   "truth": "multirotor",
+   "stat": 6.167551526645193,
+   "detected": "multirotor",
+   "ok": true
+  },
+  {
+   "set": "official",
+   "file": "MH_03_medium_a_s4",
+   "truth": "multirotor",
+   "stat": 6.246928726588705,
+   "detected": "multirotor",
+   "ok": true
+  },
+  {
+   "set": "official",
+   "file": "MH_03_medium_a_s42",
+   "truth": "multirotor",
+   "stat": 6.090375030684666,
+   "detected": "multirotor",
+   "ok": true
+  },
+  {
+   "set": "official",
+   "file": "MH_03_medium_a_s5",
+   "truth": "multirotor",
+   "stat": 6.120535588190053,
+   "detected": "multirotor",
+   "ok": true
+  },
+  {
+   "set": "official",
+   "file": "MH_03_medium_a_s6",
+   "truth": "multirotor",
+   "stat": 6.212219492236432,
+   "detected": "multirotor",
+   "ok": true
+  },
+  {
+   "set": "official",
+   "file": "MH_03_medium_a_s7",
+   "truth": "multirotor",
+   "stat": 6.241008269962175,
+   "detected": "multirotor",
+   "ok": true
+  },
+  {
+   "set": "official",
+   "file": "MH_03_medium_a_s8",
+   "truth": "multirotor",
+   "stat": 6.129796015418263,
+   "detected": "multirotor",
+   "ok": true
+  },
+  {
+   "set": "official",
+   "file": "MH_03_medium_a_s9",
+   "truth": "multirotor",
+   "stat": 6.180560168940482,
+   "detected": "multirotor",
+   "ok": true
+  },
+  {
+   "set": "official",
+   "file": "MH_03_medium_b_s1",
+   "truth": "multirotor",
+   "stat": 6.393957967194246,
+   "detected": "multirotor",
+   "ok": true
+  },
+  {
+   "set": "official",
+   "file": "MH_03_medium_b_s10",
+   "truth": "multirotor",
+   "stat": 6.404313733631186,
+   "detected": "multirotor",
+   "ok": true
+  },
+  {
+   "set": "official",
+   "file": "MH_03_medium_b_s11",
+   "truth": "multirotor",
+   "stat": 6.372701013627159,
+   "detected": "multirotor",
+   "ok": true
+  },
+  {
+   "set": "official",
+   "file": "MH_03_medium_b_s12",
+   "truth": "multirotor",
+   "stat": 6.596739153218353,
+   "detected": "multirotor",
+   "ok": true
+  },
+  {
+   "set": "official",
+   "file": "MH_03_medium_b_s16",
+   "truth": "multirotor",
+   "stat": 6.4142488298489475,
+   "detected": "multirotor",
+   "ok": true
+  },
+  {
+   "set": "official",
+   "file": "MH_03_medium_b_s17",
+   "truth": "multirotor",
+   "stat": 6.437098374098624,
+   "detected": "multirotor",
+   "ok": true
+  },
+  {
+   "set": "official",
+   "file": "MH_03_medium_b_s18",
+   "truth": "multirotor",
+   "stat": 6.538652683612471,
+   "detected": "multirotor",
+   "ok": true
+  },
+  {
+   "set": "official",
+   "file": "MH_03_medium_b_s2",
+   "truth": "multirotor",
+   "stat": 6.536979848098243,
+   "detected": "multirotor",
+   "ok": true
+  },
+  {
+   "set": "official",
+   "file": "MH_03_medium_b_s3",
+   "truth": "multirotor",
+   "stat": 6.39017780519227,
+   "detected": "multirotor",
+   "ok": true
+  },
+  {
+   "set": "official",
+   "file": "MH_03_medium_b_s4",
+   "truth": "multirotor",
+   "stat": 6.397989921237219,
+   "detected": "multirotor",
+   "ok": true
+  },
+  {
+   "set": "official",
+   "file": "MH_03_medium_b_s42",
+   "truth": "multirotor",
+   "stat": 6.4198641291266,
+   "detected": "multirotor",
+   "ok": true
+  },
+  {
+   "set": "official",
+   "file": "MH_03_medium_b_s5",
+   "truth": "multirotor",
+   "stat": 6.445683774251672,
+   "detected": "multirotor",
+   "ok": true
+  },
+  {
+   "set": "official",
+   "file": "MH_03_medium_b_s6",
+   "truth": "multirotor",
+   "stat": 6.598743689302783,
+   "detected": "multirotor",
+   "ok": true
+  },
+  {
+   "set": "official",
+   "file": "MH_03_medium_b_s7",
+   "truth": "multirotor",
+   "stat": 6.474351925678709,
+   "detected": "multirotor",
+   "ok": true
+  },
+  {
+   "set": "official",
+   "file": "MH_03_medium_b_s8",
+   "truth": "multirotor",
+   "stat": 6.302700705087356,
+   "detected": "multirotor",
+   "ok": true
+  },
+  {
+   "set": "official",
+   "file": "MH_03_medium_b_s9",
+   "truth": "multirotor",
+   "stat": 6.401215053937411,
+   "detected": "multirotor",
+   "ok": true
+  },
+  {
+   "set": "official",
+   "file": "MH_04_difficult_a_s1",
+   "truth": "multirotor",
+   "stat": 5.444186362556051,
+   "detected": "multirotor",
+   "ok": true
+  },
+  {
+   "set": "official",
+   "file": "MH_04_difficult_a_s10",
+   "truth": "multirotor",
+   "stat": 5.384213925810143,
+   "detected": "multirotor",
+   "ok": true
+  },
+  {
+   "set": "official",
+   "file": "MH_04_difficult_a_s11",
+   "truth": "multirotor",
+   "stat": 5.4029023547236275,
+   "detected": "multirotor",
+   "ok": true
+  },
+  {
+   "set": "official",
+   "file": "MH_04_difficult_a_s12",
+   "truth": "multirotor",
+   "stat": 5.375895289000796,
+   "detected": "multirotor",
+   "ok": true
+  },
+  {
+   "set": "official",
+   "file": "MH_04_difficult_a_s16",
+   "truth": "multirotor",
+   "stat": 5.631954116188222,
+   "detected": "multirotor",
+   "ok": true
+  },
+  {
+   "set": "official",
+   "file": "MH_04_difficult_a_s17",
+   "truth": "multirotor",
+   "stat": 5.524093526034695,
+   "detected": "multirotor",
+   "ok": true
+  },
+  {
+   "set": "official",
+   "file": "MH_04_difficult_a_s18",
+   "truth": "multirotor",
+   "stat": 5.583818480488726,
+   "detected": "multirotor",
+   "ok": true
+  },
+  {
+   "set": "official",
+   "file": "MH_04_difficult_a_s2",
+   "truth": "multirotor",
+   "stat": 5.403452993024774,
+   "detected": "multirotor",
+   "ok": true
+  },
+  {
+   "set": "official",
+   "file": "MH_04_difficult_a_s3",
+   "truth": "multirotor",
+   "stat": 5.52986217315517,
+   "detected": "multirotor",
+   "ok": true
+  },
+  {
+   "set": "official",
+   "file": "MH_04_difficult_a_s4",
+   "truth": "multirotor",
+   "stat": 5.551546957100991,
+   "detected": "multirotor",
+   "ok": true
+  },
+  {
+   "set": "official",
+   "file": "MH_04_difficult_a_s42",
+   "truth": "multirotor",
+   "stat": 5.497274727480494,
+   "detected": "multirotor",
+   "ok": true
+  },
+  {
+   "set": "official",
+   "file": "MH_04_difficult_a_s5",
+   "truth": "multirotor",
+   "stat": 5.622399327478074,
+   "detected": "multirotor",
+   "ok": true
+  },
+  {
+   "set": "official",
+   "file": "MH_04_difficult_a_s6",
+   "truth": "multirotor",
+   "stat": 5.615991350228898,
+   "detected": "multirotor",
+   "ok": true
+  },
+  {
+   "set": "official",
+   "file": "MH_04_difficult_a_s7",
+   "truth": "multirotor",
+   "stat": 5.588599404784501,
+   "detected": "multirotor",
+   "ok": true
+  },
+  {
+   "set": "official",
+   "file": "MH_04_difficult_a_s8",
+   "truth": "multirotor",
+   "stat": 5.635450609263746,
+   "detected": "multirotor",
+   "ok": true
+  },
+  {
+   "set": "official",
+   "file": "MH_04_difficult_a_s9",
+   "truth": "multirotor",
+   "stat": 5.538062145657388,
+   "detected": "multirotor",
+   "ok": true
+  },
+  {
+   "set": "official",
+   "file": "MH_04_difficult_b_s1",
+   "truth": "multirotor",
+   "stat": 5.605018442197153,
+   "detected": "multirotor",
+   "ok": true
+  },
+  {
+   "set": "official",
+   "file": "MH_04_difficult_b_s10",
+   "truth": "multirotor",
+   "stat": 5.697570013198501,
+   "detected": "multirotor",
+   "ok": true
+  },
+  {
+   "set": "official",
+   "file": "MH_04_difficult_b_s11",
+   "truth": "multirotor",
+   "stat": 5.681707655147726,
+   "detected": "multirotor",
+   "ok": true
+  },
+  {
+   "set": "official",
+   "file": "MH_04_difficult_b_s12",
+   "truth": "multirotor",
+   "stat": 5.5457771487515615,
+   "detected": "multirotor",
+   "ok": true
+  },
+  {
+   "set": "official",
+   "file": "MH_04_difficult_b_s16",
+   "truth": "multirotor",
+   "stat": 5.680389606708878,
+   "detected": "multirotor",
+   "ok": true
+  },
+  {
+   "set": "official",
+   "file": "MH_04_difficult_b_s17",
+   "truth": "multirotor",
+   "stat": 5.70042849642711,
+   "detected": "multirotor",
+   "ok": true
+  },
+  {
+   "set": "official",
+   "file": "MH_04_difficult_b_s18",
+   "truth": "multirotor",
+   "stat": 5.687660328960384,
+   "detected": "multirotor",
+   "ok": true
+  },
+  {
+   "set": "official",
+   "file": "MH_04_difficult_b_s2",
+   "truth": "multirotor",
+   "stat": 5.647403685148757,
+   "detected": "multirotor",
+   "ok": true
+  },
+  {
+   "set": "official",
+   "file": "MH_04_difficult_b_s3",
+   "truth": "multirotor",
+   "stat": 5.677434538477759,
+   "detected": "multirotor",
+   "ok": true
+  },
+  {
+   "set": "official",
+   "file": "MH_04_difficult_b_s4",
+   "truth": "multirotor",
+   "stat": 5.74286558674005,
+   "detected": "multirotor",
+   "ok": true
+  },
+  {
+   "set": "official",
+   "file": "MH_04_difficult_b_s42",
+   "truth": "multirotor",
+   "stat": 5.64712765547929,
+   "detected": "multirotor",
+   "ok": true
+  },
+  {
+   "set": "official",
+   "file": "MH_04_difficult_b_s5",
+   "truth": "multirotor",
+   "stat": 5.73428246338372,
+   "detected": "multirotor",
+   "ok": true
+  },
+  {
+   "set": "official",
+   "file": "MH_04_difficult_b_s6",
+   "truth": "multirotor",
+   "stat": 5.627639354789113,
+   "detected": "multirotor",
+   "ok": true
+  },
+  {
+   "set": "official",
+   "file": "MH_04_difficult_b_s7",
+   "truth": "multirotor",
+   "stat": 5.725565285405839,
+   "detected": "multirotor",
+   "ok": true
+  },
+  {
+   "set": "official",
+   "file": "MH_04_difficult_b_s8",
+   "truth": "multirotor",
+   "stat": 5.745405585355931,
+   "detected": "multirotor",
+   "ok": true
+  },
+  {
+   "set": "official",
+   "file": "MH_04_difficult_b_s9",
+   "truth": "multirotor",
+   "stat": 5.675114296918836,
+   "detected": "multirotor",
+   "ok": true
+  },
+  {
+   "set": "official",
+   "file": "MH_05_difficult_a_s1",
+   "truth": "multirotor",
+   "stat": 5.501018668989594,
+   "detected": "multirotor",
+   "ok": true
+  },
+  {
+   "set": "official",
+   "file": "MH_05_difficult_a_s10",
+   "truth": "multirotor",
+   "stat": 5.477317623609243,
+   "detected": "multirotor",
+   "ok": true
+  },
+  {
+   "set": "official",
+   "file": "MH_05_difficult_a_s11",
+   "truth": "multirotor",
+   "stat": 5.46680869874469,
+   "detected": "multirotor",
+   "ok": true
+  },
+  {
+   "set": "official",
+   "file": "MH_05_difficult_a_s12",
+   "truth": "multirotor",
+   "stat": 5.511865179016835,
+   "detected": "multirotor",
+   "ok": true
+  },
+  {
+   "set": "official",
+   "file": "MH_05_difficult_a_s16",
+   "truth": "multirotor",
+   "stat": 5.5076903839895195,
+   "detected": "multirotor",
+   "ok": true
+  },
+  {
+   "set": "official",
+   "file": "MH_05_difficult_a_s17",
+   "truth": "multirotor",
+   "stat": 5.426498696557348,
+   "detected": "multirotor",
+   "ok": true
+  },
+  {
+   "set": "official",
+   "file": "MH_05_difficult_a_s18",
+   "truth": "multirotor",
+   "stat": 5.496034960152665,
+   "detected": "multirotor",
+   "ok": true
+  },
+  {
+   "set": "official",
+   "file": "MH_05_difficult_a_s2",
+   "truth": "multirotor",
+   "stat": 5.458906712872549,
+   "detected": "multirotor",
+   "ok": true
+  },
+  {
+   "set": "official",
+   "file": "MH_05_difficult_a_s3",
+   "truth": "multirotor",
+   "stat": 5.442561228894863,
+   "detected": "multirotor",
+   "ok": true
+  },
+  {
+   "set": "official",
+   "file": "MH_05_difficult_a_s4",
+   "truth": "multirotor",
+   "stat": 5.560659011642725,
+   "detected": "multirotor",
+   "ok": true
+  },
+  {
+   "set": "official",
+   "file": "MH_05_difficult_a_s42",
+   "truth": "multirotor",
+   "stat": 5.400518074602225,
+   "detected": "multirotor",
+   "ok": true
+  },
+  {
+   "set": "official",
+   "file": "MH_05_difficult_a_s5",
+   "truth": "multirotor",
+   "stat": 5.506736203003627,
+   "detected": "multirotor",
+   "ok": true
+  },
+  {
+   "set": "official",
+   "file": "MH_05_difficult_a_s6",
+   "truth": "multirotor",
+   "stat": 5.562832760540669,
+   "detected": "multirotor",
+   "ok": true
+  },
+  {
+   "set": "official",
+   "file": "MH_05_difficult_a_s7",
+   "truth": "multirotor",
+   "stat": 5.411374163765447,
+   "detected": "multirotor",
+   "ok": true
+  },
+  {
+   "set": "official",
+   "file": "MH_05_difficult_a_s8",
+   "truth": "multirotor",
+   "stat": 5.4033952889718355,
+   "detected": "multirotor",
+   "ok": true
+  },
+  {
+   "set": "official",
+   "file": "MH_05_difficult_a_s9",
+   "truth": "multirotor",
+   "stat": 5.47199684572682,
+   "detected": "multirotor",
+   "ok": true
+  },
+  {
+   "set": "official",
+   "file": "MH_05_difficult_b_s1",
+   "truth": "multirotor",
+   "stat": 5.865241900881687,
+   "detected": "multirotor",
+   "ok": true
+  },
+  {
+   "set": "official",
+   "file": "MH_05_difficult_b_s10",
+   "truth": "multirotor",
+   "stat": 5.693886546154702,
+   "detected": "multirotor",
+   "ok": true
+  },
+  {
+   "set": "official",
+   "file": "MH_05_difficult_b_s11",
+   "truth": "multirotor",
+   "stat": 5.618031249573777,
+   "detected": "multirotor",
+   "ok": true
+  },
+  {
+   "set": "official",
+   "file": "MH_05_difficult_b_s12",
+   "truth": "multirotor",
+   "stat": 5.737985058637717,
+   "detected": "multirotor",
+   "ok": true
+  },
+  {
+   "set": "official",
+   "file": "MH_05_difficult_b_s16",
+   "truth": "multirotor",
+   "stat": 5.685454083657095,
+   "detected": "multirotor",
+   "ok": true
+  },
+  {
+   "set": "official",
+   "file": "MH_05_difficult_b_s17",
+   "truth": "multirotor",
+   "stat": 5.52793440546183,
+   "detected": "multirotor",
+   "ok": true
+  },
+  {
+   "set": "official",
+   "file": "MH_05_difficult_b_s18",
+   "truth": "multirotor",
+   "stat": 5.56729119845849,
+   "detected": "multirotor",
+   "ok": true
+  },
+  {
+   "set": "official",
+   "file": "MH_05_difficult_b_s2",
+   "truth": "multirotor",
+   "stat": 5.591704944201314,
+   "detected": "multirotor",
+   "ok": true
+  },
+  {
+   "set": "official",
+   "file": "MH_05_difficult_b_s3",
+   "truth": "multirotor",
+   "stat": 5.63142395497244,
+   "detected": "multirotor",
+   "ok": true
+  },
+  {
+   "set": "official",
+   "file": "MH_05_difficult_b_s4",
+   "truth": "multirotor",
+   "stat": 5.708604117743676,
+   "detected": "multirotor",
+   "ok": true
+  },
+  {
+   "set": "official",
+   "file": "MH_05_difficult_b_s42",
+   "truth": "multirotor",
+   "stat": 5.542260411377327,
+   "detected": "multirotor",
+   "ok": true
+  },
+  {
+   "set": "official",
+   "file": "MH_05_difficult_b_s5",
+   "truth": "multirotor",
+   "stat": 5.822198771355532,
+   "detected": "multirotor",
+   "ok": true
+  },
+  {
+   "set": "official",
+   "file": "MH_05_difficult_b_s6",
+   "truth": "multirotor",
+   "stat": 5.6790561685094865,
+   "detected": "multirotor",
+   "ok": true
+  },
+  {
+   "set": "official",
+   "file": "MH_05_difficult_b_s7",
+   "truth": "multirotor",
+   "stat": 5.559795401374612,
+   "detected": "multirotor",
+   "ok": true
+  },
+  {
+   "set": "official",
+   "file": "MH_05_difficult_b_s8",
+   "truth": "multirotor",
+   "stat": 5.605356923319208,
+   "detected": "multirotor",
+   "ok": true
+  },
+  {
+   "set": "official",
+   "file": "MH_05_difficult_b_s9",
+   "truth": "multirotor",
+   "stat": 5.6893083374396,
+   "detected": "multirotor",
+   "ok": true
+  },
+  {
+   "set": "official",
+   "file": "V1_01_easy_a_s1",
+   "truth": "multirotor",
+   "stat": 10.489579715180955,
+   "detected": "multirotor",
+   "ok": true
+  },
+  {
+   "set": "official",
+   "file": "V1_01_easy_a_s10",
+   "truth": "multirotor",
+   "stat": 10.31563323686141,
+   "detected": "multirotor",
+   "ok": true
+  },
+  {
+   "set": "official",
+   "file": "V1_01_easy_a_s11",
+   "truth": "multirotor",
+   "stat": 10.553341661774718,
+   "detected": "multirotor",
+   "ok": true
+  },
+  {
+   "set": "official",
+   "file": "V1_01_easy_a_s12",
+   "truth": "multirotor",
+   "stat": 10.682371070479665,
+   "detected": "multirotor",
+   "ok": true
+  },
+  {
+   "set": "official",
+   "file": "V1_01_easy_a_s16",
+   "truth": "multirotor",
+   "stat": 10.627087436746182,
+   "detected": "multirotor",
+   "ok": true
+  },
+  {
+   "set": "official",
+   "file": "V1_01_easy_a_s17",
+   "truth": "multirotor",
+   "stat": 10.705365727121363,
+   "detected": "multirotor",
+   "ok": true
+  },
+  {
+   "set": "official",
+   "file": "V1_01_easy_a_s18",
+   "truth": "multirotor",
+   "stat": 10.26605429053411,
+   "detected": "multirotor",
+   "ok": true
+  },
+  {
+   "set": "official",
+   "file": "V1_01_easy_a_s2",
+   "truth": "multirotor",
+   "stat": 10.522217593780393,
+   "detected": "multirotor",
+   "ok": true
+  },
+  {
+   "set": "official",
+   "file": "V1_01_easy_a_s3",
+   "truth": "multirotor",
+   "stat": 10.456746700386029,
+   "detected": "multirotor",
+   "ok": true
+  },
+  {
+   "set": "official",
+   "file": "V1_01_easy_a_s4",
+   "truth": "multirotor",
+   "stat": 10.216275566057368,
+   "detected": "multirotor",
+   "ok": true
+  },
+  {
+   "set": "official",
+   "file": "V1_01_easy_a_s42",
+   "truth": "multirotor",
+   "stat": 10.661443716123479,
+   "detected": "multirotor",
+   "ok": true
+  },
+  {
+   "set": "official",
+   "file": "V1_01_easy_a_s5",
+   "truth": "multirotor",
+   "stat": 10.54501218936279,
+   "detected": "multirotor",
+   "ok": true
+  },
+  {
+   "set": "official",
+   "file": "V1_01_easy_a_s6",
+   "truth": "multirotor",
+   "stat": 10.371026941765733,
+   "detected": "multirotor",
+   "ok": true
+  },
+  {
+   "set": "official",
+   "file": "V1_01_easy_a_s7",
+   "truth": "multirotor",
+   "stat": 10.527155285486954,
+   "detected": "multirotor",
+   "ok": true
+  },
+  {
+   "set": "official",
+   "file": "V1_01_easy_a_s8",
+   "truth": "multirotor",
+   "stat": 10.60253795823984,
+   "detected": "multirotor",
+   "ok": true
+  },
+  {
+   "set": "official",
+   "file": "V1_01_easy_a_s9",
+   "truth": "multirotor",
+   "stat": 10.193343386119995,
+   "detected": "multirotor",
+   "ok": true
+  },
+  {
+   "set": "official",
+   "file": "V1_01_easy_b_s1",
+   "truth": "multirotor",
+   "stat": 10.655328941038356,
+   "detected": "multirotor",
+   "ok": true
+  },
+  {
+   "set": "official",
+   "file": "V1_01_easy_b_s10",
+   "truth": "multirotor",
+   "stat": 10.276480822355055,
+   "detected": "multirotor",
+   "ok": true
+  },
+  {
+   "set": "official",
+   "file": "V1_01_easy_b_s11",
+   "truth": "multirotor",
+   "stat": 10.634251232557645,
+   "detected": "multirotor",
+   "ok": true
+  },
+  {
+   "set": "official",
+   "file": "V1_01_easy_b_s12",
+   "truth": "multirotor",
+   "stat": 10.680233747695326,
+   "detected": "multirotor",
+   "ok": true
+  },
+  {
+   "set": "official",
+   "file": "V1_01_easy_b_s16",
+   "truth": "multirotor",
+   "stat": 10.648557457877494,
+   "detected": "multirotor",
+   "ok": true
+  },
+  {
+   "set": "official",
+   "file": "V1_01_easy_b_s17",
+   "truth": "multirotor",
+   "stat": 10.728934127547697,
+   "detected": "multirotor",
+   "ok": true
+  },
+  {
+   "set": "official",
+   "file": "V1_01_easy_b_s18",
+   "truth": "multirotor",
+   "stat": 10.360175599234736,
+   "detected": "multirotor",
+   "ok": true
+  },
+  {
+   "set": "official",
+   "file": "V1_01_easy_b_s2",
+   "truth": "multirotor",
+   "stat": 10.698484956194024,
+   "detected": "multirotor",
+   "ok": true
+  },
+  {
+   "set": "official",
+   "file": "V1_01_easy_b_s3",
+   "truth": "multirotor",
+   "stat": 10.69814044554058,
+   "detected": "multirotor",
+   "ok": true
+  },
+  {
+   "set": "official",
+   "file": "V1_01_easy_b_s4",
+   "truth": "multirotor",
+   "stat": 10.36044919905654,
+   "detected": "multirotor",
+   "ok": true
+  },
+  {
+   "set": "official",
+   "file": "V1_01_easy_b_s42",
+   "truth": "multirotor",
+   "stat": 11.011461130153437,
+   "detected": "multirotor",
+   "ok": true
+  },
+  {
+   "set": "official",
+   "file": "V1_01_easy_b_s5",
+   "truth": "multirotor",
+   "stat": 10.702954552068476,
+   "detected": "multirotor",
+   "ok": true
+  },
+  {
+   "set": "official",
+   "file": "V1_01_easy_b_s6",
+   "truth": "multirotor",
+   "stat": 10.700059345829544,
+   "detected": "multirotor",
+   "ok": true
+  },
+  {
+   "set": "official",
+   "file": "V1_01_easy_b_s7",
+   "truth": "multirotor",
+   "stat": 10.673691036228217,
+   "detected": "multirotor",
+   "ok": true
+  },
+  {
+   "set": "official",
+   "file": "V1_01_easy_b_s8",
+   "truth": "multirotor",
+   "stat": 10.67085862401435,
+   "detected": "multirotor",
+   "ok": true
+  },
+  {
+   "set": "official",
+   "file": "V1_01_easy_b_s9",
+   "truth": "multirotor",
+   "stat": 10.365673367470283,
+   "detected": "multirotor",
+   "ok": true
+  },
+  {
+   "set": "official",
+   "file": "V1_02_medium_a_s1",
+   "truth": "multirotor",
+   "stat": 12.29369166994174,
+   "detected": "multirotor",
+   "ok": true
+  },
+  {
+   "set": "official",
+   "file": "V1_02_medium_a_s10",
+   "truth": "multirotor",
+   "stat": 12.624417872670444,
+   "detected": "multirotor",
+   "ok": true
+  },
+  {
+   "set": "official",
+   "file": "V1_02_medium_a_s11",
+   "truth": "multirotor",
+   "stat": 11.946947500028585,
+   "detected": "multirotor",
+   "ok": true
+  },
+  {
+   "set": "official",
+   "file": "V1_02_medium_a_s12",
+   "truth": "multirotor",
+   "stat": 11.637108331439292,
+   "detected": "multirotor",
+   "ok": true
+  },
+  {
+   "set": "official",
+   "file": "V1_02_medium_a_s16",
+   "truth": "multirotor",
+   "stat": 12.533393918644334,
+   "detected": "multirotor",
+   "ok": true
+  },
+  {
+   "set": "official",
+   "file": "V1_02_medium_a_s17",
+   "truth": "multirotor",
+   "stat": 12.447849832102785,
+   "detected": "multirotor",
+   "ok": true
+  },
+  {
+   "set": "official",
+   "file": "V1_02_medium_a_s18",
+   "truth": "multirotor",
+   "stat": 11.923239343624088,
+   "detected": "multirotor",
+   "ok": true
+  },
+  {
+   "set": "official",
+   "file": "V1_02_medium_a_s2",
+   "truth": "multirotor",
+   "stat": 12.286018965694483,
+   "detected": "multirotor",
+   "ok": true
+  },
+  {
+   "set": "official",
+   "file": "V1_02_medium_a_s3",
+   "truth": "multirotor",
+   "stat": 11.96612681390663,
+   "detected": "multirotor",
+   "ok": true
+  },
+  {
+   "set": "official",
+   "file": "V1_02_medium_a_s4",
+   "truth": "multirotor",
+   "stat": 11.867966979422896,
+   "detected": "multirotor",
+   "ok": true
+  },
+  {
+   "set": "official",
+   "file": "V1_02_medium_a_s42",
+   "truth": "multirotor",
+   "stat": 11.667369152493245,
+   "detected": "multirotor",
+   "ok": true
+  },
+  {
+   "set": "official",
+   "file": "V1_02_medium_a_s5",
+   "truth": "multirotor",
+   "stat": 11.903955957496724,
+   "detected": "multirotor",
+   "ok": true
+  },
+  {
+   "set": "official",
+   "file": "V1_02_medium_a_s6",
+   "truth": "multirotor",
+   "stat": 12.103503805107147,
+   "detected": "multirotor",
+   "ok": true
+  },
+  {
+   "set": "official",
+   "file": "V1_02_medium_a_s7",
+   "truth": "multirotor",
+   "stat": 12.26718630614357,
+   "detected": "multirotor",
+   "ok": true
+  },
+  {
+   "set": "official",
+   "file": "V1_02_medium_a_s8",
+   "truth": "multirotor",
+   "stat": 12.138249346464551,
+   "detected": "multirotor",
+   "ok": true
+  },
+  {
+   "set": "official",
+   "file": "V1_02_medium_a_s9",
+   "truth": "multirotor",
+   "stat": 11.575185241436564,
+   "detected": "multirotor",
+   "ok": true
+  },
+  {
+   "set": "official",
+   "file": "V1_02_medium_b_s1",
+   "truth": "multirotor",
+   "stat": 12.367765269721204,
+   "detected": "multirotor",
+   "ok": true
+  },
+  {
+   "set": "official",
+   "file": "V1_02_medium_b_s10",
+   "truth": "multirotor",
+   "stat": 12.735403695531648,
+   "detected": "multirotor",
+   "ok": true
+  },
+  {
+   "set": "official",
+   "file": "V1_02_medium_b_s11",
+   "truth": "multirotor",
+   "stat": 12.794894294338347,
+   "detected": "multirotor",
+   "ok": true
+  },
+  {
+   "set": "official",
+   "file": "V1_02_medium_b_s12",
+   "truth": "multirotor",
+   "stat": 12.209172424858416,
+   "detected": "multirotor",
+   "ok": true
+  },
+  {
+   "set": "official",
+   "file": "V1_02_medium_b_s16",
+   "truth": "multirotor",
+   "stat": 12.795731205562703,
+   "detected": "multirotor",
+   "ok": true
+  },
+  {
+   "set": "official",
+   "file": "V1_02_medium_b_s17",
+   "truth": "multirotor",
+   "stat": 12.516221228304792,
+   "detected": "multirotor",
+   "ok": true
+  },
+  {
+   "set": "official",
+   "file": "V1_02_medium_b_s18",
+   "truth": "multirotor",
+   "stat": 12.160159119902797,
+   "detected": "multirotor",
+   "ok": true
+  },
+  {
+   "set": "official",
+   "file": "V1_02_medium_b_s2",
+   "truth": "multirotor",
+   "stat": 12.318376136500094,
+   "detected": "multirotor",
+   "ok": true
+  },
+  {
+   "set": "official",
+   "file": "V1_02_medium_b_s3",
+   "truth": "multirotor",
+   "stat": 12.195690925615938,
+   "detected": "multirotor",
+   "ok": true
+  },
+  {
+   "set": "official",
+   "file": "V1_02_medium_b_s4",
+   "truth": "multirotor",
+   "stat": 11.953199116782127,
+   "detected": "multirotor",
+   "ok": true
+  },
+  {
+   "set": "official",
+   "file": "V1_02_medium_b_s42",
+   "truth": "multirotor",
+   "stat": 12.018013857004904,
+   "detected": "multirotor",
+   "ok": true
+  },
+  {
+   "set": "official",
+   "file": "V1_02_medium_b_s5",
+   "truth": "multirotor",
+   "stat": 12.272751228367042,
+   "detected": "multirotor",
+   "ok": true
+  },
+  {
+   "set": "official",
+   "file": "V1_02_medium_b_s6",
+   "truth": "multirotor",
+   "stat": 12.447373387736869,
+   "detected": "multirotor",
+   "ok": true
+  },
+  {
+   "set": "official",
+   "file": "V1_02_medium_b_s7",
+   "truth": "multirotor",
+   "stat": 12.284091115240379,
+   "detected": "multirotor",
+   "ok": true
+  },
+  {
+   "set": "official",
+   "file": "V1_02_medium_b_s8",
+   "truth": "multirotor",
+   "stat": 12.500726300437696,
+   "detected": "multirotor",
+   "ok": true
+  },
+  {
+   "set": "official",
+   "file": "V1_02_medium_b_s9",
+   "truth": "multirotor",
+   "stat": 11.623055699446368,
+   "detected": "multirotor",
+   "ok": true
+  },
+  {
+   "set": "official",
+   "file": "V1_03_difficult_a_s1",
+   "truth": "multirotor",
+   "stat": 21.445018605363522,
+   "detected": "multirotor",
+   "ok": true
+  },
+  {
+   "set": "official",
+   "file": "V1_03_difficult_a_s10",
+   "truth": "multirotor",
+   "stat": 21.2000068833926,
+   "detected": "multirotor",
+   "ok": true
+  },
+  {
+   "set": "official",
+   "file": "V1_03_difficult_a_s11",
+   "truth": "multirotor",
+   "stat": 21.85719242166068,
+   "detected": "multirotor",
+   "ok": true
+  },
+  {
+   "set": "official",
+   "file": "V1_03_difficult_a_s12",
+   "truth": "multirotor",
+   "stat": 21.775268487187756,
+   "detected": "multirotor",
+   "ok": true
+  },
+  {
+   "set": "official",
+   "file": "V1_03_difficult_a_s16",
+   "truth": "multirotor",
+   "stat": 21.477482171333424,
+   "detected": "multirotor",
+   "ok": true
+  },
+  {
+   "set": "official",
+   "file": "V1_03_difficult_a_s17",
+   "truth": "multirotor",
+   "stat": 21.798901879367847,
+   "detected": "multirotor",
+   "ok": true
+  },
+  {
+   "set": "official",
+   "file": "V1_03_difficult_a_s18",
+   "truth": "multirotor",
+   "stat": 21.48259298092671,
+   "detected": "multirotor",
+   "ok": true
+  },
+  {
+   "set": "official",
+   "file": "V1_03_difficult_a_s2",
+   "truth": "multirotor",
+   "stat": 21.492971603911297,
+   "detected": "multirotor",
+   "ok": true
+  },
+  {
+   "set": "official",
+   "file": "V1_03_difficult_a_s3",
+   "truth": "multirotor",
+   "stat": 21.205237970705948,
+   "detected": "multirotor",
+   "ok": true
+  },
+  {
+   "set": "official",
+   "file": "V1_03_difficult_a_s4",
+   "truth": "multirotor",
+   "stat": 21.404354232112667,
+   "detected": "multirotor",
+   "ok": true
+  },
+  {
+   "set": "official",
+   "file": "V1_03_difficult_a_s42",
+   "truth": "multirotor",
+   "stat": 22.294880610260762,
+   "detected": "multirotor",
+   "ok": true
+  },
+  {
+   "set": "official",
+   "file": "V1_03_difficult_a_s5",
+   "truth": "multirotor",
+   "stat": 21.75326582593925,
+   "detected": "multirotor",
+   "ok": true
+  },
+  {
+   "set": "official",
+   "file": "V1_03_difficult_a_s6",
+   "truth": "multirotor",
+   "stat": 21.808181210151282,
+   "detected": "multirotor",
+   "ok": true
+  },
+  {
+   "set": "official",
+   "file": "V1_03_difficult_a_s7",
+   "truth": "multirotor",
+   "stat": 21.639109329534637,
+   "detected": "multirotor",
+   "ok": true
+  },
+  {
+   "set": "official",
+   "file": "V1_03_difficult_a_s8",
+   "truth": "multirotor",
+   "stat": 21.619005030549385,
+   "detected": "multirotor",
+   "ok": true
+  },
+  {
+   "set": "official",
+   "file": "V1_03_difficult_a_s9",
+   "truth": "multirotor",
+   "stat": 21.490320335892882,
+   "detected": "multirotor",
+   "ok": true
+  },
+  {
+   "set": "official",
+   "file": "V1_03_difficult_b_s1",
+   "truth": "multirotor",
+   "stat": 21.74388221379195,
+   "detected": "multirotor",
+   "ok": true
+  },
+  {
+   "set": "official",
+   "file": "V1_03_difficult_b_s10",
+   "truth": "multirotor",
+   "stat": 21.77247254894199,
+   "detected": "multirotor",
+   "ok": true
+  },
+  {
+   "set": "official",
+   "file": "V1_03_difficult_b_s11",
+   "truth": "multirotor",
+   "stat": 21.72672345477125,
+   "detected": "multirotor",
+   "ok": true
+  },
+  {
+   "set": "official",
+   "file": "V1_03_difficult_b_s12",
+   "truth": "multirotor",
+   "stat": 22.169182438025597,
+   "detected": "multirotor",
+   "ok": true
+  },
+  {
+   "set": "official",
+   "file": "V1_03_difficult_b_s16",
+   "truth": "multirotor",
+   "stat": 21.457741863103543,
+   "detected": "multirotor",
+   "ok": true
+  },
+  {
+   "set": "official",
+   "file": "V1_03_difficult_b_s17",
+   "truth": "multirotor",
+   "stat": 22.0307353399565,
+   "detected": "multirotor",
+   "ok": true
+  },
+  {
+   "set": "official",
+   "file": "V1_03_difficult_b_s18",
+   "truth": "multirotor",
+   "stat": 21.42573907360899,
+   "detected": "multirotor",
+   "ok": true
+  },
+  {
+   "set": "official",
+   "file": "V1_03_difficult_b_s2",
+   "truth": "multirotor",
+   "stat": 21.49497265558286,
+   "detected": "multirotor",
+   "ok": true
+  },
+  {
+   "set": "official",
+   "file": "V1_03_difficult_b_s3",
+   "truth": "multirotor",
+   "stat": 21.26985301293703,
+   "detected": "multirotor",
+   "ok": true
+  },
+  {
+   "set": "official",
+   "file": "V1_03_difficult_b_s4",
+   "truth": "multirotor",
+   "stat": 21.464099903681383,
+   "detected": "multirotor",
+   "ok": true
+  },
+  {
+   "set": "official",
+   "file": "V1_03_difficult_b_s42",
+   "truth": "multirotor",
+   "stat": 22.37477723170151,
+   "detected": "multirotor",
+   "ok": true
+  },
+  {
+   "set": "official",
+   "file": "V1_03_difficult_b_s5",
+   "truth": "multirotor",
+   "stat": 21.685926414686396,
+   "detected": "multirotor",
+   "ok": true
+  },
+  {
+   "set": "official",
+   "file": "V1_03_difficult_b_s6",
+   "truth": "multirotor",
+   "stat": 22.30494742403215,
+   "detected": "multirotor",
+   "ok": true
+  },
+  {
+   "set": "official",
+   "file": "V1_03_difficult_b_s7",
+   "truth": "multirotor",
+   "stat": 21.800292831545722,
+   "detected": "multirotor",
+   "ok": true
+  },
+  {
+   "set": "official",
+   "file": "V1_03_difficult_b_s8",
+   "truth": "multirotor",
+   "stat": 21.718940203513657,
+   "detected": "multirotor",
+   "ok": true
+  },
+  {
+   "set": "official",
+   "file": "V1_03_difficult_b_s9",
+   "truth": "multirotor",
+   "stat": 21.491841060590218,
+   "detected": "multirotor",
+   "ok": true
+  },
+  {
+   "set": "tumvi",
+   "file": "dataset-room1_512_16",
+   "truth": "handheld",
+   "stat": 0.0023750184136831745,
+   "detected": "handheld",
+   "ok": true
+  },
+  {
+   "set": "tumvi",
+   "file": "dataset-room2_512_16",
+   "truth": "handheld",
+   "stat": 0.0022954497037919984,
+   "detected": "handheld",
+   "ok": true
+  },
+  {
+   "set": "tumvi",
+   "file": "dataset-room3_512_16",
+   "truth": "handheld",
+   "stat": 0.0023007317163881045,
+   "detected": "handheld",
+   "ok": true
+  },
+  {
+   "set": "tumvi",
+   "file": "dataset-room4_512_16",
+   "truth": "handheld",
+   "stat": 0.002351097169064291,
+   "detected": "handheld",
+   "ok": true
+  },
+  {
+   "set": "official_tumvi",
+   "file": "dataset-room1_512_16_a_s1",
+   "truth": "handheld",
+   "stat": 0.004489907040510629,
+   "detected": "handheld",
+   "ok": true
+  },
+  {
+   "set": "official_tumvi",
+   "file": "dataset-room1_512_16_a_s10",
+   "truth": "handheld",
+   "stat": 0.00595162110485396,
+   "detected": "handheld",
+   "ok": true
+  },
+  {
+   "set": "official_tumvi",
+   "file": "dataset-room1_512_16_a_s11",
+   "truth": "handheld",
+   "stat": 0.005357502648727273,
+   "detected": "handheld",
+   "ok": true
+  },
+  {
+   "set": "official_tumvi",
+   "file": "dataset-room1_512_16_a_s12",
+   "truth": "handheld",
+   "stat": 0.0048338005984624715,
+   "detected": "handheld",
+   "ok": true
+  },
+  {
+   "set": "official_tumvi",
+   "file": "dataset-room1_512_16_a_s13",
+   "truth": "handheld",
+   "stat": 0.005195236612960572,
+   "detected": "handheld",
+   "ok": true
+  },
+  {
+   "set": "official_tumvi",
+   "file": "dataset-room1_512_16_a_s14",
+   "truth": "handheld",
+   "stat": 0.00468841322017319,
+   "detected": "handheld",
+   "ok": true
+  },
+  {
+   "set": "official_tumvi",
+   "file": "dataset-room1_512_16_a_s15",
+   "truth": "handheld",
+   "stat": 0.005711437535926711,
+   "detected": "handheld",
+   "ok": true
+  },
+  {
+   "set": "official_tumvi",
+   "file": "dataset-room1_512_16_a_s2",
+   "truth": "handheld",
+   "stat": 0.005502194435896425,
+   "detected": "handheld",
+   "ok": true
+  },
+  {
+   "set": "official_tumvi",
+   "file": "dataset-room1_512_16_a_s3",
+   "truth": "handheld",
+   "stat": 0.00537459482377182,
+   "detected": "handheld",
+   "ok": true
+  },
+  {
+   "set": "official_tumvi",
+   "file": "dataset-room1_512_16_a_s7",
+   "truth": "handheld",
+   "stat": 0.005213314144155679,
+   "detected": "handheld",
+   "ok": true
+  },
+  {
+   "set": "official_tumvi",
+   "file": "dataset-room1_512_16_a_s8",
+   "truth": "handheld",
+   "stat": 0.004813682294896497,
+   "detected": "handheld",
+   "ok": true
+  },
+  {
+   "set": "official_tumvi",
+   "file": "dataset-room1_512_16_a_s9",
+   "truth": "handheld",
+   "stat": 0.006572104137281922,
+   "detected": "handheld",
+   "ok": true
+  },
+  {
+   "set": "official_tumvi",
+   "file": "dataset-room1_512_16_b_s1",
+   "truth": "handheld",
+   "stat": 0.10507683569838025,
+   "detected": "handheld",
+   "ok": true
+  },
+  {
+   "set": "official_tumvi",
+   "file": "dataset-room1_512_16_b_s10",
+   "truth": "handheld",
+   "stat": 0.128617119673579,
+   "detected": "handheld",
+   "ok": true
+  },
+  {
+   "set": "official_tumvi",
+   "file": "dataset-room1_512_16_b_s11",
+   "truth": "handheld",
+   "stat": 0.12152779432213041,
+   "detected": "handheld",
+   "ok": true
+  },
+  {
+   "set": "official_tumvi",
+   "file": "dataset-room1_512_16_b_s12",
+   "truth": "handheld",
+   "stat": 0.11175385459869475,
+   "detected": "handheld",
+   "ok": true
+  },
+  {
+   "set": "official_tumvi",
+   "file": "dataset-room1_512_16_b_s13",
+   "truth": "handheld",
+   "stat": 0.10602055310360996,
+   "detected": "handheld",
+   "ok": true
+  },
+  {
+   "set": "official_tumvi",
+   "file": "dataset-room1_512_16_b_s14",
+   "truth": "handheld",
+   "stat": 0.11860913789253996,
+   "detected": "handheld",
+   "ok": true
+  },
+  {
+   "set": "official_tumvi",
+   "file": "dataset-room1_512_16_b_s15",
+   "truth": "handheld",
+   "stat": 0.11721730487855311,
+   "detected": "handheld",
+   "ok": true
+  },
+  {
+   "set": "official_tumvi",
+   "file": "dataset-room1_512_16_b_s2",
+   "truth": "handheld",
+   "stat": 0.11120535825915875,
+   "detected": "handheld",
+   "ok": true
+  },
+  {
+   "set": "official_tumvi",
+   "file": "dataset-room1_512_16_b_s3",
+   "truth": "handheld",
+   "stat": 0.15284732839868953,
+   "detected": "handheld",
+   "ok": true
+  },
+  {
+   "set": "official_tumvi",
+   "file": "dataset-room1_512_16_b_s7",
+   "truth": "handheld",
+   "stat": 0.11149158494932095,
+   "detected": "handheld",
+   "ok": true
+  },
+  {
+   "set": "official_tumvi",
+   "file": "dataset-room1_512_16_b_s8",
+   "truth": "handheld",
+   "stat": 0.10922323459842623,
+   "detected": "handheld",
+   "ok": true
+  },
+  {
+   "set": "official_tumvi",
+   "file": "dataset-room1_512_16_b_s9",
+   "truth": "handheld",
+   "stat": 0.13800193686659493,
+   "detected": "handheld",
+   "ok": true
+  },
+  {
+   "set": "official_tumvi",
+   "file": "dataset-room2_512_16_a_s1",
+   "truth": "handheld",
+   "stat": 0.006411654604678579,
+   "detected": "handheld",
+   "ok": true
+  },
+  {
+   "set": "official_tumvi",
+   "file": "dataset-room2_512_16_a_s10",
+   "truth": "handheld",
+   "stat": 0.005635696980732652,
+   "detected": "handheld",
+   "ok": true
+  },
+  {
+   "set": "official_tumvi",
+   "file": "dataset-room2_512_16_a_s11",
+   "truth": "handheld",
+   "stat": 0.007169172333563839,
+   "detected": "handheld",
+   "ok": true
+  },
+  {
+   "set": "official_tumvi",
+   "file": "dataset-room2_512_16_a_s12",
+   "truth": "handheld",
+   "stat": 0.005633624722539766,
+   "detected": "handheld",
+   "ok": true
+  },
+  {
+   "set": "official_tumvi",
+   "file": "dataset-room2_512_16_a_s13",
+   "truth": "handheld",
+   "stat": 0.005628106815702194,
+   "detected": "handheld",
+   "ok": true
+  },
+  {
+   "set": "official_tumvi",
+   "file": "dataset-room2_512_16_a_s14",
+   "truth": "handheld",
+   "stat": 0.00711287696649827,
+   "detected": "handheld",
+   "ok": true
+  },
+  {
+   "set": "official_tumvi",
+   "file": "dataset-room2_512_16_a_s15",
+   "truth": "handheld",
+   "stat": 0.005899143151370756,
+   "detected": "handheld",
+   "ok": true
+  },
+  {
+   "set": "official_tumvi",
+   "file": "dataset-room2_512_16_a_s2",
+   "truth": "handheld",
+   "stat": 0.005367280392651277,
+   "detected": "handheld",
+   "ok": true
+  },
+  {
+   "set": "official_tumvi",
+   "file": "dataset-room2_512_16_a_s3",
+   "truth": "handheld",
+   "stat": 0.006397833578060948,
+   "detected": "handheld",
+   "ok": true
+  },
+  {
+   "set": "official_tumvi",
+   "file": "dataset-room2_512_16_a_s7",
+   "truth": "handheld",
+   "stat": 0.006587768545060908,
+   "detected": "handheld",
+   "ok": true
+  },
+  {
+   "set": "official_tumvi",
+   "file": "dataset-room2_512_16_a_s8",
+   "truth": "handheld",
+   "stat": 0.006764762559744785,
+   "detected": "handheld",
+   "ok": true
+  },
+  {
+   "set": "official_tumvi",
+   "file": "dataset-room2_512_16_a_s9",
+   "truth": "handheld",
+   "stat": 0.0066868618773214825,
+   "detected": "handheld",
+   "ok": true
+  },
+  {
+   "set": "official_tumvi",
+   "file": "dataset-room2_512_16_b_s1",
+   "truth": "handheld",
+   "stat": 0.12473012018467015,
+   "detected": "handheld",
+   "ok": true
+  },
+  {
+   "set": "official_tumvi",
+   "file": "dataset-room2_512_16_b_s10",
+   "truth": "handheld",
+   "stat": 0.10725650588882724,
+   "detected": "handheld",
+   "ok": true
+  },
+  {
+   "set": "official_tumvi",
+   "file": "dataset-room2_512_16_b_s11",
+   "truth": "handheld",
+   "stat": 0.12618380024030548,
+   "detected": "handheld",
+   "ok": true
+  },
+  {
+   "set": "official_tumvi",
+   "file": "dataset-room2_512_16_b_s12",
+   "truth": "handheld",
+   "stat": 0.12173239316177718,
+   "detected": "handheld",
+   "ok": true
+  },
+  {
+   "set": "official_tumvi",
+   "file": "dataset-room2_512_16_b_s13",
+   "truth": "handheld",
+   "stat": 0.11765599760797098,
+   "detected": "handheld",
+   "ok": true
+  },
+  {
+   "set": "official_tumvi",
+   "file": "dataset-room2_512_16_b_s14",
+   "truth": "handheld",
+   "stat": 0.12706025103391094,
+   "detected": "handheld",
+   "ok": true
+  },
+  {
+   "set": "official_tumvi",
+   "file": "dataset-room2_512_16_b_s15",
+   "truth": "handheld",
+   "stat": 0.12322909856991544,
+   "detected": "handheld",
+   "ok": true
+  },
+  {
+   "set": "official_tumvi",
+   "file": "dataset-room2_512_16_b_s2",
+   "truth": "handheld",
+   "stat": 0.11129155730976144,
+   "detected": "handheld",
+   "ok": true
+  },
+  {
+   "set": "official_tumvi",
+   "file": "dataset-room2_512_16_b_s3",
+   "truth": "handheld",
+   "stat": 0.117046392812815,
+   "detected": "handheld",
+   "ok": true
+  },
+  {
+   "set": "official_tumvi",
+   "file": "dataset-room2_512_16_b_s7",
+   "truth": "handheld",
+   "stat": 0.12616268593294888,
+   "detected": "handheld",
+   "ok": true
+  },
+  {
+   "set": "official_tumvi",
+   "file": "dataset-room2_512_16_b_s8",
+   "truth": "handheld",
+   "stat": 0.14061081906557024,
+   "detected": "handheld",
+   "ok": true
+  },
+  {
+   "set": "official_tumvi",
+   "file": "dataset-room2_512_16_b_s9",
+   "truth": "handheld",
+   "stat": 0.11712876924850349,
+   "detected": "handheld",
+   "ok": true
+  },
+  {
+   "set": "official_tumvi",
+   "file": "dataset-room3_512_16_a_s1",
+   "truth": "handheld",
+   "stat": 0.006948273355168465,
+   "detected": "handheld",
+   "ok": true
+  },
+  {
+   "set": "official_tumvi",
+   "file": "dataset-room3_512_16_a_s10",
+   "truth": "handheld",
+   "stat": 0.008265628026072851,
+   "detected": "handheld",
+   "ok": true
+  },
+  {
+   "set": "official_tumvi",
+   "file": "dataset-room3_512_16_a_s11",
+   "truth": "handheld",
+   "stat": 0.006076840261735041,
+   "detected": "handheld",
+   "ok": true
+  },
+  {
+   "set": "official_tumvi",
+   "file": "dataset-room3_512_16_a_s12",
+   "truth": "handheld",
+   "stat": 0.007846201768495722,
+   "detected": "handheld",
+   "ok": true
+  },
+  {
+   "set": "official_tumvi",
+   "file": "dataset-room3_512_16_a_s13",
+   "truth": "handheld",
+   "stat": 0.00586029957019714,
+   "detected": "handheld",
+   "ok": true
+  },
+  {
+   "set": "official_tumvi",
+   "file": "dataset-room3_512_16_a_s14",
+   "truth": "handheld",
+   "stat": 0.006201095518347557,
+   "detected": "handheld",
+   "ok": true
+  },
+  {
+   "set": "official_tumvi",
+   "file": "dataset-room3_512_16_a_s15",
+   "truth": "handheld",
+   "stat": 0.006311433948431564,
+   "detected": "handheld",
+   "ok": true
+  },
+  {
+   "set": "official_tumvi",
+   "file": "dataset-room3_512_16_a_s16",
+   "truth": "handheld",
+   "stat": 0.006281970644385786,
+   "detected": "handheld",
+   "ok": true
+  },
+  {
+   "set": "official_tumvi",
+   "file": "dataset-room3_512_16_a_s17",
+   "truth": "handheld",
+   "stat": 0.006310697763521152,
+   "detected": "handheld",
+   "ok": true
+  },
+  {
+   "set": "official_tumvi",
+   "file": "dataset-room3_512_16_a_s18",
+   "truth": "handheld",
+   "stat": 0.006389095846266672,
+   "detected": "handheld",
+   "ok": true
+  },
+  {
+   "set": "official_tumvi",
+   "file": "dataset-room3_512_16_a_s2",
+   "truth": "handheld",
+   "stat": 0.0070952184334387765,
+   "detected": "handheld",
+   "ok": true
+  },
+  {
+   "set": "official_tumvi",
+   "file": "dataset-room3_512_16_a_s3",
+   "truth": "handheld",
+   "stat": 0.00821780716349549,
+   "detected": "handheld",
+   "ok": true
+  },
+  {
+   "set": "official_tumvi",
+   "file": "dataset-room3_512_16_a_s7",
+   "truth": "handheld",
+   "stat": 0.005932733025677246,
+   "detected": "handheld",
+   "ok": true
+  },
+  {
+   "set": "official_tumvi",
+   "file": "dataset-room3_512_16_a_s8",
+   "truth": "handheld",
+   "stat": 0.004922141532224563,
+   "detected": "handheld",
+   "ok": true
+  },
+  {
+   "set": "official_tumvi",
+   "file": "dataset-room3_512_16_a_s9",
+   "truth": "handheld",
+   "stat": 0.006349405331385533,
+   "detected": "handheld",
+   "ok": true
+  },
+  {
+   "set": "official_tumvi",
+   "file": "dataset-room3_512_16_b_s1",
+   "truth": "handheld",
+   "stat": 0.11942425062359156,
+   "detected": "handheld",
+   "ok": true
+  },
+  {
+   "set": "official_tumvi",
+   "file": "dataset-room3_512_16_b_s10",
+   "truth": "handheld",
+   "stat": 0.13780780220928676,
+   "detected": "handheld",
+   "ok": true
+  },
+  {
+   "set": "official_tumvi",
+   "file": "dataset-room3_512_16_b_s11",
+   "truth": "handheld",
+   "stat": 0.11438636104967022,
+   "detected": "handheld",
+   "ok": true
+  },
+  {
+   "set": "official_tumvi",
+   "file": "dataset-room3_512_16_b_s12",
+   "truth": "handheld",
+   "stat": 0.10065327730761109,
+   "detected": "handheld",
+   "ok": true
+  },
+  {
+   "set": "official_tumvi",
+   "file": "dataset-room3_512_16_b_s13",
+   "truth": "handheld",
+   "stat": 0.11891416510597946,
+   "detected": "handheld",
+   "ok": true
+  },
+  {
+   "set": "official_tumvi",
+   "file": "dataset-room3_512_16_b_s14",
+   "truth": "handheld",
+   "stat": 0.11783589619635015,
+   "detected": "handheld",
+   "ok": true
+  },
+  {
+   "set": "official_tumvi",
+   "file": "dataset-room3_512_16_b_s15",
+   "truth": "handheld",
+   "stat": 0.1232189413312711,
+   "detected": "handheld",
+   "ok": true
+  },
+  {
+   "set": "official_tumvi",
+   "file": "dataset-room3_512_16_b_s16",
+   "truth": "handheld",
+   "stat": 0.1207301266144677,
+   "detected": "handheld",
+   "ok": true
+  },
+  {
+   "set": "official_tumvi",
+   "file": "dataset-room3_512_16_b_s17",
+   "truth": "handheld",
+   "stat": 0.10778410484847573,
+   "detected": "handheld",
+   "ok": true
+  },
+  {
+   "set": "official_tumvi",
+   "file": "dataset-room3_512_16_b_s18",
+   "truth": "handheld",
+   "stat": 0.11505893114454065,
+   "detected": "handheld",
+   "ok": true
+  },
+  {
+   "set": "official_tumvi",
+   "file": "dataset-room3_512_16_b_s2",
+   "truth": "handheld",
+   "stat": 0.10850023187628703,
+   "detected": "handheld",
+   "ok": true
+  },
+  {
+   "set": "official_tumvi",
+   "file": "dataset-room3_512_16_b_s3",
+   "truth": "handheld",
+   "stat": 0.15152503352256894,
+   "detected": "handheld",
+   "ok": true
+  },
+  {
+   "set": "official_tumvi",
+   "file": "dataset-room3_512_16_b_s7",
+   "truth": "handheld",
+   "stat": 0.10747984396095546,
+   "detected": "handheld",
+   "ok": true
+  },
+  {
+   "set": "official_tumvi",
+   "file": "dataset-room3_512_16_b_s8",
+   "truth": "handheld",
+   "stat": 0.09690057448574765,
+   "detected": "handheld",
+   "ok": true
+  },
+  {
+   "set": "official_tumvi",
+   "file": "dataset-room3_512_16_b_s9",
+   "truth": "handheld",
+   "stat": 0.12024061347451846,
+   "detected": "handheld",
+   "ok": true
+  },
+  {
+   "set": "official_tumvi",
+   "file": "dataset-room4_512_16_a_s1",
+   "truth": "handheld",
+   "stat": 0.004996306600238106,
+   "detected": "handheld",
+   "ok": true
+  },
+  {
+   "set": "official_tumvi",
+   "file": "dataset-room4_512_16_a_s10",
+   "truth": "handheld",
+   "stat": 0.0050027119571032595,
+   "detected": "handheld",
+   "ok": true
+  },
+  {
+   "set": "official_tumvi",
+   "file": "dataset-room4_512_16_a_s11",
+   "truth": "handheld",
+   "stat": 0.005014735723499995,
+   "detected": "handheld",
+   "ok": true
+  },
+  {
+   "set": "official_tumvi",
+   "file": "dataset-room4_512_16_a_s12",
+   "truth": "handheld",
+   "stat": 0.004051097614735033,
+   "detected": "handheld",
+   "ok": true
+  },
+  {
+   "set": "official_tumvi",
+   "file": "dataset-room4_512_16_a_s13",
+   "truth": "handheld",
+   "stat": 0.004684146432195165,
+   "detected": "handheld",
+   "ok": true
+  },
+  {
+   "set": "official_tumvi",
+   "file": "dataset-room4_512_16_a_s14",
+   "truth": "handheld",
+   "stat": 0.004861819891790991,
+   "detected": "handheld",
+   "ok": true
+  },
+  {
+   "set": "official_tumvi",
+   "file": "dataset-room4_512_16_a_s15",
+   "truth": "handheld",
+   "stat": 0.004422378401965385,
+   "detected": "handheld",
+   "ok": true
+  },
+  {
+   "set": "official_tumvi",
+   "file": "dataset-room4_512_16_a_s16",
+   "truth": "handheld",
+   "stat": 0.0035575123162533986,
+   "detected": "handheld",
+   "ok": true
+  },
+  {
+   "set": "official_tumvi",
+   "file": "dataset-room4_512_16_a_s17",
+   "truth": "handheld",
+   "stat": 0.004940364306921764,
+   "detected": "handheld",
+   "ok": true
+  },
+  {
+   "set": "official_tumvi",
+   "file": "dataset-room4_512_16_a_s18",
+   "truth": "handheld",
+   "stat": 0.0073128870279602735,
+   "detected": "handheld",
+   "ok": true
+  },
+  {
+   "set": "official_tumvi",
+   "file": "dataset-room4_512_16_a_s2",
+   "truth": "handheld",
+   "stat": 0.0038752947042315893,
+   "detected": "handheld",
+   "ok": true
+  },
+  {
+   "set": "official_tumvi",
+   "file": "dataset-room4_512_16_a_s3",
+   "truth": "handheld",
+   "stat": 0.004978864315532989,
+   "detected": "handheld",
+   "ok": true
+  },
+  {
+   "set": "official_tumvi",
+   "file": "dataset-room4_512_16_a_s7",
+   "truth": "handheld",
+   "stat": 0.005025559223158194,
+   "detected": "handheld",
+   "ok": true
+  },
+  {
+   "set": "official_tumvi",
+   "file": "dataset-room4_512_16_a_s8",
+   "truth": "handheld",
+   "stat": 0.003939131439202385,
+   "detected": "handheld",
+   "ok": true
+  },
+  {
+   "set": "official_tumvi",
+   "file": "dataset-room4_512_16_a_s9",
+   "truth": "handheld",
+   "stat": 0.004694025652406251,
+   "detected": "handheld",
+   "ok": true
+  },
+  {
+   "set": "official_tumvi",
+   "file": "dataset-room4_512_16_b_s1",
+   "truth": "handheld",
+   "stat": 0.12270091015432463,
+   "detected": "handheld",
+   "ok": true
+  },
+  {
+   "set": "official_tumvi",
+   "file": "dataset-room4_512_16_b_s10",
+   "truth": "handheld",
+   "stat": 0.09990327886676668,
+   "detected": "handheld",
+   "ok": true
+  },
+  {
+   "set": "official_tumvi",
+   "file": "dataset-room4_512_16_b_s11",
+   "truth": "handheld",
+   "stat": 0.12739086291497898,
+   "detected": "handheld",
+   "ok": true
+  },
+  {
+   "set": "official_tumvi",
+   "file": "dataset-room4_512_16_b_s12",
+   "truth": "handheld",
+   "stat": 0.09686385519846737,
+   "detected": "handheld",
+   "ok": true
+  },
+  {
+   "set": "official_tumvi",
+   "file": "dataset-room4_512_16_b_s13",
+   "truth": "handheld",
+   "stat": 0.13419063547667376,
+   "detected": "handheld",
+   "ok": true
+  },
+  {
+   "set": "official_tumvi",
+   "file": "dataset-room4_512_16_b_s14",
+   "truth": "handheld",
+   "stat": 0.12236020478619894,
+   "detected": "handheld",
+   "ok": true
+  },
+  {
+   "set": "official_tumvi",
+   "file": "dataset-room4_512_16_b_s15",
+   "truth": "handheld",
+   "stat": 0.10157572036320621,
+   "detected": "handheld",
+   "ok": true
+  },
+  {
+   "set": "official_tumvi",
+   "file": "dataset-room4_512_16_b_s16",
+   "truth": "handheld",
+   "stat": 0.0928987491814381,
+   "detected": "handheld",
+   "ok": true
+  },
+  {
+   "set": "official_tumvi",
+   "file": "dataset-room4_512_16_b_s17",
+   "truth": "handheld",
+   "stat": 0.12186515243816931,
+   "detected": "handheld",
+   "ok": true
+  },
+  {
+   "set": "official_tumvi",
+   "file": "dataset-room4_512_16_b_s18",
+   "truth": "handheld",
+   "stat": 0.1600228068371027,
+   "detected": "handheld",
+   "ok": true
+  },
+  {
+   "set": "official_tumvi",
+   "file": "dataset-room4_512_16_b_s2",
+   "truth": "handheld",
+   "stat": 0.1061149434876283,
+   "detected": "handheld",
+   "ok": true
+  },
+  {
+   "set": "official_tumvi",
+   "file": "dataset-room4_512_16_b_s3",
+   "truth": "handheld",
+   "stat": 0.12120659134848683,
+   "detected": "handheld",
+   "ok": true
+  },
+  {
+   "set": "official_tumvi",
+   "file": "dataset-room4_512_16_b_s7",
+   "truth": "handheld",
+   "stat": 0.12834586946236923,
+   "detected": "handheld",
+   "ok": true
+  },
+  {
+   "set": "official_tumvi",
+   "file": "dataset-room4_512_16_b_s8",
+   "truth": "handheld",
+   "stat": 0.11893464040463549,
+   "detected": "handheld",
+   "ok": true
+  },
+  {
+   "set": "official_tumvi",
+   "file": "dataset-room4_512_16_b_s9",
+   "truth": "handheld",
+   "stat": 0.10823654146965285,
+   "detected": "handheld",
+   "ok": true
+  }
+ ]
+}

@@ -1,0 +1,39 @@
+{
+ "commit": "dda57fd",
+ "date": "2026-11-18",
+ "degraded": false,
+ "main": "main.py",
+ "official": false,
+ "python": "3.14.7",
+ "results": [
+  {
+   "ate_none_rmse": 2.0072821546256083,
+   "ate_origin_rmse": 0.9403274511318156,
+   "ate_se3_rmse": 0.865709241375545,
+   "ate_sim3_rmse": 0.6616983485978899,
+   "contract": "PASS",
+   "final_se3": 0.5277139369990964,
+   "rows": 28122,
+   "rpe200_rmse": 0.29303936172178785,
+   "sequence": "dataset-room1_512_16",
+   "sim3_scale": 0.5736515325175056,
+   "wall_s": 0.9432387999841012
+  },
+  {
+   "ate_none_rmse": 1.5487160748775812,
+   "ate_origin_rmse": 1.2248183728018593,
+   "ate_se3_rmse": 0.9341024220208307,
+   "ate_sim3_rmse": 0.92663344925349,
+   "contract": "PASS",
+   "final_se3": 2.02818298287361,
+   "rows": 28732,
+   "rpe200_rmse": 0.919118425548272,
+   "sequence": "dataset-room2_512_16",
+   "sim3_scale": 0.8702755661039808,
+   "wall_s": 0.9208278000005521
+  }
+ ],
+ "reverse": false,
+ "set": {},
+ "tag": "step7-tune-clean"
+}

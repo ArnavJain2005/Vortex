@@ -1,0 +1,41 @@
+{
+ "commit": "dda57fd",
+ "date": "2026-11-18",
+ "degraded": false,
+ "main": "main.py",
+ "official": false,
+ "python": "3.14.7",
+ "results": [
+  {
+   "ate_none_rmse": 1.7452315500714246,
+   "ate_origin_rmse": 0.902896096031059,
+   "ate_se3_rmse": 0.5861001006833384,
+   "ate_sim3_rmse": 0.5661188777867526,
+   "contract": "PASS",
+   "final_se3": 0.40937974265174815,
+   "rows": 28122,
+   "rpe200_rmse": 0.30964912824301244,
+   "sequence": "dataset-room1_512_16",
+   "sim3_scale": 0.844735227386824,
+   "wall_s": 1.195307399961166
+  },
+  {
+   "ate_none_rmse": 1.6419152508292232,
+   "ate_origin_rmse": 1.247538289606899,
+   "ate_se3_rmse": 1.1139004682420284,
+   "ate_sim3_rmse": 1.1138283235115976,
+   "contract": "PASS",
+   "final_se3": 0.648141207115202,
+   "rows": 28732,
+   "rpe200_rmse": 1.417333956977352,
+   "sequence": "dataset-room2_512_16",
+   "sim3_scale": 1.0263675514328408,
+   "wall_s": 1.2177353000151925
+  }
+ ],
+ "reverse": false,
+ "set": {
+  "V2P_SIGMA_H": "0.5"
+ },
+ "tag": "step7-grid-ph05-clean"
+}

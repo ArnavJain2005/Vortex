@@ -80,6 +80,7 @@ from __future__ import annotations
 import math
 from array import array
 
+from . import platform as pl
 from . import strapdown as sd
 
 # Named parameters. Noise densities: EuRoC sensor.yaml (ADIS16448) with margins, see each line.
@@ -207,13 +208,15 @@ def rot_matrix(q):
             2.0 * (x * z - w * y), 2.0 * (y * z + w * x), 1.0 - 2.0 * (x * x + y * y))
 
 
-def kf_init(still):
-    """Initial covariance, flat row-major N x N."""
+def kf_init(still, sh=None, sv=None):
+    """Initial covariance, flat row-major N x N. sh, sv: the speed envelope for P0V (default V2_SIGMA_H, V)."""
     tilt = P0_TILT if still else P0_TILT_FALLBACK
     bg = P0_BG if still else P0_BG_FALLBACK
     sig = (0.0, 0.0, 0.0, P0_VEL, P0_VEL, P0_VEL, tilt, tilt, P0_YAW, bg, bg, bg, P0_BA, P0_BA, P0_BA)
     if P0V_ON and not still:      # Step F: nothing says the sensor was at rest; the envelope is all we know
-        sig = (0.0, 0.0, 0.0, V2_SIGMA_H, V2_SIGMA_H, V2_SIGMA_V) + sig[6:]
+        sh = V2_SIGMA_H if sh is None else sh
+        sv = V2_SIGMA_V if sv is None else sv
+        sig = (0.0, 0.0, 0.0, sh, sh, sv) + sig[6:]
     P = [0.0] * (N * N)
     for i in range(N):
         P[i * N + i] = sig[i] * sig[i]
@@ -521,7 +524,7 @@ def smooth_apply(out, rows, anchor, blocks, t_end, d_end):
 
 
 def estimate(rows, v1=None, v2=None, v2p=None, log=None, jam=None, gap_on=None, dead=None, fc=None,
-             pre_hold=None, zden=None, sig=None, smooth=None, env=None, collect=None, tilt=None):
+             pre_hold=None, zden=None, sig=None, smooth=None, env=None, collect=None, hh=None, tilt=None):
     """rows: list of (t_ns or None, six floats). Returns one (px, py, pz, qw, qx, qy, qz) per row.
     v1, v2, v2p, jam, gap_on, dead, fc, pre_hold, zden: switches (default the module's *_ON). log: optional list, gets
     one dict per tick. sig: optional list, gets one per-row position sigma (m, 3D) per row (step 8b,
@@ -535,6 +538,9 @@ def estimate(rows, v1=None, v2=None, v2p=None, log=None, jam=None, gap_on=None, 
     zden = ZUPT_DEN_ON if zden is None else zden
     tau = (FC_TAU if (FC_ON if fc is None else fc) else None)
     smooth = SMOOTH_ON if smooth is None else smooth
+    if hh is None:                      # Step 7: platform detection (PLATFORM_ON), hand-held envelope
+        hh = pl.PLATFORM_ON and pl.is_handheld(pl.hf_stat(rows))
+    LAST_HH[0] = hh
     tilt = TILT_ON if tilt is None else tilt
     c = [0.0, 0.0, 0.0]                 # running centre of the volume envelope
     cal = sd.calibrate(rows)
@@ -548,7 +554,7 @@ def estimate(rows, v1=None, v2=None, v2p=None, log=None, jam=None, gap_on=None, 
     g = init.g
     p = [0.0, 0.0, 0.0]
     v = [0.0, 0.0, 0.0]
-    P = kf_init(init.still)
+    P = kf_init(init.still, pl.HH_V2_SIGMA_H, pl.HH_V2_SIGMA_V) if hh else kf_init(init.still)
     cov = _pos_cov(P)                   # (pp, pv, vv) after the last tick (W6)
     blocks = []                         # step E: (t, C, b, d) per stored block
     sPp = P[:]                          # posterior covariance at the last tick
@@ -579,7 +585,10 @@ def estimate(rows, v1=None, v2=None, v2p=None, log=None, jam=None, gap_on=None, 
     lg = la = None
     interp = INTERP_ON
     max_dt = INTERP_MAX_S if interp else sd.MAX_DT
-    e = env if env is not None else (V2_SIGMA_H, V2_SIGMA_V, V2P_SIGMA_H, V2P_SIGMA_V)
+    e = env if env is not None else (
+        (pl.HH_V2_SIGMA_H, pl.HH_V2_SIGMA_V, pl.HH_V2P_SIGMA_H, pl.HH_V2P_SIGMA_V) if hh else
+        (V2_SIGMA_H, V2_SIGMA_V, V2P_SIGMA_H, V2P_SIGMA_V))
+    vtau = pl.HH_V2P_TAU if hh else V2P_TAU
     s2vh, s2vv, s2ph, s2pv = e[0] * e[0], e[1] * e[1], e[2] * e[2], e[3] * e[3]
     reset, refresh = RESET_ON, REFRESH_ON
     tF = [0.0, 0.0, 0.0]                # Step L2: window mean of the world specific force
@@ -685,7 +694,7 @@ def estimate(rows, v1=None, v2=None, v2p=None, log=None, jam=None, gap_on=None, 
                             kf_update(P, dx, 4, -v[1], s2vh)
                             kf_update(P, dx, 5, -v[2], s2vv)
                         if v2p and not zupt and T > 0.0:
-                            a = T / V2P_TAU if T < V2P_TAU else 1.0
+                            a = T / vtau if T < vtau else 1.0
                             for k in range(3):
                                 c[k] += (p[k] - c[k]) * a
                             kf_update(P, dx, 0, c[0] - p[0], s2ph)
@@ -922,3 +931,4 @@ def estimate_learned(rows):
 
 
 LAST_ENV = [None]
+LAST_HH = [False]

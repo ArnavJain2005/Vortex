@@ -1,0 +1,41 @@
+{
+ "commit": "dda57fd",
+ "date": "2026-11-18",
+ "degraded": false,
+ "main": "main.py",
+ "official": false,
+ "python": "3.14.7",
+ "results": [
+  {
+   "ate_none_rmse": 1.6007960219446673,
+   "ate_origin_rmse": 0.6093608331564542,
+   "ate_se3_rmse": 0.5534927443097183,
+   "ate_sim3_rmse": 0.5057391758579776,
+   "contract": "PASS",
+   "final_se3": 0.5410855062435035,
+   "rows": 28122,
+   "rpe200_rmse": 0.2767515084495303,
+   "sequence": "dataset-room1_512_16",
+   "sim3_scale": 0.7934251144679079,
+   "wall_s": 1.1373886000365019
+  },
+  {
+   "ate_none_rmse": 1.5552327754669557,
+   "ate_origin_rmse": 1.0445135562328791,
+   "ate_se3_rmse": 0.8781947546204781,
+   "ate_sim3_rmse": 0.8778854813091315,
+   "contract": "PASS",
+   "final_se3": 1.1364066942775397,
+   "rows": 28732,
+   "rpe200_rmse": 0.917057720350818,
+   "sequence": "dataset-room2_512_16",
+   "sim3_scale": 1.0283734770935806,
+   "wall_s": 1.1881592000136152
+  }
+ ],
+ "reverse": false,
+ "set": {
+  "V2P_TAU": "30.0"
+ },
+ "tag": "step7-grid-tau30-clean"
+}
