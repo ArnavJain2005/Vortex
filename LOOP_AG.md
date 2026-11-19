@@ -1,6 +1,7 @@
-# LOOP_AG   updated 2026-11-19 23:13 IST   iteration 3
-NOW: AG-5 replay verification (no-GT check on 5ba1c4b outputs) & waiting on CC handoffs for AG-2 (Rule H handshake) and AG-3 (CC-1a bundle)   branch ag/clean-machine-harness@ebbc297
+# LOOP_AG   updated 2026-11-19 23:22 IST   iteration 4
+NOW: Waiting on CC handoffs for AG-2 (Rule H handshake in LOOP_CC.md) and AG-3 (CC-1a bundle at track3/freeze-build); next poll scheduled in 10 min   branch ag/clean-machine-harness@ebbc297
 DONE (newest first):
+- AG-5 pre-check (iteration 4): verified `tools/replay.py` (`tests/test_replay.py`: 3 passed) generates self-contained no-GT HTML on 5ba1c4b (`MH_03_b_s1` 171 KB, `room3_b_s1` 174 KB; `has_http=False`, `has_gt_true=False`). Verified `dist/vortex_v0.95.zip` SHA-256 `85e3079bc57450dd582472654939fbd26ef2f752e0980aa8ff3e6dd2734a1c64` matches LOOP_CC.md.
 - AG-3 prep & pre-CC-1a matrix (#73, ag/clean-machine-harness@ebbc297): tools/clean_machine_check.py + tests (2 passed) + Docs/CLEAN_MACHINE.md. Verified `main` (5ba1c4b) standalone `pathfinder.py` & `dist/vortex_v0.95.zip` Dockerfile across 8 bare environments (Win 3.13.5/3.14.7, Docker Linux 3.10.22/3.11.18/3.12.7/3.13.18/3.14.10, v0.95-dockerfile) on MH_03_b_s1 & room3_b_s1: 16/16 check_output PASS, 100% byte-identical (`03ada1d088015775` & `d3a08d9ab2224404`). Closes Python 3.10/3.11 runtime blind spot.
 - AG-1 & AG-4 (#72, ag/docker-bench@9cc03c4): Docs/DOCKER_BENCH.md (15-run Linux Docker benchmark at 5ba1c4b, local container FS; cProfile top 15 on MH_01_easy clean 36,820 rows & MH_01_b_s3 35,864 rows; AG-4 ape_check.py vs score.py max diff 0.000000 mm across 14 trajectories). Compute 5.70-7.02 ms/IMU-s (<= 12 ms -> CC-1b NOT needed); whole process 5.88-7.22 ms/IMU-s cached / 5.99-7.50 ms/IMU-s from source.
 - AG-0 G7 PR (#71, ag/g7-tumvi-baseline-g6@eac9e71): G6 stillness diagnosis tables + hand-held finding (1-5 Hz tremor labelled not measured) in Docs/TUMVI_BASELINE.md
@@ -30,5 +31,5 @@ NUMBERS:
 - `budget_wall_ms_per_imu_s_ms = 5.96` (`ag1-mh01-b-s1-r2`, cached; `5.99` from source; worst `7.50` on `room3_b_s1`, commit `5ba1c4b`, Linux Docker 3.12.7)
 - `budget_compute_ms_per_imu_s_ms = 5.70..7.02` (`ag1-*`, 15-run median, commit `5ba1c4b`, Linux Docker 3.12.7)
 - `budget_heap_no_bytecode_kb_docker312 = 7367.5` (`ag1-*`, commit `5ba1c4b`, Linux Docker 3.12.7)
-PARKED: none
+PARKED: none (note for AG-5 later: Chrome DevTools remote debugging not enabled yet; ffmpeg/ffprobe not on Windows PATH)
 ESCALATION: none
