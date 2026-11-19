@@ -1,4 +1,4 @@
-# LOOP_CC   updated 2026-11-20 01:45 IST   iteration 8
+# LOOP_CC   updated 2026-11-20 01:20 IST   iteration 9 (iteration 8's 01:45 stamp was wrong; it was ~01:15)
 Three Claude Code sessions share the CC queue (agreed between them, 19 Nov ~20:20; earlier iterations' clock times in this file were wrong, read them as ~20:2x-20:3x):
 - CC-loop ("Vortex trajectory accuracy improvement", this file's owner): CC-0, CC-3, CC-4, CC-5.
 - CC-freeze ("Vortex Samsung PRISM hackathon review"): CC-1a on track3/freeze-build (single-file src/main.py,
@@ -8,8 +8,10 @@ Three Claude Code sessions share the CC queue (agreed between them, 19 Nov ~20:2
 NOW: CC-loop: waiting for CC-freeze's two bundle layouts, then the add-on's measurement matrix (Win 3.13/3.14, WSL2 3.12,
      Docker 3.12.7); CC-5 at Fri 20 21:00. CC-1b NOT needed (Docker compute below 12 ms/IMU-s, see NUMBERS)
      CC-freeze: CC-1a PLAIN (finishing), then the CHUNKED add-on once Arnav confirms it IN THAT SESSION   track3/freeze-build
-     CC-L3: CC-2, building candidates on tuning   branch track3/stepL3-blind
+     CC-L3: rule H (seed 13-15 H runs, verdict OFF on record) and rule H' (waits for AG's 48 s22-24 copies)   track3/stepL3-blind
 DONE (newest first):
+- AG-2 seed 13-15 copies re-hashed by CC-loop: 36/36 SHA-256 match LOOP_AG.md (0 mismatch, 0 missing); sent to CC-L3.
+- Verified H' commit fb36d77 on origin/track3/stepL3-blind (child of a5f5bd1; BLIND_DEAD_ONLY default off).
 - #68 full pytest (main 550ba68 + docs): 408 passed, 2 skipped, 1 xfailed, 1 h 41 min on a machine shared by 3 sessions;
   test_memory_gate_bounded_and_flat alone 4,707 s under that load (memory gate with backward pass 341 s).
 - CC-4 reading-a gap: no bridging bug (error grows 1.5 cm across a burst, max 6 cm); gap RMSE = track error at burst
@@ -34,6 +36,11 @@ NEEDS FROM AG: AG-0 seed inventory: do EuRoC MH_03..05/V1_01..03 a/b seed 13-15 
   on TUM-VI seeds 13-15? (blocks CC-2's judge, not its rule); AG-1 Docker compute ms/IMU-s (decides CC-1b)
 RULES COMMITTED: H at a5f5bd1 (track3/stepL3-blind, CC-L3; BLIND_* frozen), held-out copies may be generated: yes
   -> AG-2: make EuRoC MH_03..05, V1_01..03 x a,b x seeds 13,14,15 (36) and record SHA-256; CC-L3 told not to make them.
+RULES COMMITTED: H' at fb36d77 (track3/stepL3-blind, CC-L3; switch BLIND_DEAD_ONLY, other BLIND_* as at a5f5bd1;
+  labelled 'written after rule H failed; weaker evidence'), held-out copies may be generated: yes
+  -> AG-2: make EuRoC MH_03..05, V1_01..03 x a,b x s22,23,24 (36) and TUM-VI room3, room4 x a,b x s22,23,24 (12)
+     with tools/official_degrade.py; record SHA-256 of each imu0/data.csv in LOOP_AG.md; run nothing on them.
+     Do NOT make TUM-VI s19-21 or any V2. Checked by CC-loop: 0 seed 22-24 copies existed at 01:20 IST.
   H' (no-fallback variant): ARNAV RELEASED SEEDS 22-24 (Arnav's words in chat, 20 Nov ~01:40 IST: "Release 22-24 for H'").
   CC-L3 writes rule H' first. Until a line "RULES COMMITTED: H' at <hash>, held-out copies may be generated: yes" appears
   here, AG must NOT generate any seed 22-24 copy. After it: EuRoC MH_03..05, V1_01..03 x a,b x s22-24 (36) and TUM-VI
