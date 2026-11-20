@@ -1,4 +1,4 @@
-# LOOP_CC   updated 2026-11-21 01:10 IST   iteration 12
+# LOOP_CC   updated 2026-11-21 01:17 IST   iteration 13
 Three Claude Code sessions share the CC queue (agreed between them, 19 Nov ~20:20; earlier iterations' clock times in this file were wrong, read them as ~20:2x-20:3x):
 - CC-loop ("Vortex trajectory accuracy improvement", this file's owner): CC-0, CC-3, CC-4, CC-5.
 - CC-freeze ("Vortex Samsung PRISM hackathon review"): CC-1a on track3/freeze-build (single-file src/main.py,
@@ -9,6 +9,9 @@ NOW: CC-loop: CC-5. v1.0 zip MISSED its Fri 20 21:00 slot: the shipped layout (C
      Builds it from CC-freeze's final commit (~04:00 IST); dry run at 779b6ae: stage + same 12/12 IDENTICAL (3.14.7).
      CC-freeze: quiet re-time, identity vs main bb0028e on 412 copies, full pytest, push + PR   track3/freeze-build
      CC-L3: rule H' condition 8 (benchmark gate, both switches on) running now on a quiet machine   track3/stepL3-blind
+DECISION (Arnav, in CC-loop's chat, 21 Nov 01:17 IST: "Yes, ship if it passes"): rule H' may ship ON although it
+  missed the Fri 18:00 PR slot, IF condition 8 (gate) passes. Order: stepL3-blind PR -> main; CC-freeze merges main,
+  re-runs identity (412) + re-time; freeze PR; CC-loop builds v1.0. CC-freeze takes this only from Arnav in its own chat.
 DONE (newest first):
 - Bundle rule K (CC-freeze's layout rule; NOT the loop's TUM-VI rule K, which stays unwritten, seeds 19-21 unspent,
   0 on disk): PLAIN 7.5-8.0 MB from source; CHUNKED N=120 3.2-3.9 MB, 412/412 byte-identical; (d) failed 1 of 12 cells
