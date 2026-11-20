@@ -104,18 +104,93 @@ import json
 import os
 import platform
 import shutil
+import statistics
 import subprocess
 import sys
 import tempfile
+import time
 from pathlib import Path
 
 main_src = Path(sys.argv[1]).resolve()
 base_csv = Path(sys.argv[2]).resolve()
 variants_dir = Path(sys.argv[3]).resolve()
 out_dir = Path(sys.argv[4]).resolve()
+bench_runs = int(sys.argv[5]) if len(sys.argv) > 5 else 5
 out_dir.mkdir(parents=True, exist_ok=True)
 
 py = sys.executable
+
+HEAP_PROBE = (
+    "import runpy, sys, tracemalloc\n"
+    "tracemalloc.start()\n"
+    "sys.argv = sys.argv[1:]\n"
+    "try:\n"
+    "    runpy.run_path(sys.argv[0], run_name='__main__')\n"
+    "except SystemExit as e:\n"
+    "    code = e.code if isinstance(e.code, int) else (0 if e.code is None else 1)\n"
+    "else:\n"
+    "    code = 0\n"
+    "peak = tracemalloc.get_traced_memory()[1]\n"
+    "tracemalloc.stop()\n"
+    "print('HEAP_PEAK', peak, code)\n"
+)
+
+X_HEAP_PROBE = (
+    "import runpy, sys, tracemalloc\n"
+    "sys.argv = sys.argv[1:]\n"
+    "try:\n"
+    "    runpy.run_path(sys.argv[0], run_name='__main__')\n"
+    "except SystemExit as e:\n"
+    "    code = e.code if isinstance(e.code, int) else (0 if e.code is None else 1)\n"
+    "else:\n"
+    "    code = 0\n"
+    "peak = tracemalloc.get_traced_memory()[1]\n"
+    "print('HEAP_PEAK', peak, code)\n"
+)
+
+def parse_csv_span(csv_path: Path) -> tuple[int, float]:
+    ts = []
+    first = True
+    with open(csv_path, "r", encoding="utf-8-sig", errors="replace") as f:
+        for raw in f:
+            s = raw.strip()
+            if not s or s.startswith("#"):
+                continue
+            tok = s.split(",", 1)[0].strip()
+            try:
+                val = float(tok)
+            except ValueError:
+                if first:
+                    first = False
+                    continue
+                continue
+            first = False
+            ts.append(val)
+    n = len(ts)
+    if n < 2:
+        return n, max(n / 200.0, 1e-6)
+    dts = [ts[i + 1] - ts[i] for i in range(min(n - 1, 500)) if ts[i + 1] > ts[i]]
+    if dts:
+        med = statistics.median(dts)
+        if med >= 1e5:
+            scale = 1e-9
+        elif med >= 1e2:
+            scale = 1e-6
+        elif med >= 0.5:
+            scale = 1e-3
+        else:
+            scale = 1.0
+    else:
+        scale = 1e-9 if abs(ts[0]) >= 1e17 else 1.0
+    span = (ts[-1] - ts[0]) * scale
+    return n, (span if span > 0 else n / 200.0)
+
+def parse_heap_peak(stdout: str) -> tuple[float | None, int | None]:
+    for ln in reversed(stdout.splitlines()):
+        parts = ln.strip().split()
+        if len(parts) == 3 and parts[0] == "HEAP_PEAK":
+            return int(parts[1]) / 1024.0, int(parts[2])
+    return None, None
 
 def sha(path: Path) -> str | None:
     return hashlib.sha256(path.read_bytes()).hexdigest() if path.is_file() else None
@@ -240,6 +315,57 @@ with tempfile.TemporaryDirectory(prefix="ag3_run_") as tmp_s:
         "stderr": p_miss.stderr.strip()[-300:],
     })
 
+    # Whole-run FROM-SOURCE tracemalloc peak & speed (no cached bytecode: -B -X pycache_prefix=<empty>)
+    n_rows, imu_s = parse_csv_span(base_csv)
+    cold = tmp / "cold_pycache"
+    cold.mkdir()
+    out_hp = tmp / "o_heap.txt"
+    p_hp = subprocess.run(
+        [py, "-S", "-B", "-X", f"pycache_prefix={cold}", "-c", HEAP_PROBE, str(solo_main), str(base_csv), str(out_hp)],
+        cwd=str(work_other), capture_output=True, text=True, timeout=180,
+    )
+    heap_kb, heap_rc = parse_heap_peak(p_hp.stdout)
+
+    out_xhp = tmp / "o_xheap.txt"
+    p_xhp = subprocess.run(
+        [py, "-S", "-B", "-X", "tracemalloc=1", "-X", f"pycache_prefix={cold}", "-c", X_HEAP_PROBE,
+         str(solo_main), str(base_csv), str(out_xhp)],
+        cwd=str(work_other), capture_output=True, text=True, timeout=180,
+    )
+    xheap_kb, xheap_rc = parse_heap_peak(p_xhp.stdout)
+
+    wall_samples = []
+    out_bench = tmp / "o_bench.txt"
+    for _ in range(max(0, bench_runs)):
+        t0 = time.perf_counter()
+        pb = subprocess.run(
+            [py, "-S", "-B", "-X", f"pycache_prefix={cold}", str(solo_main), str(base_csv), str(out_bench)],
+            cwd=str(work_other), capture_output=True, text=True, timeout=180,
+        )
+        dt = time.perf_counter() - t0
+        if pb.returncode == 0:
+            wall_samples.append(dt)
+    wall_med = statistics.median(wall_samples) if wall_samples else None
+    us_per_row = (wall_med * 1e6 / n_rows) if (wall_med is not None and n_rows > 0) else None
+    ms_per_imu_s = (wall_med * 1e3 / imu_s) if (wall_med is not None and imu_s > 0) else None
+
+    results["metrics"] = {
+        "rows": n_rows,
+        "imu_seconds": round(imu_s, 6),
+        "bench_runs": len(wall_samples),
+        "heap_from_source_kb": round(heap_kb, 1) if heap_kb is not None else None,
+        "heap_from_source_rc": heap_rc,
+        "heap_x_tracemalloc_kb": round(xheap_kb, 1) if xheap_kb is not None else None,
+        "heap_x_tracemalloc_rc": xheap_rc,
+        "wall_s_median": round(wall_med, 4) if wall_med is not None else None,
+        "us_per_row": round(us_per_row, 2) if us_per_row is not None else None,
+        "wall_ms_per_imu_s": round(ms_per_imu_s, 2) if ms_per_imu_s is not None else None,
+        "flag_heap_gt_7mb": bool(heap_kb is not None and heap_kb > 7.0 * 1024.0),
+        "flag_heap_gt_8mb": bool(heap_kb is not None and heap_kb > 8.0 * 1024.0),
+        "flag_wall_gt_15ms": bool(ms_per_imu_s is not None and ms_per_imu_s > 15.0),
+        "flag_wall_gt_20ms": bool(ms_per_imu_s is not None and ms_per_imu_s > 20.0),
+    }
+
 (out_dir / "results.json").write_text(json.dumps(results, indent=2) + "\n", encoding="utf-8")
 ''')
 
@@ -293,7 +419,7 @@ def _check_outputs_with_vortex(env_res: dict, base_csv: Path, variants: dict[str
 
 
 def run_host_venv(env_name: str, base_py_cmd: list[str], main_src: Path, base_csv: Path,
-                  variants_dir: Path, variants: dict[str, Path], scratch_dir: Path) -> dict:
+                  variants_dir: Path, variants: dict[str, Path], scratch_dir: Path, bench_runs: int = 5) -> dict:
     env_dir = scratch_dir / env_name
     venv_dir = env_dir / "venv"
     out_dir = env_dir / "out"
@@ -304,7 +430,7 @@ def run_host_venv(env_name: str, base_py_cmd: list[str], main_src: Path, base_cs
     subprocess.run(base_py_cmd + ["-m", "venv", "--without-pip", str(venv_dir)], check=True, capture_output=True, text=True)
     venv_py = venv_dir / ("Scripts" if os.name == "nt" else "bin") / ("python.exe" if os.name == "nt" else "python")
     p = subprocess.run(
-        [str(venv_py), str(runner_py), str(main_src), str(base_csv), str(variants_dir), str(out_dir)],
+        [str(venv_py), str(runner_py), str(main_src), str(base_csv), str(variants_dir), str(out_dir), str(bench_runs)],
         capture_output=True,
         text=True,
         timeout=600,
@@ -318,7 +444,7 @@ def run_host_venv(env_name: str, base_py_cmd: list[str], main_src: Path, base_cs
 
 
 def run_docker_venv(env_name: str, image: str, main_src: Path, base_csv: Path,
-                    variants_dir: Path, variants: dict[str, Path], scratch_dir: Path) -> dict:
+                    variants_dir: Path, variants: dict[str, Path], scratch_dir: Path, bench_runs: int = 5) -> dict:
     env_dir = scratch_dir / env_name
     out_dir = env_dir / "out"
     out_dir.mkdir(parents=True, exist_ok=True)
@@ -340,7 +466,7 @@ def run_docker_venv(env_name: str, image: str, main_src: Path, base_csv: Path,
                            check=True, capture_output=True)
         cmd = (
             "python -m venv --without-pip /tmp/ag3/venv && "
-            "/tmp/ag3/venv/bin/python /tmp/ag3/inner_runner.py /tmp/ag3/main.py /tmp/ag3/base.csv /tmp/ag3/variants /tmp/ag3/out"
+            f"/tmp/ag3/venv/bin/python /tmp/ag3/inner_runner.py /tmp/ag3/main.py /tmp/ag3/base.csv /tmp/ag3/variants /tmp/ag3/out {bench_runs}"
         )
         p = subprocess.run(["docker", "exec", cname, "sh", "-c", cmd], capture_output=True, text=True, timeout=600)
         if p.returncode != 0:
@@ -356,14 +482,107 @@ def run_docker_venv(env_name: str, image: str, main_src: Path, base_csv: Path,
     return res
 
 
-def run_dockerfile_image(zip_dir: Path, base_csv: Path, scratch_dir: Path) -> dict:
-    """Build the zip's Dockerfile and run its default ENTRYPOINT on a container-local input copy."""
+def run_dockerfile_image(zip_dir: Path, base_csv: Path, scratch_dir: Path, bench_runs: int = 5) -> dict:
+    """Build the zip's Dockerfile, run ENTRYPOINT, and measure from-source heap + speed inside the image."""
     img = "vortex-ag3-zip-test"
     cname = "vortex-ag3-zip-run"
-    out_dir = scratch_dir / "zip-dockerfile" / "out"
+    env_dir = scratch_dir / "zip-dockerfile"
+    out_dir = env_dir / "out"
     out_dir.mkdir(parents=True, exist_ok=True)
+    metrics_py = env_dir / "docker_metrics.py"
+    metrics_py.write_text(
+        textwrap.dedent(r'''
+        import json, statistics, subprocess, sys, tempfile, time
+        from pathlib import Path
+        script = sys.argv[1]
+        csv_p = Path(sys.argv[2])
+        runs = int(sys.argv[3])
+        py = sys.executable
+        HEAP_PROBE = (
+            "import runpy, sys, tracemalloc\n"
+            "tracemalloc.start()\n"
+            "sys.argv = sys.argv[1:]\n"
+            "try:\n"
+            "    runpy.run_path(sys.argv[0], run_name='__main__')\n"
+            "except SystemExit as e:\n"
+            "    code = e.code if isinstance(e.code, int) else (0 if e.code is None else 1)\n"
+            "else:\n"
+            "    code = 0\n"
+            "peak = tracemalloc.get_traced_memory()[1]\n"
+            "tracemalloc.stop()\n"
+            "print('HEAP_PEAK', peak, code)\n"
+        )
+        X_HEAP_PROBE = (
+            "import runpy, sys, tracemalloc\n"
+            "sys.argv = sys.argv[1:]\n"
+            "try:\n"
+            "    runpy.run_path(sys.argv[0], run_name='__main__')\n"
+            "except SystemExit as e:\n"
+            "    code = e.code if isinstance(e.code, int) else (0 if e.code is None else 1)\n"
+            "else:\n"
+            "    code = 0\n"
+            "peak = tracemalloc.get_traced_memory()[1]\n"
+            "print('HEAP_PEAK', peak, code)\n"
+        )
+        ts, first = [], True
+        for raw in csv_p.read_text(encoding="utf-8-sig", errors="replace").splitlines():
+            s = raw.strip()
+            if not s or s.startswith("#"):
+                continue
+            tok = s.split(",", 1)[0].strip()
+            try:
+                val = float(tok)
+            except ValueError:
+                first = False
+                continue
+            first = False
+            ts.append(val)
+        n = len(ts)
+        dts = [ts[i + 1] - ts[i] for i in range(min(n - 1, 500)) if ts[i + 1] > ts[i]]
+        med = statistics.median(dts) if dts else 0.0
+        scale = 1e-9 if med >= 1e5 else (1e-6 if med >= 1e2 else (1e-3 if med >= 0.5 else 1.0))
+        imu_s = (ts[-1] - ts[0]) * scale if n >= 2 and ts[-1] > ts[0] else max(n / 200.0, 1e-6)
+        def parse_hp(out):
+            for ln in reversed(out.splitlines()):
+                p = ln.strip().split()
+                if len(p) == 3 and p[0] == "HEAP_PEAK":
+                    return int(p[1]) / 1024.0, int(p[2])
+            return None, None
+        with tempfile.TemporaryDirectory() as td:
+            cold = Path(td) / "cold"
+            cold.mkdir()
+            p1 = subprocess.run([py, "-S", "-B", "-X", f"pycache_prefix={cold}", "-c", HEAP_PROBE, script, str(csv_p), str(Path(td)/"o1.txt")], capture_output=True, text=True, timeout=180)
+            hk, hrc = parse_hp(p1.stdout)
+            p2 = subprocess.run([py, "-S", "-B", "-X", "tracemalloc=1", "-X", f"pycache_prefix={cold}", "-c", X_HEAP_PROBE, script, str(csv_p), str(Path(td)/"o2.txt")], capture_output=True, text=True, timeout=180)
+            xhk, xhrc = parse_hp(p2.stdout)
+            ws = []
+            for _ in range(max(0, runs)):
+                t0 = time.perf_counter()
+                pb = subprocess.run([py, "-S", "-B", "-X", f"pycache_prefix={cold}", script, str(csv_p), str(Path(td)/"ob.txt")], capture_output=True, text=True, timeout=180)
+                dt = time.perf_counter() - t0
+                if pb.returncode == 0:
+                    ws.append(dt)
+        wmed = statistics.median(ws) if ws else None
+        us_row = (wmed * 1e6 / n) if (wmed is not None and n > 0) else None
+        ms_s = (wmed * 1e3 / imu_s) if (wmed is not None and imu_s > 0) else None
+        print(json.dumps({
+            "rows": n, "imu_seconds": round(imu_s, 6), "bench_runs": len(ws),
+            "heap_from_source_kb": round(hk, 1) if hk is not None else None, "heap_from_source_rc": hrc,
+            "heap_x_tracemalloc_kb": round(xhk, 1) if xhk is not None else None, "heap_x_tracemalloc_rc": xhrc,
+            "wall_s_median": round(wmed, 4) if wmed is not None else None,
+            "us_per_row": round(us_row, 2) if us_row is not None else None,
+            "wall_ms_per_imu_s": round(ms_s, 2) if ms_s is not None else None,
+            "flag_heap_gt_7mb": bool(hk is not None and hk > 7.0 * 1024.0),
+            "flag_heap_gt_8mb": bool(hk is not None and hk > 8.0 * 1024.0),
+            "flag_wall_gt_15ms": bool(ms_s is not None and ms_s > 15.0),
+            "flag_wall_gt_20ms": bool(ms_s is not None and ms_s > 20.0),
+        }))
+        '''),
+        encoding="utf-8",
+    )
     subprocess.run(["docker", "rm", "-f", cname], capture_output=True)
     subprocess.run(["docker", "build", "-q", "-t", img, str(zip_dir)], check=True, capture_output=True, text=True)
+    metrics = None
     try:
         # Copy input into a container-local /tmp/in.csv, then run ENTRYPOINT's command via docker exec
         # after verifying the image's configured Entrypoint.
@@ -375,12 +594,20 @@ def run_dockerfile_image(zip_dir: Path, base_csv: Path, scratch_dir: Path) -> di
         subprocess.run(["docker", "run", "-d", "--name", cname, "--entrypoint", "sleep", img, "600"],
                        check=True, capture_output=True, text=True)
         subprocess.run(["docker", "cp", str(base_csv), f"{cname}:/tmp/in.csv"], check=True, capture_output=True)
+        subprocess.run(["docker", "cp", str(metrics_py), f"{cname}:/tmp/docker_metrics.py"], check=True, capture_output=True)
         p = subprocess.run(["docker", "exec", cname] + ep + ["/tmp/in.csv", "/tmp/out.txt"],
                            capture_output=True, text=True, timeout=180)
         py_ver = subprocess.run(["docker", "exec", cname, "python", "-c", "import platform; print(platform.python_version())"],
                                 check=True, capture_output=True, text=True).stdout.strip()
         plat = subprocess.run(["docker", "exec", cname, "python", "-c", "import platform; print(platform.system(), platform.release())"],
                               check=True, capture_output=True, text=True).stdout.strip()
+        script_path = next((tok for tok in reversed(ep) if tok.endswith(".py")), "/app/main.py")
+        pm = subprocess.run(
+            ["docker", "exec", cname, "python", "/tmp/docker_metrics.py", script_path, "/tmp/in.csv", str(bench_runs)],
+            capture_output=True, text=True, timeout=300,
+        )
+        if pm.returncode == 0 and pm.stdout.strip():
+            metrics = json.loads(pm.stdout.strip().splitlines()[-1])
         saved = out_dir / "in_out_with_S.txt"
         exists = False
         if p.returncode == 0:
@@ -404,6 +631,7 @@ def run_dockerfile_image(zip_dir: Path, base_csv: Path, scratch_dir: Path) -> di
         "python": py_ver,
         "platform": plat,
         "ref_sha256": rsha,
+        "metrics": metrics,
         "b1": [{
             "case": "in_out_with_S",
             "rc": p.returncode,
@@ -419,6 +647,10 @@ def run_dockerfile_image(zip_dir: Path, base_csv: Path, scratch_dir: Path) -> di
     }
 
 
+def _fmt_num(val: float | None, dec: int = 1) -> str:
+    return "-" if val is None else f"{val:.{dec}f}"
+
+
 def format_markdown(report: dict) -> str:
     lines = [
         "# Clean-Machine Matrix (`AG-3`)",
@@ -427,6 +659,7 @@ def format_markdown(report: dict) -> str:
         f"- **Input file:** `{report['input']}`",
         f"- **Cross-version byte identity (`in_out_with_S`):** **{'PASS (all identical)' if report['all_versions_byte_identical'] else 'DIFFERS'}** "
         f"(`{len(report['unique_ref_sha256'])}` unique SHA-256 across `{len(report['environments'])}` environments)",
+        f"- **From-source heap > 7 MB (`7168 KB`) flag:** **{'FLAGGED' if report.get('any_heap_gt_7mb') else 'NONE (all <= 7 MB)'}**",
         "",
         "## 1. Environment Summary",
         "",
@@ -447,7 +680,39 @@ def format_markdown(report: dict) -> str:
 
     lines += [
         "",
-        "## 2. Detailed Case Failures (if any)",
+        "## 2. From-Source Heap (`tracemalloc`) & Speed (`python -S -B`, no cached bytecode)",
+        "",
+        "| Environment | Python | From-source `tracemalloc` peak (KB) | `-X tracemalloc=1` peak (KB) | `> 7 MB` flag | Median `us/row` | Median `ms/IMU-s` | Runs | Timing flag |",
+        "|---|---|---:|---:|---|---:|---:|---:|---|",
+    ]
+    for e in report["environments"]:
+        m = e.get("metrics") or {}
+        if m.get("flag_heap_gt_8mb"):
+            hflag = "**FAIL (> 8 MB)**"
+        elif m.get("flag_heap_gt_7mb"):
+            hflag = "**FLAG (> 7 MB)**"
+        elif m.get("heap_from_source_kb") is not None:
+            hflag = "OK (<= 7 MB)"
+        else:
+            hflag = "-"
+        if m.get("flag_wall_gt_20ms"):
+            tflag = "**FAIL (> 20 ms)**"
+        elif m.get("flag_wall_gt_15ms"):
+            tflag = "**FLAG (> 15 ms)**"
+        elif m.get("wall_ms_per_imu_s") is not None:
+            tflag = "OK (<= 15 ms)"
+        else:
+            tflag = "-"
+        lines.append(
+            f"| `{e['env']}` | {e['python']} | {_fmt_num(m.get('heap_from_source_kb'), 1)} | "
+            f"{_fmt_num(m.get('heap_x_tracemalloc_kb'), 1)} | {hflag} | "
+            f"{_fmt_num(m.get('us_per_row'), 2)} | {_fmt_num(m.get('wall_ms_per_imu_s'), 2)} | "
+            f"{m.get('bench_runs', 0)} | {tflag} |"
+        )
+
+    lines += [
+        "",
+        "## 3. Detailed Case Failures (if any)",
         "",
     ]
     failures = []
@@ -477,6 +742,7 @@ def run_matrix(
     artifact_label: str,
     commit: str,
     zip_dir: Path | None = None,
+    bench_runs: int = 5,
 ) -> dict:
     with tempfile.TemporaryDirectory(prefix="vortex_ag3_") as tmp_s:
         tmp = Path(tmp_s)
@@ -487,20 +753,20 @@ def run_matrix(
         env_results = []
         for env in envs:
             if env == "host-venv":
-                env_results.append(run_host_venv(env, [sys.executable], main_src, base_csv, variants_dir, variants, tmp))
+                env_results.append(run_host_venv(env, [sys.executable], main_src, base_csv, variants_dir, variants, tmp, bench_runs))
             elif env == "win-venv-3.13":
-                env_results.append(run_host_venv(env, ["py", "-3.13"], main_src, base_csv, variants_dir, variants, tmp))
+                env_results.append(run_host_venv(env, ["py", "-3.13"], main_src, base_csv, variants_dir, variants, tmp, bench_runs))
             elif env == "win-venv-3.14":
-                env_results.append(run_host_venv(env, ["py", "-3.14"], main_src, base_csv, variants_dir, variants, tmp))
+                env_results.append(run_host_venv(env, ["py", "-3.14"], main_src, base_csv, variants_dir, variants, tmp, bench_runs))
             elif env in DOCKER_IMAGES:
-                env_results.append(run_docker_venv(env, DOCKER_IMAGES[env], main_src, base_csv, variants_dir, variants, tmp))
+                env_results.append(run_docker_venv(env, DOCKER_IMAGES[env], main_src, base_csv, variants_dir, variants, tmp, bench_runs))
             elif env == "zip-dockerfile":
                 if zip_dir is None or not (zip_dir / "Dockerfile").is_file():
                     raise SystemExit("zip-dockerfile requested but no Dockerfile found in --zip")
-                env_results.append(run_dockerfile_image(zip_dir, base_csv, tmp))
+                env_results.append(run_dockerfile_image(zip_dir, base_csv, tmp, bench_runs))
             elif env.startswith("docker-image:"):
                 img = env.split(":", 1)[1]
-                env_results.append(run_docker_venv(env, img, main_src, base_csv, variants_dir, variants, tmp))
+                env_results.append(run_docker_venv(env, img, main_src, base_csv, variants_dir, variants, tmp, bench_runs))
             else:
                 raise SystemExit(f"unknown environment: {env}")
 
@@ -511,6 +777,8 @@ def run_matrix(
         and all(x["check_ok"] for x in e["b4"])
         for e in env_results
     )
+    any_heap_gt_7mb = any((e.get("metrics") or {}).get("flag_heap_gt_7mb", False) for e in env_results)
+    any_heap_gt_8mb = any((e.get("metrics") or {}).get("flag_heap_gt_8mb", False) for e in env_results)
     return {
         "artifact": artifact_label,
         "commit": commit,
@@ -520,6 +788,8 @@ def run_matrix(
         "unique_ref_sha256": shas,
         "all_versions_byte_identical": len(shas) == 1 and all(e.get("ref_sha256") == shas[0] for e in env_results),
         "all_passed": all_passed,
+        "any_heap_gt_7mb": any_heap_gt_7mb,
+        "any_heap_gt_8mb": any_heap_gt_8mb,
     }
 
 
@@ -533,6 +803,7 @@ def main(argv: list[str] | None = None) -> int:
         default="win-venv-3.13,win-venv-3.14,docker-3.10,docker-3.11,docker-3.12,docker-3.13,docker-3.14",
         help="comma-separated environments to test",
     )
+    ap.add_argument("--bench-runs", type=int, default=5, help="number of cold from-source timing runs per env (default: 5)")
     ap.add_argument("--commit", default="?", help="commit hash label for the report")
     ap.add_argument("--out", default=None, help="optional Markdown output path (e.g. Docs/CLEAN_MACHINE.md)")
     ap.add_argument("--json", default=None, help="optional JSON output path")
@@ -557,7 +828,7 @@ def main(argv: list[str] | None = None) -> int:
             main_src = Path(args.main_path).resolve()
             label = str(main_src)
 
-        report = run_matrix(main_src, base_csv, envs, label, args.commit, zip_dir=zip_dir)
+        report = run_matrix(main_src, base_csv, envs, label, args.commit, zip_dir=zip_dir, bench_runs=args.bench_runs)
 
     md = format_markdown(report)
     print(md)

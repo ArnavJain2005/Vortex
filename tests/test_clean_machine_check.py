@@ -137,6 +137,7 @@ def test_clean_machine_harness_host_venv_passes_on_synthetic_single_file(tmp_pat
         "--main", str(main_py),
         "--input", str(base),
         "--envs", "host-venv",
+        "--bench-runs", "1",
         "--commit", "synthetic",
         "--out", str(out_md),
         "--json", str(out_json),
@@ -144,10 +145,85 @@ def test_clean_machine_harness_host_venv_passes_on_synthetic_single_file(tmp_pat
     assert rc == 0
     md = out_md.read_text(encoding="utf-8")
     assert "PASS (all identical)" in md
+    assert "From-Source Heap" in md
+    assert "NONE (all <= 7 MB)" in md
     data = json.loads(out_json.read_text(encoding="utf-8"))
     assert data["all_passed"] is True
     assert data["all_versions_byte_identical"] is True
+    assert data["any_heap_gt_7mb"] is False
+    assert data["any_heap_gt_8mb"] is False
     e = data["environments"][0]
     assert len(e["b1"]) == 11
     assert len(e["b2"]) == 6
     assert len(e["b4"]) == 2
+    m = e["metrics"]
+    assert m["rows"] == 12
+    assert m["bench_runs"] == 1
+    assert m["heap_from_source_kb"] > 0
+    assert m["heap_from_source_rc"] == 0
+    assert m["heap_x_tracemalloc_kb"] > 0
+    assert m["us_per_row"] > 0
+    assert m["wall_ms_per_imu_s"] > 0
+    assert m["flag_heap_gt_7mb"] is False
+    assert m["flag_heap_gt_8mb"] is False
+
+
+def test_format_markdown_flags_heap_over_7mb_and_8mb():
+    report = {
+        "artifact": "synthetic.zip",
+        "commit": "deadbeef",
+        "main_sha256": "0" * 64,
+        "input": "imu.csv",
+        "unique_ref_sha256": ["a" * 64],
+        "all_versions_byte_identical": True,
+        "all_passed": True,
+        "any_heap_gt_7mb": True,
+        "any_heap_gt_8mb": True,
+        "environments": [
+            {
+                "env": "docker-3.12",
+                "python": "3.12.7",
+                "platform": "Linux",
+                "ref_sha256": "a" * 64,
+                "b1": [],
+                "b2": [],
+                "b4": [],
+                "metrics": {
+                    "heap_from_source_kb": 7300.5,
+                    "heap_x_tracemalloc_kb": 8100.0,
+                    "us_per_row": 35.12,
+                    "wall_ms_per_imu_s": 6.84,
+                    "bench_runs": 5,
+                    "flag_heap_gt_7mb": True,
+                    "flag_heap_gt_8mb": False,
+                    "flag_wall_gt_15ms": False,
+                    "flag_wall_gt_20ms": False,
+                },
+            },
+            {
+                "env": "docker-3.13",
+                "python": "3.13.18",
+                "platform": "Linux",
+                "ref_sha256": "a" * 64,
+                "b1": [],
+                "b2": [],
+                "b4": [],
+                "metrics": {
+                    "heap_from_source_kb": 8500.0,
+                    "heap_x_tracemalloc_kb": 9200.0,
+                    "us_per_row": 90.00,
+                    "wall_ms_per_imu_s": 17.50,
+                    "bench_runs": 5,
+                    "flag_heap_gt_7mb": True,
+                    "flag_heap_gt_8mb": True,
+                    "flag_wall_gt_15ms": True,
+                    "flag_wall_gt_20ms": False,
+                },
+            },
+        ],
+    }
+    md = cmc.format_markdown(report)
+    assert "FLAGGED" in md
+    assert "**FLAG (> 7 MB)**" in md
+    assert "**FAIL (> 8 MB)**" in md
+    assert "**FLAG (> 15 ms)**" in md
