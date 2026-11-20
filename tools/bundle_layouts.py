@@ -6,7 +6,7 @@
         bundle compiled from source (tracing started before the file is compiled; no bytecode of ours
         exists), the same under `python -X tracemalloc=1 -S main.py IN OUT` (tracing from start-up), the
         estimator-only peak (pathfinder.run in-process, compile excluded), and us per row
-        (median wall time of --runs runs of `python -S main.py IN OUT`). Also the compile-only peak of the
+        (median wall time of --runs runs of `python -S main.py IN OUT`, the two layouts interleaved). Also the compile-only peak of the
         largest CHUNKED chunk. Writes Docs/bundle/matrix-<os>-py<ver>.json.
     python tools/bundle_layouts.py identity [--data data]
         Under THIS Python: the repo build (`python -S main.py`, which imports pathfinder.py), PLAIN and
@@ -135,16 +135,17 @@ def measure(data, runs):
             continue
         est, rows = estimator_only_peak(imu, dst)
         row = {"input": name, "rows": rows, "estimator_only_kb": est / 1024.0}
+        ts = {layout: [] for layout in bundles}
+        for _ in range(runs):                        # interleaved, so machine load hits both layouts alike
+            for layout, b in bundles.items():
+                t0 = time.perf_counter()
+                subprocess.run([sys.executable, "-S", b, imu, dst], check=True)
+                ts[layout].append(time.perf_counter() - t0)
         for layout, b in bundles.items():
             peak, code = whole_run_peak(b, imu, dst)
             xpeak = x_tracemalloc_peak(b, imu, dst)
-            ts = []
-            for _ in range(runs):
-                t0 = time.perf_counter()
-                subprocess.run([sys.executable, "-S", b, imu, dst], check=True)
-                ts.append(time.perf_counter() - t0)
             row[layout] = {"whole_run_kb": peak / 1024.0, "x_tracemalloc_kb": xpeak / 1024.0, "exit": code,
-                           "us_per_row": statistics.median(ts) / rows * 1e6, "sha256": _sha(dst)}
+                           "us_per_row": statistics.median(ts[layout]) / rows * 1e6, "sha256": _sha(dst)}
         row["same_output"] = row["plain"]["sha256"] == row["chunked"]["sha256"]
         res["rows"].append(row)
         print("%-28s rows %6d  estimator-only %6.0f KB | PLAIN %6.0f KB (-X %6.0f) %6.2f us/row | CHUNKED %6.0f KB "
@@ -211,7 +212,7 @@ def main(argv=None):
     ap = argparse.ArgumentParser(description=__doc__.split("\n")[0])
     ap.add_argument("cmd", choices=["measure", "identity"])
     ap.add_argument("--data", default=os.path.join(ROOT, "data"))
-    ap.add_argument("--runs", type=int, default=5)
+    ap.add_argument("--runs", type=int, default=11)
     a = ap.parse_args(argv)
     return measure(a.data, a.runs) if a.cmd == "measure" else identity(a.data)
 

@@ -2178,6 +2178,51 @@ CHUNKED ships only if ALL hold, else PLAIN ships:
 The shipped layout must be <= 7 MB whole-run from source on every Python measured, or Arnav decides.
 Time box: 90 minutes after PLAIN passes; if exceeded, PLAIN ships and CHUNKED is marked PARKED.
 
+### Rule K outcome (20 Nov 2026; d49cf06 plus two measurement-tool fixes, pathfinder.py unchanged)
+
+`tools/bundle_layouts.py measure` / `identity` (Docs/bundle/*.json) and `benchmark.py --bundle` (tags
+`bundle-{plain,chunked}-{win-py314,win-py313,wsl-py312}-mh01-b-s1`). Python 3.10 and 3.11 are not installed
+on this machine, so they were not measured.
+
+Whole-run heap peak from source (tracing started before the bundle is compiled; KB). It is the same on all four
+inputs, because compiling dominates:
+
+| Python | PLAIN | CHUNKED (N=120) | difference | `-X tracemalloc=1`, PLAIN / CHUNKED | largest chunk compile | estimator only, MH_01_easy_b_s1 |
+|---|---|---|---|---|---|---|
+| Win 3.14.7 | 7,512 | 3,186 | -4,326 | 10,239 / 7,033 | 2,599 (`_run`) | 1,283 |
+| Win 3.13.5 | 7,954 | 3,876 | -4,078 | 9,876 / 5,798 | 2,516 (`_run`) | 1,159 |
+| WSL2 3.12.3 | 7,713 | 3,555 | -4,158 | 9,682 / 5,525 | 2,434 (`_run`) | 1,157 |
+
+`-X tracemalloc=1` traces from interpreter start-up, so it also counts start-up allocations. Under it, CHUNKED
+on 3.14 is 7,033 KB, just above 7,000 KB and below 7 MiB (7,168 KB). Chunk size: N = 40 / 120 / 400 gave
+3,193 / 3,186 / (timed out at 600 s) KB on 3.14, 3,884 / 3,876 / 3,887 on 3.13, and 3,564 / 3,555 / 3,566 on
+3.12; outputs identical on 3.13 and 3.12 (the 3.14 scan stopped before comparing) (Docs/bundle/chunk-lines-scan.txt). N = 120 kept.
+
+us per row, `python -S main.py`. Median of 11 runs, PLAIN and CHUNKED interleaved; CHUNKED's change against
+PLAIN:
+
+| Python | MH_01_easy_b_s1 | MH_01_easy_a_s1 | MH_01_easy_a_s3 (longest) | room1_512_16_b_s1 | benchmark tag (5 runs) |
+|---|---|---|---|---|---|
+| Win 3.14 | 73.8 / 73.1 (-0.8 %) | 139.7 / 141.8 (+1.5 %) | 23.6 / 23.9 (+1.2 %) | 29.1 / 29.4 (+1.0 %) | 141.4 / 139.9 (-1.1 %) |
+| Win 3.13 | 22.0 / 21.7 (-1.1 %) | 20.4 / 20.6 (+1.1 %) | 20.7 / 21.0 (+1.6 %) | 155.9 / 157.7 (+1.1 %) | 131.8 / 127.6 (-3.2 %) |
+| WSL2 3.12 | 58.1 / 52.3 (-10.0 %) | 39.0 / 33.7 (-13.8 %) | 30.6 / 38.0 (**+24.3 %**) | 30.5 / 30.0 (-1.4 %) | 36.1 / 36.4 (+0.7 %) |
+
+The machine was shared with other sessions, so absolute times swing from 20 to 158 us/row between inputs. That
+swing is load, not the bundle; the interleaved pairs are the comparison.
+
+- (a) **PASS.** 412 of 412 copies on disk (official 280, official_tumvi 120, euroc 8, tumvi 4) are byte-identical
+  across the repo build, PLAIN and CHUNKED, on Win 3.14 and on WSL2 3.12. V2_* and TUM-VI rooms 5-6 were
+  excluded (final test data).
+- (b) Both layouts pass the test_freeze / test_bundle_layout runs on this branch (counts in the PR).
+- (c) **PASS.** CHUNKED is 4.1-4.3 MB lower on MH_01_easy_b_s1 and on MH_01_easy_a_s3, on every Python measured.
+- (d) **FAIL on 1 of 12 cells, read literally.** WSL2 3.12 MH_01_easy_a_s3 is +24.3 %. The other 11 cells are
+  between -13.8 % and +1.6 %, and the three benchmark tags between -3.2 % and +0.7 %. The run-time code is the
+  same estimator; CHUNKED only adds 15 module-level `exec` calls (one per chunk) and keeps the switch `if`s that PLAIN
+  folds away. So that cell looks like load, but the rule does not allow re-running until it passes.
+- Time box: exceeded (the build, tests and measurements took well over 90 minutes).
+- **Result by the letter: PLAIN ships and CHUNKED is PARKED. But PLAIN is 7.5-8.0 MB from source, above the
+  7 MB ceiling, so the layout goes to Arnav.** CHUNKED is 3.2-3.9 MB from source.
+
 ### Gate on the L2 build with TILT_ON shipped (19 Nov 2026; carried over after #61 merged)
 
 Measured on `track3/stepL2-tilt` after #61 was merged, so they arrive here in a follow-up PR. Build: TILT_ON and

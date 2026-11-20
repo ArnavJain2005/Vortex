@@ -1,0 +1,92 @@
+{
+ "chunk_lines": 120,
+ "commit": "?",
+ "date": "2026-11-20",
+ "largest_chunk_compile_kb": 2434.4541015625,
+ "largest_chunk_function": "_run",
+ "os": "Linux 5.15.167.4-microsoft-standard-WSL2",
+ "python": "3.12.3",
+ "rows": [
+  {
+   "chunked": {
+    "exit": 0,
+    "sha256": "f8a7d5488c06e98e1ae5d65842a73129e71db1d2456f9429aca3c4264be7da48",
+    "us_per_row": 52.26892167409033,
+    "whole_run_kb": 3555.4443359375,
+    "x_tracemalloc_kb": 5525.4140625
+   },
+   "estimator_only_kb": 1157.30859375,
+   "input": "MH_01_easy_b_s1",
+   "plain": {
+    "exit": 0,
+    "sha256": "f8a7d5488c06e98e1ae5d65842a73129e71db1d2456f9429aca3c4264be7da48",
+    "us_per_row": 58.07614793960304,
+    "whole_run_kb": 7712.556640625,
+    "x_tracemalloc_kb": 9682.3935546875
+   },
+   "rows": 35697,
+   "same_output": true
+  },
+  {
+   "chunked": {
+    "exit": 0,
+    "sha256": "4846cfb2c947e6b39590eab8582fa916ff1f2992469c148af01a09e4a43f681b",
+    "us_per_row": 33.65469510042827,
+    "whole_run_kb": 3555.455078125,
+    "x_tracemalloc_kb": 5525.095703125
+   },
+   "estimator_only_kb": 1113.0908203125,
+   "input": "MH_01_easy_a_s1",
+   "plain": {
+    "exit": 0,
+    "sha256": "4846cfb2c947e6b39590eab8582fa916ff1f2992469c148af01a09e4a43f681b",
+    "us_per_row": 39.02047637056425,
+    "whole_run_kb": 7712.556640625,
+    "x_tracemalloc_kb": 9681.98046875
+   },
+   "rows": 35697,
+   "same_output": true
+  },
+  {
+   "chunked": {
+    "exit": 0,
+    "sha256": "d35a7c7ddf0fb61009381fa2a9af1f2985175a5a17c5d4e4c7d7001c1a88fe9c",
+    "us_per_row": 38.01093065469533,
+    "whole_run_kb": 3555.455078125,
+    "x_tracemalloc_kb": 5528.369140625
+   },
+   "estimator_only_kb": 1114.3466796875,
+   "input": "MH_01_easy_a_s3",
+   "plain": {
+    "exit": 0,
+    "sha256": "d35a7c7ddf0fb61009381fa2a9af1f2985175a5a17c5d4e4c7d7001c1a88fe9c",
+    "us_per_row": 30.57048773143047,
+    "whole_run_kb": 7712.6005859375,
+    "x_tracemalloc_kb": 9682.86328125
+   },
+   "rows": 35864,
+   "same_output": true
+  },
+  {
+   "chunked": {
+    "exit": 0,
+    "sha256": "55f738b356a7e4951be62cadd2e94d44db0ec8a3ef3bd16ac0df699e8c069504",
+    "us_per_row": 30.009762610513903,
+    "whole_run_kb": 3555.4111328125,
+    "x_tracemalloc_kb": 5528.3193359375
+   },
+   "estimator_only_kb": 741.298828125,
+   "input": "dataset-room1_512_16_b_s1",
+   "plain": {
+    "exit": 0,
+    "sha256": "55f738b356a7e4951be62cadd2e94d44db0ec8a3ef3bd16ac0df699e8c069504",
+    "us_per_row": 30.445856524450548,
+    "whole_run_kb": 7712.7060546875,
+    "x_tracemalloc_kb": 9685.533203125
+   },
+   "rows": 27259,
+   "same_output": true
+  }
+ ],
+ "runs": 11
+}

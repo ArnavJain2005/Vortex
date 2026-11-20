@@ -143,7 +143,7 @@ def heap_peak_process(stub, src, dst, no_cache_dir=None):
 
 def measure(a):
     rows, runs = a["rows"], a["runs"]
-    tmp = tempfile.gettempdir()
+    tmp = tempfile.mkdtemp(prefix="vortex_bench_")         # own folder: concurrent benchmarks never share an output file
     src = a["input"]
     label = "real: " + os.path.relpath(src, ROOT).replace(os.sep, "/") if src else None
     if not src:
