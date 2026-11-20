@@ -1,4 +1,4 @@
-"""Rule K (Docs/TRACK3_PLAN.md, "Freeze build"): measure the PLAIN and CHUNKED bundle layouts. Stdlib only.
+"""Bundle rule K (Docs/TRACK3_PLAN.md, "Freeze build"): measure the PLAIN and CHUNKED bundle layouts. Stdlib only.
 
     python tools/bundle_layouts.py measure [--data data] [--runs 5]
         Under THIS Python, for each layout and each input (MH_01_easy_b_s1, MH_01_easy_a_s1, the longest

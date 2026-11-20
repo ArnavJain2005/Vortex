@@ -290,7 +290,7 @@ def check_single(text):
     return bad
 
 
-# ---------------------------------------------------------------- CHUNKED layout (rule K, Docs/TRACK3_PLAN.md)
+# ---------------------------------------------------------------- CHUNKED layout (bundle rule K, Docs/TRACK3_PLAN.md)
 def _entry_free_source(source=None):
     """pathfinder.py (LF) without its trailing `if __name__ == "__main__":` block: the text CHUNKED embeds."""
     if source is None:
@@ -457,7 +457,7 @@ def check_chunked(text):
 
 
 LAYOUTS = ("plain", "chunked")
-DEFAULT_LAYOUT = "chunked"     # Arnav, 21 Nov 2026, after rule K (Docs/TRACK3_PLAN.md, "Rule K outcome"): PLAIN is above 7 MB
+DEFAULT_LAYOUT = "chunked"     # Arnav, 21 Nov 2026, after bundle rule K (Docs/TRACK3_PLAN.md, "Bundle rule K outcome"): PLAIN is above 7 MB
 CHUNK_LINES = 120
 
 
@@ -728,7 +728,7 @@ def main(argv=None):
     ap.add_argument("--seqs", default=",".join(DEFAULT_SEQS))
     ap.add_argument("--readings", default="a,b")
     ap.add_argument("--seeds", default="1,2,3")
-    ap.add_argument("--layout", choices=LAYOUTS, help="default: %s (rule K)" % DEFAULT_LAYOUT)
+    ap.add_argument("--layout", choices=LAYOUTS, help="default: %s (bundle rule K)" % DEFAULT_LAYOUT)
     ap.add_argument("--chunk-lines", type=int, help="CHUNKED: lines per chunk (default %d)" % CHUNK_LINES)
     a = ap.parse_args(argv)
     if a.cmd == "single":

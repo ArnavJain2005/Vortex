@@ -24,7 +24,7 @@ DATA = Path(os.environ.get("VORTEX_DATA", ROOT / "data"))
 
 @pytest.fixture(scope="module", params=make_bundle.LAYOUTS)
 def single(request, tmp_path_factory):
-    """The bundle file in each layout (PLAIN and CHUNKED must pass the same B1/B2/B4/B5 tests, rule K (b))."""
+    """The bundle file in each layout (PLAIN and CHUNKED must pass the same B1/B2/B4/B5 tests, bundle rule K (b))."""
     p = tmp_path_factory.mktemp("single_" + request.param) / "main.py"
     make_bundle.write_single(str(p), request.param)
     return p

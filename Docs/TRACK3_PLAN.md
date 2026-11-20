@@ -2157,7 +2157,7 @@ CPython's 16,384-token step) peaks at 7,514 KB (Win 3.14) and 7,963 KB (Win 3.13
 on MH_03_medium_a_s1, against the 8,192 KB limit. Main before this branch was already at 7,188 / 7,551 KB
 from source (Docs/NUMBERS.md at 86711a9; Step 7 crossed the token step).
 
-### Rule K (CHUNKED layout): committed BEFORE any measurement of the CHUNKED bundle
+### Bundle rule K (CHUNKED layout; not the loop's TUM-VI rule K of CC-3): committed BEFORE any measurement of the CHUNKED bundle
 
 Disclosure: one exploratory reading was taken before this rule: compiling the PLAIN file one top-level
 statement at a time inside a tracemalloc window (not the CHUNKED bundle, not a whole run) peaked at
@@ -2178,7 +2178,7 @@ CHUNKED ships only if ALL hold, else PLAIN ships:
 The shipped layout must be <= 7 MB whole-run from source on every Python measured, or Arnav decides.
 Time box: 90 minutes after PLAIN passes; if exceeded, PLAIN ships and CHUNKED is marked PARKED.
 
-### Rule K outcome (20 Nov 2026; d49cf06 plus two measurement-tool fixes, pathfinder.py unchanged)
+### Bundle rule K outcome (20 Nov 2026; d49cf06 plus two measurement-tool fixes, pathfinder.py unchanged)
 
 `tools/bundle_layouts.py measure` / `identity` (Docs/bundle/*.json) and `benchmark.py --bundle` (tags
 `bundle-{plain,chunked}-{win-py314,win-py313,wsl-py312}-mh01-b-s1`). Python 3.10 and 3.11 are not installed
@@ -2222,6 +2222,8 @@ swing is load, not the bundle; the interleaved pairs are the comparison.
 - Time box: exceeded (the build, tests and measurements took well over 90 minutes).
 - **Result by the letter: PLAIN ships and CHUNKED is PARKED. But PLAIN is 7.5-8.0 MB from source, above the
   7 MB ceiling, so the layout goes to Arnav.** CHUNKED is 3.2-3.9 MB from source.
+- **Decision (Arnav, 21 Nov 2026): ship CHUNKED.** `tools/make_bundle.py` now builds CHUNKED by default (N = 120);
+  PLAIN stays buildable with `--layout plain`. Dockerfile, zip, verify and bundle/README.md use the shipped file.
 
 ### Gate on the L2 build with TILT_ON shipped (19 Nov 2026; carried over after #61 merged)
 

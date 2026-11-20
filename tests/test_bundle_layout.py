@@ -1,4 +1,4 @@
-"""Rule K (Docs/TRACK3_PLAN.md, "Freeze build"): the CHUNKED bundle layout. pathfinder.py is embedded verbatim
+"""Bundle rule K (Docs/TRACK3_PLAN.md, "Freeze build"): the CHUNKED bundle layout. pathfinder.py is embedded verbatim
 and compiled one chunk of top-level statements at a time. The B1/B2/B4/B5 tests for both layouts are in
 tests/test_freeze.py (its `single` fixture runs every layout)."""
 
