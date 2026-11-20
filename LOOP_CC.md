@@ -1,15 +1,18 @@
-# LOOP_CC   updated 2026-11-20 01:40 IST   iteration 11
+# LOOP_CC   updated 2026-11-21 01:10 IST   iteration 12
 Three Claude Code sessions share the CC queue (agreed between them, 19 Nov ~20:20; earlier iterations' clock times in this file were wrong, read them as ~20:2x-20:3x):
 - CC-loop ("Vortex trajectory accuracy improvement", this file's owner): CC-0, CC-3, CC-4, CC-5.
 - CC-freeze ("Vortex Samsung PRISM hackathon review"): CC-1a on track3/freeze-build (single-file src/main.py,
   B1 forms, B4 fallback, B5 timestamps). Works from Arnav's "Freeze build requirements" prompt, not this loop.
 - CC-L3 ("Vortex trajectory estimation debugging"): CC-2 (L3 blind window, rule H) on track3/stepL3-blind.
   Works from Arnav's direct instruction; it has been sent the loop's rule H text.
-NOW: CC-loop: waiting for CC-freeze's two bundle layouts, then the add-on's measurement matrix (Win 3.13/3.14, WSL2 3.12,
-     Docker 3.12.7); CC-5 at Fri 20 21:00. CC-1b NOT needed (Docker compute below 12 ms/IMU-s, see NUMBERS)
-     CC-freeze: CC-1a PLAIN (finishing), then the CHUNKED add-on once Arnav confirms it IN THAT SESSION   track3/freeze-build
-     CC-L3: rule H' judged on 1-7 (all pass); condition 8 gate waits for a quiet machine   track3/stepL3-blind
+NOW: CC-loop: CC-5. v1.0 zip MISSED its Fri 20 21:00 slot: the shipped layout (CHUNKED, Arnav 21 Nov) is not final.
+     Builds it from CC-freeze's final commit (~04:00 IST); dry run at 779b6ae: stage + same 12/12 IDENTICAL (3.14.7).
+     CC-freeze: quiet re-time, identity vs main bb0028e on 412 copies, full pytest, push + PR   track3/freeze-build
+     CC-L3: rule H' condition 8 (benchmark gate, both switches on) running now on a quiet machine   track3/stepL3-blind
 DONE (newest first):
+- Bundle rule K (CC-freeze's layout rule; NOT the loop's TUM-VI rule K, which stays unwritten, seeds 19-21 unspent,
+  0 on disk): PLAIN 7.5-8.0 MB from source; CHUNKED N=120 3.2-3.9 MB, 412/412 byte-identical; (d) failed 1 of 12 cells
+  (WSL2 3.12 +24 %, load). Arnav decided 21 Nov: ship CHUNKED. Matrix run by CC-freeze (TRACK3_PLAN on its branch).
 - CC-L3 (04:30 IST, 20 Nov; CC-loop not live, posted by CC-L3): rule H' conditions 1-7 and the contract PASS at 3b3ad2e
   (track3/stepL3-blind): H blind 3.072 -> 2.501 m (-18.6 %, floor 2.508), 6/6 sequences better, reading a -23.6 %,
   b -13.0 %; APE 3.613 -> 3.554 (-1.6 %); gap +0.25 %; T blind 1.308 -> 0.734 (-43.9 %), T APE -4.7 %; clean EuRoC and
@@ -43,8 +46,9 @@ DONE (newest first):
   outside the repo. The parser finding (token array doubles past 16,384 tokens, +0.92 MB) went to CC-freeze.
 READY FOR ARNAV TO MERGE (in this order): none from CC-loop
 MERGED: #67 (550ba68), #68 (355de44)
-GIVES TO AG: rule H handshake above (AG-2 unblocked). CC-1a bundle still with CC-freeze (track3/freeze-build not pushed yet). CC-1a bundle will come from CC-freeze (track3/freeze-build) for AG-3.
-NEEDS FROM AG: AG-0 seed inventory: do EuRoC MH_03..05/V1_01..03 a/b seed 13-15 copies exist, and has anything run
+GIVES TO AG: bundle layout = chunked at track3/freeze-build@<final hash, to follow>. rule H handshake above (AG-2 unblocked). CC-1a bundle still with CC-freeze (track3/freeze-build not pushed yet). CC-1a bundle will come from CC-freeze (track3/freeze-build) for AG-3.
+NEEDS FROM AG: AG-3: whole-run FROM-SOURCE tracemalloc peak and us/row of the bundled src/main.py on Python
+  3.10-3.14 and Docker; flag any above 7 MB. Earlier: AG-0 seed inventory: do EuRoC MH_03..05/V1_01..03 a/b seed 13-15 copies exist, and has anything run
   on TUM-VI seeds 13-15? (blocks CC-2's judge, not its rule); AG-1 Docker compute ms/IMU-s (decides CC-1b)
 RULES COMMITTED: H at a5f5bd1 (track3/stepL3-blind, CC-L3; BLIND_* frozen), held-out copies may be generated: yes
   -> AG-2: make EuRoC MH_03..05, V1_01..03 x a,b x seeds 13,14,15 (36) and record SHA-256; CC-L3 told not to make them.
@@ -58,7 +62,9 @@ RULES COMMITTED: H' at fb36d77 (track3/stepL3-blind, CC-L3; switch BLIND_DEAD_ON
   here, AG must NOT generate any seed 22-24 copy. After it: EuRoC MH_03..05, V1_01..03 x a,b x s22-24 (36) and TUM-VI
   room3/4 x a,b x s22-24 (12), with SHA-256 in LOOP_AG.md.
   K: not written (CC-3 parked); TUM-VI seeds 19-21 stay unspent: do not generate.
-NUMBERS (CC-loop's own run, AG-1 stand-in; main 550ba68 code = 86711a9 estimator; image python:3.12.7-slim-bookworm,
+NUMBERS: budget_heap_whole_run_kb = from-source whole run of the SHIPPED single file. CHUNKED on MH_01_easy_b_s1:
+  3,186 KB Win 3.14, 3,876 Win 3.13, 3,555 WSL2 3.12 (CC-freeze); under -X tracemalloc=1 (counts start-up) Win 3.14 7,033.
+NUMBERS, older (CC-loop's own run, AG-1 stand-in; main 550ba68 code = 86711a9 estimator; image python:3.12.7-slim-bookworm,
   inputs COPIED INTO the image, PYTHONDONTWRITEBYTECODE=1, stub main.py + pathfinder.py from source):
   whole process `python -S main.py`, median of 7: MH_01_b_s1 8.87, MH_03_a_s1 8.55, MH_03_b_s1 8.50, room3_a_s1 9.09,
   room3_b_s1 9.50 ms/IMU-s (44-49 us/row). benchmark.py in the container: 40.05 us/row (~7.8 ms/IMU-s compute),
