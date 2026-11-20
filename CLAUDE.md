@@ -1,6 +1,8 @@
 # CLAUDE.md: working notes for Vortex
 
 Read this first, then `Docs/TRACK3_PLAN.md` (current step, what is verified, what is blocked).
+`Docs/SUBMISSION_RULES.md` (the submission rules ledger, decided 19 Nov 2026) overrides anything older that
+disagrees with it: one self-contained `src/main.py`, source only, every invocation form, never crash.
 
 ## Mission
 

@@ -57,6 +57,13 @@ Timing varies about +-15% between reruns on the same laptop.
 | stepL1-win-py314 | d56c875 | 2026-11-18 | Windows 11 | Intel(R) Core(TM) i7-14650HX | 3.14.7 | SYNTHETIC (tools/synth_euroc.py, seed 0) | 36000 (180 s) |
 | stepL2-win-py314-mh01-b-s1 | 5e54295 | 2026-11-18 | Windows 11 | Intel(R) Core(TM) i7-14650HX | 3.14.7 | real: data/official/MH_01_easy_b_s1/mav0/imu0/data.csv | 35697 (184 s) |
 | stepL2-win-py314 | 5e54295 | 2026-11-18 | Windows 11 | Intel(R) Core(TM) i7-14650HX | 3.14.7 | SYNTHETIC (tools/synth_euroc.py, seed 0) | 36000 (180 s) |
+| stepL2on-linux-wsl2-py312-mh01-a-s1 | - | 2026-11-19 | Linux 5.15.167.4-microsoft-standard-WSL2 | Intel(R) Core(TM) i7-14650HX | 3.12.3 | real: ../Vortex/data/official/MH_01_easy_a_s1/mav0/imu0/data.csv | 35697 (184 s) |
+| stepL2on-linux-wsl2-py312 | - | 2026-11-19 | Linux 5.15.167.4-microsoft-standard-WSL2 | Intel(R) Core(TM) i7-14650HX | 3.12.3 | SYNTHETIC (tools/synth_euroc.py, seed 0) | 36000 (180 s) |
+| stepL2on-win-py313-mh01-a-s1 | 6084ec2 | 2026-11-19 | Windows 11 | Intel(R) Core(TM) i7-14650HX | 3.13.5 | real: data/official/MH_01_easy_a_s1/mav0/imu0/data.csv | 35697 (184 s) |
+| stepL2on-win-py313 | 6084ec2 | 2026-11-19 | Windows 11 | Intel(R) Core(TM) i7-14650HX | 3.13.5 | SYNTHETIC (tools/synth_euroc.py, seed 0) | 36000 (180 s) |
+| stepL2on-win-py314-mh01-a-s1 | 405109e | 2026-11-19 | Windows 11 | Intel(R) Core(TM) i7-14650HX | 3.14.7 | real: data/official/MH_01_easy_a_s1/mav0/imu0/data.csv | 35697 (184 s) |
+| stepL2on-win-py314-mh01-b-s1 | 405109e | 2026-11-19 | Windows 11 | Intel(R) Core(TM) i7-14650HX | 3.14.7 | real: data/official/MH_01_easy_b_s1/mav0/imu0/data.csv | 35697 (184 s) |
+| stepL2on-win-py314 | 405109e | 2026-11-19 | Windows 11 | Intel(R) Core(TM) i7-14650HX | 3.14.7 | SYNTHETIC (tools/synth_euroc.py, seed 0) | 36000 (180 s) |
 | windows-py313 | ba79c15 | 2026-11-16 | Windows 11 | Intel(R) Core(TM) i7-14650HX | 3.13.5 | SYNTHETIC (tools/synth_euroc.py, seed 0) | 36000 (180 s) |
 | windows-py314-mh01-degraded | ba79c15 | 2026-11-16 | Windows 11 | Intel(R) Core(TM) i7-14650HX | 3.14.7 | real: data/degraded/MH_01_easy_s1/mav0/imu0/data.csv | 32297 (161 s) |
 | windows-py314-mh01 | ba79c15 | 2026-11-16 | Windows 11 | Intel(R) Core(TM) i7-14650HX | 3.14.7 | real: data/euroc/MH_01_easy/mav0/imu0/data.csv | 36820 (184 s) |
@@ -110,6 +117,13 @@ Timing varies about +-15% between reruns on the same laptop.
 | stepL1-win-py314 | 15.80 | 84.2 (34.2) | 3.16 | 3.04 | 16.8 | 505.5 / 1029.5 | 3066 KB | 6055.2 | 12.11 / 12.34 | 7.13 | PASS |
 | stepL2-win-py314-mh01-b-s1 | 11.50 | 88.5 (38.5) | 2.23 | 2.12 | 17.8 | 587.4 / 1095.1 | 3001 KB | 5362.3 | 12.63 / 12.72 | 7.75 | PASS |
 | stepL2-win-py314 | 15.31 | 84.7 (34.7) | 3.06 | 2.95 | 16.9 | 505.5 / 1008.0 | 3088 KB | 5362.2 | 12.00 / 12.22 | 7.13 | PASS |
+| stepL2on-linux-wsl2-py312-mh01-a-s1 | 32.07 | 67.9 (17.9) | 6.22 | 2.88 | 13.8 | 1109.7 / 2177.9 | 1918 KB | 6078.3 | 11.27 / 11.32 | - | PASS |
+| stepL2on-linux-wsl2-py312 | 25.41 | 74.6 (24.6) | 5.08 | 4.28 | 14.9 | 938.0 / 2012.8 | 2083 KB | 6078.3 | 11.26 / 11.30 | - | PASS |
+| stepL2on-win-py313-mh01-a-s1 | 24.74 | 75.3 (25.3) | 4.80 | 4.58 | 15.2 | 1113.7 / 2423.9 | 1672 KB | 6348.8 | 12.48 / 13.25 | 7.47 | PASS |
+| stepL2on-win-py313 | 31.17 | 68.8 (18.8) | 6.23 | 6.08 | 13.8 | 941.9 / 2258.1 | 1838 KB | 6349.4 | 12.29 / 12.58 | 7.29 | PASS |
+| stepL2on-win-py314-mh01-a-s1 | 27.11 | 72.9 (22.9) | 5.26 | 5.09 | 14.7 | 1233.6 / 1809.5 | 2286 KB | 6031.5 | 13.59 / 13.91 | 8.00 | PASS |
+| stepL2on-win-py314-mh01-b-s1 | 27.31 | 72.7 (22.7) | 5.30 | 5.09 | 14.7 | 1233.8 / 1809.4 | 2287 KB | 6031.5 | 13.58 / 13.91 | 7.99 | PASS |
+| stepL2on-win-py314 | 37.25 | 62.8 (12.8) | 7.45 | 7.38 | 12.6 | 1061.8 / 1645.6 | 2450 KB | 6031.4 | 13.35 / 13.64 | 7.82 | PASS |
 | windows-py313 | 8.67 | 91.3 (41.3) | 1.73 | 1.65 | 18.3 | 234.3 / - | 3862 KB | - | 11.07 / 11.12 | 5.52 | PASS |
 | windows-py314-mh01-degraded | 8.91 | 91.1 (41.1) | 1.78 | 1.74 | 18.2 | 587.0 / - | 3509 KB | - | 12.00 / 12.11 | 6.66 | PASS |
 | windows-py314-mh01 | 9.31 | 90.7 (40.7) | 1.86 | 1.78 | 18.1 | 587.0 / - | 3509 KB | - | 11.80 / 12.10 | 6.47 | PASS |
@@ -313,6 +327,34 @@ Runs measured with `--cbin` (step 9b, step A). Its output is compared byte for b
 | stepL2-win-py314 | parse + write (identity poses) | 3.09 | 2.77 |
 | stepL2-win-py314 | parse + init + strapdown integrator | 10.32 | 9.10 |
 | stepL2-win-py314 | parse + init + strapdown integrator + write (full main.py) | 11.92 | 10.12 |
+| stepL2on-linux-wsl2-py312-mh01-a-s1 | parse (read, split, 6 floats, timestamp) | 4.15 | 2.54 |
+| stepL2on-linux-wsl2-py312-mh01-a-s1 | parse + write (identity poses) | 7.62 | 4.23 |
+| stepL2on-linux-wsl2-py312-mh01-a-s1 | parse + init + strapdown integrator | 16.26 | 10.91 |
+| stepL2on-linux-wsl2-py312-mh01-a-s1 | parse + init + strapdown integrator + write (full main.py) | 33.66 | 24.20 |
+| stepL2on-linux-wsl2-py312 | parse (read, split, 6 floats, timestamp) | 1.75 | 1.37 |
+| stepL2on-linux-wsl2-py312 | parse + write (identity poses) | 2.52 | 2.26 |
+| stepL2on-linux-wsl2-py312 | parse + init + strapdown integrator | 7.27 | 6.63 |
+| stepL2on-linux-wsl2-py312 | parse + init + strapdown integrator + write (full main.py) | 20.98 | 20.19 |
+| stepL2on-win-py313-mh01-a-s1 | parse (read, split, 6 floats, timestamp) | 1.45 | 1.24 |
+| stepL2on-win-py313-mh01-a-s1 | parse + write (identity poses) | 2.61 | 2.14 |
+| stepL2on-win-py313-mh01-a-s1 | parse + init + strapdown integrator | 7.55 | 6.98 |
+| stepL2on-win-py313-mh01-a-s1 | parse + init + strapdown integrator + write (full main.py) | 23.41 | 22.04 |
+| stepL2on-win-py313 | parse (read, split, 6 floats, timestamp) | 2.47 | 2.14 |
+| stepL2on-win-py313 | parse + write (identity poses) | 3.70 | 2.99 |
+| stepL2on-win-py313 | parse + init + strapdown integrator | 9.93 | 9.11 |
+| stepL2on-win-py313 | parse + init + strapdown integrator + write (full main.py) | 29.97 | 26.43 |
+| stepL2on-win-py314-mh01-a-s1 | parse (read, split, 6 floats, timestamp) | 1.46 | 1.29 |
+| stepL2on-win-py314-mh01-a-s1 | parse + write (identity poses) | 2.32 | 2.16 |
+| stepL2on-win-py314-mh01-a-s1 | parse + init + strapdown integrator | 8.13 | 7.76 |
+| stepL2on-win-py314-mh01-a-s1 | parse + init + strapdown integrator + write (full main.py) | 26.22 | 24.14 |
+| stepL2on-win-py314-mh01-b-s1 | parse (read, split, 6 floats, timestamp) | 4.05 | 3.69 |
+| stepL2on-win-py314-mh01-b-s1 | parse + write (identity poses) | 4.55 | 4.24 |
+| stepL2on-win-py314-mh01-b-s1 | parse + init + strapdown integrator | 10.02 | 9.51 |
+| stepL2on-win-py314-mh01-b-s1 | parse + init + strapdown integrator + write (full main.py) | 25.93 | 25.31 |
+| stepL2on-win-py314 | parse (read, split, 6 floats, timestamp) | 2.14 | 1.96 |
+| stepL2on-win-py314 | parse + write (identity poses) | 3.10 | 2.87 |
+| stepL2on-win-py314 | parse + init + strapdown integrator | 9.98 | 9.05 |
+| stepL2on-win-py314 | parse + init + strapdown integrator + write (full main.py) | 27.26 | 25.04 |
 | windows-py313 | parse (read, split, 6 floats, timestamp) | 1.44 | 1.41 |
 | windows-py313 | parse + write (identity poses) | 2.26 | 2.12 |
 | windows-py313 | parse + init + strapdown integrator | 7.24 | 6.57 |
@@ -378,6 +420,13 @@ Runs measured with `--cbin` (step 9b, step A). Its output is compared byte for b
 | stepL1-win-py314 | calibration scan + backward pre-anchor pass + forward pass (no smoother yet) | 15.70 |
 | stepL2-win-py314-mh01-b-s1 | calibration scan + backward pre-anchor pass + forward pass (no smoother yet) | 12.36 |
 | stepL2-win-py314 | calibration scan + backward pre-anchor pass + forward pass (no smoother yet) | 11.92 |
+| stepL2on-linux-wsl2-py312-mh01-a-s1 | calibration scan + backward pre-anchor pass + forward pass (no smoother yet) | 33.66 |
+| stepL2on-linux-wsl2-py312 | calibration scan + backward pre-anchor pass + forward pass (no smoother yet) | 20.98 |
+| stepL2on-win-py313-mh01-a-s1 | calibration scan + backward pre-anchor pass + forward pass (no smoother yet) | 23.41 |
+| stepL2on-win-py313 | calibration scan + backward pre-anchor pass + forward pass (no smoother yet) | 29.97 |
+| stepL2on-win-py314-mh01-a-s1 | calibration scan + backward pre-anchor pass + forward pass (no smoother yet) | 26.22 |
+| stepL2on-win-py314-mh01-b-s1 | calibration scan + backward pre-anchor pass + forward pass (no smoother yet) | 25.93 |
+| stepL2on-win-py314 | calibration scan + backward pre-anchor pass + forward pass (no smoother yet) | 27.26 |
 | windows-py313 | calibration scan + backward pre-anchor pass + forward pass (no smoother yet) | 8.19 |
 | windows-py314-mh01-degraded | calibration scan + backward pre-anchor pass + forward pass (no smoother yet) | 7.76 |
 | windows-py314-mh01 | calibration scan + backward pre-anchor pass + forward pass (no smoother yet) | 7.99 |
@@ -435,6 +484,13 @@ The shipped witnesses (V1 stillness, V2 envelope and position prior; switches in
 | stepL1-win-py314 | 64 | 0 (0 rows) | 960000 |
 | stepL2-win-py314-mh01-b-s1 | 64 | 345024 (5391 rows) | 960000 |
 | stepL2-win-py314 | 64 | 0 (0 rows) | 960000 |
+| stepL2on-linux-wsl2-py312-mh01-a-s1 | 64 | 343424 (5366 rows) | 960000 |
+| stepL2on-linux-wsl2-py312 | 64 | 0 (0 rows) | 960000 |
+| stepL2on-win-py313-mh01-a-s1 | 64 | 343424 (5366 rows) | 960000 |
+| stepL2on-win-py313 | 64 | 0 (0 rows) | 960000 |
+| stepL2on-win-py314-mh01-a-s1 | 64 | 343424 (5366 rows) | 960000 |
+| stepL2on-win-py314-mh01-b-s1 | 64 | 345024 (5391 rows) | 960000 |
+| stepL2on-win-py314 | 64 | 0 (0 rows) | 960000 |
 | windows-py313 | 64 | 0 (0 rows) | 960000 |
 | windows-py314-mh01-degraded | 64 | 345600 (5400 rows) | 960000 |
 | windows-py314-mh01 | 64 | 345600 (5400 rows) | 960000 |
@@ -620,6 +676,34 @@ The shipped witnesses (V1 stillness, V2 envelope and position prior; switches in
 | stepL2-win-py314 | `python main.py` | 15.60 | 3.12 | 14.66 |
 | stepL2-win-py314 | `python -S main.py, no cached bytecode` | 14.54 | 2.91 | 17.55 |
 | stepL2-win-py314 | `python -S pathfinder.py` | 14.07 | 2.81 | 16.66 |
+| stepL2on-linux-wsl2-py312-mh01-a-s1 | `python -S main.py` | 32.07 | 6.22 | 11.27 |
+| stepL2on-linux-wsl2-py312-mh01-a-s1 | `python main.py` | 34.19 | 6.63 | 11.75 |
+| stepL2on-linux-wsl2-py312-mh01-a-s1 | `python -S main.py, no cached bytecode` | 33.45 | 6.49 | 15.51 |
+| stepL2on-linux-wsl2-py312-mh01-a-s1 | `python -S pathfinder.py` | 32.06 | 6.22 | 15.65 |
+| stepL2on-linux-wsl2-py312 | `python -S main.py` | 25.41 | 5.08 | 11.26 |
+| stepL2on-linux-wsl2-py312 | `python main.py` | 24.34 | 4.87 | 11.77 |
+| stepL2on-linux-wsl2-py312 | `python -S main.py, no cached bytecode` | 24.95 | 4.99 | 15.51 |
+| stepL2on-linux-wsl2-py312 | `python -S pathfinder.py` | 23.15 | 4.63 | 15.46 |
+| stepL2on-win-py313-mh01-a-s1 | `python -S main.py` | 24.74 | 4.80 | 12.48 |
+| stepL2on-win-py313-mh01-a-s1 | `python main.py` | 24.63 | 4.78 | 12.66 |
+| stepL2on-win-py313-mh01-a-s1 | `python -S main.py, no cached bytecode` | 24.61 | 4.77 | 18.25 |
+| stepL2on-win-py313-mh01-a-s1 | `python -S pathfinder.py` | 24.63 | 4.77 | 17.53 |
+| stepL2on-win-py313 | `python -S main.py` | 31.17 | 6.23 | 12.29 |
+| stepL2on-win-py313 | `python main.py` | 31.48 | 6.30 | 12.47 |
+| stepL2on-win-py313 | `python -S main.py, no cached bytecode` | 31.61 | 6.32 | 18.08 |
+| stepL2on-win-py313 | `python -S pathfinder.py` | 32.52 | 6.50 | 17.32 |
+| stepL2on-win-py314-mh01-a-s1 | `python -S main.py` | 27.11 | 5.26 | 13.59 |
+| stepL2on-win-py314-mh01-a-s1 | `python main.py` | 28.15 | 5.46 | 15.96 |
+| stepL2on-win-py314-mh01-a-s1 | `python -S main.py, no cached bytecode` | 29.89 | 5.80 | 19.20 |
+| stepL2on-win-py314-mh01-a-s1 | `python -S pathfinder.py` | 27.26 | 5.29 | 19.00 |
+| stepL2on-win-py314-mh01-b-s1 | `python -S main.py` | 27.31 | 5.30 | 13.58 |
+| stepL2on-win-py314-mh01-b-s1 | `python main.py` | 29.24 | 5.67 | 16.14 |
+| stepL2on-win-py314-mh01-b-s1 | `python -S main.py, no cached bytecode` | 29.12 | 5.65 | 19.17 |
+| stepL2on-win-py314-mh01-b-s1 | `python -S pathfinder.py` | 29.32 | 5.68 | 19.04 |
+| stepL2on-win-py314 | `python -S main.py` | 37.25 | 7.45 | 13.35 |
+| stepL2on-win-py314 | `python main.py` | 36.09 | 7.22 | 15.77 |
+| stepL2on-win-py314 | `python -S main.py, no cached bytecode` | 35.55 | 7.11 | 19.19 |
+| stepL2on-win-py314 | `python -S pathfinder.py` | 35.82 | 7.16 | 18.79 |
 | windows-py313 | `python -S main.py` | 8.67 | 1.73 | 11.07 |
 | windows-py313 | `python main.py` | 9.24 | 1.85 | 11.59 |
 | windows-py313 | `python -S main.py, no cached bytecode` | 9.36 | 1.87 | 15.32 |

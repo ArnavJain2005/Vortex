@@ -191,6 +191,10 @@ def test_tumvi_inspect_and_tumvi_table_on_synthetic(tmp_path, monkeypatch, capsy
     md = out_md.read_text(encoding="utf-8")
     assert "dataset-room1_512_16" in md and "dataset-room3_512_16" in md
     assert "BG_MAX" in md and "LAST calibrated" in md
+    assert "Stillness calibration diagnosis on tuning rooms" in md
+    assert "not measured" in md
     calib = json.loads((tmp_path / "docs" / "tumvi" / "tumvi-calib.json").read_text(encoding="utf-8"))
     assert len(calib["clean"]) == 2 and len(calib["official"]) == 4
     assert calib["clean"]["dataset-room1_512_16"]["calibrated"] is True
+    still_probe = json.loads((tmp_path / "docs" / "tumvi" / "tumvi-still-probe.json").read_text(encoding="utf-8"))
+    assert len(still_probe["probes"]) == 1 and still_probe["probes"][0]["sequence"] == "dataset-room1_512_16"
