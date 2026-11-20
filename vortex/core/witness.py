@@ -197,6 +197,16 @@ TILT_LAG = True              # model the window's lag: the mean of an error ramp
                              # (exponential window), so the measurement row also has the gyro-bias states
 TILT_GATE_A = 0.5            # m/s^2: no tilt update while the filter's own window-mean horizontal acceleration
                              # (v - window-mean v) / TILT_TAU exceeds this (not small: a sustained manoeuvre)
+# Step L3 (Docs/TRACK3_PLAN.md, Step L3): blind window from a trusted state. Candidate B2 (L = 3 s, beta = 1) chosen
+# on the tuning copies by the criterion committed before the tuning run (Docs/blind/stepL3-tune.md). A TRUST POLICY,
+# not recovered motion: the blind rows go to the estimate's own centroid, which SE3 alignment maps onto the ground
+# truth's centroid, so the blind window can tie the never-moving floor there, never beat it.
+BLIND_ON = True              # ON since rule H' (Docs/results/stepHP-verdict.txt); rule H alone failed
+BLIND_MIN_S = 1.0            # s: a trailing run of rejected rows at least this long is the blind window
+BLIND_FALLBACK_S = 5.0       # s: otherwise the last 5 s by timestamp (organisers' FAQ A5)
+BLIND_L = 3.0                # s, lookback: the anchor is the last row before t_b - BLIND_L (tuning: 1 / 2 / 3 s)
+BLIND_BETA = 1.0             # pull from the anchor toward the centroid of the rows before it, ramped over BLIND_L
+BLIND_DEAD_ONLY = True       # rule H': act only on a detected dead run (no BLIND_FALLBACK_S rows); ON since H' passed
 N = 15
 
 
@@ -524,7 +534,8 @@ def smooth_apply(out, rows, anchor, blocks, t_end, d_end):
 
 
 def estimate(rows, v1=None, v2=None, v2p=None, log=None, jam=None, gap_on=None, dead=None, fc=None,
-             pre_hold=None, zden=None, sig=None, smooth=None, env=None, collect=None, hh=None, tilt=None):
+             pre_hold=None, zden=None, sig=None, smooth=None, env=None, collect=None, hh=None, tilt=None,
+             blind=None):
     """rows: list of (t_ns or None, six floats). Returns one (px, py, pz, qw, qx, qy, qz) per row.
     v1, v2, v2p, jam, gap_on, dead, fc, pre_hold, zden: switches (default the module's *_ON). log: optional list, gets
     one dict per tick. sig: optional list, gets one per-row position sigma (m, 3D) per row (step 8b,
@@ -598,6 +609,8 @@ def estimate(rows, v1=None, v2=None, v2p=None, log=None, jam=None, gap_on=None, 
     tfull = TILT_TAU / TICK_S           # ticks to fill it
     tring = []                          # per-tick gyro variances (meter)
     tw = 0.0                            # weight
+    bon = BLIND_ON if blind is None else blind
+    brun, bt0, btz = False, None, None  # Step L3: in a trailing run of rejected rows, its first time, last time
     for t, vals in rows[anchor:]:
         if t is not None:
             ok = sd.is_valid(vals)
@@ -612,6 +625,12 @@ def estimate(rows, v1=None, v2=None, v2p=None, log=None, jam=None, gap_on=None, 
                     la, sa = vals[3:], 1
                 if sg >= STUCK_ROWS or sa >= STUCK_ROWS or not (vals[3] or vals[4] or vals[5]):
                     ok = False
+            if bon:
+                btz = t
+                if ok:
+                    brun = False
+                elif not brun:
+                    brun, bt0 = True, t
             if ok:
                 dt = None if t_last is None else (t - t_last) * 1e-9
                 if dt is None or 0 < dt <= sd.MAX_JUMP_S:
@@ -854,6 +873,44 @@ def estimate(rows, v1=None, v2=None, v2p=None, log=None, jam=None, gap_on=None, 
         sig[0:0] = [float("nan")] * anchor
     if smooth:
         smooth_apply(out, rows, anchor, blocks, st_prev, sd_prev)
+    if bon and btz is not None:
+        bdet = brun and btz - bt0 >= int(BLIND_MIN_S * 1e9)
+        if bdet or not BLIND_DEAD_ONLY:
+            blind_apply(out, rows, bt0 if bdet else btz - int(BLIND_FALLBACK_S * 1e9))
+    return out
+
+
+def blind_apply(out, rows, tb):
+    """Step L3 (BLIND_ON), on the final output (after the smoother). tb: blind start (ns). The rows before the
+    first row whose time (its own, or the last earlier timestamp) reaches ta = tb - BLIND_L give the centroid c and
+    the anchor a (the last of them). Every later row keeps a's attitude, position a + w (c - a) with
+    w = BLIND_BETA min(1, (t - ta) / BLIND_L): the pull ramps over the lookback span and is full from tb on."""
+    ta = tb - int(BLIND_L * 1e9)
+    tr = None
+    sx = sy = sz = 0.0
+    k = None
+    for i in range(len(rows)):
+        t = rows[i][0]
+        if t is not None:
+            tr = t
+        if tr is not None and tr >= ta:
+            k = i
+            break
+        o = out[i]
+        sx += o[0]
+        sy += o[1]
+        sz += o[2]
+    if not k:
+        return out
+    cx, cy, cz = sx / k, sy / k, sz / k
+    a = out[k - 1]
+    for i in range(k, len(rows)):
+        t = rows[i][0]
+        if t is not None:
+            tr = t
+        w = (tr - ta) * 1e-9 / BLIND_L
+        w = BLIND_BETA * (1.0 if w > 1.0 else (0.0 if w < 0.0 else w))
+        out[i] = (a[0] + w * (cx - a[0]), a[1] + w * (cy - a[1]), a[2] + w * (cz - a[2])) + tuple(a[3:7])
     return out
 
 

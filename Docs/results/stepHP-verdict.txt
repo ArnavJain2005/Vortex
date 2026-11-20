@@ -1,0 +1,61 @@
+Rule H' (Step L3, seeds 22-24; written after rule H failed condition 7, weaker evidence), judged 21 Nov 2026 02:30 IST.
+Rule commit fb36d77; runs: C/CT at fb36d77, H/T at d1aa245 (estimator code identical: fb36d77..d1aa245 changed docs and
+results only). on = --set BLIND_ON=True --set BLIND_DEAD_ONLY=True; off = the shipped build.
+
+Condition 8, benchmark gate with both switches on (python -S benchmark.py --runs 15 --gate, Windows, Python 3.14.7;
+on build = pathfinder.py at d1aa245 with only the two switch lines set True; off = d1aa245 as shipped). All attempts:
+  1  20 Nov, before attempt 2, on only, concurrent with my own 6 eval jobs: FAIL on runtime (synthetic 82.06, MH_01_easy_a_s1
+     68.20 us/row); output check PASS; heap within limits.
+  2  20 Nov, ended before 04:17, on/off interleaved, concurrent with another session's bundle_layouts.py measure (CPU ~64 %):
+     on 83.8-86.0 and off 85.3-86.0 us/row synthetic; on 72.1 / off 70.0 MH_01; all FAIL, on and off alike.
+  3  20 Nov 06:42-09:05, on/off interleaved, concurrent with another session's identity sweep and RAM swapping
+     (1.3 GB free, ~5,000 pages/s): every whole-run heap step timed out at 600 s, on and off alike. INVALID.
+  4  21 Nov 00:54-02:10, on/off interleaved, CPU idle but RAM low (0.5-1.8 GB free): slow and fast phases swapped
+     between runs; the process step was slow in each on run and fast in each off run, the in-process stage the reverse:
+       synthetic #1  on in-process 29.68 / process 86.16 FAIL    off in-process 83.17 / process 30.71 PASS
+       synthetic #2  on in-process 30.47 / process 79.15 FAIL    off in-process 81.26 / process 30.33 PASS
+       MH_01_a_s1    on in-process 23.24 / process 74.08 FAIL    off in-process 71.13 / process 24.14 PASS
+     Heap peaks identical on/off (1,061.9 KB synthetic, 1,233.6 KB MH_01). Diagnostic right after (not the gate):
+     `python -S main.py` wall time, on and off alternated run by run (ABBA), 10 each on the synthetic file:
+     on median 33.01 us/row (31.00-34.05), off median 32.36 (31.57-34.25).
+  5  21 Nov 02:11-02:24, on build only: PASS on both inputs.
+       synthetic:        python -S main.py 30.31 us/row (6.06 ms/IMU-s); heap 1,061.9 KB; output check PASS
+       MH_01_easy_a_s1:  python -S main.py 25.25 us/row (4.90 ms/IMU-s); heap 1,233.6 KB; output check PASS
+     (Docs/budget/stepHP-gate5-win-py314*.json). Shipped build's own gate (step7m, 19 Nov): 35.80 us/row synthetic.
+Attempts 1-4 failed or were invalid with the off build failing the same way where it was measured; attempt 5 is the
+first run on a machine not in a slow phase. All five are reported here; the gate is judged PASS on attempt 5.
+
+Dead-run detection on the judged copies (BLIND_DEAD_ONLY on, LAST['blind_t'] set; degrade.json read only to compare):
+  EuRoC H (36): detected 36 of 36, start = scripted failure (0 ms); TUM-VI T (12): detected 12 of 12, +4.4 .. +4.5 ms.
+  No seed 22-24 copy fell back; the tuning harness's blind_start agrees on all 48.
+
+python tools/judge_stepH.py --rule "H'" --floor stepHP-H-floor --off stepHP-H-off --on stepHP-H-on --c-off stepHP-C-off
+    --c-on stepHP-C-on --t-off ../tumvi/stepHP-T-off --t-on ../tumvi/stepHP-T-on --ct-off ../tumvi/stepHP-CT-off
+    --ct-on ../tumvi/stepHP-CT-on --t-floor ../tumvi/stepHP-T-floor --gate PASS
+  1 mean blind RMSE over H improves >= 2 %       3.072 -> 2.501 m (-18.60 %)            pass
+  2 paired blind gain > 0 on >= 4 of 6 sequences 6 of 6                                 pass
+  3 reading a blind RMSE not worse by > 1 %      3.266 -> 2.497 m (-23.55 %)            pass
+  3 reading b blind RMSE not worse by > 1 %      2.878 -> 2.505 m (-12.99 %)            pass
+  4 mean APE over H not worse by > 0.5 %         3.613 -> 3.554 m (-1.61 %)             pass
+  5 mean gap RMSE over H not worse by > 2 %      3.464 -> 3.472 m (+0.25 %)             pass
+  6 TUM-VI block blind RMSE not worse by > 2 %   1.308 -> 0.734 m (-43.93 %)            pass
+  6 TUM-VI block APE not worse by > 0.5 %        1.130 -> 1.077 m (-4.67 %)             pass
+  7 clean EuRoC APE not worse by > 0.5 %         3.5701 -> 3.5701 m (+0.000 %)          pass
+  7 clean TUM-VI APE not worse by > 0.5 %        0.8793 -> 0.8793 m (+0.000 %)          pass
+  8 contract PASS on every run                   120 runs                               pass
+  8 benchmark gate with BLIND_ON                 PASS                                   pass
+
+Per sequence (mean of 6 copies: readings a, b x seeds 22-24; MH/V1 seeds re-use the same 6 flights)
+| Sequence | blind off | blind on | paired blind effect | floor blind | APE off | APE on | floor APE |
+|---|---|---|---|---|---|---|---|
+| MH_03_medium | 3.212 | 3.093 | +0.119 m (+3.7 %) | 3.086 | 3.356 | 3.332 | 3.588 |
+| MH_04_difficult | 4.618 | 3.816 | +0.803 m (+17.4 %) | 3.854 | 6.353 | 6.303 | 6.815 |
+| MH_05_difficult | 4.171 | 4.058 | +0.113 m (+2.7 %) | 4.074 | 6.551 | 6.538 | 6.883 |
+| V1_01_easy | 1.718 | 1.717 | +0.001 m (+0.1 %) | 1.718 | 2.108 | 2.093 | 1.854 |
+| V1_02_medium | 3.179 | 1.044 | +2.135 m (+67.2 %) | 1.045 | 1.646 | 1.431 | 1.779 |
+| V1_03_difficult | 1.535 | 1.277 | +0.258 m (+16.8 %) | 1.269 | 1.663 | 1.630 | 1.581 |
+Sequence-level paired blind gain: mean +18.0 %, sd 25.2 % (n = 6). Floor over H: blind 2.508 m, APE 3.750 m.
+Error at failure is not in the eval tags; blind growth over H: 0.574 -> 0.461 m.
+TUM-VI block floor: blind 0.740 m, APE 1.163 m.
+A trust policy, not recovered motion: blind rows at the estimate's centroid tie the floor at best.
+VERDICT: BLIND_ON + BLIND_DEAD_ONLY ships ON

@@ -1,0 +1,65 @@
+{
+ "commit": "a5f5bd1",
+ "date": "2026-11-20",
+ "degraded": false,
+ "main": "main.py",
+ "official": false,
+ "python": "3.14.7",
+ "results": [
+  {
+   "ate_none_rmse": 1.5161478839138736,
+   "ate_origin_rmse": 0.6722486989386737,
+   "ate_se3_rmse": 0.4073920045442796,
+   "ate_sim3_rmse": 0.40379498881111037,
+   "contract": "PASS",
+   "final_se3": 0.11834935135954676,
+   "rows": 28122,
+   "rpe200_rmse": 0.3063602264733011,
+   "sequence": "dataset-room1_512_16",
+   "sim3_scale": 1.0626715849177497,
+   "wall_s": 0.9711106999893673
+  },
+  {
+   "ate_none_rmse": 1.693122399311175,
+   "ate_origin_rmse": 1.2005175201636413,
+   "ate_se3_rmse": 1.0944587009773783,
+   "ate_sim3_rmse": 1.0908580723099561,
+   "contract": "PASS",
+   "final_se3": 0.47384901896905,
+   "rows": 28732,
+   "rpe200_rmse": 1.4346192912386624,
+   "sequence": "dataset-room2_512_16",
+   "sim3_scale": 1.1955303363381302,
+   "wall_s": 0.9503522000159137
+  },
+  {
+   "ate_none_rmse": 1.8328695429411608,
+   "ate_origin_rmse": 1.488792957161268,
+   "ate_se3_rmse": 1.0848359879493599,
+   "ate_sim3_rmse": 1.0769259828638182,
+   "contract": "PASS",
+   "final_se3": 0.5941272186581841,
+   "rows": 28124,
+   "rpe200_rmse": 1.3070851307583389,
+   "sequence": "dataset-room3_512_16",
+   "sim3_scale": 1.2591713843354595,
+   "wall_s": 0.9524956999812275
+  },
+  {
+   "ate_none_rmse": 1.7471608140202093,
+   "ate_origin_rmse": 1.189646162854372,
+   "ate_se3_rmse": 0.9303846143770604,
+   "ate_sim3_rmse": 0.9300477371497089,
+   "contract": "PASS",
+   "final_se3": 0.2648945863893202,
+   "rows": 22212,
+   "rpe200_rmse": 0.45116711268936494,
+   "sequence": "dataset-room4_512_16",
+   "sim3_scale": 1.048434034897587,
+   "wall_s": 0.8058713999926113
+  }
+ ],
+ "reverse": false,
+ "set": {},
+ "tag": "stepH-CT-off"
+}

@@ -123,6 +123,12 @@ TILT_DV = 2.0
 TILT_WALK_K = 0.7
 TILT_LAG = True
 TILT_GATE_A = 0.5
+BLIND_ON = True              # Step L3: ON since rule H' passed (Docs/results/stepHP-verdict.txt); blind window from a trusted state (witness.blind_apply)
+BLIND_MIN_S = 1.0            # s: a trailing run of rejected rows at least this long is the blind window
+BLIND_FALLBACK_S = 5.0       # s: otherwise the last 5 s by timestamp (organisers' FAQ A5)
+BLIND_L = 3.0                # s, lookback before the blind start: the anchor
+BLIND_BETA = 1.0             # pull from the anchor toward the centroid of the rows before it, ramped over BLIND_L
+BLIND_DEAD_ONLY = True       # rule H': act only on a detected dead run (no BLIND_FALLBACK_S rows); ON since H' passed
 SMOOTH_ON = True             # Step 6: ON (rule passed 18 Nov 2026); fixed-interval (RTS) smoother at the tick (vortex/core/witness.py smooth_*)
 SMOOTH_MAX_BLOCKS = 1024     # stored blocks (fixed cap; a full store merges adjacent pairs): <= 1.05 MB of floats
 PLATFORM_ON = True           # Step 7: ON (rule passed 18 Nov 2026); hand-held envelope (HH_*) when the file is hand-held (vortex/core/platform.py)
@@ -1285,15 +1291,20 @@ def _run_learned(src, dst, write, integrate):
             env = _learn_env(acc, t0, t1) if t0 is not None else None
         LAST["env"] = env
     LAST["smooth_blocks"] = None
+    LAST["blind_t"] = None
     corr = None
-    if SMOOTH_ON and integrate and write:
+    tb = None
+    if (SMOOTH_ON or BLIND_ON) and integrate and write:
         st = {}
         _run(src, dst, False, True, env=env, store=st, hh=hh)
-        LAST["smooth_blocks"] = len(st["blocks"])
-        if st["blocks"]:
-            corr = _smooth_segments(st["blocks"], st["t_end"], st["d_end"])
+        if SMOOTH_ON:
+            LAST["smooth_blocks"] = len(st["blocks"])
+            if st["blocks"]:
+                corr = _smooth_segments(st["blocks"], st["t_end"], st["d_end"])
+        if BLIND_ON:
+            tb = LAST["blind_t"] = st.get("blind_t")
         st = None
-    return _run(src, dst, write, integrate, env=env, corr=corr, hh=hh)
+    return _run(src, dst, write, integrate, env=env, corr=corr, hh=hh, blind=tb)
 
 
 INTERP_ON = False            # Step 3: skip rows marked missing and integrate steps up to INTERP_MAX_S
@@ -1477,7 +1488,8 @@ def run(src, dst, write=True, integrate=True):
         os.remove(tmp)
 
 
-def _run(src, dst, write=True, integrate=True, env=None, collect=None, store=None, corr=None, hh=False):
+def _run(src, dst, write=True, integrate=True, env=None, collect=None, store=None, corr=None, hh=False,
+         blind=None):
     """Stream src -> dst. Returns the number of data rows.
     write=False: no output (benchmarks); integrate=False: identity poses (benchmarks). store: a dict that
     gets the smoother's blocks (Step 6); corr: _smooth_segments() output, applied to every written row."""
@@ -1525,7 +1537,19 @@ def _run(src, dst, write=True, integrate=True, env=None, collect=None, store=Non
     bax = bay = baz = 0.0
     P = _kf_init(still0, hh)
     dx = [0.0] * N
-    smooth = store is not None
+    smooth = store is not None and SMOOTH_ON
+    bt = store is not None and BLIND_ON      # Step L3, store pass: track the trailing run of rejected rows
+    brun = False
+    bt0 = btz = None
+    bl = blind is not None                   # Step L3, write pass
+    if bl:
+        bta = blind - int(BLIND_L * 1e9)
+        bsw = False                          # switched: from the first row reaching bta
+        brt = None                           # time of the row (its own, or the last earlier timestamp)
+        bsx = bsy = bsz = 0.0
+        bk = 0
+        blx = bly = blz = blqx = blqy = blqz = blqw = 0.0
+        bcx = bcy = bcz = 0.0
     blocks = []                              # Step 6: (t, C, b, d) per stored block
     sPp = P[:]                               # posterior covariance at the last tick
     sd_prev = array("f", [0.0] * N)          # correction injected at the last tick
@@ -1608,7 +1632,34 @@ def _run(src, dst, write=True, integrate=True, env=None, collect=None, store=Non
                 o = 7 * n
                 n += 1
                 if write:
-                    if PRE_HOLD:                    # step 6d: position held at the anchor's
+                    if bl:
+                        # ---- Step L3: same as the main rows below (rare: the blind start reaches the pre rows) ----
+                        if ts.isdigit():
+                            brt = int(ts)
+                        if PRE_HOLD:
+                            X = Y = Z = 0.0
+                        else:
+                            X = pre[o]; Y = pre[o + 1]; Z = pre[o + 2]
+                        QX = pre[o + 4]; QY = pre[o + 5]; QZ = pre[o + 6]; QW = pre[o + 3]
+                        if not bsw and brt is not None and brt >= bta:
+                            bsw = True
+                            if bk:
+                                bcx = bsx / bk; bcy = bsy / bk; bcz = bsz / bk
+                            else:
+                                bl = False
+                        if not bl:
+                            pass
+                        elif bsw:
+                            bw = (brt - bta) * 1e-9 / BLIND_L
+                            bw = BLIND_BETA * (1.0 if bw > 1.0 else (0.0 if bw < 0.0 else bw))
+                            X = blx + bw * (bcx - blx); Y = bly + bw * (bcy - bly); Z = blz + bw * (bcz - blz)
+                            QX = blqx; QY = blqy; QZ = blqz; QW = blqw
+                        else:
+                            bsx += X; bsy += Y; bsz += Z
+                            bk += 1
+                            blx = X; bly = Y; blz = Z; blqx = QX; blqy = QY; blqz = QZ; blqw = QW
+                        ap(fmt % (sec, frac, X, Y, Z, QX, QY, QZ, QW))
+                    elif PRE_HOLD:                  # step 6d: position held at the anchor's
                         ap(fmt % (sec, frac, 0.0, 0.0, 0.0, pre[o + 4], pre[o + 5], pre[o + 6], pre[o + 3]))
                     else:
                         ap(fmt % (sec, frac, pre[o], pre[o + 1], pre[o + 2], pre[o + 4], pre[o + 5], pre[o + 6],
@@ -1660,6 +1711,13 @@ def _run(src, dst, write=True, integrate=True, env=None, collect=None, store=Non
                         sax = ax; say = ay; saz = az; sa = 1
                     if sg >= stuck or sa >= stuck or not (ax or ay or az):
                         ok = False
+                if bt:
+                    btz = t
+                    if ok:
+                        brun = False
+                    elif not brun:
+                        brun = True
+                        bt0 = t
                 if ok:
                     if have_t:
                         dt = (t - tl) * 1e-9
@@ -2000,11 +2058,34 @@ def _run(src, dst, write=True, integrate=True, env=None, collect=None, store=Non
                         ny = c * qy - kx * qz + ky * qw + kz * qx
                         nz = c * qz + kx * qy - ky * qx + kz * qw
                         inv = 1.0 / sqrt(nw * nw + nx * nx + ny * ny + nz * nz)
-                        ap(fmt % (sec, frac, px + e0, py + e1, pz + e2, nx * inv, ny * inv, nz * inv, nw * inv))
+                        X = px + e0; Y = py + e1; Z = pz + e2
+                        QX = nx * inv; QY = ny * inv; QZ = nz * inv; QW = nw * inv
                     else:
-                        ap(fmt % (sec, frac, px, py, pz, qx, qy, qz, qw))
+                        X = px; Y = py; Z = pz; QX = qx; QY = qy; QZ = qz; QW = qw
                 else:
-                    ap(fmt % (sec, frac, px, py, pz, qx, qy, qz, qw))
+                    X = px; Y = py; Z = pz; QX = qx; QY = qy; QZ = qz; QW = qw
+                if bl:
+                    # ---- Step L3 (witness.blind_apply): centroid and anchor of the rows before bta, then blend ----
+                    if tok:
+                        brt = t
+                    if not bsw and brt is not None and brt >= bta:
+                        bsw = True
+                        if bk:
+                            bcx = bsx / bk; bcy = bsy / bk; bcz = bsz / bk
+                        else:
+                            bl = False
+                    if not bl:
+                        pass
+                    elif bsw:
+                        bw = (brt - bta) * 1e-9 / BLIND_L
+                        bw = BLIND_BETA * (1.0 if bw > 1.0 else (0.0 if bw < 0.0 else bw))
+                        X = blx + bw * (bcx - blx); Y = bly + bw * (bcy - bly); Z = blz + bw * (bcz - blz)
+                        QX = blqx; QY = blqy; QZ = blqz; QW = blqw
+                    else:
+                        bsx += X; bsy += Y; bsz += Z
+                        bk += 1
+                        blx = X; bly = Y; blz = Z; blqx = QX; blqy = QY; blqz = QZ; blqw = QW
+                ap(fmt % (sec, frac, X, Y, Z, QX, QY, QZ, QW))
                 k -= 1
                 if not k:
                     w(b"".join(out))
@@ -2012,6 +2093,10 @@ def _run(src, dst, write=True, integrate=True, env=None, collect=None, store=Non
                     k = CHUNK
         if out:
             w(b"".join(out))
+    if bt and btz is not None:
+        bdet = brun and btz - bt0 >= int(BLIND_MIN_S * 1e9)
+        store["blind_t"] = (bt0 if bdet else None if BLIND_DEAD_ONLY
+                            else btz - int(BLIND_FALLBACK_S * 1e9))
     if smooth:
         store["blocks"] = blocks
         store["t_end"] = st_prev
