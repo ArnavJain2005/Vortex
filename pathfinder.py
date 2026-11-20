@@ -105,12 +105,12 @@ TILT_DV = 2.0
 TILT_WALK_K = 0.7
 TILT_LAG = True
 TILT_GATE_A = 0.5
-BLIND_ON = False             # Step L3: off until rule H decides; blind window from a trusted state (witness.blind_apply)
+BLIND_ON = True              # Step L3: ON since rule H' passed (Docs/results/stepHP-verdict.txt); blind window from a trusted state (witness.blind_apply)
 BLIND_MIN_S = 1.0            # s: a trailing run of rejected rows at least this long is the blind window
 BLIND_FALLBACK_S = 5.0       # s: otherwise the last 5 s by timestamp (organisers' FAQ A5)
 BLIND_L = 3.0                # s, lookback before the blind start: the anchor
 BLIND_BETA = 1.0             # pull from the anchor toward the centroid of the rows before it, ramped over BLIND_L
-BLIND_DEAD_ONLY = False      # rule H': act only on a detected dead run (no BLIND_FALLBACK_S rows); off until H' decides
+BLIND_DEAD_ONLY = True       # rule H': act only on a detected dead run (no BLIND_FALLBACK_S rows); ON since H' passed
 SMOOTH_ON = True             # Step 6: ON (rule passed 18 Nov 2026); fixed-interval (RTS) smoother at the tick (vortex/core/witness.py smooth_*)
 SMOOTH_MAX_BLOCKS = 1024     # stored blocks (fixed cap; a full store merges adjacent pairs): <= 1.05 MB of floats
 PLATFORM_ON = True           # Step 7: ON (rule passed 18 Nov 2026); hand-held envelope (HH_*) when the file is hand-held (vortex/core/platform.py)

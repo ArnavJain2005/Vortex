@@ -339,7 +339,8 @@ def test_forecaster_acts_only_while_coasting(second_rest):
     assert wx.estimate(rows, fc=True) == wx.estimate(rows, fc=False)    # no gaps: identical
     i0 = 6000
     bad = _fail(rows, i0, "nan")
-    on, off = wx.estimate(bad, fc=True), wx.estimate(bad, fc=False)
+    # the forecaster alone: the Step L3 blind window (shipped on since 21 Nov) would replace this trailing dead run
+    on, off = wx.estimate(bad, fc=True, blind=False), wx.estimate(bad, fc=False, blind=False)
     assert on[:i0] == off[:i0]
     L = (rows[-1][0] - rows[i0 - 1][0]) * 1e-9
     want = wx.FC_TAU * (1.0 - math.exp(-L / wx.FC_TAU)) / L

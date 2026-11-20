@@ -41,7 +41,7 @@ def _times(rows):
 def _switches_off(request, monkeypatch):
     """Each test starts from BLIND_ON and BLIND_DEAD_ONLY off and sets what it needs, whatever ships; the two
     shipped-state tests read the real values."""
-    if request.node.name.startswith(("test_shipped_state", "test_parameters_identical")):
+    if request.node.name.startswith(("test_shipped_", "test_parameters_identical")):
         return
     import test_core_equivalence as tce
     for mod in (wx, tce.main, tce.LAB):
@@ -49,10 +49,26 @@ def _switches_off(request, monkeypatch):
         monkeypatch.setattr(mod, "BLIND_DEAD_ONLY", False)
 
 
-def test_shipped_state_off():
+def test_shipped_state_on_dead_only():
+    """Rule H' passed (Docs/results/stepHP-verdict.txt): both switches ship on, in all three copies."""
     import test_core_equivalence as tce
-    assert wx.BLIND_ON is False and tce.main.BLIND_ON is False and tce.LAB.BLIND_ON is False
-    assert wx.BLIND_DEAD_ONLY is False and tce.main.BLIND_DEAD_ONLY is False and tce.LAB.BLIND_DEAD_ONLY is False
+    assert wx.BLIND_ON is True and tce.main.BLIND_ON is True and tce.LAB.BLIND_ON is True
+    assert wx.BLIND_DEAD_ONLY is True and tce.main.BLIND_DEAD_ONLY is True and tce.LAB.BLIND_DEAD_ONLY is True
+
+
+def test_shipped_build_leaves_a_clean_file_alone(tmp_path, monkeypatch):
+    """As shipped, a file with no trailing dead run is written exactly as with BLIND_ON off (condition 7 by construction)."""
+    import test_core_equivalence as tce
+    from test_core_equivalence import _write_rows
+    pf = tce.main
+    rows, _ = _rows(dead_s=0.0)
+    src = _write_rows(tmp_path / "imu.csv", rows)
+    a, b = tmp_path / "shipped.txt", tmp_path / "off.txt"
+    pf.run(str(src), str(a))
+    assert pf.LAST["blind_t"] is None
+    monkeypatch.setattr(pf, "BLIND_ON", False)
+    pf.run(str(src), str(b))
+    assert a.read_bytes() == b.read_bytes()
 
 
 def test_parameters_identical():

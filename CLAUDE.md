@@ -82,7 +82,7 @@ not verified.
 
 ```
 pip install -e .[dev]
-pytest                                        # 19 Nov 2026: 430 passed, 1 xfailed (Step L3 BLIND_* built, off; rule H committed) (Windows, Python 3.14; test_ccore.py, the C-core experiment, needs g++ on PATH)
+pytest                                        # 21 Nov 2026: 438 passed, 1 xfailed (Step L3: BLIND_ON + BLIND_DEAD_ONLY ship on, rule H' passed) (Windows, Python 3.14; test_ccore.py, the C-core experiment, needs g++ on PATH)
 python -S main.py IMU.csv estimated_trajectory.txt                       # submission entry point: a stub importing pathfinder.py (the estimator, stdlib only)
 python -S benchmark.py --runs 15 --gate [--input IMU.csv] --tag NAME      # gate: heap (tracemalloc) <= 4 MB, <= 50 us/row, checker PASS; RSS reported only
 python tools/make_bundle.py stage                                        # once per Python to carry bytecode for (py -3.13, py -3.14, python3 in WSL)

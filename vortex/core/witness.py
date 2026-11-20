@@ -201,12 +201,12 @@ TILT_GATE_A = 0.5            # m/s^2: no tilt update while the filter's own wind
 # on the tuning copies by the criterion committed before the tuning run (Docs/blind/stepL3-tune.md). A TRUST POLICY,
 # not recovered motion: the blind rows go to the estimate's own centroid, which SE3 alignment maps onto the ground
 # truth's centroid, so the blind window can tie the never-moving floor there, never beat it.
-BLIND_ON = False             # off until rule H decides
+BLIND_ON = True              # ON since rule H' (Docs/results/stepHP-verdict.txt); rule H alone failed
 BLIND_MIN_S = 1.0            # s: a trailing run of rejected rows at least this long is the blind window
 BLIND_FALLBACK_S = 5.0       # s: otherwise the last 5 s by timestamp (organisers' FAQ A5)
 BLIND_L = 3.0                # s, lookback: the anchor is the last row before t_b - BLIND_L (tuning: 1 / 2 / 3 s)
 BLIND_BETA = 1.0             # pull from the anchor toward the centroid of the rows before it, ramped over BLIND_L
-BLIND_DEAD_ONLY = False      # rule H': act only on a detected dead run (no BLIND_FALLBACK_S rows); off until H' decides
+BLIND_DEAD_ONLY = True       # rule H': act only on a detected dead run (no BLIND_FALLBACK_S rows); ON since H' passed
 N = 15
 
 
