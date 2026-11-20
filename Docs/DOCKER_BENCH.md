@@ -146,4 +146,23 @@ After CC-L3 judged Rule H OFF (`Docs/results/stepH-verdict.txt` at `d1aa245`), A
 - **CLI spot-checks (`python tools/ape_check.py --gt ... --est ...`):**
   - `H-on` `MH_04_difficult_b_s13`: `ATE RMSE m: 6.18326022834` (`19,674` matched poses; CC JSON `6.1832602283429985 m`).
   - `T-on` `dataset-room3_512_16_b_s13`: `ATE RMSE m: 1.19618176002` (`15,118` matched poses; CC JSON `1.1961817600169873 m`).
-- **Not verified by `tools/ape_check.py`:** `tools/ape_check.py` checks full-trajectory SE(3) translational ATE RMSE only; it does not independently recompute phase-windowed `blind_rmse`, `gap_rmse_mean`, or `rpe200_rmse`. Rule H' held-out seeds `22–24` were not run here (reserved for AG-4 after CC-L3 posts the Rule H' verdict).
+- **Not verified by `tools/ape_check.py`:** `tools/ape_check.py` checks full-trajectory SE(3) translational ATE RMSE only; it does not independently recompute phase-windowed `blind_rmse`, `gap_rmse_mean`, or `rpe200_rmse`.
+
+### 4.3 Rule H' Held-Out Cross-Check (`AG-4`, `track3/stepL3-blind@3b3ad2e`, estimator `fb36d77` / `3b3ad2e`)
+
+After CC-L3 recorded Rule H' held-out Conditions 1–7 PASS on seeds `22–24` (`3b3ad2e`, `BLIND_DEAD_ONLY=True`), AG regenerated all **144 Rule H' held-out trajectories** (`HP-H` EuRoC seeds `22–24` off/on/floor, `HP-T` TUM-VI `room3/4` seeds `22–24` off/on/floor) directly from `origin/track3/stepL3-blind:pathfinder.py` (`3b3ad2e`, identical estimator code to `fb36d77`) and cross-checked `tools/ape_check.py` against both CC-L3's committed JSONs and `score.py`. Zero `V2_*` or TUM-VI `s19–21` files were touched.
+
+| Block | CC-L3 JSON (`3b3ad2e`) | Runs | Max `\|CC JSON − ape_check\|` (mm) | Max `\|score.py − ape_check\|` (mm) | Worst-diff sequence |
+|---|---|---:|---:|---:|---|
+| `HP-H-off` (EuRoC s22–24, `BLIND_ON=False`) | `Docs/results/stepHP-H-off.json` | 36 | `0.000000` (`8.88e-13`) | `0.000000` (`8.88e-13`) | `MH_05_difficult_b_s24` |
+| `HP-H-on` (EuRoC s22–24, `BLIND_ON=True`, `DEAD_ONLY`) | `Docs/results/stepHP-H-on.json` | 36 | `0.000000` (`8.88e-13`) | `0.000000` (`8.88e-13`) | `MH_05_difficult_a_s24` |
+| `HP-H-flr` (EuRoC s22–24, floor) | `Docs/results/stepHP-H-floor.json` | 36 | `0.000000` (`8.88e-13`) | `0.000000` (`8.88e-13`) | `MH_05_difficult_b_s22` |
+| `HP-T-off` (TUM-VI room3/4 s22–24, OFF) | `Docs/tumvi/stepHP-T-off.json` | 12 | `0.000000` (`4.44e-13`) | `0.000000` (`4.44e-13`) | `dataset-room4_512_16_a_s24` |
+| `HP-T-on` (TUM-VI room3/4 s22–24, ON, `DEAD_ONLY`) | `Docs/tumvi/stepHP-T-on.json` | 12 | `0.000000` (`1.11e-13`) | `0.000000` (`1.11e-13`) | `dataset-room4_512_16_b_s23` |
+| `HP-T-flr` (TUM-VI room3/4 s22–24, floor) | `Docs/tumvi/stepHP-T-floor.json` | 12 | `0.000000` (`0.0`) | `0.000000` (`0.0`) | `dataset-room4_512_16_b_s24` |
+
+- **Global maximum difference across all 144 Rule H' held-out trajectories (and all 336 combined Step L3 trajectories across Sec 4.2 + 4.3):** **`0.000000 mm`** (`8.88e-13 mm`, floating-point rounding only; `HP-H-flr` `MH_05_difficult_b_s22`: `6.870540660854006` vs `6.870540660854005 m`).
+- **CLI spot-checks (`python tools/ape_check.py --gt ... --est ...`):**
+  - `HP-H-on` `MH_04_difficult_b_s22`: `ATE RMSE m: 6.31895686446` (`19,683` matched poses; CC JSON `6.31895686445924 m`).
+  - `HP-T-on` `dataset-room3_512_16_b_s22`: `ATE RMSE m: 1.15790266807` (`15,083` matched poses; CC JSON `1.1579026680652604 m`).
+- **Not verified here:** Phase-windowed `blind_rmse`, `gap_rmse_mean`, `rpe200_rmse` (not computed by `tools/ape_check.py`), and Rule H' Condition 8 runtime/heap benchmark gate (open in CC-L3 pending a quiet machine, and AG-1 Docker re-bench held until CC-freeze's active run ends).
