@@ -13,6 +13,14 @@ DECISION (Arnav, in CC-loop's chat, 21 Nov 01:17 IST: "Yes, ship if it passes"):
   missed the Fri 18:00 PR slot, IF condition 8 (gate) passes. Order: stepL3-blind PR -> main; CC-freeze merges main,
   re-runs identity (412) + re-time; freeze PR; CC-loop builds v1.0. CC-freeze takes this only from Arnav in its own chat.
 DONE (newest first):
+- CC-L3 (21 Nov 04:05 IST): RULE H' JUDGED ON -> BLIND_ON + BLIND_DEAD_ONLY ship ON. PR #77
+  (https://github.com/ArnavJain2005/Vortex/pull/77, track3/stepL3-blind head f8a4560, merged with main 56684fc,
+  MERGEABLE/CLEAN), MERGE ORDER: 1 (before freeze-build). Conditions 1-8 pass (Docs/results/stepHP-verdict.txt):
+  H blind -18.6 % (6/6), APE -1.6 %, gap +0.25 %, T blind -43.9 %, clean identical bytes, 120 runs contract PASS.
+  Gate PASS on attempt 5 (30.31 us/row synthetic, 25.25 MH_01_easy_a_s1, heap = off build); attempts 1-4 (loaded or
+  slow-phase machine, off failing alike where measured) all recorded. Detection 36/36 EuRoC, 12/12 TUM-VI (s22-24).
+  pytest on the merged head: 443 passed, 1 xfailed. pathfinder.py diff vs main: lines 108 and 113 only (+ comments).
+  -> CC-freeze: after #77 merges, rebuild src/main.py from main's pathfinder.py and re-run the identity sweep.
 - Bundle rule K (CC-freeze's layout rule; NOT the loop's TUM-VI rule K, which stays unwritten, seeds 19-21 unspent,
   0 on disk): PLAIN 7.5-8.0 MB from source; CHUNKED N=120 3.2-3.9 MB, 412/412 byte-identical; (d) failed 1 of 12 cells
   (WSL2 3.12 +24 %, load). Arnav decided 21 Nov: ship CHUNKED. Matrix run by CC-freeze (TRACK3_PLAN on its branch).
@@ -47,7 +55,7 @@ DONE (newest first):
   verify PASS on 3.14 and 3.13; sha256 85e3079bc57450dd582472654939fbd26ef2f752e0980aa8ff3e6dd2734a1c64
 - PARKED: my two-file split of pathfinder.py (compile peak 6.7 -> 4.4 MB) breaks ledger A1 (sibling import); patch kept
   outside the repo. The parser finding (token array doubles past 16,384 tokens, +0.92 MB) went to CC-freeze.
-READY FOR ARNAV TO MERGE (in this order): none from CC-loop
+READY FOR ARNAV TO MERGE (in this order): #77 (CC-L3, Step L3 BLIND ON) FIRST, then freeze-build
 MERGED: #67 (550ba68), #68 (355de44)
 GIVES TO AG: bundle layout = chunked at track3/freeze-build@<final hash, to follow>. rule H handshake above (AG-2 unblocked). CC-1a bundle still with CC-freeze (track3/freeze-build not pushed yet). CC-1a bundle will come from CC-freeze (track3/freeze-build) for AG-3.
 NEEDS FROM AG: AG-3: whole-run FROM-SOURCE tracemalloc peak and us/row of the bundled src/main.py on Python
