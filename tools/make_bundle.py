@@ -457,7 +457,7 @@ def check_chunked(text):
 
 
 LAYOUTS = ("plain", "chunked")
-DEFAULT_LAYOUT = "plain"       # set by rule K (Docs/TRACK3_PLAN.md, "Freeze build")
+DEFAULT_LAYOUT = "chunked"     # Arnav, 21 Nov 2026, after rule K (Docs/TRACK3_PLAN.md, "Rule K outcome"): PLAIN is above 7 MB
 CHUNK_LINES = 120
 
 
