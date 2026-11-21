@@ -1,4 +1,18 @@
-# LOOP_CC   updated 2026-11-22 ~04:45 IST   iteration 14 (CC-final: Arnav's "Final stretch" prompt, 22 Nov 03:30 IST)
+# LOOP_CC   updated 2026-11-22 04:40 IST   iteration 15 (CC-final: Arnav's "Final stretch" prompt, 22 Nov 03:30 IST)
+STEP 2+3 DONE: PR #83 https://github.com/ArnavJain2005/Vortex/pull/83 (track3/final-docs, head 7822f69, MERGEABLE/CLEAN)
+  = v1.0 commit 0e7c81d + NUMBERS (87fc280) + README (7822f69). READY FOR ARNAV TO MERGE. pathfinder.py / vortex/ unchanged.
+  NUMBERS: every key from one set of runs of the shipped src/main.py (22 Nov; 316 runs, contract PASS on all; seeds
+  22-24 reproduce the rule H' judging runs to 0 m). Deck keys: heldout_ape_reading_a 3.506, heldout_ape_reading_b 3.373,
+  heldout_ape_floor 3.745, blind_rmse_vortex 2.494, blind_rmse_floor 2.504, budget_heap_whole_run_kb 3476 (shipped file
+  from source, MH_03_medium_b_s1 = reading b, Win 3.14.7), budget_wall_ms_per_imu_s_ms 6.60 (AG-1 Docker, same input,
+  from #81 which is NOT merged: Docs/numbers/docker.json). Rule H' set (seeds 22-24, weaker evidence): APE 3.554 vs 3.750.
+  Blind now TIES the floor (was +20.5 %); stale weakness claims removed from README.
+  pytest (Win 3.14.7, 87fc280 contents): 521 passed, 0 failed, 2 skipped, 1 xfailed, 39 min.
+  Gate on the shipped file: PASS 3.14.7; 3.13.5 heap 4,158 KB misses the 4 MB DESIGN target (8 MB limit holds) - known since 21 Nov.
+  Repo Dockerfile FIXED: it ran stub + pathfinder.py + .pyc (against A1/B7); now builds and runs only the single file
+  (image main.py = zip's; output = zip's estimated_trajectory.txt byte for byte).
+STEP 4 PLAN COMMITTED: track3/final-table f34d362 (stacked on #83; TRACK3_PLAN "Final table" + tools/final_table.py,
+  tested on synthetic only). 0 V2 copies on disk. WAITING for Arnav's "run the final table". No PR yet (opens with the table).
 V1.0 ZIP READY: dist/vortex_v1.0.zip (= dist/Vortex.zip, same bytes) sha256
   e251c4010248caf5103bbf2923122146bba64ae7e2b225069a89672ffbd4447c
   Built at tag v1.0 = 0e7c81d (track3/v1.0) = main 5e28668 + bundle/README.md only (README named no eval input and
