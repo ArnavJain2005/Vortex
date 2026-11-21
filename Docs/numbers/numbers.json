@@ -1705,19 +1705,19 @@
   "date": "2026-11-22"
  },
  "pytest_passed_n": {
-  "value": "410",
-  "source": "pytest Windows 11, Python 3.14.7, commit be064ed",
-  "date": "2026-11-19"
+  "value": "521",
+  "source": "pytest Windows 11, Python 3.14.7, commit 87fc280",
+  "date": "2026-11-22"
  },
  "pytest_failed_n": {
   "value": "0",
-  "source": "pytest Windows 11, Python 3.14.7, commit be064ed",
-  "date": "2026-11-19"
+  "source": "pytest Windows 11, Python 3.14.7, commit 87fc280",
+  "date": "2026-11-22"
  },
  "pytest_skipped_n": {
-  "value": "0",
-  "source": "pytest Windows 11, Python 3.14.7, commit be064ed",
-  "date": "2026-11-19"
+  "value": "2",
+  "source": "pytest Windows 11, Python 3.14.7, commit 87fc280",
+  "date": "2026-11-22"
  },
  "experiments_off_n": {
   "value": "10",
