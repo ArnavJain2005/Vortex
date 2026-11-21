@@ -94,7 +94,7 @@ Deadline **22 Nov 2026, 11:59 PM IST**, confirmed by the FAQ (Q1 closed). Full-t
 | NUMBERS (K6, early) | `tools/make_numbers.py` -> `Docs/NUMBERS.md` + `Docs/numbers/numbers.json`: every number the deck, script and README may quote, as `key | value | source tag | date`, generated from committed result, TUM-VI, budget and pytest files. Keys are stable (ChatGPT's `[[N:key]]`); when the shipped build changes, `SOURCES` in the script points at the new tags | **Done (verified)** 18 Nov: headline keys reproduce the Step F verdict to the digit (held-out 4.962 vs floor 3.745 m; reading a 6.181, b 3.744; gap 5.036; blind 6.992). Budget from a fresh lean run (`lean-win-py314-mh01-b-s1`) | `tests/test_numbers.py` (3); `--check` in the suite |
 | L2 | Slow gravity alignment over a 4 s window with a lag model, weighted by a gyro noise meter (`TILT_ON`) | **Done (verified): ON** by rule G2 (18 Nov, rule at 3e2646e, seeds 16-18, base with the Step 6 smoother): all 13 checks pass, held-out APE 4.922 -> 3.575 m (floor 3.746), DiD null 1.347 vs 1.187 m. Rule G (seeds 10-12) had failed its level null; G2 was **written after seeing that: weaker evidence, same 6 flights** | Rule G2 on 36 fresh held-out copies + TUM-VI room3/4 |
 | v1.0 | Submission zip from the frozen main 5e28668; NUMBERS, README and RESULTS from one set of runs of the shipped file | **Done (verified)** 22 Nov: `dist/vortex_v1.0.zip` sha256 e251c401...447c, tag `v1.0` (0e7c81d); verify PASS Win 3.14/3.13, WSL2 3.12; 316 reporting runs, contract PASS; see "v1.0 zip and the reporting runs" | Zip verified on three Pythons |
-| Final | Final table: V2_01..03 x a,b x seeds 1-3 on the frozen v1.0 file + floor | **Planned**; runs only on Arnav's "run the final table" (plan: section "Final table", committed on `track3/final-table` before any V2 copy exists) | Reported as it comes out |
+| Final | Final table: V2_01..03 x a,b x seeds 1-3 on the frozen v1.0 file + floor | **Done (run once)** 22 Nov: APE 2.200 vs floor 2.156 m (+2.0 %), gap +8.2 %, blind +0.4 %, 1/3 sequences better, contract 18/18 (plan f34d362 committed before any V2 copy existed; section "Final table result") | Reported as it comes out |
 | L3 | Blind window from a trusted state (`BLIND_ON` + `BLIND_DEAD_ONLY`, **on**): on a detected trailing dead run >= 1 s, the rows from 3 s before it ramp to the earlier estimate's centroid (a trust policy); no 5 s fallback | **Done** (21 Nov): rule H failed condition 7 (clean TUM-VI +1.13 %, the fallback); rule H' (no fallback, seeds 22-24, weaker evidence) **passed 1-8**: H blind -18.6 % (6/6 sequences), APE -1.6 %, T blind -43.9 %, clean unchanged, gate PASS (attempt 5 of 5, all recorded) | Freeze-build bundle rebuilt from the merged pathfinder.py |
 
 ## Open questions (Q1 to Q5 are in the email drafted for prism@samsung.com on 15 Nov)
@@ -2634,3 +2634,24 @@ dropped silently.
 A crash or contract FAIL is reported to Arnav in chat and recorded, not fixed in the build. If a second scorer (evo,
 or Antigravity's independent scorer) is run on the same outputs and any copy differs by more than 1 mm, that is
 escalated to Arnav and both numbers are recorded.
+
+### Final table result (22 Nov 2026, run once on Arnav's "Run the final table"; recorded as it came out, nothing changed)
+
+Inputs: the 18 copies whose SHA-256 were committed in `Docs/final/inputs.sha256` (a4358a9) before any estimate ran;
+organisers' script sha256 cc7398db...2f31 (pandas 3.0.5). Estimator: `src/main.py` extracted from
+`dist/vortex_v1.0.zip`, sha256 checked = feb222ea...0811. Both runs once, Win 3.14.7, at a4358a9. Full table:
+`Docs/FINAL_TABLE.md`; runs: `Docs/results/final-v10-V2.json`, `Docs/results/final-floor-V2.json`.
+
+| V2 (shipped v1.0 vs never-moving floor) | APE (m) | gap RMSE (m) | blind RMSE (m) |
+|---|---|---|---|
+| All 18 copies | 2.200 vs 2.156 (**+2.0 %**) | 2.130 vs 1.969 (+8.2 %) | 2.781 vs 2.769 (+0.4 %) |
+| Reading a (9) / reading b (9) | 2.213 / 2.186 (+2.6 / +1.4 %) | 2.166 / 2.094 (+10.0 / +6.3 %) | 2.781 / 2.781 (+0.4 / +0.4 %) |
+| V2_01_easy (6) | 2.057 vs 2.298 (-10.5 %) | 1.927 vs 2.181 (-11.6 %) | 3.082 vs 3.085 (-0.1 %) |
+| V2_02_medium (6) | 2.379 vs 2.112 (+12.6 %) | 2.301 vs 1.897 (+21.3 %) | 2.725 vs 2.682 (+1.6 %) |
+| V2_03_difficult (6) | 2.163 vs 2.058 (+5.1 %) | 2.162 vs 1.829 (+18.2 %) | 2.536 vs 2.539 (-0.1 %) |
+
+Output contract 18/18 PASS; no crash, no fallback error. Sequences better than the floor on pooled APE: **1 of 3**
+(V2_01). On this untouched final set the shipped build is **worse than standing still** overall (+2.0 % APE), worse
+in the gap windows on V2_02 and V2_03, and ties the floor in the blind window (as L3 is designed to). This differs
+from the held-out EuRoC sets (MH_03..05 + V1_01..03: -5 to -8 % APE) and is reported as the final-test result.
+No second scorer was run here.
