@@ -2243,9 +2243,11 @@ argument forms, constant-pose fallback). Machine quiet: no other session running
 - Gate, Win 3.14, chunked bundle, MH_01_easy_b_s1, 15 runs: **PASS**; heap 1,234 KB estimator / 3,476 KB whole run
   from source; `python -S main.py` 27.66 us/row (5.36 ms per IMU second); checker PASS
   (Docs/budget/bundle-chunked-9a304c7-win-py314-mh01-b-s1.json).
-- pytest: 507 passed, 1 failed, 10 skipped, 1 xfailed. The failure, tests/test_ccore.py::test_odd_fields, is the
-  C-core experiment (never shipped): it still writes a leading-zero timestamp as `00000140...` where this branch now
-  writes `1403...`. It already failed at 779b6ae; open for Arnav (fix main.cpp, or record as a documented difference).
+- pytest: 507 passed, 1 failed on 9a304c7: tests/test_ccore.py::test_odd_fields (C-core experiment, never shipped)
+  still writes a zero-led timestamp as `00000140...` where this branch writes `1403...`. **Arnav (21 Nov): record it
+  as a documented difference**, like timestamps above 9.2e18 ns: test_odd_fields drops that row and
+  test_zero_led_timestamp_documented_difference pins it (only that row differs; equal once the zeros are stripped).
+  main.cpp unchanged. After that and main 88b1d27 (#78): **512 passed, 10 skipped, 1 xfailed** (Win 3.14, 31 min).
 - Not measured: Python 3.10/3.11 (not installed; AG-3), Docker.
 
 ### Gate on the L2 build with TILT_ON shipped (19 Nov 2026; carried over after #61 merged)

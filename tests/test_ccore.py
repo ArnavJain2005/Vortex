@@ -330,12 +330,13 @@ def test_denoised_calibration(cbin, tmp_path):
 
 
 def test_odd_fields(cbin, tmp_path):
-    """Underscores, inf, padded and zero-led timestamps, BOM, extra and missing columns, CR line ends.
-    (Timestamps above 9.2e18 ns are a documented difference, so none here.)"""
+    """Underscores, inf, padded timestamps, BOM, extra and missing columns, CR line ends.
+    (Timestamps above 9.2e18 ns and zero-led timestamps are documented differences, so none here; the
+    zero-led one is pinned by test_zero_led_timestamp_documented_difference.)"""
     lines = [b"\xef\xbb\xbf# header", b"1403636579758555392,1_0e-3,0.002,-0.003,9.8_1,0.01,-0.02",
              b"1403636579763555584 ,0.001,inf,0.003,9.81,0.0,0.0", b"\t1403636579768555520,0.001,0.002,0.003,9.81",
              b"1403636579773555456,0.001,0.002,0.003,9.81,0.01,-0.02,extra,more",
-             b"000001403636579778555392,0.001,0.002,0.003,9.81,0.01,-0.02",
+             b"1403636579778555392,0.001,0.002,0.003,9.81,0.01,-0.02",
              b"1403636579783555328,0.001,0.002,0.003,9.81,0.01,-0.02\r",
              b"1403636579788555392,0x1,0.002,0.003,9.81,0.01,-0.02", b"   ", b"",
              b"1403636579793555200,+.5e-2,-0.,0.003,9.81,1E-2,-2e-2"]
@@ -343,6 +344,33 @@ def test_odd_fields(cbin, tmp_path):
     src.write_bytes(b"\n".join(lines))
     _compare(cbin, src, tmp_path)
 
+
+
+def test_zero_led_timestamp_documented_difference(cbin, tmp_path):
+    """DOCUMENTED DIFFERENCE (freeze build, 21 Nov 2026; Arnav's call): pathfinder.py writes a zero-led
+    timestamp as str(ns // 10**9) (`000001403636579778555392` -> `1403636579.778555392`, as the output
+    contract asks); the C core (recorded experiment, never shipped) keeps the zeros. Everything else must
+    match: the C output with the leading zeros of each seconds field stripped is byte-identical, and only
+    the zero-led row differs before stripping."""
+    zl = b"000001403636579778555392,0.001,0.002,0.003,9.81,0.01,-0.02"
+    lines = [b"# header"] + [b"%d,0.001,0.002,0.003,9.81,0.01,-0.02" % (1403636579758555392 + 5000000 * i)
+                             for i in range(4)] + [zl, b"1403636579783555328,0.001,0.002,0.003,9.81,0.01,-0.02"]
+    src = tmp_path / "imu.csv"
+    src.write_bytes(b"\n".join(lines))
+    py, c = tmp_path / "py.txt", tmp_path / "c.txt"
+    pf.run(str(src), str(py))
+    p = subprocess.run([str(cbin), str(src), str(c)], capture_output=True, text=True)
+    assert p.returncode == 0 and p.stderr == "", p.stderr
+    lp, lc = py.read_bytes().splitlines(), c.read_bytes().splitlines()
+    assert len(lp) == len(lc) == len(lines) - 1
+    assert [i for i in range(len(lp)) if lp[i] != lc[i]] == [4]
+    assert lp[4].startswith(b"1403636579.778555392 ") and lc[4].startswith(b"00000")
+
+    def strip(row):
+        sec, rest = row.split(b".", 1)
+        return (sec.lstrip(b"0") or b"0") + b"." + rest
+    assert [strip(x) for x in lc] == lp
+    assert check_output.check(src, py)["ok"]
 
 # ---- command line ----
 
