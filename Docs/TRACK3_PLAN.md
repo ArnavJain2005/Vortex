@@ -2596,3 +2596,41 @@ two stages: `tools/make_bundle.py single` generates the CHUNKED `src/main.py`, t
 
 pytest on `track3/final-docs`: recorded by `python tools/make_numbers.py --pytest` in `Docs/numbers/pytest.json` and
 the `pytest_*` keys of `Docs/NUMBERS.md`.
+
+## Final table: Vicon Room 2 on the frozen v1.0 file (plan committed 22 Nov 2026, BEFORE any V2 copy exists or any V2 file is read)
+
+Arnav's instruction (22 Nov, "Final stretch", step 4): after the v1.0 zip, and only when Arnav says "run the final
+table"; run once; record exactly what comes out; change nothing afterwards. At this commit no V2 official copy exists
+(`data/official` holds 0 `V2_*` folders) and no V2 file has been read, fitted or plotted.
+
+**What is frozen.** The estimator is `src/main.py` extracted from `dist/vortex_v1.0.zip` (zip sha256
+`e251c4010248caf5103bbf2923122146bba64ae7e2b225069a89672ffbd4447c`; tag `v1.0` = 0e7c81d = main 5e28668 + bundle README;
+src/main.py sha256 `feb222ea9f27f077c9113b39edd7cb513a6a3e496ec4db35f3c9416349d10811`). Its sha256 is checked after
+extraction, before the first run. No switch, constant, tool or scoring change between this plan and the table. The
+floor is `tools/baseline_still.py` (never moving), scored the same way.
+
+**Inputs (18 copies).** V2_01_easy, V2_02_medium, V2_03_difficult x readings a, b x seeds 1, 2, 3, made from
+`data/euroc/V2_0*` with the organisers' `degrade_imu.py` (copied unchanged into the git-ignored `tools/official/`)
+through `python tools/official_degrade.py --all --seqs V2_01_easy,V2_02_medium,V2_03_difficult --readings a,b
+--seeds 1,2,3 --final`. The SHA-256 of every `mav0/imu0/data.csv` is recorded in the result note before any estimate
+runs. Seed 42 is not used.
+
+**Runs (once each, Win 3.14.7, the machine that built v1.0).**
+1. `python tools/eval_euroc.py --tag final-v10-V2 --official --final --main <extracted src/main.py> --seqs <the 18>`
+2. `python tools/eval_euroc.py --tag final-floor-V2 --official --final --main tools/baseline_still.py --seqs <the 18>`
+3. `python tools/final_table.py --est final-v10-V2 --floor final-floor-V2` -> `Docs/FINAL_TABLE.md`
+
+Scorer: `vortex/scoring.py` as at this commit (APE: SE(3) Umeyama fitted on the run being scored; gap RMSE inside
+missing-row bursts and blind RMSE over the final dead-sensor window, both from each copy's `degrade.json`).
+
+**What is reported (generated, never by hand).** `tools/final_table.py` (committed here with
+`tests/test_final_table.py`, tested on synthetic results only): pooled over all 18 copies and per reading; per
+sequence (both readings, three seeds); per sequence and reading; per copy. For each: mean APE, mean gap RMSE and mean
+blind RMSE for Vortex and the floor, and `100 (est / floor - 1)`; the output-contract PASS count; the number of the
+3 sequences better than the floor on pooled APE. A copy with an error is listed and left out of the means, never
+dropped silently.
+
+**No decision rides on it.** Reported as it comes out, good or bad. Nothing is tuned, re-run or re-selected afterwards.
+A crash or contract FAIL is reported to Arnav in chat and recorded, not fixed in the build. If a second scorer (evo,
+or Antigravity's independent scorer) is run on the same outputs and any copy differs by more than 1 mm, that is
+escalated to Arnav and both numbers are recorded.
