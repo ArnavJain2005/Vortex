@@ -97,3 +97,21 @@ python tools/make_bundle.py stage --dir dist/stage
 python tools/make_bundle.py zip --name vortex_5e28668 --dir dist/stage --out dist
 python tools/clean_machine_check.py --zip dist/vortex_5e28668.zip --input data/official/MH_01_easy_b_s1/mav0/imu0/data.csv --envs win-venv-3.13,win-venv-3.14,docker-3.10,docker-3.11,docker-3.12,docker-3.13,docker-3.14,zip-dockerfile --bench-runs 5 --commit 5e28668
 ```
+
+---
+
+## 3. FINAL `v1.0` Submission Zip Verification (`dist/vortex_v1.0.zip` = `dist/Vortex.zip`, tag `v1.0` `0e7c81d`)
+
+- **Archive verified:** `dist/vortex_v1.0.zip` (`781,993` bytes; byte-identical to `Vortex-v1/dist/Vortex.zip`).
+- **Archive SHA-256:** `e251c4010248caf5103bbf2923122146bba64ae7e2b225069a89672ffbd4447c` (**MATCH** against `LOOP_CC.md@32ea1b4`).
+- **Contents (7 files, zero `.pyc` or compiled files):** `Dockerfile`, `LICENSE`, `MANIFEST.txt`, `README.md`, `estimated_trajectory.txt`, `metadata.json`, `src/main.py`.
+- **Bundled `src/main.py` SHA-256:** `feb222ea9f27f077c9113b39edd7cb513a6a3e496ec4db35f3c9416349d10811` (byte-identical to Section 2 `main@5e28668`).
+- **Bundled `estimated_trajectory.txt` (`MH_03_medium_b_s1`):** `vortex.check_output` **PASS** (`26,106` rows), SHA-256 `0e215ee3b078eaea` (byte-identical to Section 2).
+
+Unzipped to an empty directory outside the repository and executed `src/main.py` in fresh bare virtual environments (`win-venv-3.13`, `win-venv-3.14`, `docker-3.12`) across 4 invocation modes (`no_args` with `-S`, `no_args` without `-S`, `IN OUT` with `-S`, `IN OUT` without `-S`) × 2 sequences (`MH_03_medium_b_s1`, `dataset-room3_512_16_b_s1`) = **`24/24` PASS**:
+
+| Environment | Python | `MH_03_b_s1` (`no_args` & `IN OUT`, ±`-S`) | `MH_03_b_s1` SHA-256 (16 hex) | `room3_b_s1` (`no_args` & `IN OUT`, ±`-S`) | `room3_b_s1` SHA-256 (16 hex) | Matches Sec 2? |
+|---|---|---|---|---|---|---|
+| `win-venv-3.13` | 3.13.5 | `4/4` `check_output` PASS | `0e215ee3b078eaea` | `4/4` `check_output` PASS | `bd75c9364f0face9` | **YES** |
+| `win-venv-3.14` | 3.14.7 | `4/4` `check_output` PASS | `0e215ee3b078eaea` | `4/4` `check_output` PASS | `bd75c9364f0face9` | **YES** |
+| `docker-3.12` | 3.12.7 | `4/4` `check_output` PASS | `0e215ee3b078eaea` | `4/4` `check_output` PASS | `bd75c9364f0face9` | **YES** |
