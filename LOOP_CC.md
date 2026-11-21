@@ -1,4 +1,4 @@
-# LOOP_CC   updated 2026-11-22 04:40 IST   iteration 15 (CC-final: Arnav's "Final stretch" prompt, 22 Nov 03:30 IST)
+# LOOP_CC   updated 2026-11-22 04:45 IST   iteration 15 (CC-final: Arnav's "Final stretch" prompt, 22 Nov 03:30 IST)
 STEP 2+3 DONE: PR #83 https://github.com/ArnavJain2005/Vortex/pull/83 (track3/final-docs, head 7822f69, MERGEABLE/CLEAN)
   = v1.0 commit 0e7c81d + NUMBERS (87fc280) + README (7822f69). READY FOR ARNAV TO MERGE. pathfinder.py / vortex/ unchanged.
   NUMBERS: every key from one set of runs of the shipped src/main.py (22 Nov; 316 runs, contract PASS on all; seeds
@@ -15,7 +15,10 @@ STEP 4 DONE (Arnav: "Run the final table"): PR #84 https://github.com/ArnavJain2
   Plan f34d362 (0 V2 copies then) -> input SHA-256 a4358a9 (before any estimate) -> result 08f43f2, run once, nothing changed.
   V2 x a,b x s1-3 (18), shipped v1.0 file vs floor: APE 2.200 vs 2.156 m (+2.0 %), gap 2.130 vs 1.969 (+8.2 %),
   blind 2.781 vs 2.769 (+0.4 %); V2_01 -10.5 %, V2_02 +12.6 %, V2_03 +5.1 %; 1/3 sequences better; contract 18/18 PASS.
-  No second scorer run. README (#83) still says V2 is untouched: needs one line once #84 merges (asked Arnav).
+  No second scorer run.
+  README V2 result (Arnav: "Yes, add it"): on #84, merged track3/final-docs in (fb90311, normal merge) then 2054cbd:
+  headline, coverage, "Where it is weaker" and a new "Final test set" paragraph + table, from FINAL_TABLE.md;
+  "Vicon Room 2 remain untouched" removed. #84 head 2054cbd MERGEABLE. Merge #83 first, then #84. Zip unchanged.
 WAITING: Arnav's "submitted" -> tag v1.0-submitted.
 V1.0 ZIP READY: dist/vortex_v1.0.zip (= dist/Vortex.zip, same bytes) sha256
   e251c4010248caf5103bbf2923122146bba64ae7e2b225069a89672ffbd4447c
