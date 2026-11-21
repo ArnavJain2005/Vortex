@@ -273,14 +273,19 @@ with tempfile.TemporaryDirectory(prefix="ag3_run_") as tmp_s:
         out_f = tmp / f"o_{vname}.txt"
         results["b2"].append(run_case(vname, [str(solo_main), str(vpath), str(out_f)], work_other, out_f, use_S=True))
 
-    # B4: injected failure fallback
+    # B4: injected failure fallback (supports both PLAIN mod.run and CHUNKED mod.CHUNKS/mod.SRC)
     out_fb = tmp / "o_fallback.txt"
     inject_code = (
         "import importlib.util, sys\n"
         f"spec = importlib.util.spec_from_file_location('solo_main', {str(solo_main)!r})\n"
         "mod = importlib.util.module_from_spec(spec); spec.loader.exec_module(mod)\n"
-        "def boom(*a, **kw): raise RuntimeError('AG-3 injected failure')\n"
-        "mod.run = boom\n"
+        "if hasattr(mod, 'CHUNKS') and hasattr(mod, 'SRC'):\n"
+        "    _olen = len(mod.SRC)\n"
+        "    mod.SRC = mod.SRC + '\\ndef run(*a, **kw):\\n    raise RuntimeError(\"AG-3 injected failure\")\\n'\n"
+        "    mod.CHUNKS = tuple(mod.CHUNKS) + ((_olen, len(mod.SRC), 9999),)\n"
+        "else:\n"
+        "    def boom(*a, **kw): raise RuntimeError('AG-3 injected failure')\n"
+        "    mod.run = boom\n"
         f"sys.exit(mod.main(['main.py', {str(base_csv)!r}, {str(out_fb)!r}]))\n"
     )
     p_fb = subprocess.run([py, "-S", "-c", inject_code], cwd=str(work_other), capture_output=True, text=True, timeout=60)
@@ -316,38 +321,45 @@ with tempfile.TemporaryDirectory(prefix="ag3_run_") as tmp_s:
     })
 
     # Whole-run FROM-SOURCE tracemalloc peak & speed (no cached bytecode: -B -X pycache_prefix=<empty>)
+    # Skipped completely when bench_runs < 0 (correctness-only mode).
     n_rows, imu_s = parse_csv_span(base_csv)
-    cold = tmp / "cold_pycache"
-    cold.mkdir()
-    out_hp = tmp / "o_heap.txt"
-    p_hp = subprocess.run(
-        [py, "-S", "-B", "-X", f"pycache_prefix={cold}", "-c", HEAP_PROBE, str(solo_main), str(base_csv), str(out_hp)],
-        cwd=str(work_other), capture_output=True, text=True, timeout=180,
-    )
-    heap_kb, heap_rc = parse_heap_peak(p_hp.stdout)
-
-    out_xhp = tmp / "o_xheap.txt"
-    p_xhp = subprocess.run(
-        [py, "-S", "-B", "-X", "tracemalloc=1", "-X", f"pycache_prefix={cold}", "-c", X_HEAP_PROBE,
-         str(solo_main), str(base_csv), str(out_xhp)],
-        cwd=str(work_other), capture_output=True, text=True, timeout=180,
-    )
-    xheap_kb, xheap_rc = parse_heap_peak(p_xhp.stdout)
-
-    wall_samples = []
-    out_bench = tmp / "o_bench.txt"
-    for _ in range(max(0, bench_runs)):
-        t0 = time.perf_counter()
-        pb = subprocess.run(
-            [py, "-S", "-B", "-X", f"pycache_prefix={cold}", str(solo_main), str(base_csv), str(out_bench)],
+    if bench_runs < 0:
+        heap_kb, heap_rc = None, None
+        xheap_kb, xheap_rc = None, None
+        wall_samples = []
+        wall_med, us_per_row, ms_per_imu_s = None, None, None
+    else:
+        cold = tmp / "cold_pycache"
+        cold.mkdir()
+        out_hp = tmp / "o_heap.txt"
+        p_hp = subprocess.run(
+            [py, "-S", "-B", "-X", f"pycache_prefix={cold}", "-c", HEAP_PROBE, str(solo_main), str(base_csv), str(out_hp)],
             cwd=str(work_other), capture_output=True, text=True, timeout=180,
         )
-        dt = time.perf_counter() - t0
-        if pb.returncode == 0:
-            wall_samples.append(dt)
-    wall_med = statistics.median(wall_samples) if wall_samples else None
-    us_per_row = (wall_med * 1e6 / n_rows) if (wall_med is not None and n_rows > 0) else None
-    ms_per_imu_s = (wall_med * 1e3 / imu_s) if (wall_med is not None and imu_s > 0) else None
+        heap_kb, heap_rc = parse_heap_peak(p_hp.stdout)
+
+        out_xhp = tmp / "o_xheap.txt"
+        p_xhp = subprocess.run(
+            [py, "-S", "-B", "-X", "tracemalloc=1", "-X", f"pycache_prefix={cold}", "-c", X_HEAP_PROBE,
+             str(solo_main), str(base_csv), str(out_xhp)],
+            cwd=str(work_other), capture_output=True, text=True, timeout=180,
+        )
+        xheap_kb, xheap_rc = parse_heap_peak(p_xhp.stdout)
+
+        wall_samples = []
+        out_bench = tmp / "o_bench.txt"
+        for _ in range(max(0, bench_runs)):
+            t0 = time.perf_counter()
+            pb = subprocess.run(
+                [py, "-S", "-B", "-X", f"pycache_prefix={cold}", str(solo_main), str(base_csv), str(out_bench)],
+                cwd=str(work_other), capture_output=True, text=True, timeout=180,
+            )
+            dt = time.perf_counter() - t0
+            if pb.returncode == 0:
+                wall_samples.append(dt)
+        wall_med = statistics.median(wall_samples) if wall_samples else None
+        us_per_row = (wall_med * 1e6 / n_rows) if (wall_med is not None and n_rows > 0) else None
+        ms_per_imu_s = (wall_med * 1e3 / imu_s) if (wall_med is not None and imu_s > 0) else None
 
     results["metrics"] = {
         "rows": n_rows,
@@ -804,6 +816,7 @@ def main(argv: list[str] | None = None) -> int:
         help="comma-separated environments to test",
     )
     ap.add_argument("--bench-runs", type=int, default=5, help="number of cold from-source timing runs per env (default: 5)")
+    ap.add_argument("--skip-bench", action="store_true", help="skip heap and timing measurements (correctness-only mode)")
     ap.add_argument("--commit", default="?", help="commit hash label for the report")
     ap.add_argument("--out", default=None, help="optional Markdown output path (e.g. Docs/CLEAN_MACHINE.md)")
     ap.add_argument("--json", default=None, help="optional JSON output path")
@@ -828,7 +841,15 @@ def main(argv: list[str] | None = None) -> int:
             main_src = Path(args.main_path).resolve()
             label = str(main_src)
 
-        report = run_matrix(main_src, base_csv, envs, label, args.commit, zip_dir=zip_dir, bench_runs=args.bench_runs)
+        report = run_matrix(
+            main_src,
+            base_csv,
+            envs,
+            label,
+            args.commit,
+            zip_dir=zip_dir,
+            bench_runs=(-1 if args.skip_bench else args.bench_runs),
+        )
 
     md = format_markdown(report)
     print(md)
