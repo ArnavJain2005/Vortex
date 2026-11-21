@@ -1,10 +1,10 @@
 {
- "summary": "410 passed, 1 xfailed, 2 warnings in 1659.76s (0:27:39)",
- "passed": 410,
+ "summary": "521 passed, 2 skipped, 1 xfailed in 2365.70s (0:39:25)",
+ "passed": 521,
  "failed": 0,
- "skipped": 0,
+ "skipped": 2,
  "python": "3.14.7",
  "platform": "Windows 11",
- "commit": "be064ed",
- "date": "2026-11-19"
+ "commit": "87fc280",
+ "date": "2026-11-22"
 }

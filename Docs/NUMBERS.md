@@ -361,9 +361,9 @@ Sets:
 | `heldout_ape_floor` | 3.745 | = heldout_ape_floor_m (v10-H46 vs v10floor-H46) | 2026-11-22 |
 | `blind_rmse_vortex` | 2.494 | = heldout_blind_m (v10-H46 vs v10floor-H46) | 2026-11-22 |
 | `blind_rmse_floor` | 2.504 | = heldout_blind_floor_m (v10-H46 vs v10floor-H46) | 2026-11-22 |
-| `pytest_passed_n` | 410 | pytest Windows 11, Python 3.14.7, commit be064ed | 2026-11-19 |
-| `pytest_failed_n` | 0 | pytest Windows 11, Python 3.14.7, commit be064ed | 2026-11-19 |
-| `pytest_skipped_n` | 0 | pytest Windows 11, Python 3.14.7, commit be064ed | 2026-11-19 |
+| `pytest_passed_n` | 521 | pytest Windows 11, Python 3.14.7, commit 87fc280 | 2026-11-22 |
+| `pytest_failed_n` | 0 | pytest Windows 11, Python 3.14.7, commit 87fc280 | 2026-11-22 |
+| `pytest_skipped_n` | 2 | pytest Windows 11, Python 3.14.7, commit 87fc280 | 2026-11-22 |
 | `experiments_off_n` | 10 | make_numbers.OFF | - |
 | `off_ff_stuck6` | stuck-row filter: failed its rule (Step 3) | Step 3 | - |
 | `off_ff_spike` | spike filter: failed its rule (Step 3) | Step 3 | - |
