@@ -93,6 +93,7 @@ Deadline **22 Nov 2026, 11:59 PM IST**, confirmed by the FAQ (Q1 closed). Full-t
 | PRD v2 | PRD v2 (18 Nov) in the repo (`Docs/PRD.md`): levers L1 shrinkage, L2 slow gravity alignment, L3 blind window, L4 hardening, L5 TUM-VI; paired, sequence-level judging (rules G and H); work split Claude Code / Antigravity / ChatGPT. Fallback zip frozen | **Done (verified)** 18 Nov (K0): `dist/vortex_v0.9.zip` from `main` da14417, eval input `data/official/MH_03_medium_b_s1` (placeholder), 26,106 rows, 3.19 ms per IMU-s, heap 1,013 KB; `verify` PASS on Win 3.13 and 3.14; SHA-256 0e558440a397ef4b78426cc471ac8d3fd17f8c658b28a6cd40aeb5a3ba555d6b | Zip verified; never deleted |
 | NUMBERS (K6, early) | `tools/make_numbers.py` -> `Docs/NUMBERS.md` + `Docs/numbers/numbers.json`: every number the deck, script and README may quote, as `key | value | source tag | date`, generated from committed result, TUM-VI, budget and pytest files. Keys are stable (ChatGPT's `[[N:key]]`); when the shipped build changes, `SOURCES` in the script points at the new tags | **Done (verified)** 18 Nov: headline keys reproduce the Step F verdict to the digit (held-out 4.962 vs floor 3.745 m; reading a 6.181, b 3.744; gap 5.036; blind 6.992). Budget from a fresh lean run (`lean-win-py314-mh01-b-s1`) | `tests/test_numbers.py` (3); `--check` in the suite |
 | L2 | Slow gravity alignment over a 4 s window with a lag model, weighted by a gyro noise meter (`TILT_ON`) | **Done (verified): ON** by rule G2 (18 Nov, rule at 3e2646e, seeds 16-18, base with the Step 6 smoother): all 13 checks pass, held-out APE 4.922 -> 3.575 m (floor 3.746), DiD null 1.347 vs 1.187 m. Rule G (seeds 10-12) had failed its level null; G2 was **written after seeing that: weaker evidence, same 6 flights** | Rule G2 on 36 fresh held-out copies + TUM-VI room3/4 |
+| L3 | Blind window from a trusted state (`BLIND_ON` + `BLIND_DEAD_ONLY`, **on**): on a detected trailing dead run >= 1 s, the rows from 3 s before it ramp to the earlier estimate's centroid (a trust policy); no 5 s fallback | **Done** (21 Nov): rule H failed condition 7 (clean TUM-VI +1.13 %, the fallback); rule H' (no fallback, seeds 22-24, weaker evidence) **passed 1-8**: H blind -18.6 % (6/6 sequences), APE -1.6 %, T blind -43.9 %, clean unchanged, gate PASS (attempt 5 of 5, all recorded) | Freeze-build bundle rebuilt from the merged pathfinder.py |
 
 ## Open questions (Q1 to Q5 are in the email drafted for prism@samsung.com on 15 Nov)
 
@@ -2307,3 +2308,219 @@ criterion was written beforehand: this is exploration, and no held-out copy was 
   unlikely, and a fail would spend seeds for nothing. No switch was added to `pathfinder.py`, so the shipped
   build is unchanged. A later session can take this up with a better-founded calibration, and seeds 19-21
   remain free for it.
+
+## Step L3: blind window from a trusted state (19-20 Nov 2026, branch `track3/stepL3-blind`)
+
+Base: `main` at 86711a9 (SMOOTH_ON, PLATFORM_ON, TILT_ON shipped). New switch `BLIND_ON`, default off; built in the
+reference (`vortex/core/witness.py`) first, then copied into `pathfinder.py` bit-identically. Candidates are Arnav's
+(loop prompt, 19 Nov, relayed by the Step 7 session), plus one of mine (B2 with beta = 1, below).
+
+**Disclosure (before anything below).** Before Arnav's grid and criterion reached this session, I ran an offline
+probe on the 24 tuning copies only: shipped output, blind rows rewritten, SE3 re-fitted and re-scored. No held-out
+data. Means over the 24 copies, blind RMSE (APE): shipped 4.026 (2.474); hold at failure 3.958 (2.469); hold at the
+mean of the last 2 / 5 / 10 / 20 s 3.888 / 3.775 / 3.743 / 3.652; jump to the estimate's centroid of the rows
+before failure 2.969 (2.426); pull toward it 0.5 x 3.441; exponential pull with tau 0.25 / 0.5 / 1 / 2 / 5 s
+3.042 / 3.110 / 3.232 / 3.405 / 3.653. Floor 2.984 (2.801). This is tuning before a written criterion: it is why
+beta = 1 is on the grid, and the criterion below, not the probe, picks the candidate.
+
+**Why the centroid can only tie the floor in the blind window.** SE3 alignment maps the estimate's centroid onto
+the ground truth's centroid (translation t = mu_gt - R mu_est), and the never-moving floor's constant output goes
+to the same point. Rows held at the estimate's centroid therefore score the same distance as the floor's rows. So
+beta = 1 is a **trust policy, not recovered motion**: it says the estimate at failure is worth less than nothing on
+these copies (MH_01/02: error at failure 6.6-7.1 m against the floor's 5.0 m), and it can never beat the floor in
+the blind window, only tie it.
+
+**Blind start (all candidates).** t_b = timestamp of the first row of the trailing run of rows the estimator
+rejects (not finite or absurd, all-zero accelerometer, or a triple repeated for STUCK_ROWS rows), if that run spans
+at least `BLIND_MIN_S` = 1.0 s. Otherwise fall back to the last 5 s by timestamp (organisers' FAQ A5):
+t_b = t_end - `BLIND_FALLBACK_S` (5.0 s). So the fallback changes the last 5 s of clean files too.
+
+**Candidates** (on the final output, after the smoother; anchor time t_a = t_b - L; anchor row = the last row
+with t < t_a; c = mean output position of the rows with t < t_a):
+- **B0**: shipped (velocity decays with FC_TAU = 0.5 s from the last tick). The control.
+- **B1(L)**, L in {1, 2, 3} s: every row with t >= t_a takes the anchor row's position and attitude.
+- **B2(L, beta)**, L in {1, 2, 3} s, beta in {0.25, 0.5, 0.75} (Arnav) and **1.0** (mine): rows with t >= t_a keep
+  the anchor's attitude; position a + w (c - a) with w = beta min(1, (t - t_a) / L), so the pull ramps over the
+  lookback span (no jump) and is full from t_b on.
+- **B3(L, tau)**, L in {1, 2, 3} s, tau in {0.25, 0.5, 1.0} s, W = 2 s (W was not given; fixed here): velocity =
+  per-axis median of the slopes between output positions sampled every 0.25 s in [t_a - W, t_a), 1 s apart; rows
+  with t >= t_a: position a + v tau (1 - exp(-(t - t_a) / tau)), attitude held.
+25 settings in all.
+
+**Tuning data:** MH_01/02 and TUM-VI room1/2 x readings a, b x seeds 1-3 (24 copies), by an offline harness
+(`tools/blind_tune.py`) that applies each candidate to the shipped output and re-scores (SE3 fitted on the run).
+Clean MH_01/02 and room1/2 are reported for information (the fallback acts on them).
+
+**Selection criterion (Arnav's, committed before the tuning run):** the lowest mean blind RMSE among the
+candidates whose mean tuning APE is not worse than B0's by more than 0.5 % and whose mean gap RMSE is not worse by
+more than 1 %. Error at the failure moment, blind growth and blind RMSE are reported separately. The chosen
+candidate is then built (reference, `pathfinder.py`) and must reproduce the harness numbers.
+
+**Seed 13-15 copies, status at this commit.** EuRoC: none exist (made after rule H is committed, SHA-256
+recorded). TUM-VI room1..4 x a, b x seeds 13-15: made by Antigravity on 18 Nov. The Step 7 platform detector
+(`tools/platform_check.py`, `Docs/tumvi/step7-detect.json`) has read their IMU files for its hand-held statistic;
+no ground truth was read and no estimate was scored on them. Nothing else has run on them.
+
+**Tuning result (19 Nov, evening; `python tools/blind_tune.py --tag stepL3-tune`, table in
+`Docs/blind/stepL3-tune.md`).** All 25 candidates pass the APE and gap limits. **Chosen by the criterion: B2,
+L = 3 s, beta = 1.** Means over the 24 tuning copies:
+
+| | blind RMSE | error at failure | blind growth | APE | gap RMSE | clean APE (fallback) |
+|---|---|---|---|---|---|---|
+| B0 (shipped) | 4.026 | 3.800 | 0.834 | 2.474 | 2.303 | 2.5688 |
+| best B1 (L = 2) | 3.838 | 3.660 | 0.539 | 2.461 | 2.311 | 2.5763 |
+| best B3 (L = 3, tau 0.25) | 3.884 | 3.714 | 0.539 | 2.465 | 2.313 | 2.5805 |
+| B2 L = 3, beta = 0.75 (Arnav's grid, best) | 3.176 | 3.042 | 0.539 | 2.422 | 2.289 | 2.5529 |
+| **B2 L = 3, beta = 1** | **2.962** | **2.838** | 0.539 | **2.411** | **2.281** | 2.5459 |
+| never-moving floor | 2.984 | 2.860 | - | 2.801 | - | - |
+
+- Blind error is set by the error at the failure moment (B0: 3.80 of 4.03 m), as PRD v2 expected. Lookback holds
+  and median-slope fits (B1, B3) barely move it. Only the pull toward the centroid does, and it rises with beta.
+- beta = 1 is mine, outside Arnav's grid. Without it, the criterion picks B2 L = 3, beta = 0.75 (3.176 m).
+- On MH_01/02 the chosen candidate's blind RMSE (5.26 / 5.27 m) equals the floor's (5.29 m), as the geometry above
+  says it must. On TUM-VI room1/2 it is 0.66 m against the floor's 0.68 m.
+- Fallback: the 4 clean files (no dead run) get the last 5 s by timestamp; their APE moved 2.569 -> 2.546 m.
+- Detected blind start against degrade.json `failure_at_s`: within 0.0044 s (one row) on all 24 copies.
+
+**Built (`BLIND_ON`, off):**
+- Reference: `witness.estimate()` tracks the trailing run of rejected rows; `blind_apply()` runs after the smoother.
+- `pathfinder.py`: the smoother's store pass records the blind start (`LAST["blind_t"]`); the write pass keeps a
+  running sum of the written positions until ta, then writes the blend. O(1) memory. The store pass also runs when
+  BLIND_ON is on and SMOOTH_ON is off.
+- `tools/pathfinder_lab.py`: the same.
+- Off: byte-identical to `main` (86711a9) on MH_01_easy_a_s1, MH_02_easy_b_s2, clean MH_01_easy and
+  room1_b_s1. On: only the last ~8 s change (3 s ramp + 5 s blind).
+- The built switch reproduces the harness on the 24 tuning copies (`stepL3-tune-on` tags). Mean blind RMSE 2.9623
+  against 2.9619. Largest per-file difference 3 mm: the harness picks the ramp's first row in float seconds,
+  the estimator in integer ns.
+- Tests: `tests/test_blind.py` (13), `tests/test_judge_stepH.py` (7).
+
+### Rule H (Step L3, seeds 13-15), committed before the EuRoC seed 13-15 copies exist
+
+Arnav's rule (loop prompt, 19 Nov, relayed by the Step 7 session). Every `BLIND_*` constant is frozen at this
+commit: BLIND_MIN_S = 1.0, BLIND_FALLBACK_S = 5.0, BLIND_L = 3.0, BLIND_BETA = 1.0. **Base: the shipped build at
+this commit** (`main` 86711a9 + L3 code: SMOOTH_ON, PLATFORM_ON, TILT_ON on; BLIND_ON set per run with `--set`).
+`tools/judge_stepH.py` (+ `tests/test_judge_stepH.py`).
+
+Data:
+- **H:** MH_03..05 and V1_01..03 x readings a, b x **seeds 13, 14, 15** (36 copies), made by
+  `tools/official_degrade.py` after this commit, with SHA-256 of each `data.csv` recorded.
+- **T:** room3, room4 x a, b x seeds 13-15 (12 copies). Made by Antigravity on 18 Nov; only the Step 7 platform
+  detector has read them (no ground truth, no estimate scored).
+- **C:** clean MH_01..05, V1_01..03 (8). **CT:** clean room1..4 (4).
+- Tags: `stepH-H-floor`, `stepH-H-off`, `stepH-H-on`, `stepH-C-off/-on`, `Docs/tumvi/stepH-T-off/-on/-floor`,
+  `stepH-CT-off/-on`.
+
+`BLIND_ON` ships on only if all of these hold:
+1. Mean blind RMSE over H improves by >= 2 %.
+2. The paired blind gain is positive on >= 4 of the 6 H sequences (readings and seeds pooled per sequence).
+3. Neither reading's mean blind RMSE over H is worse by > 1 %.
+4. Mean APE over H is not worse by > 0.5 %.
+5. Mean gap RMSE over H is not worse by > 2 %.
+6. TUM-VI block T: mean blind RMSE not worse by > 2 %, and mean APE not worse by > 0.5 %.
+7. Clean APE not worse by > 0.5 %: clean EuRoC (8) and clean TUM-VI (4), each.
+8. Contract PASS on every run, and the benchmark gate PASSes with BLIND_ON.
+
+The verdict table shows each sequence's paired blind effect, the floor's blind RMSE and the floor's APE beside
+the means. Output kept in `Docs/results/stepH-verdict.txt`. **A trust policy, not recovered motion**; if it ships,
+it is described as "the blind window falls back to the trajectory's centre, level with standing still". If rule H
+fails, `BLIND_ON` stays off and there is no re-judge: it goes back to Arnav (only he can release seeds 22-24).
+
+Prediction (not part of the rule): conditions 1, 3 and 6 pass, because the shipped blind RMSE has been above the
+floor on every held-out set so far (seeds 10-12: 3.38 against 2.51 m). Conditions 2 and 7 are the risks:
+- Condition 2: a sequence whose shipped blind RMSE is already below the floor gets worse (it is pulled to the
+  floor's level). Under rule G, V1_01 reading a was below the floor.
+- Condition 7: the 5 s fallback moves the end of clean flights.
+
+### Rule H, early result (20 Nov, before the EuRoC seed 13-15 copies exist): condition 7 fails
+
+The clean and TUM-VI blocks of rule H were run first at a5f5bd1, since they need no new copies (contract PASS on
+all 24 runs):
+
+| Block | off | on | change | limit | |
+|---|---|---|---|---|---|
+| C: clean EuRoC APE (8) | 3.5701 m | 3.5373 m | -0.92 % | +0.5 % | pass |
+| CT: clean TUM-VI APE (4) | 0.8793 m | 0.8892 m | **+1.13 %** | +0.5 % | **FAIL** |
+| T: TUM-VI blind RMSE (12) | 1.114 m | 0.739 m | -33.7 % | +2 % | pass (floor 0.738 m) |
+| T: TUM-VI APE (12) | 1.1134 m | 1.0878 m | -2.3 % | +0.5 % | pass (floor 1.163 m) |
+
+All four clean rooms are worse (room1 0.4074 -> 0.4259, room2 1.0945 -> 1.0984, room3 1.0848 -> 1.0915, room4
+0.9304 -> 0.9410). Likely cause (not tested separately): a clean file has no dead run, so the 5 s fallback pulls
+the last 5 s of a correct trajectory to its centroid. **Rule H therefore fails: `BLIND_ON` ships off, no
+re-judge.** The H tags on seeds 13-15 are still run so that `Docs/results/stepH-verdict.txt` is complete.
+Arnav's decision, relayed by the Step 7 session (20 Nov, ~01:40 IST): "Release 22-24 for H'".
+
+### Rule H verdict (20 Nov): **OFF** (`Docs/results/stepH-verdict.txt`)
+
+The H block (36 copies, seeds 13-15, made by Antigravity after a5f5bd1; SHA-256 checked against LOOP_AG.md, 36 of
+36) was run at fb36d77 with BLIND_DEAD_ONLY off, which is the a5f5bd1 code. Conditions 1-6 pass: blind RMSE over H
+3.087 -> 2.499 m (-19.1 %, floor 2.508 m), better on 5 of 6 sequences (MH_05 -6.0 %), readings a -17.6 % and b
+-20.4 %, APE 3.482 -> 3.434 m (-1.4 %), gap RMSE -2.1 %. Condition 7 fails on clean TUM-VI (+1.13 %); the benchmark
+gate with BLIND_ON was not run for rule H (condition 7 had already failed). `BLIND_ON` stays off under rule H; no
+re-judge. The blind window now ties the floor, as the centroid argument predicts (on 2.499 m, floor 2.508 m).
+
+### Rule H' (Step L3, seeds 22-24): **written after rule H failed condition 7; weaker evidence**
+
+Committed before any seed 22-24 copy exists (EuRoC or TUM-VI). Written after seeing rule H's clean and TUM-VI
+blocks (above) and the tuning copies, so it is weaker evidence than rule H, in the same way as rule G2.
+
+**The variant:** `BLIND_ON = True` and a new switch `BLIND_DEAD_ONLY = True`: the blend acts only when a trailing
+run of rejected rows spanning >= BLIND_MIN_S is detected; with no such run the file is left alone (no
+BLIND_FALLBACK_S rows). Every other `BLIND_*` constant is as frozen at a5f5bd1 (BLIND_MIN_S = 1.0, BLIND_L = 3.0,
+BLIND_BETA = 1.0). `BLIND_DEAD_ONLY` is built in the reference and copied into `pathfinder.py` and the lab copy
+(`tests/test_blind.py`: same rows as BLIND_ON on a detected run; byte-identical to off without one; reference =
+pathfinder = lab). **Base: the shipped build at this commit** (SMOOTH_ON, PLATFORM_ON, TILT_ON on; BLIND_ON and
+BLIND_DEAD_ONLY off, set per run with `--set`).
+
+Data (made by Antigravity after this commit, SHA-256 of each `data.csv` recorded in LOOP_AG.md):
+- **H:** MH_03..05 and V1_01..03 x readings a, b x **seeds 22, 23, 24** (36 copies).
+- **T:** room3, room4 x a, b x seeds 22, 23, 24 (12 copies).
+- **C:** clean MH_01..05, V1_01..03 (8). **CT:** clean room1..4 (4).
+- Tags: `stepHP-H-floor`, `stepHP-H-off`, `stepHP-H-on`, `stepHP-C-off/-on`, `Docs/tumvi/stepHP-T-off/-on/-floor`,
+  `stepHP-CT-off/-on`; on = `--set BLIND_ON=True --set BLIND_DEAD_ONLY=True`.
+
+`BLIND_ON` + `BLIND_DEAD_ONLY` ship on only if conditions 1-8 of rule H all hold on these data (same thresholds;
+condition 8's benchmark gate runs with both switches on). `python tools/judge_stepH.py --rule H' ...`; output kept
+in `Docs/results/stepHP-verdict.txt`. A trust policy, not recovered motion, worded as for rule H. If rule H' fails,
+both switches stay off and there is no further re-judge.
+
+Facts known before the copies exist (not part of the rule):
+- Dead-run detection with `BLIND_DEAD_ONLY` on (`LAST["blind_t"]` set) on every official copy run so far (seed 42
+  excluded, no V2): **192 of 192** EuRoC copies (MH_01..05, V1_01..03 x a, b x seeds 1-12, 16-18); **108 of 108** TUM-VI copies (room1..4 x a, b, seeds 1-3, 7-18). The detected start is within -25 ms .. +4.5 ms of the scripted failure (`degrade.json`); the tuning harness's `blind_start` agrees on all 300.
+- On a clean file there is no rejected trailing run, so the on build writes the same bytes as the off build:
+  condition 7 is expected to pass by construction (checked on 20 Nov: 12 of 12 clean files, MH_01..05, V1_01..03, room1..4, identical bytes, `LAST["blind_t"]` None). Rule H' therefore tests the blend on dead runs only;
+  it says nothing about the fallback.
+- Risks as for rule H: condition 2 (a sequence already below the floor is pulled up to it) and condition 4.
+
+### Rule H' verdict (21 Nov, 02:30 IST): **ON** (`Docs/results/stepHP-verdict.txt`); weaker evidence (written after rule H failed)
+
+`BLIND_ON = True` and `BLIND_DEAD_ONLY = True` now ship in `vortex/core/witness.py`, `pathfinder.py` and the lab copy.
+Conditions 1-8 all pass (rule commit fb36d77; runs at fb36d77 / d1aa245, the same estimator code):
+
+| Condition | off | on | change | |
+|---|---|---|---|---|
+| 1 H blind RMSE (36) | 3.072 m | 2.501 m | -18.60 % (floor 2.508) | pass |
+| 2 sequences with a blind gain | | | 6 of 6 | pass |
+| 3 reading a / b blind | 3.266 / 2.878 m | 2.497 / 2.505 m | -23.55 % / -12.99 % | pass |
+| 4 H APE | 3.613 m | 3.554 m | -1.61 % (floor 3.750) | pass |
+| 5 H gap RMSE | 3.464 m | 3.472 m | +0.25 % | pass |
+| 6 T blind / APE (12) | 1.308 / 1.130 m | 0.734 / 1.077 m | -43.93 % / -4.67 % (floor 0.740 / 1.163) | pass |
+| 7 clean EuRoC / TUM-VI APE | 3.5701 / 0.8793 m | 3.5701 / 0.8793 m | 0 (same bytes) | pass |
+| 8 contract (120 runs); benchmark gate | | | PASS; PASS on attempt 5 | pass |
+
+Per sequence blind gain: MH_03 +3.7 %, MH_04 +17.4 %, MH_05 +2.7 %, V1_01 +0.1 %, V1_02 +67.2 %, V1_03 +16.8 %; on
+all six the on build's blind RMSE is within 0.04 m of the never-moving floor's, as a trust policy should be (it
+ties the floor at best). Dead-run detection on the judged copies: **36 of 36** EuRoC (start = scripted failure,
+0 ms) and **12 of 12** TUM-VI (+4.4 .. +4.5 ms); no seed 22-24 copy fell back.
+
+Gate (condition 8), all five attempts recorded in the verdict file: attempts 1-3 ran beside other jobs (my evals,
+another session's bundle measure and identity sweep, RAM swapping), and the off build, where measured, failed the same
+way; attempt 4 (CPU idle, RAM low) swapped slow and fast phases between runs (each on run's process step slow, each
+off run's fast, the in-process stage the reverse); an alternated diagnostic of `python -S main.py` gave on 33.0 vs
+off 32.4 us/row (medians of 10). Attempt 5 (on build alone): **30.31 us/row synthetic, 25.25 us/row MH_01_easy_a_s1**,
+heap 1,061.9 / 1,233.6 KB (same as off), output check PASS (`Docs/budget/stepHP-gate5-*`).
+
+What this does and does not show: on a detected trailing dead run of >= 1 s, the last BLIND_L = 3 s before it ramp to
+the centroid of the earlier estimate and the dead rows sit there with the anchor's attitude. That is a trust policy
+(it ties the never-moving floor in the blind window, never beats it), not recovered motion. Files without such a run
+are written byte for byte as before; the 5 s fallback stays unshipped (it failed clean TUM-VI under rule H).

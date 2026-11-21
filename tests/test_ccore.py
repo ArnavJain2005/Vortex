@@ -48,8 +48,9 @@ pf = _load_pf()
 # tests/test_lab.py), since the C core still declares the JAM constants that left pathfinder.py on 18 Nov.
 # The C core is a recorded experiment frozen before Step F (CLAUDE.md: kept, never extended). It is compared
 # with pathfinder.py as it was then: the Step F switches (shipped on since 17 Nov 2026) and the Step 6
-# smoother and the Step 7 platform switch (shipped on since 18 Nov 2026) are set back off in this private copy of the module only.
-STEP_F_OFF = ("BGCAP_ON", "P0V_ON", "REFRESH_ON", "RESET_ON", "SMOOTH_ON", "PLATFORM_ON")
+# smoother and the Step 7 platform switch (shipped on since 18 Nov 2026) and the Step L3 blind window (BLIND_ON, shipped on
+# since 21 Nov 2026, rule H') are set back off in this private copy of the module only.
+STEP_F_OFF = ("BGCAP_ON", "P0V_ON", "REFRESH_ON", "RESET_ON", "SMOOTH_ON", "PLATFORM_ON", "BLIND_ON")
 for _name in STEP_F_OFF:
     assert hasattr(pf, _name), _name
     setattr(pf, _name, False)
