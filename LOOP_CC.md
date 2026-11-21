@@ -55,9 +55,9 @@ DONE (newest first):
   verify PASS on 3.14 and 3.13; sha256 85e3079bc57450dd582472654939fbd26ef2f752e0980aa8ff3e6dd2734a1c64
 - PARKED: my two-file split of pathfinder.py (compile peak 6.7 -> 4.4 MB) breaks ledger A1 (sibling import); patch kept
   outside the repo. The parser finding (token array doubles past 16,384 tokens, +0.92 MB) went to CC-freeze.
-READY FOR ARNAV TO MERGE (in this order): #79 (CC-freeze, freeze build CHUNKED; #77 already merged at 4c25e91). 1 known test failure (test_ccore::test_odd_fields, C-core experiment) waits for Arnav's call
+READY FOR ARNAV TO MERGE (in this order): #79 (CC-freeze, freeze build CHUNKED; #77 already merged at 4c25e91). pytest 512 passed, 10 skipped, 1 xfailed (zero-led timestamps a documented C-core difference, Arnav)
 MERGED: #67 (550ba68), #68 (355de44)
-GIVES TO AG: bundle chunked at track3/freeze-build@1a83381 (PR #79; main 88b1d27 merged in, BLIND_ON + BLIND_DEAD_ONLY on). Build: python tools/make_bundle.py stage. Identity 412/412 on Win 3.14 + WSL2 3.12; whole-run heap from source 3,476 / 4,157 / 3,852 KB (Win 3.14 / 3.13 / WSL2 3.12); gate PASS. AG-3: measure it on 3.10-3.14 and Docker. rule H handshake above (AG-2 unblocked).
+GIVES TO AG: bundle chunked at track3/freeze-build@69f52d9 (PR #79; src/main.py same as at 1a83381; main 88b1d27 merged in, BLIND_ON + BLIND_DEAD_ONLY on). Build: python tools/make_bundle.py stage. Identity 412/412 on Win 3.14 + WSL2 3.12; whole-run heap from source 3,476 / 4,157 / 3,852 KB (Win 3.14 / 3.13 / WSL2 3.12); gate PASS. AG-3: measure it on 3.10-3.14 and Docker. rule H handshake above (AG-2 unblocked).
 NEEDS FROM AG: AG-3: whole-run FROM-SOURCE tracemalloc peak and us/row of the bundled src/main.py on Python
   3.10-3.14 and Docker; flag any above 7 MB. Earlier: AG-0 seed inventory: do EuRoC MH_03..05/V1_01..03 a/b seed 13-15 copies exist, and has anything run
   on TUM-VI seeds 13-15? (blocks CC-2's judge, not its rule); AG-1 Docker compute ms/IMU-s (decides CC-1b)
