@@ -1,0 +1,65 @@
+{
+ "commit": "0e7c81d",
+ "date": "2026-11-22",
+ "degraded": false,
+ "main": "tools\\baseline_still.py",
+ "official": false,
+ "python": "3.14.7",
+ "results": [
+  {
+   "ate_none_rmse": 1.6857455040068958,
+   "ate_origin_rmse": 1.1275800399723674,
+   "ate_se3_rmse": 1.000984275658339,
+   "ate_sim3_rmse": NaN,
+   "contract": "PASS",
+   "final_se3": 0.27910539446302696,
+   "rows": 28122,
+   "rpe200_rmse": 1.323848706979612,
+   "sequence": "dataset-room1_512_16",
+   "sim3_scale": NaN,
+   "wall_s": 0.21866040001623333
+  },
+  {
+   "ate_none_rmse": 1.7801189105073842,
+   "ate_origin_rmse": 1.2918038899776678,
+   "ate_se3_rmse": 1.2182498532182253,
+   "ate_sim3_rmse": NaN,
+   "contract": "PASS",
+   "final_se3": 0.3966253197540384,
+   "rows": 28732,
+   "rpe200_rmse": 1.61846555334199,
+   "sequence": "dataset-room2_512_16",
+   "sim3_scale": NaN,
+   "wall_s": 0.27950619999319315
+  },
+  {
+   "ate_none_rmse": 1.8372801477440974,
+   "ate_origin_rmse": 1.5694530564852123,
+   "ate_se3_rmse": 1.2503585847492074,
+   "ate_sim3_rmse": NaN,
+   "contract": "PASS",
+   "final_se3": 0.7138291363052603,
+   "rows": 28124,
+   "rpe200_rmse": 1.6766406955622355,
+   "sequence": "dataset-room3_512_16",
+   "sim3_scale": NaN,
+   "wall_s": 0.27269120002165437
+  },
+  {
+   "ate_none_rmse": 1.7463658778038498,
+   "ate_origin_rmse": 1.1950835626146235,
+   "ate_se3_rmse": 1.0764123011534292,
+   "ate_sim3_rmse": NaN,
+   "contract": "PASS",
+   "final_se3": 0.6081745874509892,
+   "rows": 22212,
+   "rpe200_rmse": 0.8415053407796446,
+   "sequence": "dataset-room4_512_16",
+   "sim3_scale": NaN,
+   "wall_s": 0.3016672000521794
+  }
+ ],
+ "reverse": false,
+ "set": {},
+ "tag": "v10floor-tumvi-clean"
+}

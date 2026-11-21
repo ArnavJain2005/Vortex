@@ -93,6 +93,8 @@ Deadline **22 Nov 2026, 11:59 PM IST**, confirmed by the FAQ (Q1 closed). Full-t
 | PRD v2 | PRD v2 (18 Nov) in the repo (`Docs/PRD.md`): levers L1 shrinkage, L2 slow gravity alignment, L3 blind window, L4 hardening, L5 TUM-VI; paired, sequence-level judging (rules G and H); work split Claude Code / Antigravity / ChatGPT. Fallback zip frozen | **Done (verified)** 18 Nov (K0): `dist/vortex_v0.9.zip` from `main` da14417, eval input `data/official/MH_03_medium_b_s1` (placeholder), 26,106 rows, 3.19 ms per IMU-s, heap 1,013 KB; `verify` PASS on Win 3.13 and 3.14; SHA-256 0e558440a397ef4b78426cc471ac8d3fd17f8c658b28a6cd40aeb5a3ba555d6b | Zip verified; never deleted |
 | NUMBERS (K6, early) | `tools/make_numbers.py` -> `Docs/NUMBERS.md` + `Docs/numbers/numbers.json`: every number the deck, script and README may quote, as `key | value | source tag | date`, generated from committed result, TUM-VI, budget and pytest files. Keys are stable (ChatGPT's `[[N:key]]`); when the shipped build changes, `SOURCES` in the script points at the new tags | **Done (verified)** 18 Nov: headline keys reproduce the Step F verdict to the digit (held-out 4.962 vs floor 3.745 m; reading a 6.181, b 3.744; gap 5.036; blind 6.992). Budget from a fresh lean run (`lean-win-py314-mh01-b-s1`) | `tests/test_numbers.py` (3); `--check` in the suite |
 | L2 | Slow gravity alignment over a 4 s window with a lag model, weighted by a gyro noise meter (`TILT_ON`) | **Done (verified): ON** by rule G2 (18 Nov, rule at 3e2646e, seeds 16-18, base with the Step 6 smoother): all 13 checks pass, held-out APE 4.922 -> 3.575 m (floor 3.746), DiD null 1.347 vs 1.187 m. Rule G (seeds 10-12) had failed its level null; G2 was **written after seeing that: weaker evidence, same 6 flights** | Rule G2 on 36 fresh held-out copies + TUM-VI room3/4 |
+| v1.0 | Submission zip from the frozen main 5e28668; NUMBERS, README and RESULTS from one set of runs of the shipped file | **Done (verified)** 22 Nov: `dist/vortex_v1.0.zip` sha256 e251c401...447c, tag `v1.0` (0e7c81d); verify PASS Win 3.14/3.13, WSL2 3.12; 316 reporting runs, contract PASS; see "v1.0 zip and the reporting runs" | Zip verified on three Pythons |
+| Final | Final table: V2_01..03 x a,b x seeds 1-3 on the frozen v1.0 file + floor | **Planned**; runs only on Arnav's "run the final table" (plan: section "Final table", committed on `track3/final-table` before any V2 copy exists) | Reported as it comes out |
 | L3 | Blind window from a trusted state (`BLIND_ON` + `BLIND_DEAD_ONLY`, **on**): on a detected trailing dead run >= 1 s, the rows from 3 s before it ramp to the earlier estimate's centroid (a trust policy); no 5 s fallback | **Done** (21 Nov): rule H failed condition 7 (clean TUM-VI +1.13 %, the fallback); rule H' (no fallback, seeds 22-24, weaker evidence) **passed 1-8**: H blind -18.6 % (6/6 sequences), APE -1.6 %, T blind -43.9 %, clean unchanged, gate PASS (attempt 5 of 5, all recorded) | Freeze-build bundle rebuilt from the merged pathfinder.py |
 
 ## Open questions (Q1 to Q5 are in the email drafted for prism@samsung.com on 15 Nov)
@@ -2548,3 +2550,49 @@ What this does and does not show: on a detected trailing dead run of >= 1 s, the
 the centroid of the earlier estimate and the dead rows sit there with the anchor's attitude. That is a trust policy
 (it ties the never-moving floor in the blind window, never beats it), not recovered motion. Files without such a run
 are written byte for byte as before; the 5 s fallback stays unshipped (it failed clean TUM-VI under rule H).
+
+## v1.0 zip and the reporting runs on the shipped file (22 Nov 2026, branches `track3/v1.0`, `track3/final-docs`)
+
+Arnav's "Final stretch" prompt (22 Nov, 03:30 IST). The estimator is frozen at main 5e28668 (#79 CHUNKED + #77 L3).
+
+**v1.0 zip.** Tag `v1.0` = 0e7c81d = main 5e28668 + `bundle/README.md` only: the shipped README carried a literal
+`BUDGET_TABLE` placeholder and did not name the evaluation input (ledger B6). `pathfinder.py` unchanged; `src/main.py`
+(CHUNKED, 1,962 lines) sha256 `feb222ea9f27f077c9113b39edd7cb513a6a3e496ec4db35f3c9416349d10811`.
+`dist/vortex_v1.0.zip` (= `dist/Vortex.zip`) sha256 `e251c4010248caf5103bbf2923122146bba64ae7e2b225069a89672ffbd4447c`.
+No evaluation input was released, so `estimated_trajectory.txt` is the output for `MH_03_medium_b_s1` (input sha256
+a0df1a3f...820c, 26,106 rows, checker PASS, cal_source still_run, no fallback), named in the bundle README and
+`metadata.json` (B8: commit, build flags, input and rows, calibration source, heap 3,476 KB whole run from source,
+7.30 ms/IMU-s wall, Win 3.14.7). Checks: `make_bundle same` 12/12 IDENTICAL (3.14.7); the eval output byte-identical
+on Win 3.14.7, Win 3.13.5 and WSL2 3.12.3; `verify` PASS on all three (6/6 invocation forms each). Antigravity's Docker
+run of the same file on the same input (PR #81) gives output sha256 0e215ee3b078eaea, the zip's own.
+
+**Reporting runs (not judging).** One run per set of the shipped single file (`--main dist/stage/src/main.py`) and
+one of the never-moving floor, 22 Nov, Win 3.14.7: EuRoC held-out MH_03..05 + V1_01..03 x a,b x seeds 4-6, 7-9 and
+22-24 (rule H' set, weaker evidence), clean EuRoC (8), TUM-VI rooms 1-4 x a,b x seeds 1-3, rooms 3-4 x seeds 22-24,
+clean TUM-VI (4). 316 runs, every output contract PASS. Seeds 22-24 reproduce CC-L3's rule H' judging runs exactly
+(0 m difference on all 84 copies, estimate and floor). `Docs/NUMBERS.md` now takes every key from these runs, the
+budget from `benchmark.py --bundle` on the shipped file (MH_03_medium_b_s1; gate PASS on 3.14.7; on 3.13.5 the
+whole-run heap 4,158 KB misses the 4 MB design target, under the 8 MB limit) and the wall time from Antigravity's
+Docker benchmark (6.60 ms/IMU-s on the same input; 6.56-7.67 over seven inputs).
+
+| Set (shipped v1.0 vs floor) | APE (m) | gap RMSE (m) | blind RMSE (m) | sequences better (APE) |
+|---|---|---|---|---|
+| EuRoC seeds 4-6 (36) | 3.440 vs 3.745 (-8.1 %) | 3.478 vs 3.626 (-4.1 %) | 2.494 vs 2.504 (-0.4 %) | 5/6 |
+| EuRoC seeds 7-9 (36) | 3.481 vs 3.748 (-7.1 %) | 3.298 vs 3.256 (+1.3 %) | 2.495 vs 2.505 (-0.4 %) | 5/6 |
+| EuRoC seeds 22-24 (36; rule H' set, weaker evidence) | 3.554 vs 3.750 (-5.2 %) | 3.472 vs 3.414 (+1.7 %) | 2.501 vs 2.508 (-0.3 %) | 4/6 |
+| TUM-VI rooms 1-4, seeds 1-3 (24) | 0.969 vs 1.137 (-14.8 %) | 0.988 vs 1.078 (-8.3 %) | 0.699 vs 0.709 (-1.4 %) | 4/4 |
+| TUM-VI rooms 3-4, seeds 22-24 (12; weaker evidence) | 1.077 vs 1.163 (-7.4 %) | 1.113 vs 1.191 (-6.5 %) | 0.734 vs 0.740 (-0.8 %) | 2/2 |
+| Clean EuRoC (8) / clean TUM-VI (4) | 3.570 vs 3.930 / 0.879 vs 1.137 | | | 7/8, 4/4 |
+
+Against the Step 7 + L2 numbers NUMBERS.md quoted before (seeds 4-6): APE 3.480 -> 3.440 m, blind 3.017 -> 2.494 m
+(+20.5 % -> -0.4 % vs the floor); clean outputs unchanged (no dead run, so L3 does nothing). The blind window now ties
+the floor; it does not beat it.
+
+**Repository Dockerfile.** It ran the `main.py` stub + `pathfinder.py` with precompiled bytecode (against A1/B7). Now
+two stages: `tools/make_bundle.py single` generates the CHUNKED `src/main.py`, the image holds only that file; a
+`.dockerignore` keeps the context to `pathfinder.py` + `tools/make_bundle.py`. Built 22 Nov (Docker 29.6.2, Windows):
+`/app/main.py` sha256 = the zip's `src/main.py`; both `docker run` forms on MH_03_medium_b_s1 reproduce the zip's
+`estimated_trajectory.txt` byte for byte.
+
+pytest on `track3/final-docs`: recorded by `python tools/make_numbers.py --pytest` in `Docs/numbers/pytest.json` and
+the `pytest_*` keys of `Docs/NUMBERS.md`.

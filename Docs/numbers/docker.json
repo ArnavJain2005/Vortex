@@ -1,0 +1,10 @@
+{
+ "tag": "ag1-final-mh03-b-s1",
+ "source": "Antigravity AG-1, Docs/DOCKER_BENCH.md section 5 (PR #81, head d48a540)",
+ "note": "Copied by hand from that table on 22 Nov 2026: python:3.12.7-slim-bookworm (bundle/Dockerfile), the shipped CHUNKED src/main.py of main 5e28668 (sha256 feb222ea9f27f077...), inputs copied into the container, whole process python -S -B (from source), 15-run median. Its output sha256 0e215ee3b078eaea matches the v1.0 zip's estimated_trajectory.txt.",
+ "date": "2026-11-22",
+ "input": "official/MH_03_medium_b_s1/mav0/imu0/data.csv",
+ "wall_ms_per_imu_s": 6.60,
+ "range_ms_per_imu_s": [6.56, 7.67],
+ "range_inputs_n": 7
+}

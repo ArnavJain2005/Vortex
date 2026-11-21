@@ -1,0 +1,4 @@
+# The image needs only these two files (see Dockerfile); keep data, dist and everything else out of the context.
+*
+!pathfinder.py
+!tools/make_bundle.py

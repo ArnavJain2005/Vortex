@@ -98,6 +98,30 @@ def test_values_on_synthetic_results(docs):
     assert v["experiments_off_n"][0] == str(len(mn.OFF))
 
 
+def test_headline_hp_and_docker_keys(docs, monkeypatch):
+    """The deck's seven keys repeat their source keys; H' and Docker sets appear only when configured."""
+    (docs / "numbers").mkdir(exist_ok=True)
+    (docs / "numbers" / "docker.json").write_text(json.dumps(
+        {"tag": "D", "source": "AG-1", "date": "2026-11-22", "input": "x.csv", "wall_ms_per_imu_s": 6.6,
+         "range_ms_per_imu_s": [6.5, 7.7], "range_inputs_n": 7}), encoding="utf-8")
+    src = dict(mn.SOURCES)
+    src.update({"heldout_hp": ("results/H2", "results/H2f", "hp"), "tumvi_hp": ("tumvi/T", "tumvi/Tf", "thp"),
+                "docker": "numbers/docker"})
+    monkeypatch.setattr(mn, "SOURCES", src)
+    v = _values(mn.build())
+    assert v["heldout_ape_reading_a"][0] == v["heldout_a_ape_m"][0] == "4.500"
+    assert v["heldout_ape_reading_b"][0] == v["heldout_b_ape_m"][0]
+    assert v["heldout_ape_floor"][0] == v["heldout_ape_floor_m"][0]
+    assert v["blind_rmse_vortex"][0] == v["heldout_blind_m"][0] == "5.500"     # ape + 2
+    assert v["blind_rmse_floor"][0] == v["heldout_blind_floor_m"][0]
+    assert v["budget_heap_whole_run_kb"][0] == "1001"
+    assert v["budget_wall_ms_per_imu_s_ms"][0] == "6.60" and v["budget_win_wall_ms_per_imu_s_ms"][0] == "2.75"
+    assert v["budget_docker_wall_range_ms"][0] == "6.50-7.70"
+    assert v["heldout_hp_ape_m"][0] == "3.500" and "heldout_hp_mh03_a_ape_m" in v
+    assert v["tumvi_hp_ape_floor_m"][0] == "1.000"
+    assert "BLIND_ON" in v["switches_on"][0]
+
+
 def test_pytest_record_and_render(docs):
     (docs / "numbers").mkdir()
     (docs / "numbers" / "pytest.json").write_text(json.dumps(

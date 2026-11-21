@@ -71,6 +71,8 @@ Clean (undegraded) IMU input. APE = absolute position error after Umeyama alignm
 | stepL1-C-hi | 4.21 / 0.488 | 4.47 / 0.544 | 3.52 / 1.127 | 6.71 / 1.132 | 6.80 / 1.022 | 1.82 / 0.426 | 1.72 / 0.890 | 1.54 / 0.657 | 3.85 | 0.786 |
 | stepL1-C-lo | 3.91 / 0.480 | 3.85 / 0.591 | 3.53 / 0.983 | 6.38 / 1.193 | 6.55 / 1.023 | 1.76 / 0.408 | 1.72 / 0.677 | 1.55 / 0.469 | 3.65 | 0.728 |
 | stepL1-C-off | 3.91 / 0.480 | 3.85 / 0.591 | 3.53 / 0.983 | 6.38 / 1.193 | 6.55 / 1.023 | 1.76 / 0.408 | 1.72 / 0.677 | 1.55 / 0.469 | 3.65 | 0.728 |
+| v10-clean | 4.23 / 0.295 | 4.54 / 0.364 | 2.71 / 0.344 | 6.26 / 0.829 | 6.56 / 0.761 | 1.89 / 0.211 | 1.03 / 0.217 | 1.34 / 0.239 | 3.57 | 0.407 |
+| v10floor-clean | 4.31 / 0.499 | 4.65 / 0.537 | 3.58 / 1.188 | 6.82 / 1.129 | 6.88 / 1.034 | 1.85 / 0.439 | 1.78 / 0.964 | 1.57 / 0.716 | 3.93 | 0.813 |
 
 ## APE RMSE m under every alignment (runs from step A on)
 
@@ -335,6 +337,22 @@ Clean (undegraded) IMU input. APE = absolute position error after Umeyama alignm
 | stepL1-C-off | V1_01_easy | 2.81 | 2.24 | 1.76 | 1.76 | 0.408 |
 | stepL1-C-off | V1_02_medium | 3.16 | 2.43 | 1.72 | 1.68 | 0.677 |
 | stepL1-C-off | V1_03_difficult | 2.93 | 2.28 | 1.55 | 1.51 | 0.469 |
+| v10-clean | MH_01_easy | 6.19 | 7.60 | 4.23 | 4.22 | 0.295 |
+| v10-clean | MH_02_easy | 6.59 | 8.57 | 4.54 | 4.53 | 0.364 |
+| v10-clean | MH_03_medium | 7.70 | 4.48 | 2.71 | 2.71 | 0.344 |
+| v10-clean | MH_04_difficult | 10.92 | 7.07 | 6.26 | 6.18 | 0.829 |
+| v10-clean | MH_05_difficult | 10.43 | 7.55 | 6.56 | 6.53 | 0.761 |
+| v10-clean | V1_01_easy | 2.64 | 2.44 | 1.89 | 1.81 | 0.211 |
+| v10-clean | V1_02_medium | 3.64 | 1.87 | 1.03 | 1.03 | 0.217 |
+| v10-clean | V1_03_difficult | 2.99 | 2.18 | 1.34 | 1.34 | 0.239 |
+| v10floor-clean | MH_01_easy | 5.54 | 6.74 | 4.31 | nan | 0.499 |
+| v10floor-clean | MH_02_easy | 5.81 | 7.32 | 4.65 | nan | 0.537 |
+| v10floor-clean | MH_03_medium | 7.21 | 4.67 | 3.58 | nan | 1.188 |
+| v10floor-clean | MH_04_difficult | 9.54 | 7.86 | 6.82 | nan | 1.129 |
+| v10floor-clean | MH_05_difficult | 9.68 | 8.08 | 6.88 | nan | 1.034 |
+| v10floor-clean | V1_01_easy | 2.38 | 2.70 | 1.85 | nan | 0.439 |
+| v10floor-clean | V1_02_medium | 2.60 | 2.16 | 1.78 | nan | 0.964 |
+| v10floor-clean | V1_03_difficult | 2.50 | 2.21 | 1.57 | nan | 0.716 |
 
 ## Every run
 
@@ -670,6 +688,22 @@ Clean (undegraded) IMU input. APE = absolute position error after Umeyama alignm
 | stepL1-C-off | main.py | d56c875 | 2026-11-18 | V1_01_easy | PASS | 1.76 | 1.90 | 1.76 | 0.934 | 0.408 | 0.59 |
 | stepL1-C-off | main.py | d56c875 | 2026-11-18 | V1_02_medium | PASS | 1.72 | 1.67 | 1.68 | 0.616 | 0.677 | 0.47 |
 | stepL1-C-off | main.py | d56c875 | 2026-11-18 | V1_03_difficult | PASS | 1.55 | 1.62 | 1.51 | 0.571 | 0.469 | 0.53 |
+| v10-clean | dist\stage\src\main.py | 0e7c81d | 2026-11-22 | MH_01_easy | PASS | 4.23 | 6.14 | 4.22 | 0.756 | 0.295 | 1.62 |
+| v10-clean | dist\stage\src\main.py | 0e7c81d | 2026-11-22 | MH_02_easy | PASS | 4.54 | 5.76 | 4.53 | 0.759 | 0.364 | 2.42 |
+| v10-clean | dist\stage\src\main.py | 0e7c81d | 2026-11-22 | MH_03_medium | PASS | 2.71 | 3.18 | 2.71 | 1.04 | 0.344 | 2.88 |
+| v10-clean | dist\stage\src\main.py | 0e7c81d | 2026-11-22 | MH_04_difficult | PASS | 6.26 | 5.87 | 6.18 | 1.56 | 0.829 | 1.56 |
+| v10-clean | dist\stage\src\main.py | 0e7c81d | 2026-11-22 | MH_05_difficult | PASS | 6.56 | 4.14 | 6.53 | 1.39 | 0.761 | 1.63 |
+| v10-clean | dist\stage\src\main.py | 0e7c81d | 2026-11-22 | V1_01_easy | PASS | 1.89 | 1.80 | 1.81 | 0.429 | 0.211 | 1.96 |
+| v10-clean | dist\stage\src\main.py | 0e7c81d | 2026-11-22 | V1_02_medium | PASS | 1.03 | 1.50 | 1.03 | 0.998 | 0.217 | 1.29 |
+| v10-clean | dist\stage\src\main.py | 0e7c81d | 2026-11-22 | V1_03_difficult | PASS | 1.34 | 1.25 | 1.34 | 0.971 | 0.239 | 1.48 |
+| v10floor-clean | tools\baseline_still.py | 0e7c81d | 2026-11-22 | MH_01_easy | PASS | 4.31 | 5.25 | nan | nan | 0.499 | 0.29 |
+| v10floor-clean | tools\baseline_still.py | 0e7c81d | 2026-11-22 | MH_02_easy | PASS | 4.65 | 5.62 | nan | nan | 0.537 | 0.37 |
+| v10floor-clean | tools\baseline_still.py | 0e7c81d | 2026-11-22 | MH_03_medium | PASS | 3.58 | 3.14 | nan | nan | 1.188 | 0.30 |
+| v10floor-clean | tools\baseline_still.py | 0e7c81d | 2026-11-22 | MH_04_difficult | PASS | 6.82 | 3.88 | nan | nan | 1.129 | 0.42 |
+| v10floor-clean | tools\baseline_still.py | 0e7c81d | 2026-11-22 | MH_05_difficult | PASS | 6.88 | 4.24 | nan | nan | 1.034 | 0.65 |
+| v10floor-clean | tools\baseline_still.py | 0e7c81d | 2026-11-22 | V1_01_easy | PASS | 1.85 | 1.73 | nan | nan | 0.439 | 0.59 |
+| v10floor-clean | tools\baseline_still.py | 0e7c81d | 2026-11-22 | V1_02_medium | PASS | 1.78 | 1.23 | nan | nan | 0.964 | 0.30 |
+| v10floor-clean | tools\baseline_still.py | 0e7c81d | 2026-11-22 | V1_03_difficult | PASS | 1.57 | 1.34 | nan | nan | 0.716 | 0.28 |
 
 # Official-script degraded input (from 17 Nov 2026; replaces every earlier degraded baseline)
 
@@ -837,6 +871,18 @@ Copies made by `python tools/official_degrade.py --all` with the organisers' `de
 | stepL1-tune-on | b | 1..3 | 6 | 4.350 | 0.534 | 3.787 | 0.017 | 5.677 | 0.509 | 6/6 PASS |
 | stepL3-tune-on | a | 1..3 | 6 | 3.712 | 0.517 | 3.545 | 0.016 | 5.259 | 0.507 | 6/6 PASS |
 | stepL3-tune-on | b | 1..3 | 6 | 4.222 | 0.421 | 3.777 | 0.022 | 5.272 | 0.507 | 6/6 PASS |
+| v10-H46 | a | 1..3 | 18 | 3.506 | 0.606 | 3.593 | 0.021 | 2.490 | 0.461 | 18/18 PASS |
+| v10-H46 | b | 1..3 | 18 | 3.373 | 0.519 | 3.363 | 0.018 | 2.498 | 0.461 | 18/18 PASS |
+| v10-H79 | a | 1..3 | 18 | 3.572 | 0.604 | 3.394 | 0.016 | 2.496 | 0.461 | 18/18 PASS |
+| v10-H79 | b | 1..3 | 18 | 3.390 | 0.523 | 3.202 | 0.013 | 2.495 | 0.461 | 18/18 PASS |
+| v10-HP | a | 1..3 | 18 | 3.660 | 0.642 | 3.576 | 0.029 | 2.497 | 0.461 | 18/18 PASS |
+| v10-HP | b | 1..3 | 18 | 3.449 | 0.545 | 3.369 | 0.021 | 2.505 | 0.461 | 18/18 PASS |
+| v10floor-H46 | a | 1..3 | 18 | 3.745 | 0.941 | 3.626 | 0.024 | 2.504 | 0.461 | 18/18 PASS |
+| v10floor-H46 | b | 1..3 | 18 | 3.745 | 0.941 | 3.626 | 0.024 | 2.504 | 0.461 | 18/18 PASS |
+| v10floor-H79 | a | 1..3 | 18 | 3.748 | 0.943 | 3.256 | 0.019 | 2.505 | 0.461 | 18/18 PASS |
+| v10floor-H79 | b | 1..3 | 18 | 3.748 | 0.943 | 3.256 | 0.019 | 2.505 | 0.461 | 18/18 PASS |
+| v10floor-HP | a | 1..3 | 18 | 3.750 | 0.942 | 3.414 | 0.031 | 2.508 | 0.461 | 18/18 PASS |
+| v10floor-HP | b | 1..3 | 18 | 3.750 | 0.942 | 3.414 | 0.031 | 2.508 | 0.461 | 18/18 PASS |
 
 ## Every official-copy run
 
@@ -2966,6 +3012,222 @@ Copies made by `python tools/official_degrade.py --all` with the organisers' `de
 | stepL3-tune-on | main.py BLIND_ON=True | 9400dce | MH_02_easy_b_s1 | PASS | 4.317 | 0.473 | 5.371 | 0.032 | 5.503 | 0.367 | 0.99 |
 | stepL3-tune-on | main.py BLIND_ON=True | 9400dce | MH_02_easy_b_s2 | PASS | 4.395 | 0.463 | 3.697 | 0.010 | 5.501 | 0.367 | 0.93 |
 | stepL3-tune-on | main.py BLIND_ON=True | 9400dce | MH_02_easy_b_s3 | PASS | 4.394 | 0.447 | 3.159 | 0.024 | 5.507 | 0.367 | 1.01 |
+| v10-H46 | dist\stage\src\main.py | 0e7c81d | MH_03_medium_a_s4 | PASS | 3.311 | 0.662 | 2.687 | 0.046 | 3.123 | 0.319 | 1.72 |
+| v10-H46 | dist\stage\src\main.py | 0e7c81d | MH_03_medium_a_s5 | PASS | 3.226 | 0.529 | 3.564 | 0.023 | 3.082 | 0.319 | 3.09 |
+| v10-H46 | dist\stage\src\main.py | 0e7c81d | MH_03_medium_a_s6 | PASS | 3.392 | 0.642 | 3.855 | 0.014 | 3.080 | 0.319 | 1.72 |
+| v10-H46 | dist\stage\src\main.py | 0e7c81d | MH_03_medium_b_s4 | PASS | 2.820 | 0.449 | 2.384 | 0.028 | 3.096 | 0.319 | 1.71 |
+| v10-H46 | dist\stage\src\main.py | 0e7c81d | MH_03_medium_b_s5 | PASS | 2.924 | 0.426 | 2.646 | 0.015 | 3.087 | 0.319 | 1.59 |
+| v10-H46 | dist\stage\src\main.py | 0e7c81d | MH_03_medium_b_s6 | PASS | 2.881 | 0.434 | 2.590 | 0.010 | 3.087 | 0.319 | 1.58 |
+| v10-H46 | dist\stage\src\main.py | 0e7c81d | MH_04_difficult_a_s4 | PASS | 5.985 | 0.922 | 6.115 | 0.078 | 3.801 | 0.272 | 1.09 |
+| v10-H46 | dist\stage\src\main.py | 0e7c81d | MH_04_difficult_a_s5 | PASS | 6.198 | 0.997 | 6.661 | 0.008 | 3.792 | 0.272 | 1.12 |
+| v10-H46 | dist\stage\src\main.py | 0e7c81d | MH_04_difficult_a_s6 | PASS | 6.591 | 0.981 | 7.184 | 0.010 | 3.756 | 0.272 | 1.03 |
+| v10-H46 | dist\stage\src\main.py | 0e7c81d | MH_04_difficult_b_s4 | PASS | 6.281 | 0.844 | 6.176 | 0.065 | 3.827 | 0.272 | 1.09 |
+| v10-H46 | dist\stage\src\main.py | 0e7c81d | MH_04_difficult_b_s5 | PASS | 6.168 | 0.885 | 6.679 | 0.013 | 3.815 | 0.272 | 0.99 |
+| v10-H46 | dist\stage\src\main.py | 0e7c81d | MH_04_difficult_b_s6 | PASS | 6.109 | 0.910 | 6.499 | 0.007 | 3.799 | 0.272 | 1.04 |
+| v10-H46 | dist\stage\src\main.py | 0e7c81d | MH_05_difficult_a_s4 | PASS | 6.721 | 0.943 | 6.844 | 0.015 | 4.048 | 0.854 | 1.08 |
+| v10-H46 | dist\stage\src\main.py | 0e7c81d | MH_05_difficult_a_s5 | PASS | 6.571 | 0.938 | 7.525 | 0.000 | 4.019 | 0.854 | 1.12 |
+| v10-H46 | dist\stage\src\main.py | 0e7c81d | MH_05_difficult_a_s6 | PASS | 6.573 | 0.944 | 6.167 | 0.023 | 4.050 | 0.854 | 1.04 |
+| v10-H46 | dist\stage\src\main.py | 0e7c81d | MH_05_difficult_b_s4 | PASS | 6.582 | 0.824 | 6.978 | 0.010 | 4.001 | 0.854 | 0.92 |
+| v10-H46 | dist\stage\src\main.py | 0e7c81d | MH_05_difficult_b_s5 | PASS | 6.566 | 0.850 | 7.132 | 0.000 | 4.073 | 0.854 | 0.89 |
+| v10-H46 | dist\stage\src\main.py | 0e7c81d | MH_05_difficult_b_s6 | PASS | 6.545 | 0.798 | 5.954 | 0.017 | 4.051 | 0.854 | 0.94 |
+| v10-H46 | dist\stage\src\main.py | 0e7c81d | V1_01_easy_a_s4 | PASS | 1.970 | 0.422 | 1.848 | 0.018 | 1.743 | 0.205 | 1.23 |
+| v10-H46 | dist\stage\src\main.py | 0e7c81d | V1_01_easy_a_s5 | PASS | 1.960 | 0.417 | 1.483 | 0.019 | 1.711 | 0.205 | 1.30 |
+| v10-H46 | dist\stage\src\main.py | 0e7c81d | V1_01_easy_a_s6 | PASS | 2.803 | 0.472 | 2.236 | 0.024 | 1.705 | 0.205 | 1.19 |
+| v10-H46 | dist\stage\src\main.py | 0e7c81d | V1_01_easy_b_s4 | PASS | 2.124 | 0.347 | 2.104 | 0.031 | 1.719 | 0.205 | 1.16 |
+| v10-H46 | dist\stage\src\main.py | 0e7c81d | V1_01_easy_b_s5 | PASS | 2.140 | 0.310 | 1.793 | 0.015 | 1.738 | 0.205 | 1.17 |
+| v10-H46 | dist\stage\src\main.py | 0e7c81d | V1_01_easy_b_s6 | PASS | 1.884 | 0.269 | 1.446 | 0.023 | 1.724 | 0.205 | 1.18 |
+| v10-H46 | dist\stage\src\main.py | 0e7c81d | V1_02_medium_a_s4 | PASS | 1.330 | 0.398 | 1.944 | 0.008 | 1.052 | 0.809 | 0.74 |
+| v10-H46 | dist\stage\src\main.py | 0e7c81d | V1_02_medium_a_s5 | PASS | 1.161 | 0.360 | 1.126 | 0.050 | 1.009 | 0.809 | 0.74 |
+| v10-H46 | dist\stage\src\main.py | 0e7c81d | V1_02_medium_a_s6 | PASS | 1.179 | 0.323 | 1.230 | 0.000 | 1.037 | 0.809 | 0.73 |
+| v10-H46 | dist\stage\src\main.py | 0e7c81d | V1_02_medium_b_s4 | PASS | 1.275 | 0.382 | 1.684 | 0.009 | 1.048 | 0.809 | 0.80 |
+| v10-H46 | dist\stage\src\main.py | 0e7c81d | V1_02_medium_b_s5 | PASS | 1.190 | 0.315 | 1.080 | 0.040 | 1.043 | 0.809 | 0.73 |
+| v10-H46 | dist\stage\src\main.py | 0e7c81d | V1_02_medium_b_s6 | PASS | 1.123 | 0.330 | 1.165 | 0.000 | 1.053 | 0.809 | 0.73 |
+| v10-H46 | dist\stage\src\main.py | 0e7c81d | V1_03_difficult_a_s4 | PASS | 1.410 | 0.399 | 1.576 | 0.009 | 1.279 | 0.308 | 0.80 |
+| v10-H46 | dist\stage\src\main.py | 0e7c81d | V1_03_difficult_a_s5 | PASS | 1.367 | 0.289 | 1.307 | 0.019 | 1.266 | 0.308 | 0.81 |
+| v10-H46 | dist\stage\src\main.py | 0e7c81d | V1_03_difficult_a_s6 | PASS | 1.366 | 0.274 | 1.316 | 0.013 | 1.265 | 0.308 | 0.78 |
+| v10-H46 | dist\stage\src\main.py | 0e7c81d | V1_03_difficult_b_s4 | PASS | 1.376 | 0.396 | 1.554 | 0.009 | 1.278 | 0.308 | 0.83 |
+| v10-H46 | dist\stage\src\main.py | 0e7c81d | V1_03_difficult_b_s5 | PASS | 1.359 | 0.294 | 1.310 | 0.021 | 1.265 | 0.308 | 0.87 |
+| v10-H46 | dist\stage\src\main.py | 0e7c81d | V1_03_difficult_b_s6 | PASS | 1.374 | 0.272 | 1.355 | 0.013 | 1.265 | 0.308 | 0.87 |
+| v10-H79 | dist\stage\src\main.py | 0e7c81d | MH_03_medium_a_s7 | PASS | 3.570 | 0.650 | 3.331 | 0.027 | 3.095 | 0.319 | 1.82 |
+| v10-H79 | dist\stage\src\main.py | 0e7c81d | MH_03_medium_a_s8 | PASS | 3.361 | 0.637 | 3.192 | 0.009 | 3.069 | 0.319 | 3.04 |
+| v10-H79 | dist\stage\src\main.py | 0e7c81d | MH_03_medium_a_s9 | PASS | 3.859 | 0.619 | 3.486 | 0.021 | 2.982 | 0.319 | 1.75 |
+| v10-H79 | dist\stage\src\main.py | 0e7c81d | MH_03_medium_b_s7 | PASS | 2.884 | 0.446 | 3.093 | 0.013 | 3.111 | 0.319 | 1.63 |
+| v10-H79 | dist\stage\src\main.py | 0e7c81d | MH_03_medium_b_s8 | PASS | 2.782 | 0.416 | 2.587 | 0.011 | 3.076 | 0.319 | 1.53 |
+| v10-H79 | dist\stage\src\main.py | 0e7c81d | MH_03_medium_b_s9 | PASS | 2.817 | 0.457 | 2.567 | 0.018 | 3.089 | 0.319 | 1.50 |
+| v10-H79 | dist\stage\src\main.py | 0e7c81d | MH_04_difficult_a_s7 | PASS | 6.687 | 1.018 | 6.805 | 0.015 | 3.844 | 0.272 | 1.06 |
+| v10-H79 | dist\stage\src\main.py | 0e7c81d | MH_04_difficult_a_s8 | PASS | 6.348 | 0.979 | 4.450 | 0.005 | 3.865 | 0.272 | 1.12 |
+| v10-H79 | dist\stage\src\main.py | 0e7c81d | MH_04_difficult_a_s9 | PASS | 6.059 | 0.929 | 6.294 | 0.051 | 3.824 | 0.272 | 1.05 |
+| v10-H79 | dist\stage\src\main.py | 0e7c81d | MH_04_difficult_b_s7 | PASS | 6.170 | 0.904 | 6.431 | 0.016 | 3.811 | 0.272 | 1.11 |
+| v10-H79 | dist\stage\src\main.py | 0e7c81d | MH_04_difficult_b_s8 | PASS | 6.394 | 0.899 | 4.508 | 0.003 | 3.826 | 0.272 | 1.01 |
+| v10-H79 | dist\stage\src\main.py | 0e7c81d | MH_04_difficult_b_s9 | PASS | 6.192 | 0.828 | 5.821 | 0.038 | 3.811 | 0.272 | 1.07 |
+| v10-H79 | dist\stage\src\main.py | 0e7c81d | MH_05_difficult_a_s7 | PASS | 6.595 | 0.967 | 5.908 | 0.007 | 4.039 | 0.854 | 1.12 |
+| v10-H79 | dist\stage\src\main.py | 0e7c81d | MH_05_difficult_a_s8 | PASS | 6.210 | 0.850 | 5.733 | 0.022 | 4.021 | 0.854 | 1.13 |
+| v10-H79 | dist\stage\src\main.py | 0e7c81d | MH_05_difficult_a_s9 | PASS | 6.724 | 0.978 | 8.326 | 0.032 | 4.082 | 0.854 | 1.09 |
+| v10-H79 | dist\stage\src\main.py | 0e7c81d | MH_05_difficult_b_s7 | PASS | 6.705 | 0.827 | 6.592 | 0.004 | 4.058 | 0.854 | 0.97 |
+| v10-H79 | dist\stage\src\main.py | 0e7c81d | MH_05_difficult_b_s8 | PASS | 6.522 | 0.822 | 4.870 | 0.025 | 4.036 | 0.854 | 0.91 |
+| v10-H79 | dist\stage\src\main.py | 0e7c81d | MH_05_difficult_b_s9 | PASS | 6.686 | 0.819 | 8.553 | 0.016 | 4.073 | 0.854 | 0.90 |
+| v10-H79 | dist\stage\src\main.py | 0e7c81d | V1_01_easy_a_s7 | PASS | 2.541 | 0.428 | 2.900 | 0.023 | 1.736 | 0.205 | 1.23 |
+| v10-H79 | dist\stage\src\main.py | 0e7c81d | V1_01_easy_a_s8 | PASS | 2.033 | 0.380 | 1.863 | 0.006 | 1.723 | 0.205 | 1.42 |
+| v10-H79 | dist\stage\src\main.py | 0e7c81d | V1_01_easy_a_s9 | PASS | 2.206 | 0.392 | 1.699 | 0.012 | 1.735 | 0.205 | 1.19 |
+| v10-H79 | dist\stage\src\main.py | 0e7c81d | V1_01_easy_b_s7 | PASS | 1.835 | 0.322 | 1.924 | 0.025 | 1.729 | 0.205 | 1.18 |
+| v10-H79 | dist\stage\src\main.py | 0e7c81d | V1_01_easy_b_s8 | PASS | 1.911 | 0.319 | 1.675 | 0.002 | 1.720 | 0.205 | 1.16 |
+| v10-H79 | dist\stage\src\main.py | 0e7c81d | V1_01_easy_b_s9 | PASS | 1.931 | 0.259 | 1.558 | 0.010 | 1.712 | 0.205 | 1.19 |
+| v10-H79 | dist\stage\src\main.py | 0e7c81d | V1_02_medium_a_s7 | PASS | 1.072 | 0.291 | 1.052 | 0.007 | 1.043 | 0.809 | 0.71 |
+| v10-H79 | dist\stage\src\main.py | 0e7c81d | V1_02_medium_a_s8 | PASS | 1.518 | 0.393 | 1.683 | 0.006 | 1.063 | 0.809 | 0.73 |
+| v10-H79 | dist\stage\src\main.py | 0e7c81d | V1_02_medium_a_s9 | PASS | 1.387 | 0.409 | 1.236 | 0.014 | 0.987 | 0.809 | 0.81 |
+| v10-H79 | dist\stage\src\main.py | 0e7c81d | V1_02_medium_b_s7 | PASS | 1.034 | 0.308 | 1.069 | 0.006 | 1.023 | 0.809 | 0.75 |
+| v10-H79 | dist\stage\src\main.py | 0e7c81d | V1_02_medium_b_s8 | PASS | 1.567 | 0.393 | 1.836 | 0.009 | 1.053 | 0.809 | 0.74 |
+| v10-H79 | dist\stage\src\main.py | 0e7c81d | V1_02_medium_b_s9 | PASS | 1.419 | 0.441 | 1.369 | 0.011 | 0.974 | 0.809 | 0.75 |
+| v10-H79 | dist\stage\src\main.py | 0e7c81d | V1_03_difficult_a_s7 | PASS | 1.348 | 0.325 | 0.981 | 0.027 | 1.275 | 0.308 | 0.78 |
+| v10-H79 | dist\stage\src\main.py | 0e7c81d | V1_03_difficult_a_s8 | PASS | 1.390 | 0.309 | 1.183 | 0.005 | 1.275 | 0.308 | 0.79 |
+| v10-H79 | dist\stage\src\main.py | 0e7c81d | V1_03_difficult_a_s9 | PASS | 1.392 | 0.311 | 0.974 | 0.000 | 1.265 | 0.308 | 0.76 |
+| v10-H79 | dist\stage\src\main.py | 0e7c81d | V1_03_difficult_b_s7 | PASS | 1.372 | 0.333 | 0.984 | 0.025 | 1.276 | 0.308 | 0.82 |
+| v10-H79 | dist\stage\src\main.py | 0e7c81d | V1_03_difficult_b_s8 | PASS | 1.386 | 0.315 | 1.178 | 0.005 | 1.273 | 0.308 | 0.87 |
+| v10-H79 | dist\stage\src\main.py | 0e7c81d | V1_03_difficult_b_s9 | PASS | 1.413 | 0.307 | 1.027 | 0.000 | 1.262 | 0.308 | 0.88 |
+| v10-HP | dist\stage\src\main.py | 0e7c81d | MH_03_medium_a_s22 | PASS | 3.631 | 0.615 | 3.170 | 0.032 | 3.065 | 0.319 | 1.72 |
+| v10-HP | dist\stage\src\main.py | 0e7c81d | MH_03_medium_a_s23 | PASS | 3.545 | 0.612 | 2.967 | 0.034 | 3.084 | 0.319 | 2.90 |
+| v10-HP | dist\stage\src\main.py | 0e7c81d | MH_03_medium_a_s24 | PASS | 3.955 | 0.747 | 3.687 | 0.041 | 3.109 | 0.319 | 1.71 |
+| v10-HP | dist\stage\src\main.py | 0e7c81d | MH_03_medium_b_s22 | PASS | 2.942 | 0.421 | 2.513 | 0.010 | 3.101 | 0.319 | 1.71 |
+| v10-HP | dist\stage\src\main.py | 0e7c81d | MH_03_medium_b_s23 | PASS | 3.028 | 0.457 | 2.510 | 0.018 | 3.111 | 0.319 | 1.48 |
+| v10-HP | dist\stage\src\main.py | 0e7c81d | MH_03_medium_b_s24 | PASS | 2.890 | 0.501 | 3.060 | 0.015 | 3.087 | 0.319 | 1.55 |
+| v10-HP | dist\stage\src\main.py | 0e7c81d | MH_04_difficult_a_s22 | PASS | 6.345 | 0.942 | 7.302 | 0.065 | 3.812 | 0.272 | 1.10 |
+| v10-HP | dist\stage\src\main.py | 0e7c81d | MH_04_difficult_a_s23 | PASS | 6.110 | 0.961 | 6.680 | 0.131 | 3.768 | 0.272 | 1.16 |
+| v10-HP | dist\stage\src\main.py | 0e7c81d | MH_04_difficult_a_s24 | PASS | 6.667 | 0.991 | 6.525 | 0.016 | 3.829 | 0.272 | 1.03 |
+| v10-HP | dist\stage\src\main.py | 0e7c81d | MH_04_difficult_b_s22 | PASS | 6.319 | 0.854 | 7.629 | 0.049 | 3.835 | 0.272 | 1.02 |
+| v10-HP | dist\stage\src\main.py | 0e7c81d | MH_04_difficult_b_s23 | PASS | 6.218 | 0.854 | 6.271 | 0.101 | 3.835 | 0.272 | 1.00 |
+| v10-HP | dist\stage\src\main.py | 0e7c81d | MH_04_difficult_b_s24 | PASS | 6.161 | 0.899 | 6.120 | 0.014 | 3.814 | 0.272 | 1.13 |
+| v10-HP | dist\stage\src\main.py | 0e7c81d | MH_05_difficult_a_s22 | PASS | 6.768 | 0.945 | 7.054 | 0.064 | 4.052 | 0.854 | 1.11 |
+| v10-HP | dist\stage\src\main.py | 0e7c81d | MH_05_difficult_a_s23 | PASS | 6.194 | 0.822 | 5.822 | 0.015 | 4.062 | 0.854 | 1.15 |
+| v10-HP | dist\stage\src\main.py | 0e7c81d | MH_05_difficult_a_s24 | PASS | 6.590 | 0.935 | 4.980 | 0.009 | 4.057 | 0.854 | 1.04 |
+| v10-HP | dist\stage\src\main.py | 0e7c81d | MH_05_difficult_b_s22 | PASS | 6.419 | 0.776 | 7.334 | 0.041 | 4.036 | 0.854 | 0.91 |
+| v10-HP | dist\stage\src\main.py | 0e7c81d | MH_05_difficult_b_s23 | PASS | 6.696 | 0.836 | 6.201 | 0.018 | 4.079 | 0.854 | 0.91 |
+| v10-HP | dist\stage\src\main.py | 0e7c81d | MH_05_difficult_b_s24 | PASS | 6.559 | 0.808 | 4.976 | 0.008 | 4.064 | 0.854 | 0.90 |
+| v10-HP | dist\stage\src\main.py | 0e7c81d | V1_01_easy_a_s22 | PASS | 2.245 | 0.456 | 2.354 | 0.007 | 1.693 | 0.205 | 1.23 |
+| v10-HP | dist\stage\src\main.py | 0e7c81d | V1_01_easy_a_s23 | PASS | 2.074 | 0.422 | 2.169 | 0.009 | 1.708 | 0.205 | 1.32 |
+| v10-HP | dist\stage\src\main.py | 0e7c81d | V1_01_easy_a_s24 | PASS | 2.412 | 0.462 | 2.304 | 0.003 | 1.729 | 0.205 | 1.19 |
+| v10-HP | dist\stage\src\main.py | 0e7c81d | V1_01_easy_b_s22 | PASS | 1.937 | 0.310 | 1.765 | 0.004 | 1.709 | 0.205 | 1.18 |
+| v10-HP | dist\stage\src\main.py | 0e7c81d | V1_01_easy_b_s23 | PASS | 1.965 | 0.273 | 1.215 | 0.005 | 1.736 | 0.205 | 1.18 |
+| v10-HP | dist\stage\src\main.py | 0e7c81d | V1_01_easy_b_s24 | PASS | 1.923 | 0.282 | 1.789 | 0.003 | 1.726 | 0.205 | 1.21 |
+| v10-HP | dist\stage\src\main.py | 0e7c81d | V1_02_medium_a_s22 | PASS | 1.341 | 0.357 | 1.508 | 0.017 | 1.048 | 0.809 | 0.73 |
+| v10-HP | dist\stage\src\main.py | 0e7c81d | V1_02_medium_a_s23 | PASS | 2.005 | 0.615 | 2.150 | 0.008 | 1.083 | 0.809 | 0.74 |
+| v10-HP | dist\stage\src\main.py | 0e7c81d | V1_02_medium_a_s24 | PASS | 1.092 | 0.355 | 0.919 | 0.000 | 1.010 | 0.809 | 0.73 |
+| v10-HP | dist\stage\src\main.py | 0e7c81d | V1_02_medium_b_s22 | PASS | 1.229 | 0.336 | 1.425 | 0.015 | 1.050 | 0.809 | 0.76 |
+| v10-HP | dist\stage\src\main.py | 0e7c81d | V1_02_medium_b_s23 | PASS | 1.863 | 0.570 | 2.120 | 0.007 | 1.067 | 0.809 | 0.73 |
+| v10-HP | dist\stage\src\main.py | 0e7c81d | V1_02_medium_b_s24 | PASS | 1.055 | 0.367 | 0.967 | 0.000 | 1.005 | 0.809 | 0.74 |
+| v10-HP | dist\stage\src\main.py | 0e7c81d | V1_03_difficult_a_s22 | PASS | 1.465 | 0.378 | 1.269 | 0.012 | 1.262 | 0.308 | 0.78 |
+| v10-HP | dist\stage\src\main.py | 0e7c81d | V1_03_difficult_a_s23 | PASS | 1.955 | 0.611 | 1.878 | 0.044 | 1.314 | 0.308 | 0.79 |
+| v10-HP | dist\stage\src\main.py | 0e7c81d | V1_03_difficult_a_s24 | PASS | 1.493 | 0.337 | 1.631 | 0.016 | 1.257 | 0.308 | 0.78 |
+| v10-HP | dist\stage\src\main.py | 0e7c81d | V1_03_difficult_b_s22 | PASS | 1.461 | 0.373 | 1.261 | 0.012 | 1.259 | 0.308 | 0.85 |
+| v10-HP | dist\stage\src\main.py | 0e7c81d | V1_03_difficult_b_s23 | PASS | 1.835 | 0.555 | 1.747 | 0.038 | 1.308 | 0.308 | 0.87 |
+| v10-HP | dist\stage\src\main.py | 0e7c81d | V1_03_difficult_b_s24 | PASS | 1.574 | 0.336 | 1.735 | 0.014 | 1.260 | 0.308 | 0.87 |
+| v10floor-H46 | tools\baseline_still.py | 0e7c81d | MH_03_medium_a_s4 | PASS | 3.579 | 1.224 | 3.179 | 0.044 | 3.079 | 0.319 | 0.27 |
+| v10floor-H46 | tools\baseline_still.py | 0e7c81d | MH_03_medium_a_s5 | PASS | 3.578 | 1.222 | 3.703 | 0.016 | 3.086 | 0.319 | 0.28 |
+| v10floor-H46 | tools\baseline_still.py | 0e7c81d | MH_03_medium_a_s6 | PASS | 3.581 | 1.225 | 3.386 | 0.014 | 3.089 | 0.319 | 0.27 |
+| v10floor-H46 | tools\baseline_still.py | 0e7c81d | MH_03_medium_b_s4 | PASS | 3.579 | 1.224 | 3.179 | 0.044 | 3.079 | 0.319 | 0.64 |
+| v10floor-H46 | tools\baseline_still.py | 0e7c81d | MH_03_medium_b_s5 | PASS | 3.578 | 1.222 | 3.703 | 0.016 | 3.086 | 0.319 | 0.61 |
+| v10floor-H46 | tools\baseline_still.py | 0e7c81d | MH_03_medium_b_s6 | PASS | 3.581 | 1.225 | 3.386 | 0.014 | 3.089 | 0.319 | 0.44 |
+| v10floor-H46 | tools\baseline_still.py | 0e7c81d | MH_04_difficult_a_s4 | PASS | 6.829 | 1.132 | 6.141 | 0.088 | 3.876 | 0.272 | 0.24 |
+| v10floor-H46 | tools\baseline_still.py | 0e7c81d | MH_04_difficult_a_s5 | PASS | 6.799 | 1.168 | 7.411 | 0.008 | 3.850 | 0.272 | 0.24 |
+| v10floor-H46 | tools\baseline_still.py | 0e7c81d | MH_04_difficult_a_s6 | PASS | 6.811 | 1.175 | 7.059 | 0.010 | 3.819 | 0.272 | 0.29 |
+| v10floor-H46 | tools\baseline_still.py | 0e7c81d | MH_04_difficult_b_s4 | PASS | 6.829 | 1.132 | 6.141 | 0.088 | 3.876 | 0.272 | 0.31 |
+| v10floor-H46 | tools\baseline_still.py | 0e7c81d | MH_04_difficult_b_s5 | PASS | 6.799 | 1.168 | 7.411 | 0.008 | 3.850 | 0.272 | 0.30 |
+| v10floor-H46 | tools\baseline_still.py | 0e7c81d | MH_04_difficult_b_s6 | PASS | 6.811 | 1.175 | 7.059 | 0.010 | 3.819 | 0.272 | 0.31 |
+| v10floor-H46 | tools\baseline_still.py | 0e7c81d | MH_05_difficult_a_s4 | PASS | 6.868 | 1.075 | 6.997 | 0.011 | 4.047 | 0.854 | 0.21 |
+| v10floor-H46 | tools\baseline_still.py | 0e7c81d | MH_05_difficult_a_s5 | PASS | 6.865 | 1.065 | 7.415 | 0.000 | 4.066 | 0.854 | 0.24 |
+| v10floor-H46 | tools\baseline_still.py | 0e7c81d | MH_05_difficult_a_s6 | PASS | 6.863 | 1.076 | 5.851 | 0.021 | 4.064 | 0.854 | 0.23 |
+| v10floor-H46 | tools\baseline_still.py | 0e7c81d | MH_05_difficult_b_s4 | PASS | 6.868 | 1.075 | 6.997 | 0.011 | 4.047 | 0.854 | 0.32 |
+| v10floor-H46 | tools\baseline_still.py | 0e7c81d | MH_05_difficult_b_s5 | PASS | 6.865 | 1.065 | 7.415 | 0.000 | 4.066 | 0.854 | 0.34 |
+| v10floor-H46 | tools\baseline_still.py | 0e7c81d | MH_05_difficult_b_s6 | PASS | 6.863 | 1.076 | 5.851 | 0.021 | 4.064 | 0.854 | 0.32 |
+| v10floor-H46 | tools\baseline_still.py | 0e7c81d | V1_01_easy_a_s4 | PASS | 1.855 | 0.457 | 1.580 | 0.012 | 1.726 | 0.205 | 0.23 |
+| v10floor-H46 | tools\baseline_still.py | 0e7c81d | V1_01_easy_a_s5 | PASS | 1.855 | 0.455 | 1.638 | 0.009 | 1.717 | 0.205 | 0.25 |
+| v10floor-H46 | tools\baseline_still.py | 0e7c81d | V1_01_easy_a_s6 | PASS | 1.853 | 0.457 | 1.690 | 0.021 | 1.718 | 0.205 | 0.25 |
+| v10floor-H46 | tools\baseline_still.py | 0e7c81d | V1_01_easy_b_s4 | PASS | 1.855 | 0.457 | 1.580 | 0.012 | 1.726 | 0.205 | 0.32 |
+| v10floor-H46 | tools\baseline_still.py | 0e7c81d | V1_01_easy_b_s5 | PASS | 1.855 | 0.455 | 1.638 | 0.009 | 1.717 | 0.205 | 0.34 |
+| v10floor-H46 | tools\baseline_still.py | 0e7c81d | V1_01_easy_b_s6 | PASS | 1.853 | 0.457 | 1.690 | 0.021 | 1.718 | 0.205 | 0.34 |
+| v10floor-H46 | tools\baseline_still.py | 0e7c81d | V1_02_medium_a_s4 | PASS | 1.779 | 0.979 | 1.925 | 0.014 | 1.035 | 0.809 | 0.21 |
+| v10floor-H46 | tools\baseline_still.py | 0e7c81d | V1_02_medium_a_s5 | PASS | 1.777 | 0.967 | 1.409 | 0.098 | 1.048 | 0.809 | 0.20 |
+| v10floor-H46 | tools\baseline_still.py | 0e7c81d | V1_02_medium_a_s6 | PASS | 1.779 | 0.979 | 1.478 | 0.000 | 1.047 | 0.809 | 0.17 |
+| v10floor-H46 | tools\baseline_still.py | 0e7c81d | V1_02_medium_b_s4 | PASS | 1.779 | 0.979 | 1.925 | 0.014 | 1.035 | 0.809 | 0.22 |
+| v10floor-H46 | tools\baseline_still.py | 0e7c81d | V1_02_medium_b_s5 | PASS | 1.777 | 0.967 | 1.409 | 0.098 | 1.048 | 0.809 | 0.25 |
+| v10floor-H46 | tools\baseline_still.py | 0e7c81d | V1_02_medium_b_s6 | PASS | 1.779 | 0.979 | 1.478 | 0.000 | 1.047 | 0.809 | 0.26 |
+| v10floor-H46 | tools\baseline_still.py | 0e7c81d | V1_03_difficult_a_s4 | PASS | 1.580 | 0.762 | 1.706 | 0.014 | 1.273 | 0.308 | 0.22 |
+| v10floor-H46 | tools\baseline_still.py | 0e7c81d | V1_03_difficult_a_s5 | PASS | 1.581 | 0.758 | 1.358 | 0.025 | 1.269 | 0.308 | 0.23 |
+| v10floor-H46 | tools\baseline_still.py | 0e7c81d | V1_03_difficult_a_s6 | PASS | 1.582 | 0.756 | 1.338 | 0.034 | 1.270 | 0.308 | 0.22 |
+| v10floor-H46 | tools\baseline_still.py | 0e7c81d | V1_03_difficult_b_s4 | PASS | 1.580 | 0.762 | 1.706 | 0.014 | 1.273 | 0.308 | 0.31 |
+| v10floor-H46 | tools\baseline_still.py | 0e7c81d | V1_03_difficult_b_s5 | PASS | 1.581 | 0.758 | 1.358 | 0.025 | 1.269 | 0.308 | 0.24 |
+| v10floor-H46 | tools\baseline_still.py | 0e7c81d | V1_03_difficult_b_s6 | PASS | 1.582 | 0.756 | 1.338 | 0.034 | 1.270 | 0.308 | 0.25 |
+| v10floor-H79 | tools\baseline_still.py | 0e7c81d | MH_03_medium_a_s7 | PASS | 3.581 | 1.224 | 3.567 | 0.024 | 3.088 | 0.319 | 0.27 |
+| v10floor-H79 | tools\baseline_still.py | 0e7c81d | MH_03_medium_a_s8 | PASS | 3.586 | 1.226 | 2.800 | 0.012 | 3.083 | 0.319 | 0.27 |
+| v10floor-H79 | tools\baseline_still.py | 0e7c81d | MH_03_medium_a_s9 | PASS | 3.579 | 1.225 | 3.125 | 0.018 | 3.083 | 0.319 | 0.27 |
+| v10floor-H79 | tools\baseline_still.py | 0e7c81d | MH_03_medium_b_s7 | PASS | 3.581 | 1.224 | 3.567 | 0.024 | 3.088 | 0.319 | 0.60 |
+| v10floor-H79 | tools\baseline_still.py | 0e7c81d | MH_03_medium_b_s8 | PASS | 3.586 | 1.226 | 2.800 | 0.012 | 3.083 | 0.319 | 0.63 |
+| v10floor-H79 | tools\baseline_still.py | 0e7c81d | MH_03_medium_b_s9 | PASS | 3.579 | 1.225 | 3.125 | 0.018 | 3.083 | 0.319 | 0.45 |
+| v10floor-H79 | tools\baseline_still.py | 0e7c81d | MH_04_difficult_a_s7 | PASS | 6.814 | 1.177 | 6.788 | 0.018 | 3.844 | 0.272 | 0.27 |
+| v10floor-H79 | tools\baseline_still.py | 0e7c81d | MH_04_difficult_a_s8 | PASS | 6.831 | 1.168 | 4.394 | 0.005 | 3.852 | 0.272 | 0.23 |
+| v10floor-H79 | tools\baseline_still.py | 0e7c81d | MH_04_difficult_a_s9 | PASS | 6.821 | 1.130 | 5.909 | 0.062 | 3.873 | 0.272 | 0.25 |
+| v10floor-H79 | tools\baseline_still.py | 0e7c81d | MH_04_difficult_b_s7 | PASS | 6.814 | 1.177 | 6.788 | 0.018 | 3.844 | 0.272 | 0.34 |
+| v10floor-H79 | tools\baseline_still.py | 0e7c81d | MH_04_difficult_b_s8 | PASS | 6.831 | 1.168 | 4.394 | 0.005 | 3.852 | 0.272 | 0.29 |
+| v10floor-H79 | tools\baseline_still.py | 0e7c81d | MH_04_difficult_b_s9 | PASS | 6.821 | 1.130 | 5.909 | 0.062 | 3.873 | 0.272 | 0.31 |
+| v10floor-H79 | tools\baseline_still.py | 0e7c81d | MH_05_difficult_a_s7 | PASS | 6.859 | 1.072 | 5.846 | 0.007 | 4.057 | 0.854 | 0.23 |
+| v10floor-H79 | tools\baseline_still.py | 0e7c81d | MH_05_difficult_a_s8 | PASS | 6.883 | 1.078 | 5.116 | 0.033 | 4.058 | 0.854 | 0.20 |
+| v10floor-H79 | tools\baseline_still.py | 0e7c81d | MH_05_difficult_a_s9 | PASS | 6.859 | 1.073 | 8.200 | 0.024 | 4.070 | 0.854 | 0.23 |
+| v10floor-H79 | tools\baseline_still.py | 0e7c81d | MH_05_difficult_b_s7 | PASS | 6.859 | 1.072 | 5.846 | 0.007 | 4.057 | 0.854 | 0.31 |
+| v10floor-H79 | tools\baseline_still.py | 0e7c81d | MH_05_difficult_b_s8 | PASS | 6.883 | 1.078 | 5.116 | 0.033 | 4.058 | 0.854 | 0.34 |
+| v10floor-H79 | tools\baseline_still.py | 0e7c81d | MH_05_difficult_b_s9 | PASS | 6.859 | 1.073 | 8.200 | 0.024 | 4.070 | 0.854 | 0.31 |
+| v10floor-H79 | tools\baseline_still.py | 0e7c81d | V1_01_easy_a_s7 | PASS | 1.852 | 0.453 | 1.955 | 0.016 | 1.713 | 0.205 | 0.23 |
+| v10floor-H79 | tools\baseline_still.py | 0e7c81d | V1_01_easy_a_s8 | PASS | 1.854 | 0.453 | 1.620 | 0.003 | 1.717 | 0.205 | 0.27 |
+| v10floor-H79 | tools\baseline_still.py | 0e7c81d | V1_01_easy_a_s9 | PASS | 1.855 | 0.452 | 1.260 | 0.008 | 1.716 | 0.205 | 0.23 |
+| v10floor-H79 | tools\baseline_still.py | 0e7c81d | V1_01_easy_b_s7 | PASS | 1.852 | 0.453 | 1.955 | 0.016 | 1.713 | 0.205 | 0.38 |
+| v10floor-H79 | tools\baseline_still.py | 0e7c81d | V1_01_easy_b_s8 | PASS | 1.854 | 0.453 | 1.620 | 0.003 | 1.717 | 0.205 | 0.34 |
+| v10floor-H79 | tools\baseline_still.py | 0e7c81d | V1_01_easy_b_s9 | PASS | 1.855 | 0.452 | 1.260 | 0.008 | 1.716 | 0.205 | 0.33 |
+| v10floor-H79 | tools\baseline_still.py | 0e7c81d | V1_02_medium_a_s7 | PASS | 1.779 | 0.979 | 1.614 | 0.021 | 1.045 | 0.809 | 0.17 |
+| v10floor-H79 | tools\baseline_still.py | 0e7c81d | V1_02_medium_a_s8 | PASS | 1.779 | 0.978 | 1.585 | 0.022 | 1.044 | 0.809 | 0.20 |
+| v10floor-H79 | tools\baseline_still.py | 0e7c81d | V1_02_medium_a_s9 | PASS | 1.779 | 0.984 | 1.625 | 0.020 | 1.041 | 0.809 | 0.16 |
+| v10floor-H79 | tools\baseline_still.py | 0e7c81d | V1_02_medium_b_s7 | PASS | 1.779 | 0.979 | 1.614 | 0.021 | 1.045 | 0.809 | 0.24 |
+| v10floor-H79 | tools\baseline_still.py | 0e7c81d | V1_02_medium_b_s8 | PASS | 1.779 | 0.978 | 1.585 | 0.022 | 1.044 | 0.809 | 0.26 |
+| v10floor-H79 | tools\baseline_still.py | 0e7c81d | V1_02_medium_b_s9 | PASS | 1.779 | 0.984 | 1.625 | 0.020 | 1.041 | 0.809 | 0.25 |
+| v10floor-H79 | tools\baseline_still.py | 0e7c81d | V1_03_difficult_a_s7 | PASS | 1.585 | 0.770 | 0.865 | 0.043 | 1.274 | 0.308 | 0.18 |
+| v10floor-H79 | tools\baseline_still.py | 0e7c81d | V1_03_difficult_a_s8 | PASS | 1.583 | 0.760 | 1.487 | 0.012 | 1.271 | 0.308 | 0.20 |
+| v10floor-H79 | tools\baseline_still.py | 0e7c81d | V1_03_difficult_a_s9 | PASS | 1.584 | 0.769 | 0.845 | 0.000 | 1.268 | 0.308 | 0.19 |
+| v10floor-H79 | tools\baseline_still.py | 0e7c81d | V1_03_difficult_b_s7 | PASS | 1.585 | 0.770 | 0.865 | 0.043 | 1.274 | 0.308 | 0.29 |
+| v10floor-H79 | tools\baseline_still.py | 0e7c81d | V1_03_difficult_b_s8 | PASS | 1.583 | 0.760 | 1.487 | 0.012 | 1.271 | 0.308 | 0.27 |
+| v10floor-H79 | tools\baseline_still.py | 0e7c81d | V1_03_difficult_b_s9 | PASS | 1.584 | 0.769 | 0.845 | 0.000 | 1.268 | 0.308 | 0.28 |
+| v10floor-HP | tools\baseline_still.py | 0e7c81d | MH_03_medium_a_s22 | PASS | 3.588 | 1.227 | 2.849 | 0.022 | 3.081 | 0.319 | 0.29 |
+| v10floor-HP | tools\baseline_still.py | 0e7c81d | MH_03_medium_a_s23 | PASS | 3.591 | 1.228 | 2.691 | 0.046 | 3.092 | 0.319 | 0.27 |
+| v10floor-HP | tools\baseline_still.py | 0e7c81d | MH_03_medium_a_s24 | PASS | 3.584 | 1.238 | 2.982 | 0.033 | 3.084 | 0.319 | 0.31 |
+| v10floor-HP | tools\baseline_still.py | 0e7c81d | MH_03_medium_b_s22 | PASS | 3.588 | 1.227 | 2.849 | 0.022 | 3.081 | 0.319 | 0.68 |
+| v10floor-HP | tools\baseline_still.py | 0e7c81d | MH_03_medium_b_s23 | PASS | 3.591 | 1.228 | 2.691 | 0.046 | 3.092 | 0.319 | 0.62 |
+| v10floor-HP | tools\baseline_still.py | 0e7c81d | MH_03_medium_b_s24 | PASS | 3.584 | 1.238 | 2.982 | 0.033 | 3.084 | 0.319 | 0.42 |
+| v10floor-HP | tools\baseline_still.py | 0e7c81d | MH_04_difficult_a_s22 | PASS | 6.820 | 1.133 | 7.963 | 0.081 | 3.873 | 0.272 | 0.22 |
+| v10floor-HP | tools\baseline_still.py | 0e7c81d | MH_04_difficult_a_s23 | PASS | 6.819 | 1.137 | 7.170 | 0.137 | 3.857 | 0.272 | 0.26 |
+| v10floor-HP | tools\baseline_still.py | 0e7c81d | MH_04_difficult_a_s24 | PASS | 6.807 | 1.178 | 6.564 | 0.020 | 3.833 | 0.272 | 0.23 |
+| v10floor-HP | tools\baseline_still.py | 0e7c81d | MH_04_difficult_b_s22 | PASS | 6.820 | 1.133 | 7.963 | 0.081 | 3.873 | 0.272 | 0.29 |
+| v10floor-HP | tools\baseline_still.py | 0e7c81d | MH_04_difficult_b_s23 | PASS | 6.819 | 1.137 | 7.170 | 0.137 | 3.857 | 0.272 | 0.30 |
+| v10floor-HP | tools\baseline_still.py | 0e7c81d | MH_04_difficult_b_s24 | PASS | 6.807 | 1.178 | 6.564 | 0.020 | 3.833 | 0.272 | 0.28 |
+| v10floor-HP | tools\baseline_still.py | 0e7c81d | MH_05_difficult_a_s22 | PASS | 6.871 | 1.070 | 6.915 | 0.044 | 4.071 | 0.854 | 0.23 |
+| v10floor-HP | tools\baseline_still.py | 0e7c81d | MH_05_difficult_a_s23 | PASS | 6.880 | 1.073 | 5.780 | 0.019 | 4.083 | 0.854 | 0.23 |
+| v10floor-HP | tools\baseline_still.py | 0e7c81d | MH_05_difficult_a_s24 | PASS | 6.897 | 1.080 | 4.946 | 0.010 | 4.069 | 0.854 | 0.26 |
+| v10floor-HP | tools\baseline_still.py | 0e7c81d | MH_05_difficult_b_s22 | PASS | 6.871 | 1.070 | 6.915 | 0.044 | 4.071 | 0.854 | 0.31 |
+| v10floor-HP | tools\baseline_still.py | 0e7c81d | MH_05_difficult_b_s23 | PASS | 6.880 | 1.073 | 5.780 | 0.019 | 4.083 | 0.854 | 0.33 |
+| v10floor-HP | tools\baseline_still.py | 0e7c81d | MH_05_difficult_b_s24 | PASS | 6.897 | 1.080 | 4.946 | 0.010 | 4.069 | 0.854 | 0.28 |
+| v10floor-HP | tools\baseline_still.py | 0e7c81d | V1_01_easy_a_s22 | PASS | 1.853 | 0.452 | 1.793 | 0.006 | 1.714 | 0.205 | 0.22 |
+| v10floor-HP | tools\baseline_still.py | 0e7c81d | V1_01_easy_a_s23 | PASS | 1.852 | 0.453 | 1.739 | 0.007 | 1.714 | 0.205 | 0.24 |
+| v10floor-HP | tools\baseline_still.py | 0e7c81d | V1_01_easy_a_s24 | PASS | 1.856 | 0.452 | 1.482 | 0.002 | 1.726 | 0.205 | 0.25 |
+| v10floor-HP | tools\baseline_still.py | 0e7c81d | V1_01_easy_b_s22 | PASS | 1.853 | 0.452 | 1.793 | 0.006 | 1.714 | 0.205 | 0.36 |
+| v10floor-HP | tools\baseline_still.py | 0e7c81d | V1_01_easy_b_s23 | PASS | 1.852 | 0.453 | 1.739 | 0.007 | 1.714 | 0.205 | 0.31 |
+| v10floor-HP | tools\baseline_still.py | 0e7c81d | V1_01_easy_b_s24 | PASS | 1.856 | 0.452 | 1.482 | 0.002 | 1.726 | 0.205 | 0.32 |
+| v10floor-HP | tools\baseline_still.py | 0e7c81d | V1_02_medium_a_s22 | PASS | 1.780 | 0.980 | 1.546 | 0.047 | 1.046 | 0.809 | 0.19 |
+| v10floor-HP | tools\baseline_still.py | 0e7c81d | V1_02_medium_a_s23 | PASS | 1.778 | 0.983 | 1.786 | 0.010 | 1.046 | 0.809 | 0.18 |
+| v10floor-HP | tools\baseline_still.py | 0e7c81d | V1_02_medium_a_s24 | PASS | 1.779 | 0.989 | 1.640 | 0.000 | 1.043 | 0.809 | 0.20 |
+| v10floor-HP | tools\baseline_still.py | 0e7c81d | V1_02_medium_b_s22 | PASS | 1.780 | 0.980 | 1.546 | 0.047 | 1.046 | 0.809 | 0.25 |
+| v10floor-HP | tools\baseline_still.py | 0e7c81d | V1_02_medium_b_s23 | PASS | 1.778 | 0.983 | 1.786 | 0.010 | 1.046 | 0.809 | 0.22 |
+| v10floor-HP | tools\baseline_still.py | 0e7c81d | V1_02_medium_b_s24 | PASS | 1.779 | 0.989 | 1.640 | 0.000 | 1.043 | 0.809 | 0.24 |
+| v10floor-HP | tools\baseline_still.py | 0e7c81d | V1_03_difficult_a_s22 | PASS | 1.581 | 0.750 | 1.258 | 0.018 | 1.269 | 0.308 | 0.20 |
+| v10floor-HP | tools\baseline_still.py | 0e7c81d | V1_03_difficult_a_s23 | PASS | 1.583 | 0.763 | 1.023 | 0.040 | 1.268 | 0.308 | 0.18 |
+| v10floor-HP | tools\baseline_still.py | 0e7c81d | V1_03_difficult_a_s24 | PASS | 1.579 | 0.760 | 1.323 | 0.022 | 1.269 | 0.308 | 0.20 |
+| v10floor-HP | tools\baseline_still.py | 0e7c81d | V1_03_difficult_b_s22 | PASS | 1.581 | 0.750 | 1.258 | 0.018 | 1.269 | 0.308 | 0.27 |
+| v10floor-HP | tools\baseline_still.py | 0e7c81d | V1_03_difficult_b_s23 | PASS | 1.583 | 0.763 | 1.023 | 0.040 | 1.268 | 0.308 | 0.26 |
+| v10floor-HP | tools\baseline_still.py | 0e7c81d | V1_03_difficult_b_s24 | PASS | 1.579 | 0.760 | 1.323 | 0.022 | 1.269 | 0.308 | 0.23 |
 
 # Degraded input
 
