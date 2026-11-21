@@ -416,7 +416,7 @@
   "tumvi/dataset-room3_512_16",
   "tumvi/dataset-room4_512_16"
  ],
- "date": "2026-11-20",
+ "date": "2026-11-21",
  "differences": [],
  "identical": 412,
  "os": "Linux 5.15.167.4-microsoft-standard-WSL2",

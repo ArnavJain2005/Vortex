@@ -84,7 +84,7 @@ not verified.
 
 ```
 pip install -e .[dev]
-pytest                                        # 21 Nov 2026: 443 passed, 1 xfailed (Step L3: BLIND_ON + BLIND_DEAD_ONLY ship on, rule H' passed; merged with main at 56684fc) (Windows, Python 3.14; test_ccore.py, the C-core experiment, needs g++ on PATH)
+pytest                                        # 21 Nov 2026: 507 passed, 1 failed (test_ccore.py::test_odd_fields, C-core experiment: leading-zero timestamps), 10 skipped, 1 xfailed (track3/freeze-build merged with main at 4c25e91) (Windows, Python 3.14; test_ccore.py, the C-core experiment, needs g++ on PATH)
 python -S main.py IMU.csv estimated_trajectory.txt                       # repo entry point: a stub importing pathfinder.py (the estimator, stdlib only); also: no args, IN, folder, -i/-o, --input/--output
 python -S benchmark.py --runs 15 --gate [--input IMU.csv] --tag NAME      # gate: heap (tracemalloc) <= 4 MB, <= 50 us/row, checker PASS; RSS reported only
 python -S benchmark.py --runs 5 --input IMU.csv --bundle dist/stage/src/main.py --tag bundle-LAYOUT-...  # the generated single file, compiled from source in every run

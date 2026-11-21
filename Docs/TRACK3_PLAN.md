@@ -2226,6 +2226,28 @@ swing is load, not the bundle; the interleaved pairs are the comparison.
 - **Decision (Arnav, 21 Nov 2026): ship CHUNKED.** `tools/make_bundle.py` now builds CHUNKED by default (N = 120);
   PLAIN stays buildable with `--layout plain`. Dockerfile, zip, verify and bundle/README.md use the shipped file.
 
+### CHUNKED rebuilt on main with Step L3 (21 Nov 2026; merge 9a304c7 = afdeab1 + main 4c25e91)
+
+`src/main.py` regenerated (CHUNKED, 15 chunks of at most 120 lines) from the merged pathfinder.py: main's estimator
+with BLIND_ON + BLIND_DEAD_ONLY (#77) plus this branch's front end (header without '#', leading-zero timestamps,
+argument forms, constant-pose fallback). Machine quiet: no other session running Python during these runs.
+
+- Identity: **PASS, 412 of 412** copies byte-identical across the repo build, PLAIN and CHUNKED on Win 3.14.7 and
+  WSL2 3.12.3 (Docs/bundle/identity-*.json; V2_* and TUM-VI rooms 5-6 excluded).
+- Whole-run heap from source, CHUNKED / PLAIN (KB; same on all four inputs): Win 3.14 **3,476** / 7,730; Win 3.13
+  **4,157** / 8,208; WSL2 3.12 **3,852** / 7,967. Under `-X tracemalloc=1`: 7,034 / 6,079 / 5,825 (CHUNKED). Up
+  290-280 KB from the afdeab1 build (Step L3 code); all below 7 MB from source.
+- us/row, median of 11 interleaved runs, CHUNKED vs PLAIN: Win 3.14 between -2.6 % and +1.2 %; Win 3.13 between
+  -7.5 % and +0.8 %; WSL2 3.12 between -22.7 % and **+8.0 %** (MH_01_easy_b_s1: 34.54 vs 31.99). The +24.3 % cell of
+  20 Nov (WSL2 MH_01_easy_a_s3) is -4.3 % now. Docs/bundle/matrix-*.json.
+- Gate, Win 3.14, chunked bundle, MH_01_easy_b_s1, 15 runs: **PASS**; heap 1,234 KB estimator / 3,476 KB whole run
+  from source; `python -S main.py` 27.66 us/row (5.36 ms per IMU second); checker PASS
+  (Docs/budget/bundle-chunked-9a304c7-win-py314-mh01-b-s1.json).
+- pytest: 507 passed, 1 failed, 10 skipped, 1 xfailed. The failure, tests/test_ccore.py::test_odd_fields, is the
+  C-core experiment (never shipped): it still writes a leading-zero timestamp as `00000140...` where this branch now
+  writes `1403...`. It already failed at 779b6ae; open for Arnav (fix main.cpp, or record as a documented difference).
+- Not measured: Python 3.10/3.11 (not installed; AG-3), Docker.
+
 ### Gate on the L2 build with TILT_ON shipped (19 Nov 2026; carried over after #61 merged)
 
 Measured on `track3/stepL2-tilt` after #61 was merged, so they arrive here in a follow-up PR. Build: TILT_ON and
