@@ -227,3 +227,47 @@ def test_format_markdown_flags_heap_over_7mb_and_8mb():
     assert "**FLAG (> 7 MB)**" in md
     assert "**FAIL (> 8 MB)**" in md
     assert "**FLAG (> 15 ms)**" in md
+
+
+def test_clean_machine_harness_chunked_b4_and_skip_bench(tmp_path):
+    chunked_main = tmp_path / "main.py"
+    src_literal = repr(_DUMMY_SINGLE_MAIN)
+    chunked_main.write_text(
+        "import sys\n"
+        f"SRC = {src_literal}\n"
+        "CHUNKS = ((0, len(SRC), 1),)\n"
+        "def main(argv):\n"
+        "    g = {'__name__': 'pathfinder', '__builtins__': __builtins__}\n"
+        "    for a, b, line in CHUNKS:\n"
+        "        exec(compile('\\n' * (line - 1) + SRC[a:b], 'main.py', 'exec'), g)\n"
+        "    return g['main'](argv)\n"
+        "if __name__ == '__main__':\n"
+        "    sys.exit(main(sys.argv))\n",
+        encoding="utf-8",
+    )
+    base = tmp_path / "imu.csv"
+    t0 = 1403636579758555392
+    rows = ["#timestamp [ns],w_x,w_y,w_z,a_x,a_y,a_z"]
+    for i in range(10):
+        rows.append(f"{t0 + i * 5_000_000},0.0,0.0,0.0,0.0,0.0,9.81")
+    base.write_text("\n".join(rows) + "\n", encoding="ascii")
+
+    out_json = tmp_path / "chunked.json"
+    rc = cmc.main([
+        "--main", str(chunked_main),
+        "--input", str(base),
+        "--envs", "host-venv",
+        "--skip-bench",
+        "--commit", "synthetic-chunked",
+        "--json", str(out_json),
+    ])
+    assert rc == 0
+    data = json.loads(out_json.read_text(encoding="utf-8"))
+    assert data["all_passed"] is True
+    e = data["environments"][0]
+    fb = next(x for x in e["b4"] if x["case"] == "injected_failure")
+    assert fb["check_ok"] is True
+    assert fb["constant_pose"] is True
+    assert "AG-3 injected failure" in fb["stderr"]
+    assert e["metrics"]["heap_from_source_kb"] is None
+    assert e["metrics"]["bench_runs"] == 0
