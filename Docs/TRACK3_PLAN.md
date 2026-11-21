@@ -2236,7 +2236,7 @@ argument forms, constant-pose fallback). Machine quiet: no other session running
   WSL2 3.12.3 (Docs/bundle/identity-*.json; V2_* and TUM-VI rooms 5-6 excluded).
 - Whole-run heap from source, CHUNKED / PLAIN (KB; same on all four inputs): Win 3.14 **3,476** / 7,730; Win 3.13
   **4,157** / 8,208; WSL2 3.12 **3,852** / 7,967. Under `-X tracemalloc=1`: 7,034 / 6,079 / 5,825 (CHUNKED). Up
-  290-280 KB from the afdeab1 build (Step L3 code); all below 7 MB from source.
+  281-297 KB from the afdeab1 build (Step L3 code); all below 7 MB from source.
 - us/row, median of 11 interleaved runs, CHUNKED vs PLAIN: Win 3.14 between -2.6 % and +1.2 %; Win 3.13 between
   -7.5 % and +0.8 %; WSL2 3.12 between -22.7 % and **+8.0 %** (MH_01_easy_b_s1: 34.54 vs 31.99). The +24.3 % cell of
   20 Nov (WSL2 MH_01_easy_a_s3) is -4.3 % now. Docs/bundle/matrix-*.json.
