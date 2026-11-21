@@ -1,4 +1,16 @@
-# LOOP_CC   updated 2026-11-21 01:17 IST   iteration 13
+# LOOP_CC   updated 2026-11-22 ~04:45 IST   iteration 14 (CC-final: Arnav's "Final stretch" prompt, 22 Nov 03:30 IST)
+V1.0 ZIP READY: dist/vortex_v1.0.zip (= dist/Vortex.zip, same bytes) sha256
+  e251c4010248caf5103bbf2923122146bba64ae7e2b225069a89672ffbd4447c
+  Built at tag v1.0 = 0e7c81d (track3/v1.0) = main 5e28668 + bundle/README.md only (README named no eval input and
+  shipped a literal BUDGET_TABLE placeholder). pathfinder.py and src/main.py unchanged: src/main.py sha256 feb222ea...0811
+  (CHUNKED, 1,962 lines). Copies: Vortex-v1/dist/ and the main checkout's dist/vortex_v1.0.zip.
+  estimated_trajectory.txt = MH_03_medium_b_s1 (official degrade_imu.py, seed 1; input sha256 a0df1a3f...820c),
+  26,106 rows, checker PASS, cal_source still_run, fallback none; heap whole run from source 3,476 KB (3.14.7),
+  7.30 ms/IMU-s wall, median of 5 (metadata.json; a dry run an hour earlier gave 5.51).
+  Identity: make_bundle same 12/12 IDENTICAL (3.14.7). Output byte-identical on Win 3.14.7, Win 3.13.5, WSL2 3.12.3
+  (dry-run heap 3,476 / 4,158 / 3,852 KB). verify PASS on Win 3.14.7, Win 3.13.5, WSL2 3.12.3 (6/6 invocation forms each).
+  Not built from #80/#81 (still open, docs only). Tag v1.0 pushed; no GitHub release.
+NEXT (CC-final): NUMBERS.md refresh on the shipped build -> README/RESULTS PR -> final-table plan (waits for Arnav's "run it").
 Three Claude Code sessions share the CC queue (agreed between them, 19 Nov ~20:20; earlier iterations' clock times in this file were wrong, read them as ~20:2x-20:3x):
 - CC-loop ("Vortex trajectory accuracy improvement", this file's owner): CC-0, CC-3, CC-4, CC-5.
 - CC-freeze ("Vortex Samsung PRISM hackathon review"): CC-1a on track3/freeze-build (single-file src/main.py,
