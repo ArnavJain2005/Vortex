@@ -1,4 +1,4 @@
-# LOOP_CC   updated 2026-11-22 04:45 IST   iteration 15 (CC-final: Arnav's "Final stretch" prompt, 22 Nov 03:30 IST)
+# LOOP_CC   updated 2026-11-22 04:46 IST   iteration 15 (CC-final: Arnav's "Final stretch" prompt, 22 Nov 03:30 IST)
 STEP 2+3 DONE: PR #83 https://github.com/ArnavJain2005/Vortex/pull/83 (track3/final-docs, head 7822f69, MERGEABLE/CLEAN)
   = v1.0 commit 0e7c81d + NUMBERS (87fc280) + README (7822f69). READY FOR ARNAV TO MERGE. pathfinder.py / vortex/ unchanged.
   NUMBERS: every key from one set of runs of the shipped src/main.py (22 Nov; 316 runs, contract PASS on all; seeds
@@ -19,7 +19,8 @@ STEP 4 DONE (Arnav: "Run the final table"): PR #84 https://github.com/ArnavJain2
   README V2 result (Arnav: "Yes, add it"): on #84, merged track3/final-docs in (fb90311, normal merge) then 2054cbd:
   headline, coverage, "Where it is weaker" and a new "Final test set" paragraph + table, from FINAL_TABLE.md;
   "Vicon Room 2 remain untouched" removed. #84 head 2054cbd MERGEABLE. Merge #83 first, then #84. Zip unchanged.
-WAITING: Arnav's "submitted" -> tag v1.0-submitted.
+STEP 5 DONE (Arnav: "done"): #83 and #84 MERGED. Annotated tag v1.0-submitted -> 0e7c81d (same commit as v1.0), pushed.
+  Zip hash rechecked: e251c401...447c. No release published. Final stretch complete.
 V1.0 ZIP READY: dist/vortex_v1.0.zip (= dist/Vortex.zip, same bytes) sha256
   e251c4010248caf5103bbf2923122146bba64ae7e2b225069a89672ffbd4447c
   Built at tag v1.0 = 0e7c81d (track3/v1.0) = main 5e28668 + bundle/README.md only (README named no eval input and
