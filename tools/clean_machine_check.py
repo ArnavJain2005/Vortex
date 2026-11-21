@@ -116,6 +116,7 @@ base_csv = Path(sys.argv[2]).resolve()
 variants_dir = Path(sys.argv[3]).resolve()
 out_dir = Path(sys.argv[4]).resolve()
 bench_runs = int(sys.argv[5]) if len(sys.argv) > 5 else 5
+skip_x_heap = (sys.argv[6] == "1") if len(sys.argv) > 6 else False
 out_dir.mkdir(parents=True, exist_ok=True)
 
 py = sys.executable
@@ -320,8 +321,8 @@ with tempfile.TemporaryDirectory(prefix="ag3_run_") as tmp_s:
         "stderr": p_miss.stderr.strip()[-300:],
     })
 
-    # Whole-run FROM-SOURCE tracemalloc peak & speed (no cached bytecode: -B -X pycache_prefix=<empty>)
-    # Skipped completely when bench_runs < 0 (correctness-only mode).
+    # Whole-run FROM-SOURCE tracemalloc peak & speed (stdlib bytecode used as normal; bundle has none: -B).
+    # Matches tools/bundle_layouts.py probe methodology. Skipped completely when bench_runs < 0.
     n_rows, imu_s = parse_csv_span(base_csv)
     if bench_runs < 0:
         heap_kb, heap_rc = None, None
@@ -329,30 +330,31 @@ with tempfile.TemporaryDirectory(prefix="ag3_run_") as tmp_s:
         wall_samples = []
         wall_med, us_per_row, ms_per_imu_s = None, None, None
     else:
-        cold = tmp / "cold_pycache"
-        cold.mkdir()
         out_hp = tmp / "o_heap.txt"
         p_hp = subprocess.run(
-            [py, "-S", "-B", "-X", f"pycache_prefix={cold}", "-c", HEAP_PROBE, str(solo_main), str(base_csv), str(out_hp)],
-            cwd=str(work_other), capture_output=True, text=True, timeout=180,
+            [py, "-S", "-B", "-c", HEAP_PROBE, str(solo_main), str(base_csv), str(out_hp)],
+            cwd=str(work_other), capture_output=True, text=True, timeout=1200,
         )
         heap_kb, heap_rc = parse_heap_peak(p_hp.stdout)
 
-        out_xhp = tmp / "o_xheap.txt"
-        p_xhp = subprocess.run(
-            [py, "-S", "-B", "-X", "tracemalloc=1", "-X", f"pycache_prefix={cold}", "-c", X_HEAP_PROBE,
-             str(solo_main), str(base_csv), str(out_xhp)],
-            cwd=str(work_other), capture_output=True, text=True, timeout=180,
-        )
-        xheap_kb, xheap_rc = parse_heap_peak(p_xhp.stdout)
+        if skip_x_heap:
+            xheap_kb, xheap_rc = None, None
+        else:
+            out_xhp = tmp / "o_xheap.txt"
+            p_xhp = subprocess.run(
+                [py, "-S", "-B", "-X", "tracemalloc=1", "-c", X_HEAP_PROBE,
+                 str(solo_main), str(base_csv), str(out_xhp)],
+                cwd=str(work_other), capture_output=True, text=True, timeout=1200,
+            )
+            xheap_kb, xheap_rc = parse_heap_peak(p_xhp.stdout)
 
         wall_samples = []
         out_bench = tmp / "o_bench.txt"
         for _ in range(max(0, bench_runs)):
             t0 = time.perf_counter()
             pb = subprocess.run(
-                [py, "-S", "-B", "-X", f"pycache_prefix={cold}", str(solo_main), str(base_csv), str(out_bench)],
-                cwd=str(work_other), capture_output=True, text=True, timeout=180,
+                [py, "-S", "-B", str(solo_main), str(base_csv), str(out_bench)],
+                cwd=str(work_other), capture_output=True, text=True, timeout=300,
             )
             dt = time.perf_counter() - t0
             if pb.returncode == 0:
@@ -431,7 +433,8 @@ def _check_outputs_with_vortex(env_res: dict, base_csv: Path, variants: dict[str
 
 
 def run_host_venv(env_name: str, base_py_cmd: list[str], main_src: Path, base_csv: Path,
-                  variants_dir: Path, variants: dict[str, Path], scratch_dir: Path, bench_runs: int = 5) -> dict:
+                  variants_dir: Path, variants: dict[str, Path], scratch_dir: Path,
+                  bench_runs: int = 5, skip_x_heap: bool = False) -> dict:
     env_dir = scratch_dir / env_name
     venv_dir = env_dir / "venv"
     out_dir = env_dir / "out"
@@ -442,10 +445,11 @@ def run_host_venv(env_name: str, base_py_cmd: list[str], main_src: Path, base_cs
     subprocess.run(base_py_cmd + ["-m", "venv", "--without-pip", str(venv_dir)], check=True, capture_output=True, text=True)
     venv_py = venv_dir / ("Scripts" if os.name == "nt" else "bin") / ("python.exe" if os.name == "nt" else "python")
     p = subprocess.run(
-        [str(venv_py), str(runner_py), str(main_src), str(base_csv), str(variants_dir), str(out_dir), str(bench_runs)],
+        [str(venv_py), str(runner_py), str(main_src), str(base_csv), str(variants_dir), str(out_dir),
+         str(bench_runs), "1" if skip_x_heap else "0"],
         capture_output=True,
         text=True,
-        timeout=600,
+        timeout=3600,
     )
     if p.returncode != 0:
         raise RuntimeError(f"{env_name} runner failed: {p.stderr[-500:]}")
@@ -456,7 +460,8 @@ def run_host_venv(env_name: str, base_py_cmd: list[str], main_src: Path, base_cs
 
 
 def run_docker_venv(env_name: str, image: str, main_src: Path, base_csv: Path,
-                    variants_dir: Path, variants: dict[str, Path], scratch_dir: Path, bench_runs: int = 5) -> dict:
+                    variants_dir: Path, variants: dict[str, Path], scratch_dir: Path,
+                    bench_runs: int = 5, skip_x_heap: bool = False) -> dict:
     env_dir = scratch_dir / env_name
     out_dir = env_dir / "out"
     out_dir.mkdir(parents=True, exist_ok=True)
@@ -466,7 +471,7 @@ def run_docker_venv(env_name: str, image: str, main_src: Path, base_csv: Path,
     cname = f"vortex-ag3-{env_name.replace('.', '-')}"
     subprocess.run(["docker", "rm", "-f", cname], capture_output=True)
     try:
-        subprocess.run(["docker", "run", "-d", "--name", cname, "--entrypoint", "sleep", image, "1800"],
+        subprocess.run(["docker", "run", "-d", "--name", cname, "--entrypoint", "sleep", image, "3600"],
                        check=True, capture_output=True, text=True)
         subprocess.run(["docker", "exec", cname, "sh", "-c", "mkdir -p /tmp/ag3/variants /tmp/ag3/out"],
                        check=True, capture_output=True, text=True)
@@ -476,11 +481,12 @@ def run_docker_venv(env_name: str, image: str, main_src: Path, base_csv: Path,
         for vpath in variants.values():
             subprocess.run(["docker", "cp", str(vpath), f"{cname}:/tmp/ag3/variants/{vpath.name}"],
                            check=True, capture_output=True)
+        sx = "1" if skip_x_heap else "0"
         cmd = (
             "python -m venv --without-pip /tmp/ag3/venv && "
-            f"/tmp/ag3/venv/bin/python /tmp/ag3/inner_runner.py /tmp/ag3/main.py /tmp/ag3/base.csv /tmp/ag3/variants /tmp/ag3/out {bench_runs}"
+            f"/tmp/ag3/venv/bin/python /tmp/ag3/inner_runner.py /tmp/ag3/main.py /tmp/ag3/base.csv /tmp/ag3/variants /tmp/ag3/out {bench_runs} {sx}"
         )
-        p = subprocess.run(["docker", "exec", cname, "sh", "-c", cmd], capture_output=True, text=True, timeout=600)
+        p = subprocess.run(["docker", "exec", cname, "sh", "-c", cmd], capture_output=True, text=True, timeout=3600)
         if p.returncode != 0:
             raise RuntimeError(f"{env_name} ({image}) failed: {p.stderr[-500:]}")
         subprocess.run(["docker", "cp", f"{cname}:/tmp/ag3/out/.", str(out_dir)], check=True, capture_output=True)
@@ -494,7 +500,8 @@ def run_docker_venv(env_name: str, image: str, main_src: Path, base_csv: Path,
     return res
 
 
-def run_dockerfile_image(zip_dir: Path, base_csv: Path, scratch_dir: Path, bench_runs: int = 5) -> dict:
+def run_dockerfile_image(zip_dir: Path, base_csv: Path, scratch_dir: Path,
+                         bench_runs: int = 5, skip_x_heap: bool = False) -> dict:
     """Build the zip's Dockerfile, run ENTRYPOINT, and measure from-source heap + speed inside the image."""
     img = "vortex-ag3-zip-test"
     cname = "vortex-ag3-zip-run"
@@ -509,6 +516,7 @@ def run_dockerfile_image(zip_dir: Path, base_csv: Path, scratch_dir: Path, bench
         script = sys.argv[1]
         csv_p = Path(sys.argv[2])
         runs = int(sys.argv[3])
+        skip_x = (sys.argv[4] == "1") if len(sys.argv) > 4 else False
         py = sys.executable
         HEAP_PROBE = (
             "import runpy, sys, tracemalloc\n"
@@ -560,20 +568,24 @@ def run_dockerfile_image(zip_dir: Path, base_csv: Path, scratch_dir: Path, bench
                 if len(p) == 3 and p[0] == "HEAP_PEAK":
                     return int(p[1]) / 1024.0, int(p[2])
             return None, None
-        with tempfile.TemporaryDirectory() as td:
-            cold = Path(td) / "cold"
-            cold.mkdir()
-            p1 = subprocess.run([py, "-S", "-B", "-X", f"pycache_prefix={cold}", "-c", HEAP_PROBE, script, str(csv_p), str(Path(td)/"o1.txt")], capture_output=True, text=True, timeout=180)
-            hk, hrc = parse_hp(p1.stdout)
-            p2 = subprocess.run([py, "-S", "-B", "-X", "tracemalloc=1", "-X", f"pycache_prefix={cold}", "-c", X_HEAP_PROBE, script, str(csv_p), str(Path(td)/"o2.txt")], capture_output=True, text=True, timeout=180)
-            xhk, xhrc = parse_hp(p2.stdout)
-            ws = []
-            for _ in range(max(0, runs)):
-                t0 = time.perf_counter()
-                pb = subprocess.run([py, "-S", "-B", "-X", f"pycache_prefix={cold}", script, str(csv_p), str(Path(td)/"ob.txt")], capture_output=True, text=True, timeout=180)
-                dt = time.perf_counter() - t0
-                if pb.returncode == 0:
-                    ws.append(dt)
+        if runs < 0:
+            hk, hrc, xhk, xhrc, ws = None, None, None, None, []
+        else:
+            with tempfile.TemporaryDirectory() as td:
+                p1 = subprocess.run([py, "-S", "-B", "-c", HEAP_PROBE, script, str(csv_p), str(Path(td)/"o1.txt")], capture_output=True, text=True, timeout=1200)
+                hk, hrc = parse_hp(p1.stdout)
+                if skip_x:
+                    xhk, xhrc = None, None
+                else:
+                    p2 = subprocess.run([py, "-S", "-B", "-X", "tracemalloc=1", "-c", X_HEAP_PROBE, script, str(csv_p), str(Path(td)/"o2.txt")], capture_output=True, text=True, timeout=1200)
+                    xhk, xhrc = parse_hp(p2.stdout)
+                ws = []
+                for _ in range(max(0, runs)):
+                    t0 = time.perf_counter()
+                    pb = subprocess.run([py, "-S", "-B", script, str(csv_p), str(Path(td)/"ob.txt")], capture_output=True, text=True, timeout=300)
+                    dt = time.perf_counter() - t0
+                    if pb.returncode == 0:
+                        ws.append(dt)
         wmed = statistics.median(ws) if ws else None
         us_row = (wmed * 1e6 / n) if (wmed is not None and n > 0) else None
         ms_s = (wmed * 1e3 / imu_s) if (wmed is not None and imu_s > 0) else None
@@ -603,20 +615,21 @@ def run_dockerfile_image(zip_dir: Path, base_csv: Path, scratch_dir: Path, bench
             check=True, capture_output=True, text=True,
         ).stdout.strip()
         ep = json.loads(ep_json) or ["python", "-S", "/app/main.py"]
-        subprocess.run(["docker", "run", "-d", "--name", cname, "--entrypoint", "sleep", img, "600"],
+        subprocess.run(["docker", "run", "-d", "--name", cname, "--entrypoint", "sleep", img, "3600"],
                        check=True, capture_output=True, text=True)
         subprocess.run(["docker", "cp", str(base_csv), f"{cname}:/tmp/in.csv"], check=True, capture_output=True)
         subprocess.run(["docker", "cp", str(metrics_py), f"{cname}:/tmp/docker_metrics.py"], check=True, capture_output=True)
         p = subprocess.run(["docker", "exec", cname] + ep + ["/tmp/in.csv", "/tmp/out.txt"],
-                           capture_output=True, text=True, timeout=180)
+                           capture_output=True, text=True, timeout=300)
         py_ver = subprocess.run(["docker", "exec", cname, "python", "-c", "import platform; print(platform.python_version())"],
                                 check=True, capture_output=True, text=True).stdout.strip()
         plat = subprocess.run(["docker", "exec", cname, "python", "-c", "import platform; print(platform.system(), platform.release())"],
                               check=True, capture_output=True, text=True).stdout.strip()
         script_path = next((tok for tok in reversed(ep) if tok.endswith(".py")), "/app/main.py")
         pm = subprocess.run(
-            ["docker", "exec", cname, "python", "/tmp/docker_metrics.py", script_path, "/tmp/in.csv", str(bench_runs)],
-            capture_output=True, text=True, timeout=300,
+            ["docker", "exec", cname, "python", "/tmp/docker_metrics.py", script_path, "/tmp/in.csv",
+             str(bench_runs), "1" if skip_x_heap else "0"],
+            capture_output=True, text=True, timeout=2400,
         )
         if pm.returncode == 0 and pm.stdout.strip():
             metrics = json.loads(pm.stdout.strip().splitlines()[-1])
@@ -755,6 +768,7 @@ def run_matrix(
     commit: str,
     zip_dir: Path | None = None,
     bench_runs: int = 5,
+    skip_x_heap: bool = False,
 ) -> dict:
     with tempfile.TemporaryDirectory(prefix="vortex_ag3_") as tmp_s:
         tmp = Path(tmp_s)
@@ -765,20 +779,20 @@ def run_matrix(
         env_results = []
         for env in envs:
             if env == "host-venv":
-                env_results.append(run_host_venv(env, [sys.executable], main_src, base_csv, variants_dir, variants, tmp, bench_runs))
+                env_results.append(run_host_venv(env, [sys.executable], main_src, base_csv, variants_dir, variants, tmp, bench_runs, skip_x_heap))
             elif env == "win-venv-3.13":
-                env_results.append(run_host_venv(env, ["py", "-3.13"], main_src, base_csv, variants_dir, variants, tmp, bench_runs))
+                env_results.append(run_host_venv(env, ["py", "-3.13"], main_src, base_csv, variants_dir, variants, tmp, bench_runs, skip_x_heap))
             elif env == "win-venv-3.14":
-                env_results.append(run_host_venv(env, ["py", "-3.14"], main_src, base_csv, variants_dir, variants, tmp, bench_runs))
+                env_results.append(run_host_venv(env, ["py", "-3.14"], main_src, base_csv, variants_dir, variants, tmp, bench_runs, skip_x_heap))
             elif env in DOCKER_IMAGES:
-                env_results.append(run_docker_venv(env, DOCKER_IMAGES[env], main_src, base_csv, variants_dir, variants, tmp, bench_runs))
+                env_results.append(run_docker_venv(env, DOCKER_IMAGES[env], main_src, base_csv, variants_dir, variants, tmp, bench_runs, skip_x_heap))
             elif env == "zip-dockerfile":
                 if zip_dir is None or not (zip_dir / "Dockerfile").is_file():
                     raise SystemExit("zip-dockerfile requested but no Dockerfile found in --zip")
-                env_results.append(run_dockerfile_image(zip_dir, base_csv, tmp, bench_runs))
+                env_results.append(run_dockerfile_image(zip_dir, base_csv, tmp, bench_runs, skip_x_heap))
             elif env.startswith("docker-image:"):
                 img = env.split(":", 1)[1]
-                env_results.append(run_docker_venv(env, img, main_src, base_csv, variants_dir, variants, tmp, bench_runs))
+                env_results.append(run_docker_venv(env, img, main_src, base_csv, variants_dir, variants, tmp, bench_runs, skip_x_heap))
             else:
                 raise SystemExit(f"unknown environment: {env}")
 
@@ -817,6 +831,7 @@ def main(argv: list[str] | None = None) -> int:
     )
     ap.add_argument("--bench-runs", type=int, default=5, help="number of cold from-source timing runs per env (default: 5)")
     ap.add_argument("--skip-bench", action="store_true", help="skip heap and timing measurements (correctness-only mode)")
+    ap.add_argument("--skip-x-heap", action="store_true", help="skip secondary -X tracemalloc=1 probe (keeps main HEAP_PROBE and timing)")
     ap.add_argument("--commit", default="?", help="commit hash label for the report")
     ap.add_argument("--out", default=None, help="optional Markdown output path (e.g. Docs/CLEAN_MACHINE.md)")
     ap.add_argument("--json", default=None, help="optional JSON output path")
@@ -849,6 +864,7 @@ def main(argv: list[str] | None = None) -> int:
             args.commit,
             zip_dir=zip_dir,
             bench_runs=(-1 if args.skip_bench else args.bench_runs),
+            skip_x_heap=args.skip_x_heap,
         )
 
     md = format_markdown(report)
