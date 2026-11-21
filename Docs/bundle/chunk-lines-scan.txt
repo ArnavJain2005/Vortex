@@ -1,0 +1,18 @@
+Rule K chunk-size scan, 20 Nov 2026 (scratch script scan_n.py: benchmark.heap_peak_process on each bundle built by
+make_bundle.write_single; whole-run tracemalloc peak from source, MH_01_easy_b_s1). Raw output; the 3.14 N=400 run
+exceeded the 600 s probe timeout on the loaded machine and was not repeated.
+
+python 3.14.7 plain    N=None whole-run heap    7512 KB exit 0
+python 3.14.7 chunked  N=40   whole-run heap    3193 KB exit 0
+python 3.14.7 chunked  N=120  whole-run heap    3186 KB exit 0
+python 3.14.7 chunked  N=400  subprocess.TimeoutExpired: timed out after 600 seconds
+python 3.13.5 plain    N=None whole-run heap    7954 KB exit 0
+python 3.13.5 chunked  N=40   whole-run heap    3884 KB exit 0
+python 3.13.5 chunked  N=120  whole-run heap    3876 KB exit 0
+python 3.13.5 chunked  N=400  whole-run heap    3887 KB exit 0
+all outputs identical: True
+python 3.12.3 plain    N=None whole-run heap    7712 KB exit 0
+python 3.12.3 chunked  N=40   whole-run heap    3564 KB exit 0
+python 3.12.3 chunked  N=120  whole-run heap    3555 KB exit 0
+python 3.12.3 chunked  N=400  whole-run heap    3566 KB exit 0
+all outputs identical: True

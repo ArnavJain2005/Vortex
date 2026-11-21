@@ -1,0 +1,82 @@
+{
+ "bundle": {
+  "file": "main.py",
+  "layout": "chunked",
+  "sha256": "0ba04e03693468fe44d4ca513ae8822ca4084ec1638147f994da06afcad5adc7"
+ },
+ "commit": null,
+ "cpu": "Intel(R) Core(TM) i7-14650HX",
+ "date": "2026-11-20",
+ "imu_seconds": 184.10015736453965,
+ "imu_seconds_source": "timestamps",
+ "input": "real: ../Vortex/data/official/MH_01_easy_b_s1/mav0/imu0/data.csv",
+ "output_check": "PASS",
+ "passes": [
+  {
+   "pass": "calibration scan + backward pre-anchor pass + forward pass (no smoother yet)",
+   "us_per_row": 26.00589985152858
+  }
+ ],
+ "platform": "Linux",
+ "platform_release": "5.15.167.4-microsoft-standard-WSL2",
+ "process": [
+  {
+   "case": "python -S main.py",
+   "cpu_ms_median": 680.0,
+   "cpu_ms_per_imu_s": 3.6936416010417696,
+   "peak_private_mb_median": null,
+   "peak_rss_mb_max": 13.6796875,
+   "peak_rss_mb_median": 13.5625,
+   "runs": 5,
+   "us_per_row": 36.37044830097752,
+   "wall_ms_median": 1298.3158929999945,
+   "wall_ms_min": 1111.3059030000159,
+   "wall_ms_per_imu_s": 7.052225873056581
+  },
+  {
+   "case": "python main.py",
+   "cpu_ms_median": 680.0,
+   "cpu_ms_per_imu_s": 3.6936416010417696,
+   "peak_private_mb_median": null,
+   "peak_rss_mb_max": 13.98046875,
+   "peak_rss_mb_median": 13.8828125,
+   "runs": 5,
+   "us_per_row": 36.09531159481248,
+   "wall_ms_median": 1288.494338000021,
+   "wall_ms_min": 1177.299134000009,
+   "wall_ms_per_imu_s": 6.998876896387724
+  }
+ ],
+ "python": "3.12.3",
+ "rows": 35697,
+ "runs": 5,
+ "stages": [
+  {
+   "stage": "parse (read, split, 6 floats, timestamp)",
+   "us_per_row": 17.428847242065302,
+   "us_per_row_min": 15.511432865506444
+  },
+  {
+   "stage": "parse + write (identity poses)",
+   "us_per_row": 17.86664546040286,
+   "us_per_row_min": 14.218503459674576
+  },
+  {
+   "stage": "parse + init + strapdown integrator",
+   "us_per_row": 32.48920066112004,
+   "us_per_row_min": 20.140640586043663
+  },
+  {
+   "stage": "parse + init + strapdown integrator + write (full main.py)",
+   "us_per_row": 26.00589985152858,
+   "us_per_row_min": 21.90537773482381
+  }
+ ],
+ "stored_bytes_per_block": 64,
+ "stored_bytes_this_run": 345024,
+ "stored_bytes_worst_case": 960000,
+ "stored_rows": 5391,
+ "tracemalloc_peak_kb": 1109.9716796875,
+ "tracemalloc_process_nocache_peak_kb": 3555.4775390625,
+ "tracemalloc_process_peak_kb": 3555.4775390625
+}

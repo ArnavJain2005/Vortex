@@ -84,11 +84,14 @@ not verified.
 
 ```
 pip install -e .[dev]
-pytest                                        # 21 Nov 2026: 443 passed, 1 xfailed (Step L3: BLIND_ON + BLIND_DEAD_ONLY ship on, rule H' passed; merged with main at 56684fc) (Windows, Python 3.14; test_ccore.py, the C-core experiment, needs g++ on PATH)
-python -S main.py IMU.csv estimated_trajectory.txt                       # submission entry point: a stub importing pathfinder.py (the estimator, stdlib only)
+pytest                                        # 21 Nov 2026: 512 passed, 10 skipped, 1 xfailed (track3/freeze-build merged with main at 88b1d27; zero-led timestamps a documented C-core difference) (Windows, Python 3.14; test_ccore.py, the C-core experiment, needs g++ on PATH)
+python -S main.py IMU.csv estimated_trajectory.txt                       # repo entry point: a stub importing pathfinder.py (the estimator, stdlib only); also: no args, IN, folder, -i/-o, --input/--output
 python -S benchmark.py --runs 15 --gate [--input IMU.csv] --tag NAME      # gate: heap (tracemalloc) <= 4 MB, <= 50 us/row, checker PASS; RSS reported only
-python tools/make_bundle.py stage                                        # once per Python to carry bytecode for (py -3.13, py -3.14, python3 in WSL)
-python tools/make_bundle.py eval EVAL_IMU.csv                            # estimated_trajectory.txt + metadata.json (heap peak, time) into the stage
+python -S benchmark.py --runs 5 --input IMU.csv --bundle dist/stage/src/main.py --tag bundle-LAYOUT-...  # the generated single file, compiled from source in every run
+python tools/make_bundle.py stage [--layout plain|chunked]               # 21 Nov 2026: ONE generated src/main.py, stdlib only, no bytecode; default CHUNKED (Arnav, after bundle rule K: pathfinder.py verbatim, compiled a chunk at a time)
+python tools/make_bundle.py same --data data                             # single file vs repo build, byte for byte, on MH_03 + room3 official copies
+python tools/bundle_layouts.py measure | identity                        # bundle rule K: heap/us per layout; byte-identity on every official + clean copy (V2 excluded)
+python tools/make_bundle.py eval EVAL_IMU.csv                            # estimated_trajectory.txt + metadata.json (commit, flags, cal_source, heap, time) into the stage
 python tools/make_bundle.py zip --name NAME                              # dist/NAME.zip; then: python tools/make_bundle.py verify dist/NAME.zip
 python tools/make_numbers.py [--pytest] [--check]                       # Docs/NUMBERS.md: every quotable number (key | value | source tag | date), from committed files; --pytest re-runs the suite first
 g++ -O2 -std=c++17 -ffp-contract=off -o build/vortex main.cpp           # RECORDED EXPERIMENT only (C core, not accepted); benchmark/eval_euroc --cbin still time it

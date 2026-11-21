@@ -160,7 +160,7 @@ On eight clean EuRoC sequences, the current build records **3.570 vs 3.930 m** A
 | Latest official-copy budget | **5.55 ms per IMU-second** wall time; **1,816 KB** traced whole-run heap with matching bytecode, **7,188 KB** without, Windows/Python 3.14.7 ([budget](Docs/BUDGET.md)) |
 | V3 rotor drag | Revised rule returned NO-GO on Vicon Room 1; V3 **not built** ([Step 5](Docs/TRACK3_PLAN.md)) |
 | Per-row confidence | Reference sigma did not rank error on MH_01/02 tuning data; no calibrated confidence claimed ([coverage](Docs/COVERAGE.md)) |
-| Submission bundle | Python-only launcher, estimator, version-matched bytecode, Dockerfile and manifest ([guide](bundle/README.md)) |
+| Submission bundle | One generated, self-contained `src/main.py` (standard library only, no bytecode), Dockerfile and manifest ([guide](bundle/README.md)) |
 
 The recorded 20 ms/IMU-second and 8 MB **heap** gates pass on the measured machine, including the no-bytecode run; the latter has less memory margin. Whole-process RSS includes the interpreter and is not the organisers' memory metric. TUM-VI rooms 5–6 and Vicon Room 2 remain untouched final-test data. L3 blind-window start state and submission hardening remain planned ([plan](Docs/TRACK3_PLAN.md)).
 
@@ -180,7 +180,7 @@ python -m vortex.check_output imu.csv estimated_trajectory.txt
 
 The checker should report `PASS: 36000 input rows, 36000 output rows`. `python -S` skips site-package initialisation for the standard-library launcher; it does **not** provide a matching cached bytecode file. A source-only checkout still runs but incurs a higher compilation heap peak.
 
-For the [submission bundle](bundle/README.md), run `python tools/make_bundle.py stage` under each target Python version, then `python tools/make_bundle.py zip --name NAME` and `python tools/make_bundle.py verify dist/NAME.zip`. Replace `NAME` with the submission name when known. Verification runs under the current interpreter. The bundle includes a [Dockerfile](bundle/Dockerfile).
+For the [submission bundle](bundle/README.md), run `python tools/make_bundle.py stage` (one generated `src/main.py`; no bytecode, so one stage serves every Python version), then `python tools/make_bundle.py zip --name NAME` and `python tools/make_bundle.py verify dist/NAME.zip`. Replace `NAME` with the submission name when known. Verification runs under the current interpreter. The bundle includes a [Dockerfile](bundle/Dockerfile).
 
 EuRoC data and ground truth are **not shipped**. With a locally downloaded sequence under `data/euroc/` ([data setup](Docs/DATA.md)):
 
@@ -214,7 +214,7 @@ The official script and FAQ files are not committed. The [official baseline](Doc
 - [Generated results](Docs/RESULTS.md) — clean and seeded degraded EuRoC metrics, stationary floor, and ablations.
 - [Blind-window study](Docs/BLIND.md) — dead-sensor detection and five-second forecast comparisons.
 - [Confidence coverage](Docs/COVERAGE.md) — why the experimental per-row sigma is not reported as calibrated confidence.
-- [Submission bundle](bundle/README.md) — launcher, bytecode, manifest, Docker, and verification.
+- [Submission bundle](bundle/README.md) — the single-file `src/main.py`, manifest, Docker, and verification.
 - [Budget ledger](Docs/BUDGET.md) and [efficiency floor](Docs/FLOOR.md) — synthetic and real timing, heap and process memory, and interpreter cost.
 - [Rotor-drag study](Docs/DRAG.md) — pre-registered NO-GO result and explicitly labeled exploratory fits.
 - [Scorer cross-check](Docs/EVO_CROSSCHECK.md) — evo comparison on synthetic trajectories.
