@@ -32,20 +32,40 @@ OUT_JSON = os.path.join(DOCS, "numbers", "numbers.json")
 PYTEST_JSON = os.path.join(DOCS, "numbers", "pytest.json")
 
 # ---- which committed run is which. Change these (never the keys) when the shipped build changes. ----
+SHIP = "shipped v1.0 build (the single src/main.py of tag v1.0; Step 7 + L2 + L3)"
 SOURCES = {
-    # held-out official copies: MH_03..05 + V1_01..03, readings a and b, the shipped build and the floor
-    "heldout": ("results/step7m-H46", "results/stepF-H-floor", "seeds 4-6, shipped build (Step 7 + L2)"),
-    "heldout79": ("results/step7m-H79", "results/stepL1-H-floor", "seeds 7-9, shipped build (Step 7 + L2)"),
+    # Every estimate below is the SHIPPED single file (dist/stage/src/main.py at tag v1.0, sha256 feb222ea...0811)
+    # run by tools/eval_euroc.py --main on 22 Nov 2026, one run per set; every floor was re-run the same day.
+    # held-out official copies: MH_03..05 + V1_01..03, readings a and b
+    "heldout": ("results/v10-H46", "results/v10floor-H46", "seeds 4-6, " + SHIP),
+    "heldout79": ("results/v10-H79", "results/v10floor-H79", "seeds 7-9, " + SHIP),
+    # rule H' held-out set (Step L3). Written after rule H failed: weaker evidence than seeds 4-6 / 7-9.
+    "heldout_hp": ("results/v10-HP", "results/v10floor-HP",
+                   "seeds 22-24, rule H' held-out set, WRITTEN AFTER RULE H FAILED; WEAKER EVIDENCE; " + SHIP),
     # clean sequences MH_01..05 + V1_01..03
-    "clean": ("results/step7m-shipped-clean", "results/step2-floor-clean", "clean, shipped build (Step 7 + L2)"),
-    # TUM-VI rooms 1-4 (rooms 5, 6 are kept for the final table): shipped build (Step 7), official seeds 1-3, and clean
-    "tumvi": ("tumvi/step7m-shipped-tumvi", "tumvi/tumvi-floor-off", "TUM-VI rooms 1-4 official copies seeds 1-3, shipped build (Step 7 + L2)"),
-    "tumvi_clean": ("tumvi/step7m-shipped-tumvi-clean", "tumvi/tumvi-floor-clean", "TUM-VI rooms 1-4 clean, shipped build (Step 7 + L2)"),
-    "tumvi_calib": "tumvi/tumvi-calib",
-    # budget: real official input (MH_01_easy_b_s1), Windows, Python 3.14 and 3.13 (synthetic), shipped build: Step 6 smoother, Step 7 platform switch, L2 tilt
-    "budget": "budget/step7m-win-py314-mh01-b-s1",
-    "budget313": "budget/step7m-win-py313",
+    "clean": ("results/v10-clean", "results/v10floor-clean", "clean, " + SHIP),
+    # TUM-VI rooms 1-4 (rooms 5, 6 are kept for the final table): official seeds 1-3, rule H' seeds 22-24, clean
+    "tumvi": ("tumvi/v10-tumvi", "tumvi/v10floor-tumvi", "TUM-VI rooms 1-4 official copies seeds 1-3, " + SHIP),
+    "tumvi_hp": ("tumvi/v10-tumvi-HP", "tumvi/v10floor-tumvi-HP",
+                 "TUM-VI rooms 3-4 seeds 22-24, rule H' held-out set, WRITTEN AFTER RULE H FAILED; WEAKER EVIDENCE; "
+                 + SHIP),
+    "tumvi_clean": ("tumvi/v10-tumvi-clean", "tumvi/v10floor-tumvi-clean", "TUM-VI rooms 1-4 clean, " + SHIP),
+    "tumvi_calib": "tumvi/v10-tumvi-calib",
+    # budget: the shipped single file from source (benchmark.py --bundle), on the zip's own input MH_03_medium_b_s1
+    # (reading b = accelerometer-first columns), Windows 11, Python 3.14 and 3.13
+    "budget": "budget/v10-win-py314-mh03-b-s1",
+    "budget313": "budget/v10-win-py313-mh03-b-s1",
+    # wall time in Linux Docker: Antigravity's 15-run benchmark of the same file (Docs/DOCKER_BENCH.md section 5)
+    "docker": "numbers/docker",
 }
+# The seven keys the deck and video script quote ([[N:key]]): name -> (key it repeats, what it is)
+HEADLINE = [
+    ("heldout_ape_reading_a", "heldout_a_ape_m", "held-out seeds 4-6, reading a, mean APE (m)"),
+    ("heldout_ape_reading_b", "heldout_b_ape_m", "held-out seeds 4-6, reading b, mean APE (m)"),
+    ("heldout_ape_floor", "heldout_ape_floor_m", "held-out seeds 4-6, never-moving floor, mean APE (m)"),
+    ("blind_rmse_vortex", "heldout_blind_m", "held-out seeds 4-6, both readings, blind 5 s RMSE (m)"),
+    ("blind_rmse_floor", "heldout_blind_floor_m", "held-out seeds 4-6, floor, blind 5 s RMSE (m)"),
+]
 TUMVI_TUNING = ("dataset-room1", "dataset-room2")
 TUMVI_HELDOUT = ("dataset-room3", "dataset-room4")
 SHORT = {"MH_01_easy": "mh01", "MH_02_easy": "mh02", "MH_03_medium": "mh03", "MH_04_difficult": "mh04",
@@ -63,9 +83,19 @@ OFF = [
     ("ZUPT_DEN_ON", "Step 7b", "denoised stillness: failed its rule"),
     ("RESET_ON", "Step F", "covariance reset: failed its rule"),
     ("SHRINK_ON", "Step L1", "shrinkage about the centroid: failed its rule"),
+    ("BLIND_FALLBACK (rule H)", "Step L3", "blind window with a 5 s fallback: failed rule H (clean TUM-VI); "
+                                           "the dead-run-only variant (rule H') ships"),
 ]
-SHIPPED_ON = ["V1_ON", "V2_ON", "V2P_ON", "GAP_ON", "DEAD_ON", "FC_ON", "PRE_HOLD", "BGCAP_ON", "REFRESH_ON",
-              "P0V_ON", "FRONT_ON", "SMOOTH_ON", "PLATFORM_ON", "TILT_ON"]
+
+
+def shipped_on():
+    """Every module-level boolean switch of pathfinder.py that is True (the shipped build's flags)."""
+    import ast
+    with open(os.path.join(ROOT, "pathfinder.py"), encoding="utf-8") as f:
+        tree = ast.parse(f.read())
+    return [n.targets[0].id for n in tree.body
+            if isinstance(n, ast.Assign) and len(n.targets) == 1 and isinstance(n.targets[0], ast.Name)
+            and n.targets[0].id.isupper() and isinstance(n.value, ast.Constant) and n.value.value is True]
 
 
 def load(tag):
@@ -178,19 +208,42 @@ def budget_block(t, name, tag):
     p = proc["python -S main.py"]
     t.add(name + "_us_per_row_us", p["us_per_row"], src, date, "%.1f")
     t.add(name + "_cpu_ms_per_imu_s_ms", p["cpu_ms_per_imu_s"], src, date, "%.2f")
-    t.add(name + "_wall_ms_per_imu_s_ms", p.get("wall_ms_per_imu_s"), src, date, "%.2f")
+    # budget_wall_ms_per_imu_s_ms is the Linux Docker figure (docker_block); this machine's wall time is _win_
+    wall = name + ("_win_wall_ms_per_imu_s_ms" if name == "budget" else "_wall_ms_per_imu_s_ms")
+    t.add(wall, p.get("wall_ms_per_imu_s"), src, date, "%.2f")
+
+
+def docker_block(t, tag):
+    d = load(tag)
+    src = "%s (%s)" % (d["source"], d["tag"])
+    t.add("budget_wall_ms_per_imu_s_ms", d["wall_ms_per_imu_s"], src, d["date"], "%.2f")
+    t.add("budget_docker_input", d["input"], src, d["date"], "%s")
+    t.add("budget_docker_wall_range_ms", "%.2f-%.2f" % (d["range_ms_per_imu_s"][0], d["range_ms_per_imu_s"][1]),
+          "%s, %d inputs" % (d["source"], d["range_inputs_n"]), d["date"], "%s")
+
+
+def headline_block(t):
+    have = {k: (v, s, d) for k, v, s, d in t.rows}
+    for key, of, _ in HEADLINE:
+        v, s, d = have[of]
+        t.add(key, v, "= %s (%s)" % (of, s), d, "%s")
 
 
 def build():
     t = Table()
-    for name in ("heldout", "heldout79"):
+    for name in ("heldout", "heldout79", "heldout_hp"):
+        if name not in SOURCES:
+            continue
         e, f, _ = SOURCES[name]
-        official_block(t, name, e, f, per_seq=(name == "heldout"))
+        official_block(t, name, e, f, per_seq=(name != "heldout79"))
     e, f, _ = SOURCES["clean"]
     clean_block(t, "clean", e, f)
     e, f, _ = SOURCES["tumvi"]
     official_block(t, "tumvi", e, f, groups=[("room12", lambda r: r["base"].startswith(TUMVI_TUNING)),
                                               ("room34", lambda r: r["base"].startswith(TUMVI_HELDOUT))])
+    if "tumvi_hp" in SOURCES:
+        e, f, _ = SOURCES["tumvi_hp"]
+        official_block(t, "tumvi_hp", e, f)
     e, f, _ = SOURCES["tumvi_clean"]
     clean_block(t, "tumvi_clean", e, f, groups=[("room12", lambda r: r["sequence"].startswith(TUMVI_TUNING)),
                                                 ("room34", lambda r: r["sequence"].startswith(TUMVI_HELDOUT))])
@@ -205,6 +258,9 @@ def build():
                                                               len(cal[part])), src, date)
     budget_block(t, "budget", SOURCES["budget"])
     budget_block(t, "budget313", SOURCES["budget313"])
+    if "docker" in SOURCES:
+        docker_block(t, SOURCES["docker"])
+    headline_block(t)
     if os.path.exists(PYTEST_JSON):
         with open(PYTEST_JSON, encoding="utf-8") as f:
             pt = json.load(f)
@@ -216,7 +272,7 @@ def build():
     for sw, step, what in OFF:
         key = "off_" + re.sub(r"[^a-z0-9]+", "_", sw.lower().replace("_on", "")).strip("_")
         t.add(key, "%s (%s)" % (what, step), step, "-", "%s")
-    t.add("switches_on", ", ".join(SHIPPED_ON), "pathfinder.py", "-", "%s")
+    t.add("switches_on", ", ".join(shipped_on()), "pathfinder.py", "-", "%s")
     return t
 
 
@@ -227,13 +283,21 @@ def render(t):
              "kilobytes, `_us` microseconds, `_ms` milliseconds, `_n` a count. `_vs_floor_pct` = 100 (est / floor - 1):",
              "negative is better than standing still. Every APE is SE(3) Umeyama fitted on the run being scored.", "",
              "Sets:"]
-    for name in ("heldout", "heldout79", "clean", "tumvi", "tumvi_clean"):
+    for name in ("heldout", "heldout79", "heldout_hp", "clean", "tumvi", "tumvi_hp", "tumvi_clean"):
+        if name not in SOURCES:
+            continue
         e, f, what = SOURCES[name]
         lines.append("- `%s_*`: %s (`%s` vs floor `%s`)." % (name, what, os.path.basename(e), os.path.basename(f)))
     lines += ["- `tumvi*_room12_*` are the TUM-VI tuning rooms, `tumvi*_room34_*` the held-out rooms.",
-              "- `budget_*`: %s; `budget313_*`: %s." % (os.path.basename(SOURCES["budget"]),
-                                                       os.path.basename(SOURCES["budget313"])),
-              "", "| key | value | source tag | date |", "|---|---|---|---|"]
+              "- `budget_*`: %s; `budget313_*`: %s. `budget_heap_whole_run_kb` is the tracemalloc peak of the "
+              "whole run of the shipped single file compiled from source." % (
+                  os.path.basename(SOURCES["budget"]), os.path.basename(SOURCES["budget313"]))]
+    if "docker" in SOURCES:
+        lines.append("- `budget_wall_ms_per_imu_s_ms`: Linux Docker wall time of the same file on the same input "
+                     "(Antigravity, Docs/DOCKER_BENCH.md section 5); `budget_win_wall_ms_per_imu_s_ms`: this laptop.")
+    lines.append("- Headline keys quoted by the deck and script (each repeats another key): " + "; ".join(
+        "`%s` = `%s` (%s)" % (k, of, what) for k, of, what in HEADLINE) + ".")
+    lines += ["", "| key | value | source tag | date |", "|---|---|---|---|"]
     for k, v, s, d in t.rows:
         lines.append("| `%s` | %s | %s | %s |" % (k, v, s, d))
     return "\n".join(lines) + "\n"

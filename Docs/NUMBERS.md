@@ -6,247 +6,365 @@ kilobytes, `_us` microseconds, `_ms` milliseconds, `_n` a count. `_vs_floor_pct`
 negative is better than standing still. Every APE is SE(3) Umeyama fitted on the run being scored.
 
 Sets:
-- `heldout_*`: seeds 4-6, shipped build (Step 7 + L2) (`step7m-H46` vs floor `stepF-H-floor`).
-- `heldout79_*`: seeds 7-9, shipped build (Step 7 + L2) (`step7m-H79` vs floor `stepL1-H-floor`).
-- `clean_*`: clean, shipped build (Step 7 + L2) (`step7m-shipped-clean` vs floor `step2-floor-clean`).
-- `tumvi_*`: TUM-VI rooms 1-4 official copies seeds 1-3, shipped build (Step 7 + L2) (`step7m-shipped-tumvi` vs floor `tumvi-floor-off`).
-- `tumvi_clean_*`: TUM-VI rooms 1-4 clean, shipped build (Step 7 + L2) (`step7m-shipped-tumvi-clean` vs floor `tumvi-floor-clean`).
+- `heldout_*`: seeds 4-6, shipped v1.0 build (the single src/main.py of tag v1.0; Step 7 + L2 + L3) (`v10-H46` vs floor `v10floor-H46`).
+- `heldout79_*`: seeds 7-9, shipped v1.0 build (the single src/main.py of tag v1.0; Step 7 + L2 + L3) (`v10-H79` vs floor `v10floor-H79`).
+- `heldout_hp_*`: seeds 22-24, rule H' held-out set, WRITTEN AFTER RULE H FAILED; WEAKER EVIDENCE; shipped v1.0 build (the single src/main.py of tag v1.0; Step 7 + L2 + L3) (`v10-HP` vs floor `v10floor-HP`).
+- `clean_*`: clean, shipped v1.0 build (the single src/main.py of tag v1.0; Step 7 + L2 + L3) (`v10-clean` vs floor `v10floor-clean`).
+- `tumvi_*`: TUM-VI rooms 1-4 official copies seeds 1-3, shipped v1.0 build (the single src/main.py of tag v1.0; Step 7 + L2 + L3) (`v10-tumvi` vs floor `v10floor-tumvi`).
+- `tumvi_hp_*`: TUM-VI rooms 3-4 seeds 22-24, rule H' held-out set, WRITTEN AFTER RULE H FAILED; WEAKER EVIDENCE; shipped v1.0 build (the single src/main.py of tag v1.0; Step 7 + L2 + L3) (`v10-tumvi-HP` vs floor `v10floor-tumvi-HP`).
+- `tumvi_clean_*`: TUM-VI rooms 1-4 clean, shipped v1.0 build (the single src/main.py of tag v1.0; Step 7 + L2 + L3) (`v10-tumvi-clean` vs floor `v10floor-tumvi-clean`).
 - `tumvi*_room12_*` are the TUM-VI tuning rooms, `tumvi*_room34_*` the held-out rooms.
-- `budget_*`: step7m-win-py314-mh01-b-s1; `budget313_*`: step7m-win-py313.
+- `budget_*`: v10-win-py314-mh03-b-s1; `budget313_*`: v10-win-py313-mh03-b-s1. `budget_heap_whole_run_kb` is the tracemalloc peak of the whole run of the shipped single file compiled from source.
+- `budget_wall_ms_per_imu_s_ms`: Linux Docker wall time of the same file on the same input (Antigravity, Docs/DOCKER_BENCH.md section 5); `budget_win_wall_ms_per_imu_s_ms`: this laptop.
+- Headline keys quoted by the deck and script (each repeats another key): `heldout_ape_reading_a` = `heldout_a_ape_m` (held-out seeds 4-6, reading a, mean APE (m)); `heldout_ape_reading_b` = `heldout_b_ape_m` (held-out seeds 4-6, reading b, mean APE (m)); `heldout_ape_floor` = `heldout_ape_floor_m` (held-out seeds 4-6, never-moving floor, mean APE (m)); `blind_rmse_vortex` = `heldout_blind_m` (held-out seeds 4-6, both readings, blind 5 s RMSE (m)); `blind_rmse_floor` = `heldout_blind_floor_m` (held-out seeds 4-6, floor, blind 5 s RMSE (m)).
 
 | key | value | source tag | date |
 |---|---|---|---|
-| `heldout_copies_n` | 36 | step7m-H46 vs stepF-H-floor | 2026-11-19 |
-| `heldout_contract_pass_n` | 36/36 | step7m-H46 | 2026-11-19 |
-| `heldout_ape_m` | 3.480 | step7m-H46 vs stepF-H-floor | 2026-11-19 |
-| `heldout_ape_floor_m` | 3.745 | step7m-H46 vs stepF-H-floor | 2026-11-19 |
-| `heldout_ape_vs_floor_pct` | -7.1 | step7m-H46 vs stepF-H-floor | 2026-11-19 |
-| `heldout_gap_m` | 3.513 | step7m-H46 vs stepF-H-floor | 2026-11-19 |
-| `heldout_gap_floor_m` | 3.626 | step7m-H46 vs stepF-H-floor | 2026-11-19 |
-| `heldout_gap_vs_floor_pct` | -3.1 | step7m-H46 vs stepF-H-floor | 2026-11-19 |
-| `heldout_blind_m` | 3.017 | step7m-H46 vs stepF-H-floor | 2026-11-19 |
-| `heldout_blind_floor_m` | 2.504 | step7m-H46 vs stepF-H-floor | 2026-11-19 |
-| `heldout_blind_vs_floor_pct` | +20.5 | step7m-H46 vs stepF-H-floor | 2026-11-19 |
-| `heldout_rpe1s_m` | 0.559 | step7m-H46 vs stepF-H-floor | 2026-11-19 |
-| `heldout_rpe1s_floor_m` | 0.941 | step7m-H46 vs stepF-H-floor | 2026-11-19 |
-| `heldout_rpe1s_vs_floor_pct` | -40.6 | step7m-H46 vs stepF-H-floor | 2026-11-19 |
-| `heldout_seqs_beat_floor_n` | 5/6 | step7m-H46 vs stepF-H-floor | 2026-11-19 |
-| `heldout_a_ape_m` | 3.539 | step7m-H46 vs stepF-H-floor | 2026-11-19 |
-| `heldout_a_ape_floor_m` | 3.745 | step7m-H46 vs stepF-H-floor | 2026-11-19 |
-| `heldout_a_ape_vs_floor_pct` | -5.5 | step7m-H46 vs stepF-H-floor | 2026-11-19 |
-| `heldout_a_gap_m` | 3.610 | step7m-H46 vs stepF-H-floor | 2026-11-19 |
-| `heldout_a_gap_floor_m` | 3.626 | step7m-H46 vs stepF-H-floor | 2026-11-19 |
-| `heldout_a_gap_vs_floor_pct` | -0.4 | step7m-H46 vs stepF-H-floor | 2026-11-19 |
-| `heldout_a_blind_m` | 2.849 | step7m-H46 vs stepF-H-floor | 2026-11-19 |
-| `heldout_a_blind_floor_m` | 2.504 | step7m-H46 vs stepF-H-floor | 2026-11-19 |
-| `heldout_a_blind_vs_floor_pct` | +13.8 | step7m-H46 vs stepF-H-floor | 2026-11-19 |
-| `heldout_a_rpe1s_m` | 0.601 | step7m-H46 vs stepF-H-floor | 2026-11-19 |
-| `heldout_a_rpe1s_floor_m` | 0.941 | step7m-H46 vs stepF-H-floor | 2026-11-19 |
-| `heldout_a_rpe1s_vs_floor_pct` | -36.1 | step7m-H46 vs stepF-H-floor | 2026-11-19 |
-| `heldout_a_seqs_beat_floor_n` | 5/6 | step7m-H46 vs stepF-H-floor | 2026-11-19 |
-| `heldout_b_ape_m` | 3.421 | step7m-H46 vs stepF-H-floor | 2026-11-19 |
-| `heldout_b_ape_floor_m` | 3.745 | step7m-H46 vs stepF-H-floor | 2026-11-19 |
-| `heldout_b_ape_vs_floor_pct` | -8.7 | step7m-H46 vs stepF-H-floor | 2026-11-19 |
-| `heldout_b_gap_m` | 3.417 | step7m-H46 vs stepF-H-floor | 2026-11-19 |
-| `heldout_b_gap_floor_m` | 3.626 | step7m-H46 vs stepF-H-floor | 2026-11-19 |
-| `heldout_b_gap_vs_floor_pct` | -5.8 | step7m-H46 vs stepF-H-floor | 2026-11-19 |
-| `heldout_b_blind_m` | 3.185 | step7m-H46 vs stepF-H-floor | 2026-11-19 |
-| `heldout_b_blind_floor_m` | 2.504 | step7m-H46 vs stepF-H-floor | 2026-11-19 |
-| `heldout_b_blind_vs_floor_pct` | +27.2 | step7m-H46 vs stepF-H-floor | 2026-11-19 |
-| `heldout_b_rpe1s_m` | 0.518 | step7m-H46 vs stepF-H-floor | 2026-11-19 |
-| `heldout_b_rpe1s_floor_m` | 0.941 | step7m-H46 vs stepF-H-floor | 2026-11-19 |
-| `heldout_b_rpe1s_vs_floor_pct` | -45.0 | step7m-H46 vs stepF-H-floor | 2026-11-19 |
-| `heldout_b_seqs_beat_floor_n` | 5/6 | step7m-H46 vs stepF-H-floor | 2026-11-19 |
-| `heldout_mh03_a_ape_m` | 3.291 | step7m-H46 vs stepF-H-floor | 2026-11-19 |
-| `heldout_mh03_a_ape_floor_m` | 3.579 | step7m-H46 vs stepF-H-floor | 2026-11-19 |
-| `heldout_mh03_b_ape_m` | 2.971 | step7m-H46 vs stepF-H-floor | 2026-11-19 |
-| `heldout_mh03_b_ape_floor_m` | 3.579 | step7m-H46 vs stepF-H-floor | 2026-11-19 |
-| `heldout_mh04_a_ape_m` | 6.336 | step7m-H46 vs stepF-H-floor | 2026-11-19 |
-| `heldout_mh04_a_ape_floor_m` | 6.813 | step7m-H46 vs stepF-H-floor | 2026-11-19 |
-| `heldout_mh04_b_ape_m` | 6.295 | step7m-H46 vs stepF-H-floor | 2026-11-19 |
-| `heldout_mh04_b_ape_floor_m` | 6.813 | step7m-H46 vs stepF-H-floor | 2026-11-19 |
-| `heldout_mh05_a_ape_m` | 6.648 | step7m-H46 vs stepF-H-floor | 2026-11-19 |
-| `heldout_mh05_a_ape_floor_m` | 6.865 | step7m-H46 vs stepF-H-floor | 2026-11-19 |
-| `heldout_mh05_b_ape_m` | 6.555 | step7m-H46 vs stepF-H-floor | 2026-11-19 |
-| `heldout_mh05_b_ape_floor_m` | 6.865 | step7m-H46 vs stepF-H-floor | 2026-11-19 |
-| `heldout_v101_a_ape_m` | 2.251 | step7m-H46 vs stepF-H-floor | 2026-11-19 |
-| `heldout_v101_a_ape_floor_m` | 1.854 | step7m-H46 vs stepF-H-floor | 2026-11-19 |
-| `heldout_v101_b_ape_m` | 2.100 | step7m-H46 vs stepF-H-floor | 2026-11-19 |
-| `heldout_v101_b_ape_floor_m` | 1.854 | step7m-H46 vs stepF-H-floor | 2026-11-19 |
-| `heldout_v102_a_ape_m` | 1.335 | step7m-H46 vs stepF-H-floor | 2026-11-19 |
-| `heldout_v102_a_ape_floor_m` | 1.778 | step7m-H46 vs stepF-H-floor | 2026-11-19 |
-| `heldout_v102_b_ape_m` | 1.229 | step7m-H46 vs stepF-H-floor | 2026-11-19 |
-| `heldout_v102_b_ape_floor_m` | 1.778 | step7m-H46 vs stepF-H-floor | 2026-11-19 |
-| `heldout_v103_a_ape_m` | 1.372 | step7m-H46 vs stepF-H-floor | 2026-11-19 |
-| `heldout_v103_a_ape_floor_m` | 1.581 | step7m-H46 vs stepF-H-floor | 2026-11-19 |
-| `heldout_v103_b_ape_m` | 1.372 | step7m-H46 vs stepF-H-floor | 2026-11-19 |
-| `heldout_v103_b_ape_floor_m` | 1.581 | step7m-H46 vs stepF-H-floor | 2026-11-19 |
-| `heldout79_copies_n` | 36 | step7m-H79 vs stepL1-H-floor | 2026-11-19 |
-| `heldout79_contract_pass_n` | 36/36 | step7m-H79 | 2026-11-19 |
-| `heldout79_ape_m` | 3.566 | step7m-H79 vs stepL1-H-floor | 2026-11-19 |
-| `heldout79_ape_floor_m` | 3.748 | step7m-H79 vs stepL1-H-floor | 2026-11-19 |
-| `heldout79_ape_vs_floor_pct` | -4.8 | step7m-H79 vs stepL1-H-floor | 2026-11-19 |
-| `heldout79_gap_m` | 3.289 | step7m-H79 vs stepL1-H-floor | 2026-11-19 |
-| `heldout79_gap_floor_m` | 3.256 | step7m-H79 vs stepL1-H-floor | 2026-11-19 |
-| `heldout79_gap_vs_floor_pct` | +1.0 | step7m-H79 vs stepL1-H-floor | 2026-11-19 |
-| `heldout79_blind_m` | 3.110 | step7m-H79 vs stepL1-H-floor | 2026-11-19 |
-| `heldout79_blind_floor_m` | 2.505 | step7m-H79 vs stepL1-H-floor | 2026-11-19 |
-| `heldout79_blind_vs_floor_pct` | +24.1 | step7m-H79 vs stepL1-H-floor | 2026-11-19 |
-| `heldout79_rpe1s_m` | 0.568 | step7m-H79 vs stepL1-H-floor | 2026-11-19 |
-| `heldout79_rpe1s_floor_m` | 0.943 | step7m-H79 vs stepL1-H-floor | 2026-11-19 |
-| `heldout79_rpe1s_vs_floor_pct` | -39.8 | step7m-H79 vs stepL1-H-floor | 2026-11-19 |
-| `heldout79_seqs_beat_floor_n` | 5/6 | step7m-H79 vs stepL1-H-floor | 2026-11-19 |
-| `heldout79_a_ape_m` | 3.642 | step7m-H79 vs stepL1-H-floor | 2026-11-19 |
-| `heldout79_a_ape_floor_m` | 3.748 | step7m-H79 vs stepL1-H-floor | 2026-11-19 |
-| `heldout79_a_ape_vs_floor_pct` | -2.8 | step7m-H79 vs stepL1-H-floor | 2026-11-19 |
-| `heldout79_a_gap_m` | 3.373 | step7m-H79 vs stepL1-H-floor | 2026-11-19 |
-| `heldout79_a_gap_floor_m` | 3.256 | step7m-H79 vs stepL1-H-floor | 2026-11-19 |
-| `heldout79_a_gap_vs_floor_pct` | +3.6 | step7m-H79 vs stepL1-H-floor | 2026-11-19 |
-| `heldout79_a_blind_m` | 2.862 | step7m-H79 vs stepL1-H-floor | 2026-11-19 |
-| `heldout79_a_blind_floor_m` | 2.505 | step7m-H79 vs stepL1-H-floor | 2026-11-19 |
-| `heldout79_a_blind_vs_floor_pct` | +14.2 | step7m-H79 vs stepL1-H-floor | 2026-11-19 |
-| `heldout79_a_rpe1s_m` | 0.605 | step7m-H79 vs stepL1-H-floor | 2026-11-19 |
-| `heldout79_a_rpe1s_floor_m` | 0.943 | step7m-H79 vs stepL1-H-floor | 2026-11-19 |
-| `heldout79_a_rpe1s_vs_floor_pct` | -35.9 | step7m-H79 vs stepL1-H-floor | 2026-11-19 |
-| `heldout79_a_seqs_beat_floor_n` | 4/6 | step7m-H79 vs stepL1-H-floor | 2026-11-19 |
-| `heldout79_b_ape_m` | 3.490 | step7m-H79 vs stepL1-H-floor | 2026-11-19 |
-| `heldout79_b_ape_floor_m` | 3.748 | step7m-H79 vs stepL1-H-floor | 2026-11-19 |
-| `heldout79_b_ape_vs_floor_pct` | -6.9 | step7m-H79 vs stepL1-H-floor | 2026-11-19 |
-| `heldout79_b_gap_m` | 3.204 | step7m-H79 vs stepL1-H-floor | 2026-11-19 |
-| `heldout79_b_gap_floor_m` | 3.256 | step7m-H79 vs stepL1-H-floor | 2026-11-19 |
-| `heldout79_b_gap_vs_floor_pct` | -1.6 | step7m-H79 vs stepL1-H-floor | 2026-11-19 |
-| `heldout79_b_blind_m` | 3.357 | step7m-H79 vs stepL1-H-floor | 2026-11-19 |
-| `heldout79_b_blind_floor_m` | 2.505 | step7m-H79 vs stepL1-H-floor | 2026-11-19 |
-| `heldout79_b_blind_vs_floor_pct` | +34.0 | step7m-H79 vs stepL1-H-floor | 2026-11-19 |
-| `heldout79_b_rpe1s_m` | 0.531 | step7m-H79 vs stepL1-H-floor | 2026-11-19 |
-| `heldout79_b_rpe1s_floor_m` | 0.943 | step7m-H79 vs stepL1-H-floor | 2026-11-19 |
-| `heldout79_b_rpe1s_vs_floor_pct` | -43.7 | step7m-H79 vs stepL1-H-floor | 2026-11-19 |
-| `heldout79_b_seqs_beat_floor_n` | 4/6 | step7m-H79 vs stepL1-H-floor | 2026-11-19 |
-| `clean_seqs_n` | 8 | step7m-shipped-clean vs step2-floor-clean | 2026-11-19 |
-| `clean_ape_m` | 3.570 | step7m-shipped-clean vs step2-floor-clean | 2026-11-19 |
-| `clean_ape_floor_m` | 3.930 | step7m-shipped-clean vs step2-floor-clean | 2026-11-19 |
-| `clean_ape_vs_floor_pct` | -9.2 | step7m-shipped-clean vs step2-floor-clean | 2026-11-19 |
-| `clean_rpe1s_m` | 0.407 | step7m-shipped-clean vs step2-floor-clean | 2026-11-19 |
-| `clean_rpe1s_floor_m` | 0.813 | step7m-shipped-clean vs step2-floor-clean | 2026-11-19 |
-| `clean_rpe1s_vs_floor_pct` | -49.9 | step7m-shipped-clean vs step2-floor-clean | 2026-11-19 |
-| `clean_seqs_beat_floor_n` | 7/8 | step7m-shipped-clean vs step2-floor-clean | 2026-11-19 |
-| `tumvi_copies_n` | 24 | step7m-shipped-tumvi vs tumvi-floor-off | 2026-11-19 |
-| `tumvi_contract_pass_n` | 24/24 | step7m-shipped-tumvi | 2026-11-19 |
-| `tumvi_ape_m` | 0.990 | step7m-shipped-tumvi vs tumvi-floor-off | 2026-11-19 |
-| `tumvi_ape_floor_m` | 1.137 | step7m-shipped-tumvi vs tumvi-floor-off | 2026-11-19 |
-| `tumvi_ape_vs_floor_pct` | -12.9 | step7m-shipped-tumvi vs tumvi-floor-off | 2026-11-19 |
-| `tumvi_gap_m` | 0.977 | step7m-shipped-tumvi vs tumvi-floor-off | 2026-11-19 |
-| `tumvi_gap_floor_m` | 1.078 | step7m-shipped-tumvi vs tumvi-floor-off | 2026-11-19 |
-| `tumvi_gap_vs_floor_pct` | -9.4 | step7m-shipped-tumvi vs tumvi-floor-off | 2026-11-19 |
-| `tumvi_blind_m` | 0.985 | step7m-shipped-tumvi vs tumvi-floor-off | 2026-11-19 |
-| `tumvi_blind_floor_m` | 0.709 | step7m-shipped-tumvi vs tumvi-floor-off | 2026-11-19 |
-| `tumvi_blind_vs_floor_pct` | +38.9 | step7m-shipped-tumvi vs tumvi-floor-off | 2026-11-19 |
-| `tumvi_rpe1s_m` | 1.005 | step7m-shipped-tumvi vs tumvi-floor-off | 2026-11-19 |
-| `tumvi_rpe1s_floor_m` | 1.349 | step7m-shipped-tumvi vs tumvi-floor-off | 2026-11-19 |
-| `tumvi_rpe1s_vs_floor_pct` | -25.5 | step7m-shipped-tumvi vs tumvi-floor-off | 2026-11-19 |
-| `tumvi_seqs_beat_floor_n` | 4/4 | step7m-shipped-tumvi vs tumvi-floor-off | 2026-11-19 |
-| `tumvi_a_ape_m` | 0.983 | step7m-shipped-tumvi vs tumvi-floor-off | 2026-11-19 |
-| `tumvi_a_ape_floor_m` | 1.137 | step7m-shipped-tumvi vs tumvi-floor-off | 2026-11-19 |
-| `tumvi_a_ape_vs_floor_pct` | -13.5 | step7m-shipped-tumvi vs tumvi-floor-off | 2026-11-19 |
-| `tumvi_a_gap_m` | 0.979 | step7m-shipped-tumvi vs tumvi-floor-off | 2026-11-19 |
-| `tumvi_a_gap_floor_m` | 1.078 | step7m-shipped-tumvi vs tumvi-floor-off | 2026-11-19 |
-| `tumvi_a_gap_vs_floor_pct` | -9.2 | step7m-shipped-tumvi vs tumvi-floor-off | 2026-11-19 |
-| `tumvi_a_blind_m` | 0.920 | step7m-shipped-tumvi vs tumvi-floor-off | 2026-11-19 |
-| `tumvi_a_blind_floor_m` | 0.709 | step7m-shipped-tumvi vs tumvi-floor-off | 2026-11-19 |
-| `tumvi_a_blind_vs_floor_pct` | +29.7 | step7m-shipped-tumvi vs tumvi-floor-off | 2026-11-19 |
-| `tumvi_a_rpe1s_m` | 1.000 | step7m-shipped-tumvi vs tumvi-floor-off | 2026-11-19 |
-| `tumvi_a_rpe1s_floor_m` | 1.349 | step7m-shipped-tumvi vs tumvi-floor-off | 2026-11-19 |
-| `tumvi_a_rpe1s_vs_floor_pct` | -25.9 | step7m-shipped-tumvi vs tumvi-floor-off | 2026-11-19 |
-| `tumvi_a_seqs_beat_floor_n` | 4/4 | step7m-shipped-tumvi vs tumvi-floor-off | 2026-11-19 |
-| `tumvi_b_ape_m` | 0.997 | step7m-shipped-tumvi vs tumvi-floor-off | 2026-11-19 |
-| `tumvi_b_ape_floor_m` | 1.137 | step7m-shipped-tumvi vs tumvi-floor-off | 2026-11-19 |
-| `tumvi_b_ape_vs_floor_pct` | -12.3 | step7m-shipped-tumvi vs tumvi-floor-off | 2026-11-19 |
-| `tumvi_b_gap_m` | 0.975 | step7m-shipped-tumvi vs tumvi-floor-off | 2026-11-19 |
-| `tumvi_b_gap_floor_m` | 1.078 | step7m-shipped-tumvi vs tumvi-floor-off | 2026-11-19 |
-| `tumvi_b_gap_vs_floor_pct` | -9.5 | step7m-shipped-tumvi vs tumvi-floor-off | 2026-11-19 |
-| `tumvi_b_blind_m` | 1.049 | step7m-shipped-tumvi vs tumvi-floor-off | 2026-11-19 |
-| `tumvi_b_blind_floor_m` | 0.709 | step7m-shipped-tumvi vs tumvi-floor-off | 2026-11-19 |
-| `tumvi_b_blind_vs_floor_pct` | +48.0 | step7m-shipped-tumvi vs tumvi-floor-off | 2026-11-19 |
-| `tumvi_b_rpe1s_m` | 1.010 | step7m-shipped-tumvi vs tumvi-floor-off | 2026-11-19 |
-| `tumvi_b_rpe1s_floor_m` | 1.349 | step7m-shipped-tumvi vs tumvi-floor-off | 2026-11-19 |
-| `tumvi_b_rpe1s_vs_floor_pct` | -25.1 | step7m-shipped-tumvi vs tumvi-floor-off | 2026-11-19 |
-| `tumvi_b_seqs_beat_floor_n` | 4/4 | step7m-shipped-tumvi vs tumvi-floor-off | 2026-11-19 |
-| `tumvi_room12_ape_m` | 0.871 | step7m-shipped-tumvi vs tumvi-floor-off | 2026-11-19 |
-| `tumvi_room12_ape_floor_m` | 1.110 | step7m-shipped-tumvi vs tumvi-floor-off | 2026-11-19 |
-| `tumvi_room12_ape_vs_floor_pct` | -21.5 | step7m-shipped-tumvi vs tumvi-floor-off | 2026-11-19 |
-| `tumvi_room12_gap_m` | 0.877 | step7m-shipped-tumvi vs tumvi-floor-off | 2026-11-19 |
-| `tumvi_room12_gap_floor_m` | 1.063 | step7m-shipped-tumvi vs tumvi-floor-off | 2026-11-19 |
-| `tumvi_room12_gap_vs_floor_pct` | -17.5 | step7m-shipped-tumvi vs tumvi-floor-off | 2026-11-19 |
-| `tumvi_room12_blind_m` | 0.953 | step7m-shipped-tumvi vs tumvi-floor-off | 2026-11-19 |
-| `tumvi_room12_blind_floor_m` | 0.677 | step7m-shipped-tumvi vs tumvi-floor-off | 2026-11-19 |
-| `tumvi_room12_blind_vs_floor_pct` | +40.7 | step7m-shipped-tumvi vs tumvi-floor-off | 2026-11-19 |
-| `tumvi_room12_rpe1s_m` | 0.988 | step7m-shipped-tumvi vs tumvi-floor-off | 2026-11-19 |
-| `tumvi_room12_rpe1s_floor_m` | 1.438 | step7m-shipped-tumvi vs tumvi-floor-off | 2026-11-19 |
-| `tumvi_room12_rpe1s_vs_floor_pct` | -31.2 | step7m-shipped-tumvi vs tumvi-floor-off | 2026-11-19 |
-| `tumvi_room12_seqs_beat_floor_n` | 2/2 | step7m-shipped-tumvi vs tumvi-floor-off | 2026-11-19 |
-| `tumvi_room34_ape_m` | 1.109 | step7m-shipped-tumvi vs tumvi-floor-off | 2026-11-19 |
-| `tumvi_room34_ape_floor_m` | 1.164 | step7m-shipped-tumvi vs tumvi-floor-off | 2026-11-19 |
-| `tumvi_room34_ape_vs_floor_pct` | -4.7 | step7m-shipped-tumvi vs tumvi-floor-off | 2026-11-19 |
-| `tumvi_room34_gap_m` | 1.077 | step7m-shipped-tumvi vs tumvi-floor-off | 2026-11-19 |
-| `tumvi_room34_gap_floor_m` | 1.092 | step7m-shipped-tumvi vs tumvi-floor-off | 2026-11-19 |
-| `tumvi_room34_gap_vs_floor_pct` | -1.4 | step7m-shipped-tumvi vs tumvi-floor-off | 2026-11-19 |
-| `tumvi_room34_blind_m` | 1.016 | step7m-shipped-tumvi vs tumvi-floor-off | 2026-11-19 |
-| `tumvi_room34_blind_floor_m` | 0.741 | step7m-shipped-tumvi vs tumvi-floor-off | 2026-11-19 |
-| `tumvi_room34_blind_vs_floor_pct` | +37.1 | step7m-shipped-tumvi vs tumvi-floor-off | 2026-11-19 |
-| `tumvi_room34_rpe1s_m` | 1.022 | step7m-shipped-tumvi vs tumvi-floor-off | 2026-11-19 |
-| `tumvi_room34_rpe1s_floor_m` | 1.260 | step7m-shipped-tumvi vs tumvi-floor-off | 2026-11-19 |
-| `tumvi_room34_rpe1s_vs_floor_pct` | -18.9 | step7m-shipped-tumvi vs tumvi-floor-off | 2026-11-19 |
-| `tumvi_room34_seqs_beat_floor_n` | 2/2 | step7m-shipped-tumvi vs tumvi-floor-off | 2026-11-19 |
-| `tumvi_clean_seqs_n` | 4 | step7m-shipped-tumvi-clean vs tumvi-floor-clean | 2026-11-19 |
-| `tumvi_clean_ape_m` | 0.879 | step7m-shipped-tumvi-clean vs tumvi-floor-clean | 2026-11-19 |
-| `tumvi_clean_ape_floor_m` | 1.137 | step7m-shipped-tumvi-clean vs tumvi-floor-clean | 2026-11-19 |
-| `tumvi_clean_ape_vs_floor_pct` | -22.6 | step7m-shipped-tumvi-clean vs tumvi-floor-clean | 2026-11-19 |
-| `tumvi_clean_rpe1s_m` | 0.875 | step7m-shipped-tumvi-clean vs tumvi-floor-clean | 2026-11-19 |
-| `tumvi_clean_rpe1s_floor_m` | 1.365 | step7m-shipped-tumvi-clean vs tumvi-floor-clean | 2026-11-19 |
-| `tumvi_clean_rpe1s_vs_floor_pct` | -35.9 | step7m-shipped-tumvi-clean vs tumvi-floor-clean | 2026-11-19 |
-| `tumvi_clean_seqs_beat_floor_n` | 4/4 | step7m-shipped-tumvi-clean vs tumvi-floor-clean | 2026-11-19 |
-| `tumvi_clean_room12_seqs_n` | 2 | step7m-shipped-tumvi-clean vs tumvi-floor-clean | 2026-11-19 |
-| `tumvi_clean_room12_ape_m` | 0.751 | step7m-shipped-tumvi-clean vs tumvi-floor-clean | 2026-11-19 |
-| `tumvi_clean_room12_ape_floor_m` | 1.110 | step7m-shipped-tumvi-clean vs tumvi-floor-clean | 2026-11-19 |
-| `tumvi_clean_room12_ape_vs_floor_pct` | -32.3 | step7m-shipped-tumvi-clean vs tumvi-floor-clean | 2026-11-19 |
-| `tumvi_clean_room12_rpe1s_m` | 0.870 | step7m-shipped-tumvi-clean vs tumvi-floor-clean | 2026-11-19 |
-| `tumvi_clean_room12_rpe1s_floor_m` | 1.471 | step7m-shipped-tumvi-clean vs tumvi-floor-clean | 2026-11-19 |
-| `tumvi_clean_room12_rpe1s_vs_floor_pct` | -40.8 | step7m-shipped-tumvi-clean vs tumvi-floor-clean | 2026-11-19 |
-| `tumvi_clean_room12_seqs_beat_floor_n` | 2/2 | step7m-shipped-tumvi-clean vs tumvi-floor-clean | 2026-11-19 |
-| `tumvi_clean_room34_seqs_n` | 2 | step7m-shipped-tumvi-clean vs tumvi-floor-clean | 2026-11-19 |
-| `tumvi_clean_room34_ape_m` | 1.008 | step7m-shipped-tumvi-clean vs tumvi-floor-clean | 2026-11-19 |
-| `tumvi_clean_room34_ape_floor_m` | 1.163 | step7m-shipped-tumvi-clean vs tumvi-floor-clean | 2026-11-19 |
-| `tumvi_clean_room34_ape_vs_floor_pct` | -13.4 | step7m-shipped-tumvi-clean vs tumvi-floor-clean | 2026-11-19 |
-| `tumvi_clean_room34_rpe1s_m` | 0.879 | step7m-shipped-tumvi-clean vs tumvi-floor-clean | 2026-11-19 |
-| `tumvi_clean_room34_rpe1s_floor_m` | 1.259 | step7m-shipped-tumvi-clean vs tumvi-floor-clean | 2026-11-19 |
-| `tumvi_clean_room34_rpe1s_vs_floor_pct` | -30.2 | step7m-shipped-tumvi-clean vs tumvi-floor-clean | 2026-11-19 |
-| `tumvi_clean_room34_seqs_beat_floor_n` | 2/2 | step7m-shipped-tumvi-clean vs tumvi-floor-clean | 2026-11-19 |
-| `tumvi_calib_clean_calibrated_n` | 0/6 | tumvi-calib | 2026-11-19 |
-| `tumvi_calib_clean_zupt_any_n` | 0/6 | tumvi-calib | 2026-11-19 |
-| `tumvi_calib_official_calibrated_n` | 0/24 | tumvi-calib | 2026-11-19 |
-| `tumvi_calib_official_zupt_any_n` | 0/24 | tumvi-calib | 2026-11-19 |
-| `budget_input` | official/MH_01_easy_b_s1/mav0/imu0/data.csv | step7m-win-py314-mh01-b-s1 | 2026-11-19 |
-| `budget_rows_n` | 35697 | step7m-win-py314-mh01-b-s1 | 2026-11-19 |
-| `budget_python` | 3.14.7 | step7m-win-py314-mh01-b-s1 | 2026-11-19 |
-| `budget_heap_kb` | 1234 | step7m-win-py314-mh01-b-s1 | 2026-11-19 |
-| `budget_heap_whole_run_kb` | 1816 | step7m-win-py314-mh01-b-s1 | 2026-11-19 |
-| `budget_heap_no_bytecode_kb` | 7188 | step7m-win-py314-mh01-b-s1 | 2026-11-19 |
-| `budget_us_per_row_us` | 28.6 | step7m-win-py314-mh01-b-s1 | 2026-11-19 |
-| `budget_cpu_ms_per_imu_s_ms` | 5.52 | step7m-win-py314-mh01-b-s1 | 2026-11-19 |
-| `budget_wall_ms_per_imu_s_ms` | 5.55 | step7m-win-py314-mh01-b-s1 | 2026-11-19 |
-| `budget313_input` | SYNTHETIC (tools/synth_euroc.py, seed 0) | step7m-win-py313 | 2026-11-19 |
-| `budget313_rows_n` | 36000 | step7m-win-py313 | 2026-11-19 |
-| `budget313_python` | 3.13.5 | step7m-win-py313 | 2026-11-19 |
-| `budget313_heap_kb` | 942 | step7m-win-py313 | 2026-11-19 |
-| `budget313_heap_whole_run_kb` | 2264 | step7m-win-py313 | 2026-11-19 |
-| `budget313_heap_no_bytecode_kb` | 7551 | step7m-win-py313 | 2026-11-19 |
-| `budget313_us_per_row_us` | 31.0 | step7m-win-py313 | 2026-11-19 |
-| `budget313_cpu_ms_per_imu_s_ms` | 6.08 | step7m-win-py313 | 2026-11-19 |
-| `budget313_wall_ms_per_imu_s_ms` | 6.19 | step7m-win-py313 | 2026-11-19 |
+| `heldout_copies_n` | 36 | v10-H46 vs v10floor-H46 | 2026-11-22 |
+| `heldout_contract_pass_n` | 36/36 | v10-H46 | 2026-11-22 |
+| `heldout_ape_m` | 3.440 | v10-H46 vs v10floor-H46 | 2026-11-22 |
+| `heldout_ape_floor_m` | 3.745 | v10-H46 vs v10floor-H46 | 2026-11-22 |
+| `heldout_ape_vs_floor_pct` | -8.1 | v10-H46 vs v10floor-H46 | 2026-11-22 |
+| `heldout_gap_m` | 3.478 | v10-H46 vs v10floor-H46 | 2026-11-22 |
+| `heldout_gap_floor_m` | 3.626 | v10-H46 vs v10floor-H46 | 2026-11-22 |
+| `heldout_gap_vs_floor_pct` | -4.1 | v10-H46 vs v10floor-H46 | 2026-11-22 |
+| `heldout_blind_m` | 2.494 | v10-H46 vs v10floor-H46 | 2026-11-22 |
+| `heldout_blind_floor_m` | 2.504 | v10-H46 vs v10floor-H46 | 2026-11-22 |
+| `heldout_blind_vs_floor_pct` | -0.4 | v10-H46 vs v10floor-H46 | 2026-11-22 |
+| `heldout_rpe1s_m` | 0.562 | v10-H46 vs v10floor-H46 | 2026-11-22 |
+| `heldout_rpe1s_floor_m` | 0.941 | v10-H46 vs v10floor-H46 | 2026-11-22 |
+| `heldout_rpe1s_vs_floor_pct` | -40.2 | v10-H46 vs v10floor-H46 | 2026-11-22 |
+| `heldout_seqs_beat_floor_n` | 5/6 | v10-H46 vs v10floor-H46 | 2026-11-22 |
+| `heldout_a_ape_m` | 3.506 | v10-H46 vs v10floor-H46 | 2026-11-22 |
+| `heldout_a_ape_floor_m` | 3.745 | v10-H46 vs v10floor-H46 | 2026-11-22 |
+| `heldout_a_ape_vs_floor_pct` | -6.4 | v10-H46 vs v10floor-H46 | 2026-11-22 |
+| `heldout_a_gap_m` | 3.593 | v10-H46 vs v10floor-H46 | 2026-11-22 |
+| `heldout_a_gap_floor_m` | 3.626 | v10-H46 vs v10floor-H46 | 2026-11-22 |
+| `heldout_a_gap_vs_floor_pct` | -0.9 | v10-H46 vs v10floor-H46 | 2026-11-22 |
+| `heldout_a_blind_m` | 2.490 | v10-H46 vs v10floor-H46 | 2026-11-22 |
+| `heldout_a_blind_floor_m` | 2.504 | v10-H46 vs v10floor-H46 | 2026-11-22 |
+| `heldout_a_blind_vs_floor_pct` | -0.6 | v10-H46 vs v10floor-H46 | 2026-11-22 |
+| `heldout_a_rpe1s_m` | 0.606 | v10-H46 vs v10floor-H46 | 2026-11-22 |
+| `heldout_a_rpe1s_floor_m` | 0.941 | v10-H46 vs v10floor-H46 | 2026-11-22 |
+| `heldout_a_rpe1s_vs_floor_pct` | -35.5 | v10-H46 vs v10floor-H46 | 2026-11-22 |
+| `heldout_a_seqs_beat_floor_n` | 5/6 | v10-H46 vs v10floor-H46 | 2026-11-22 |
+| `heldout_b_ape_m` | 3.373 | v10-H46 vs v10floor-H46 | 2026-11-22 |
+| `heldout_b_ape_floor_m` | 3.745 | v10-H46 vs v10floor-H46 | 2026-11-22 |
+| `heldout_b_ape_vs_floor_pct` | -9.9 | v10-H46 vs v10floor-H46 | 2026-11-22 |
+| `heldout_b_gap_m` | 3.363 | v10-H46 vs v10floor-H46 | 2026-11-22 |
+| `heldout_b_gap_floor_m` | 3.626 | v10-H46 vs v10floor-H46 | 2026-11-22 |
+| `heldout_b_gap_vs_floor_pct` | -7.3 | v10-H46 vs v10floor-H46 | 2026-11-22 |
+| `heldout_b_blind_m` | 2.498 | v10-H46 vs v10floor-H46 | 2026-11-22 |
+| `heldout_b_blind_floor_m` | 2.504 | v10-H46 vs v10floor-H46 | 2026-11-22 |
+| `heldout_b_blind_vs_floor_pct` | -0.2 | v10-H46 vs v10floor-H46 | 2026-11-22 |
+| `heldout_b_rpe1s_m` | 0.519 | v10-H46 vs v10floor-H46 | 2026-11-22 |
+| `heldout_b_rpe1s_floor_m` | 0.941 | v10-H46 vs v10floor-H46 | 2026-11-22 |
+| `heldout_b_rpe1s_vs_floor_pct` | -44.9 | v10-H46 vs v10floor-H46 | 2026-11-22 |
+| `heldout_b_seqs_beat_floor_n` | 5/6 | v10-H46 vs v10floor-H46 | 2026-11-22 |
+| `heldout_mh03_a_ape_m` | 3.310 | v10-H46 vs v10floor-H46 | 2026-11-22 |
+| `heldout_mh03_a_ape_floor_m` | 3.579 | v10-H46 vs v10floor-H46 | 2026-11-22 |
+| `heldout_mh03_b_ape_m` | 2.875 | v10-H46 vs v10floor-H46 | 2026-11-22 |
+| `heldout_mh03_b_ape_floor_m` | 3.579 | v10-H46 vs v10floor-H46 | 2026-11-22 |
+| `heldout_mh04_a_ape_m` | 6.258 | v10-H46 vs v10floor-H46 | 2026-11-22 |
+| `heldout_mh04_a_ape_floor_m` | 6.813 | v10-H46 vs v10floor-H46 | 2026-11-22 |
+| `heldout_mh04_b_ape_m` | 6.186 | v10-H46 vs v10floor-H46 | 2026-11-22 |
+| `heldout_mh04_b_ape_floor_m` | 6.813 | v10-H46 vs v10floor-H46 | 2026-11-22 |
+| `heldout_mh05_a_ape_m` | 6.621 | v10-H46 vs v10floor-H46 | 2026-11-22 |
+| `heldout_mh05_a_ape_floor_m` | 6.865 | v10-H46 vs v10floor-H46 | 2026-11-22 |
+| `heldout_mh05_b_ape_m` | 6.564 | v10-H46 vs v10floor-H46 | 2026-11-22 |
+| `heldout_mh05_b_ape_floor_m` | 6.865 | v10-H46 vs v10floor-H46 | 2026-11-22 |
+| `heldout_v101_a_ape_m` | 2.245 | v10-H46 vs v10floor-H46 | 2026-11-22 |
+| `heldout_v101_a_ape_floor_m` | 1.854 | v10-H46 vs v10floor-H46 | 2026-11-22 |
+| `heldout_v101_b_ape_m` | 2.049 | v10-H46 vs v10floor-H46 | 2026-11-22 |
+| `heldout_v101_b_ape_floor_m` | 1.854 | v10-H46 vs v10floor-H46 | 2026-11-22 |
+| `heldout_v102_a_ape_m` | 1.223 | v10-H46 vs v10floor-H46 | 2026-11-22 |
+| `heldout_v102_a_ape_floor_m` | 1.778 | v10-H46 vs v10floor-H46 | 2026-11-22 |
+| `heldout_v102_b_ape_m` | 1.196 | v10-H46 vs v10floor-H46 | 2026-11-22 |
+| `heldout_v102_b_ape_floor_m` | 1.778 | v10-H46 vs v10floor-H46 | 2026-11-22 |
+| `heldout_v103_a_ape_m` | 1.381 | v10-H46 vs v10floor-H46 | 2026-11-22 |
+| `heldout_v103_a_ape_floor_m` | 1.581 | v10-H46 vs v10floor-H46 | 2026-11-22 |
+| `heldout_v103_b_ape_m` | 1.370 | v10-H46 vs v10floor-H46 | 2026-11-22 |
+| `heldout_v103_b_ape_floor_m` | 1.581 | v10-H46 vs v10floor-H46 | 2026-11-22 |
+| `heldout79_copies_n` | 36 | v10-H79 vs v10floor-H79 | 2026-11-22 |
+| `heldout79_contract_pass_n` | 36/36 | v10-H79 | 2026-11-22 |
+| `heldout79_ape_m` | 3.481 | v10-H79 vs v10floor-H79 | 2026-11-22 |
+| `heldout79_ape_floor_m` | 3.748 | v10-H79 vs v10floor-H79 | 2026-11-22 |
+| `heldout79_ape_vs_floor_pct` | -7.1 | v10-H79 vs v10floor-H79 | 2026-11-22 |
+| `heldout79_gap_m` | 3.298 | v10-H79 vs v10floor-H79 | 2026-11-22 |
+| `heldout79_gap_floor_m` | 3.256 | v10-H79 vs v10floor-H79 | 2026-11-22 |
+| `heldout79_gap_vs_floor_pct` | +1.3 | v10-H79 vs v10floor-H79 | 2026-11-22 |
+| `heldout79_blind_m` | 2.495 | v10-H79 vs v10floor-H79 | 2026-11-22 |
+| `heldout79_blind_floor_m` | 2.505 | v10-H79 vs v10floor-H79 | 2026-11-22 |
+| `heldout79_blind_vs_floor_pct` | -0.4 | v10-H79 vs v10floor-H79 | 2026-11-22 |
+| `heldout79_rpe1s_m` | 0.563 | v10-H79 vs v10floor-H79 | 2026-11-22 |
+| `heldout79_rpe1s_floor_m` | 0.943 | v10-H79 vs v10floor-H79 | 2026-11-22 |
+| `heldout79_rpe1s_vs_floor_pct` | -40.2 | v10-H79 vs v10floor-H79 | 2026-11-22 |
+| `heldout79_seqs_beat_floor_n` | 5/6 | v10-H79 vs v10floor-H79 | 2026-11-22 |
+| `heldout79_a_ape_m` | 3.572 | v10-H79 vs v10floor-H79 | 2026-11-22 |
+| `heldout79_a_ape_floor_m` | 3.748 | v10-H79 vs v10floor-H79 | 2026-11-22 |
+| `heldout79_a_ape_vs_floor_pct` | -4.7 | v10-H79 vs v10floor-H79 | 2026-11-22 |
+| `heldout79_a_gap_m` | 3.394 | v10-H79 vs v10floor-H79 | 2026-11-22 |
+| `heldout79_a_gap_floor_m` | 3.256 | v10-H79 vs v10floor-H79 | 2026-11-22 |
+| `heldout79_a_gap_vs_floor_pct` | +4.3 | v10-H79 vs v10floor-H79 | 2026-11-22 |
+| `heldout79_a_blind_m` | 2.496 | v10-H79 vs v10floor-H79 | 2026-11-22 |
+| `heldout79_a_blind_floor_m` | 2.505 | v10-H79 vs v10floor-H79 | 2026-11-22 |
+| `heldout79_a_blind_vs_floor_pct` | -0.4 | v10-H79 vs v10floor-H79 | 2026-11-22 |
+| `heldout79_a_rpe1s_m` | 0.604 | v10-H79 vs v10floor-H79 | 2026-11-22 |
+| `heldout79_a_rpe1s_floor_m` | 0.943 | v10-H79 vs v10floor-H79 | 2026-11-22 |
+| `heldout79_a_rpe1s_vs_floor_pct` | -36.0 | v10-H79 vs v10floor-H79 | 2026-11-22 |
+| `heldout79_a_seqs_beat_floor_n` | 4/6 | v10-H79 vs v10floor-H79 | 2026-11-22 |
+| `heldout79_b_ape_m` | 3.390 | v10-H79 vs v10floor-H79 | 2026-11-22 |
+| `heldout79_b_ape_floor_m` | 3.748 | v10-H79 vs v10floor-H79 | 2026-11-22 |
+| `heldout79_b_ape_vs_floor_pct` | -9.5 | v10-H79 vs v10floor-H79 | 2026-11-22 |
+| `heldout79_b_gap_m` | 3.202 | v10-H79 vs v10floor-H79 | 2026-11-22 |
+| `heldout79_b_gap_floor_m` | 3.256 | v10-H79 vs v10floor-H79 | 2026-11-22 |
+| `heldout79_b_gap_vs_floor_pct` | -1.6 | v10-H79 vs v10floor-H79 | 2026-11-22 |
+| `heldout79_b_blind_m` | 2.495 | v10-H79 vs v10floor-H79 | 2026-11-22 |
+| `heldout79_b_blind_floor_m` | 2.505 | v10-H79 vs v10floor-H79 | 2026-11-22 |
+| `heldout79_b_blind_vs_floor_pct` | -0.4 | v10-H79 vs v10floor-H79 | 2026-11-22 |
+| `heldout79_b_rpe1s_m` | 0.523 | v10-H79 vs v10floor-H79 | 2026-11-22 |
+| `heldout79_b_rpe1s_floor_m` | 0.943 | v10-H79 vs v10floor-H79 | 2026-11-22 |
+| `heldout79_b_rpe1s_vs_floor_pct` | -44.5 | v10-H79 vs v10floor-H79 | 2026-11-22 |
+| `heldout79_b_seqs_beat_floor_n` | 5/6 | v10-H79 vs v10floor-H79 | 2026-11-22 |
+| `heldout_hp_copies_n` | 36 | v10-HP vs v10floor-HP | 2026-11-22 |
+| `heldout_hp_contract_pass_n` | 36/36 | v10-HP | 2026-11-22 |
+| `heldout_hp_ape_m` | 3.554 | v10-HP vs v10floor-HP | 2026-11-22 |
+| `heldout_hp_ape_floor_m` | 3.750 | v10-HP vs v10floor-HP | 2026-11-22 |
+| `heldout_hp_ape_vs_floor_pct` | -5.2 | v10-HP vs v10floor-HP | 2026-11-22 |
+| `heldout_hp_gap_m` | 3.472 | v10-HP vs v10floor-HP | 2026-11-22 |
+| `heldout_hp_gap_floor_m` | 3.414 | v10-HP vs v10floor-HP | 2026-11-22 |
+| `heldout_hp_gap_vs_floor_pct` | +1.7 | v10-HP vs v10floor-HP | 2026-11-22 |
+| `heldout_hp_blind_m` | 2.501 | v10-HP vs v10floor-HP | 2026-11-22 |
+| `heldout_hp_blind_floor_m` | 2.508 | v10-HP vs v10floor-HP | 2026-11-22 |
+| `heldout_hp_blind_vs_floor_pct` | -0.3 | v10-HP vs v10floor-HP | 2026-11-22 |
+| `heldout_hp_rpe1s_m` | 0.594 | v10-HP vs v10floor-HP | 2026-11-22 |
+| `heldout_hp_rpe1s_floor_m` | 0.942 | v10-HP vs v10floor-HP | 2026-11-22 |
+| `heldout_hp_rpe1s_vs_floor_pct` | -36.9 | v10-HP vs v10floor-HP | 2026-11-22 |
+| `heldout_hp_seqs_beat_floor_n` | 4/6 | v10-HP vs v10floor-HP | 2026-11-22 |
+| `heldout_hp_a_ape_m` | 3.660 | v10-HP vs v10floor-HP | 2026-11-22 |
+| `heldout_hp_a_ape_floor_m` | 3.750 | v10-HP vs v10floor-HP | 2026-11-22 |
+| `heldout_hp_a_ape_vs_floor_pct` | -2.4 | v10-HP vs v10floor-HP | 2026-11-22 |
+| `heldout_hp_a_gap_m` | 3.576 | v10-HP vs v10floor-HP | 2026-11-22 |
+| `heldout_hp_a_gap_floor_m` | 3.414 | v10-HP vs v10floor-HP | 2026-11-22 |
+| `heldout_hp_a_gap_vs_floor_pct` | +4.7 | v10-HP vs v10floor-HP | 2026-11-22 |
+| `heldout_hp_a_blind_m` | 2.497 | v10-HP vs v10floor-HP | 2026-11-22 |
+| `heldout_hp_a_blind_floor_m` | 2.508 | v10-HP vs v10floor-HP | 2026-11-22 |
+| `heldout_hp_a_blind_vs_floor_pct` | -0.4 | v10-HP vs v10floor-HP | 2026-11-22 |
+| `heldout_hp_a_rpe1s_m` | 0.642 | v10-HP vs v10floor-HP | 2026-11-22 |
+| `heldout_hp_a_rpe1s_floor_m` | 0.942 | v10-HP vs v10floor-HP | 2026-11-22 |
+| `heldout_hp_a_rpe1s_vs_floor_pct` | -31.8 | v10-HP vs v10floor-HP | 2026-11-22 |
+| `heldout_hp_a_seqs_beat_floor_n` | 3/6 | v10-HP vs v10floor-HP | 2026-11-22 |
+| `heldout_hp_b_ape_m` | 3.449 | v10-HP vs v10floor-HP | 2026-11-22 |
+| `heldout_hp_b_ape_floor_m` | 3.750 | v10-HP vs v10floor-HP | 2026-11-22 |
+| `heldout_hp_b_ape_vs_floor_pct` | -8.0 | v10-HP vs v10floor-HP | 2026-11-22 |
+| `heldout_hp_b_gap_m` | 3.369 | v10-HP vs v10floor-HP | 2026-11-22 |
+| `heldout_hp_b_gap_floor_m` | 3.414 | v10-HP vs v10floor-HP | 2026-11-22 |
+| `heldout_hp_b_gap_vs_floor_pct` | -1.3 | v10-HP vs v10floor-HP | 2026-11-22 |
+| `heldout_hp_b_blind_m` | 2.505 | v10-HP vs v10floor-HP | 2026-11-22 |
+| `heldout_hp_b_blind_floor_m` | 2.508 | v10-HP vs v10floor-HP | 2026-11-22 |
+| `heldout_hp_b_blind_vs_floor_pct` | -0.1 | v10-HP vs v10floor-HP | 2026-11-22 |
+| `heldout_hp_b_rpe1s_m` | 0.545 | v10-HP vs v10floor-HP | 2026-11-22 |
+| `heldout_hp_b_rpe1s_floor_m` | 0.942 | v10-HP vs v10floor-HP | 2026-11-22 |
+| `heldout_hp_b_rpe1s_vs_floor_pct` | -42.1 | v10-HP vs v10floor-HP | 2026-11-22 |
+| `heldout_hp_b_seqs_beat_floor_n` | 4/6 | v10-HP vs v10floor-HP | 2026-11-22 |
+| `heldout_hp_mh03_a_ape_m` | 3.710 | v10-HP vs v10floor-HP | 2026-11-22 |
+| `heldout_hp_mh03_a_ape_floor_m` | 3.588 | v10-HP vs v10floor-HP | 2026-11-22 |
+| `heldout_hp_mh03_b_ape_m` | 2.953 | v10-HP vs v10floor-HP | 2026-11-22 |
+| `heldout_hp_mh03_b_ape_floor_m` | 3.588 | v10-HP vs v10floor-HP | 2026-11-22 |
+| `heldout_hp_mh04_a_ape_m` | 6.374 | v10-HP vs v10floor-HP | 2026-11-22 |
+| `heldout_hp_mh04_a_ape_floor_m` | 6.815 | v10-HP vs v10floor-HP | 2026-11-22 |
+| `heldout_hp_mh04_b_ape_m` | 6.233 | v10-HP vs v10floor-HP | 2026-11-22 |
+| `heldout_hp_mh04_b_ape_floor_m` | 6.815 | v10-HP vs v10floor-HP | 2026-11-22 |
+| `heldout_hp_mh05_a_ape_m` | 6.517 | v10-HP vs v10floor-HP | 2026-11-22 |
+| `heldout_hp_mh05_a_ape_floor_m` | 6.883 | v10-HP vs v10floor-HP | 2026-11-22 |
+| `heldout_hp_mh05_b_ape_m` | 6.558 | v10-HP vs v10floor-HP | 2026-11-22 |
+| `heldout_hp_mh05_b_ape_floor_m` | 6.883 | v10-HP vs v10floor-HP | 2026-11-22 |
+| `heldout_hp_v101_a_ape_m` | 2.244 | v10-HP vs v10floor-HP | 2026-11-22 |
+| `heldout_hp_v101_a_ape_floor_m` | 1.854 | v10-HP vs v10floor-HP | 2026-11-22 |
+| `heldout_hp_v101_b_ape_m` | 1.942 | v10-HP vs v10floor-HP | 2026-11-22 |
+| `heldout_hp_v101_b_ape_floor_m` | 1.854 | v10-HP vs v10floor-HP | 2026-11-22 |
+| `heldout_hp_v102_a_ape_m` | 1.479 | v10-HP vs v10floor-HP | 2026-11-22 |
+| `heldout_hp_v102_a_ape_floor_m` | 1.779 | v10-HP vs v10floor-HP | 2026-11-22 |
+| `heldout_hp_v102_b_ape_m` | 1.382 | v10-HP vs v10floor-HP | 2026-11-22 |
+| `heldout_hp_v102_b_ape_floor_m` | 1.779 | v10-HP vs v10floor-HP | 2026-11-22 |
+| `heldout_hp_v103_a_ape_m` | 1.638 | v10-HP vs v10floor-HP | 2026-11-22 |
+| `heldout_hp_v103_a_ape_floor_m` | 1.581 | v10-HP vs v10floor-HP | 2026-11-22 |
+| `heldout_hp_v103_b_ape_m` | 1.623 | v10-HP vs v10floor-HP | 2026-11-22 |
+| `heldout_hp_v103_b_ape_floor_m` | 1.581 | v10-HP vs v10floor-HP | 2026-11-22 |
+| `clean_seqs_n` | 8 | v10-clean vs v10floor-clean | 2026-11-22 |
+| `clean_ape_m` | 3.570 | v10-clean vs v10floor-clean | 2026-11-22 |
+| `clean_ape_floor_m` | 3.930 | v10-clean vs v10floor-clean | 2026-11-22 |
+| `clean_ape_vs_floor_pct` | -9.2 | v10-clean vs v10floor-clean | 2026-11-22 |
+| `clean_rpe1s_m` | 0.407 | v10-clean vs v10floor-clean | 2026-11-22 |
+| `clean_rpe1s_floor_m` | 0.813 | v10-clean vs v10floor-clean | 2026-11-22 |
+| `clean_rpe1s_vs_floor_pct` | -49.9 | v10-clean vs v10floor-clean | 2026-11-22 |
+| `clean_seqs_beat_floor_n` | 7/8 | v10-clean vs v10floor-clean | 2026-11-22 |
+| `tumvi_copies_n` | 24 | v10-tumvi vs v10floor-tumvi | 2026-11-22 |
+| `tumvi_contract_pass_n` | 24/24 | v10-tumvi | 2026-11-22 |
+| `tumvi_ape_m` | 0.969 | v10-tumvi vs v10floor-tumvi | 2026-11-22 |
+| `tumvi_ape_floor_m` | 1.137 | v10-tumvi vs v10floor-tumvi | 2026-11-22 |
+| `tumvi_ape_vs_floor_pct` | -14.8 | v10-tumvi vs v10floor-tumvi | 2026-11-22 |
+| `tumvi_gap_m` | 0.988 | v10-tumvi vs v10floor-tumvi | 2026-11-22 |
+| `tumvi_gap_floor_m` | 1.078 | v10-tumvi vs v10floor-tumvi | 2026-11-22 |
+| `tumvi_gap_vs_floor_pct` | -8.3 | v10-tumvi vs v10floor-tumvi | 2026-11-22 |
+| `tumvi_blind_m` | 0.699 | v10-tumvi vs v10floor-tumvi | 2026-11-22 |
+| `tumvi_blind_floor_m` | 0.709 | v10-tumvi vs v10floor-tumvi | 2026-11-22 |
+| `tumvi_blind_vs_floor_pct` | -1.4 | v10-tumvi vs v10floor-tumvi | 2026-11-22 |
+| `tumvi_rpe1s_m` | 1.001 | v10-tumvi vs v10floor-tumvi | 2026-11-22 |
+| `tumvi_rpe1s_floor_m` | 1.349 | v10-tumvi vs v10floor-tumvi | 2026-11-22 |
+| `tumvi_rpe1s_vs_floor_pct` | -25.8 | v10-tumvi vs v10floor-tumvi | 2026-11-22 |
+| `tumvi_seqs_beat_floor_n` | 4/4 | v10-tumvi vs v10floor-tumvi | 2026-11-22 |
+| `tumvi_a_ape_m` | 0.967 | v10-tumvi vs v10floor-tumvi | 2026-11-22 |
+| `tumvi_a_ape_floor_m` | 1.137 | v10-tumvi vs v10floor-tumvi | 2026-11-22 |
+| `tumvi_a_ape_vs_floor_pct` | -14.9 | v10-tumvi vs v10floor-tumvi | 2026-11-22 |
+| `tumvi_a_gap_m` | 0.982 | v10-tumvi vs v10floor-tumvi | 2026-11-22 |
+| `tumvi_a_gap_floor_m` | 1.078 | v10-tumvi vs v10floor-tumvi | 2026-11-22 |
+| `tumvi_a_gap_vs_floor_pct` | -8.9 | v10-tumvi vs v10floor-tumvi | 2026-11-22 |
+| `tumvi_a_blind_m` | 0.699 | v10-tumvi vs v10floor-tumvi | 2026-11-22 |
+| `tumvi_a_blind_floor_m` | 0.709 | v10-tumvi vs v10floor-tumvi | 2026-11-22 |
+| `tumvi_a_blind_vs_floor_pct` | -1.3 | v10-tumvi vs v10floor-tumvi | 2026-11-22 |
+| `tumvi_a_rpe1s_m` | 0.997 | v10-tumvi vs v10floor-tumvi | 2026-11-22 |
+| `tumvi_a_rpe1s_floor_m` | 1.349 | v10-tumvi vs v10floor-tumvi | 2026-11-22 |
+| `tumvi_a_rpe1s_vs_floor_pct` | -26.1 | v10-tumvi vs v10floor-tumvi | 2026-11-22 |
+| `tumvi_a_seqs_beat_floor_n` | 4/4 | v10-tumvi vs v10floor-tumvi | 2026-11-22 |
+| `tumvi_b_ape_m` | 0.972 | v10-tumvi vs v10floor-tumvi | 2026-11-22 |
+| `tumvi_b_ape_floor_m` | 1.137 | v10-tumvi vs v10floor-tumvi | 2026-11-22 |
+| `tumvi_b_ape_vs_floor_pct` | -14.6 | v10-tumvi vs v10floor-tumvi | 2026-11-22 |
+| `tumvi_b_gap_m` | 0.994 | v10-tumvi vs v10floor-tumvi | 2026-11-22 |
+| `tumvi_b_gap_floor_m` | 1.078 | v10-tumvi vs v10floor-tumvi | 2026-11-22 |
+| `tumvi_b_gap_vs_floor_pct` | -7.8 | v10-tumvi vs v10floor-tumvi | 2026-11-22 |
+| `tumvi_b_blind_m` | 0.699 | v10-tumvi vs v10floor-tumvi | 2026-11-22 |
+| `tumvi_b_blind_floor_m` | 0.709 | v10-tumvi vs v10floor-tumvi | 2026-11-22 |
+| `tumvi_b_blind_vs_floor_pct` | -1.4 | v10-tumvi vs v10floor-tumvi | 2026-11-22 |
+| `tumvi_b_rpe1s_m` | 1.006 | v10-tumvi vs v10floor-tumvi | 2026-11-22 |
+| `tumvi_b_rpe1s_floor_m` | 1.349 | v10-tumvi vs v10floor-tumvi | 2026-11-22 |
+| `tumvi_b_rpe1s_vs_floor_pct` | -25.5 | v10-tumvi vs v10floor-tumvi | 2026-11-22 |
+| `tumvi_b_seqs_beat_floor_n` | 4/4 | v10-tumvi vs v10floor-tumvi | 2026-11-22 |
+| `tumvi_room12_ape_m` | 0.856 | v10-tumvi vs v10floor-tumvi | 2026-11-22 |
+| `tumvi_room12_ape_floor_m` | 1.110 | v10-tumvi vs v10floor-tumvi | 2026-11-22 |
+| `tumvi_room12_ape_vs_floor_pct` | -22.9 | v10-tumvi vs v10floor-tumvi | 2026-11-22 |
+| `tumvi_room12_gap_m` | 0.901 | v10-tumvi vs v10floor-tumvi | 2026-11-22 |
+| `tumvi_room12_gap_floor_m` | 1.063 | v10-tumvi vs v10floor-tumvi | 2026-11-22 |
+| `tumvi_room12_gap_vs_floor_pct` | -15.2 | v10-tumvi vs v10floor-tumvi | 2026-11-22 |
+| `tumvi_room12_blind_m` | 0.659 | v10-tumvi vs v10floor-tumvi | 2026-11-22 |
+| `tumvi_room12_blind_floor_m` | 0.677 | v10-tumvi vs v10floor-tumvi | 2026-11-22 |
+| `tumvi_room12_blind_vs_floor_pct` | -2.6 | v10-tumvi vs v10floor-tumvi | 2026-11-22 |
+| `tumvi_room12_rpe1s_m` | 0.990 | v10-tumvi vs v10floor-tumvi | 2026-11-22 |
+| `tumvi_room12_rpe1s_floor_m` | 1.438 | v10-tumvi vs v10floor-tumvi | 2026-11-22 |
+| `tumvi_room12_rpe1s_vs_floor_pct` | -31.1 | v10-tumvi vs v10floor-tumvi | 2026-11-22 |
+| `tumvi_room12_seqs_beat_floor_n` | 2/2 | v10-tumvi vs v10floor-tumvi | 2026-11-22 |
+| `tumvi_room34_ape_m` | 1.083 | v10-tumvi vs v10floor-tumvi | 2026-11-22 |
+| `tumvi_room34_ape_floor_m` | 1.164 | v10-tumvi vs v10floor-tumvi | 2026-11-22 |
+| `tumvi_room34_ape_vs_floor_pct` | -7.0 | v10-tumvi vs v10floor-tumvi | 2026-11-22 |
+| `tumvi_room34_gap_m` | 1.074 | v10-tumvi vs v10floor-tumvi | 2026-11-22 |
+| `tumvi_room34_gap_floor_m` | 1.092 | v10-tumvi vs v10floor-tumvi | 2026-11-22 |
+| `tumvi_room34_gap_vs_floor_pct` | -1.6 | v10-tumvi vs v10floor-tumvi | 2026-11-22 |
+| `tumvi_room34_blind_m` | 0.739 | v10-tumvi vs v10floor-tumvi | 2026-11-22 |
+| `tumvi_room34_blind_floor_m` | 0.741 | v10-tumvi vs v10floor-tumvi | 2026-11-22 |
+| `tumvi_room34_blind_vs_floor_pct` | -0.2 | v10-tumvi vs v10floor-tumvi | 2026-11-22 |
+| `tumvi_room34_rpe1s_m` | 1.012 | v10-tumvi vs v10floor-tumvi | 2026-11-22 |
+| `tumvi_room34_rpe1s_floor_m` | 1.260 | v10-tumvi vs v10floor-tumvi | 2026-11-22 |
+| `tumvi_room34_rpe1s_vs_floor_pct` | -19.7 | v10-tumvi vs v10floor-tumvi | 2026-11-22 |
+| `tumvi_room34_seqs_beat_floor_n` | 2/2 | v10-tumvi vs v10floor-tumvi | 2026-11-22 |
+| `tumvi_hp_copies_n` | 12 | v10-tumvi-HP vs v10floor-tumvi-HP | 2026-11-22 |
+| `tumvi_hp_contract_pass_n` | 12/12 | v10-tumvi-HP | 2026-11-22 |
+| `tumvi_hp_ape_m` | 1.077 | v10-tumvi-HP vs v10floor-tumvi-HP | 2026-11-22 |
+| `tumvi_hp_ape_floor_m` | 1.163 | v10-tumvi-HP vs v10floor-tumvi-HP | 2026-11-22 |
+| `tumvi_hp_ape_vs_floor_pct` | -7.4 | v10-tumvi-HP vs v10floor-tumvi-HP | 2026-11-22 |
+| `tumvi_hp_gap_m` | 1.113 | v10-tumvi-HP vs v10floor-tumvi-HP | 2026-11-22 |
+| `tumvi_hp_gap_floor_m` | 1.191 | v10-tumvi-HP vs v10floor-tumvi-HP | 2026-11-22 |
+| `tumvi_hp_gap_vs_floor_pct` | -6.5 | v10-tumvi-HP vs v10floor-tumvi-HP | 2026-11-22 |
+| `tumvi_hp_blind_m` | 0.734 | v10-tumvi-HP vs v10floor-tumvi-HP | 2026-11-22 |
+| `tumvi_hp_blind_floor_m` | 0.740 | v10-tumvi-HP vs v10floor-tumvi-HP | 2026-11-22 |
+| `tumvi_hp_blind_vs_floor_pct` | -0.8 | v10-tumvi-HP vs v10floor-tumvi-HP | 2026-11-22 |
+| `tumvi_hp_rpe1s_m` | 0.995 | v10-tumvi-HP vs v10floor-tumvi-HP | 2026-11-22 |
+| `tumvi_hp_rpe1s_floor_m` | 1.265 | v10-tumvi-HP vs v10floor-tumvi-HP | 2026-11-22 |
+| `tumvi_hp_rpe1s_vs_floor_pct` | -21.3 | v10-tumvi-HP vs v10floor-tumvi-HP | 2026-11-22 |
+| `tumvi_hp_seqs_beat_floor_n` | 2/2 | v10-tumvi-HP vs v10floor-tumvi-HP | 2026-11-22 |
+| `tumvi_hp_a_ape_m` | 1.080 | v10-tumvi-HP vs v10floor-tumvi-HP | 2026-11-22 |
+| `tumvi_hp_a_ape_floor_m` | 1.163 | v10-tumvi-HP vs v10floor-tumvi-HP | 2026-11-22 |
+| `tumvi_hp_a_ape_vs_floor_pct` | -7.1 | v10-tumvi-HP vs v10floor-tumvi-HP | 2026-11-22 |
+| `tumvi_hp_a_gap_m` | 1.104 | v10-tumvi-HP vs v10floor-tumvi-HP | 2026-11-22 |
+| `tumvi_hp_a_gap_floor_m` | 1.191 | v10-tumvi-HP vs v10floor-tumvi-HP | 2026-11-22 |
+| `tumvi_hp_a_gap_vs_floor_pct` | -7.3 | v10-tumvi-HP vs v10floor-tumvi-HP | 2026-11-22 |
+| `tumvi_hp_a_blind_m` | 0.734 | v10-tumvi-HP vs v10floor-tumvi-HP | 2026-11-22 |
+| `tumvi_hp_a_blind_floor_m` | 0.740 | v10-tumvi-HP vs v10floor-tumvi-HP | 2026-11-22 |
+| `tumvi_hp_a_blind_vs_floor_pct` | -0.8 | v10-tumvi-HP vs v10floor-tumvi-HP | 2026-11-22 |
+| `tumvi_hp_a_rpe1s_m` | 0.993 | v10-tumvi-HP vs v10floor-tumvi-HP | 2026-11-22 |
+| `tumvi_hp_a_rpe1s_floor_m` | 1.265 | v10-tumvi-HP vs v10floor-tumvi-HP | 2026-11-22 |
+| `tumvi_hp_a_rpe1s_vs_floor_pct` | -21.5 | v10-tumvi-HP vs v10floor-tumvi-HP | 2026-11-22 |
+| `tumvi_hp_a_seqs_beat_floor_n` | 2/2 | v10-tumvi-HP vs v10floor-tumvi-HP | 2026-11-22 |
+| `tumvi_hp_b_ape_m` | 1.074 | v10-tumvi-HP vs v10floor-tumvi-HP | 2026-11-22 |
+| `tumvi_hp_b_ape_floor_m` | 1.163 | v10-tumvi-HP vs v10floor-tumvi-HP | 2026-11-22 |
+| `tumvi_hp_b_ape_vs_floor_pct` | -7.7 | v10-tumvi-HP vs v10floor-tumvi-HP | 2026-11-22 |
+| `tumvi_hp_b_gap_m` | 1.123 | v10-tumvi-HP vs v10floor-tumvi-HP | 2026-11-22 |
+| `tumvi_hp_b_gap_floor_m` | 1.191 | v10-tumvi-HP vs v10floor-tumvi-HP | 2026-11-22 |
+| `tumvi_hp_b_gap_vs_floor_pct` | -5.7 | v10-tumvi-HP vs v10floor-tumvi-HP | 2026-11-22 |
+| `tumvi_hp_b_blind_m` | 0.733 | v10-tumvi-HP vs v10floor-tumvi-HP | 2026-11-22 |
+| `tumvi_hp_b_blind_floor_m` | 0.740 | v10-tumvi-HP vs v10floor-tumvi-HP | 2026-11-22 |
+| `tumvi_hp_b_blind_vs_floor_pct` | -0.8 | v10-tumvi-HP vs v10floor-tumvi-HP | 2026-11-22 |
+| `tumvi_hp_b_rpe1s_m` | 0.997 | v10-tumvi-HP vs v10floor-tumvi-HP | 2026-11-22 |
+| `tumvi_hp_b_rpe1s_floor_m` | 1.265 | v10-tumvi-HP vs v10floor-tumvi-HP | 2026-11-22 |
+| `tumvi_hp_b_rpe1s_vs_floor_pct` | -21.2 | v10-tumvi-HP vs v10floor-tumvi-HP | 2026-11-22 |
+| `tumvi_hp_b_seqs_beat_floor_n` | 2/2 | v10-tumvi-HP vs v10floor-tumvi-HP | 2026-11-22 |
+| `tumvi_clean_seqs_n` | 4 | v10-tumvi-clean vs v10floor-tumvi-clean | 2026-11-22 |
+| `tumvi_clean_ape_m` | 0.879 | v10-tumvi-clean vs v10floor-tumvi-clean | 2026-11-22 |
+| `tumvi_clean_ape_floor_m` | 1.137 | v10-tumvi-clean vs v10floor-tumvi-clean | 2026-11-22 |
+| `tumvi_clean_ape_vs_floor_pct` | -22.6 | v10-tumvi-clean vs v10floor-tumvi-clean | 2026-11-22 |
+| `tumvi_clean_rpe1s_m` | 0.875 | v10-tumvi-clean vs v10floor-tumvi-clean | 2026-11-22 |
+| `tumvi_clean_rpe1s_floor_m` | 1.365 | v10-tumvi-clean vs v10floor-tumvi-clean | 2026-11-22 |
+| `tumvi_clean_rpe1s_vs_floor_pct` | -35.9 | v10-tumvi-clean vs v10floor-tumvi-clean | 2026-11-22 |
+| `tumvi_clean_seqs_beat_floor_n` | 4/4 | v10-tumvi-clean vs v10floor-tumvi-clean | 2026-11-22 |
+| `tumvi_clean_room12_seqs_n` | 2 | v10-tumvi-clean vs v10floor-tumvi-clean | 2026-11-22 |
+| `tumvi_clean_room12_ape_m` | 0.751 | v10-tumvi-clean vs v10floor-tumvi-clean | 2026-11-22 |
+| `tumvi_clean_room12_ape_floor_m` | 1.110 | v10-tumvi-clean vs v10floor-tumvi-clean | 2026-11-22 |
+| `tumvi_clean_room12_ape_vs_floor_pct` | -32.3 | v10-tumvi-clean vs v10floor-tumvi-clean | 2026-11-22 |
+| `tumvi_clean_room12_rpe1s_m` | 0.870 | v10-tumvi-clean vs v10floor-tumvi-clean | 2026-11-22 |
+| `tumvi_clean_room12_rpe1s_floor_m` | 1.471 | v10-tumvi-clean vs v10floor-tumvi-clean | 2026-11-22 |
+| `tumvi_clean_room12_rpe1s_vs_floor_pct` | -40.8 | v10-tumvi-clean vs v10floor-tumvi-clean | 2026-11-22 |
+| `tumvi_clean_room12_seqs_beat_floor_n` | 2/2 | v10-tumvi-clean vs v10floor-tumvi-clean | 2026-11-22 |
+| `tumvi_clean_room34_seqs_n` | 2 | v10-tumvi-clean vs v10floor-tumvi-clean | 2026-11-22 |
+| `tumvi_clean_room34_ape_m` | 1.008 | v10-tumvi-clean vs v10floor-tumvi-clean | 2026-11-22 |
+| `tumvi_clean_room34_ape_floor_m` | 1.163 | v10-tumvi-clean vs v10floor-tumvi-clean | 2026-11-22 |
+| `tumvi_clean_room34_ape_vs_floor_pct` | -13.4 | v10-tumvi-clean vs v10floor-tumvi-clean | 2026-11-22 |
+| `tumvi_clean_room34_rpe1s_m` | 0.879 | v10-tumvi-clean vs v10floor-tumvi-clean | 2026-11-22 |
+| `tumvi_clean_room34_rpe1s_floor_m` | 1.259 | v10-tumvi-clean vs v10floor-tumvi-clean | 2026-11-22 |
+| `tumvi_clean_room34_rpe1s_vs_floor_pct` | -30.2 | v10-tumvi-clean vs v10floor-tumvi-clean | 2026-11-22 |
+| `tumvi_clean_room34_seqs_beat_floor_n` | 2/2 | v10-tumvi-clean vs v10floor-tumvi-clean | 2026-11-22 |
+| `tumvi_calib_clean_calibrated_n` | 0/4 | v10-tumvi-calib | 2026-11-22 |
+| `tumvi_calib_clean_zupt_any_n` | 0/4 | v10-tumvi-calib | 2026-11-22 |
+| `tumvi_calib_official_calibrated_n` | 0/24 | v10-tumvi-calib | 2026-11-22 |
+| `tumvi_calib_official_zupt_any_n` | 0/24 | v10-tumvi-calib | 2026-11-22 |
+| `budget_input` | official/MH_03_medium_b_s1/mav0/imu0/data.csv | v10-win-py314-mh03-b-s1 | 2026-11-22 |
+| `budget_rows_n` | 26106 | v10-win-py314-mh03-b-s1 | 2026-11-22 |
+| `budget_python` | 3.14.7 | v10-win-py314-mh03-b-s1 | 2026-11-22 |
+| `budget_heap_kb` | 907 | v10-win-py314-mh03-b-s1 | 2026-11-22 |
+| `budget_heap_whole_run_kb` | 3476 | v10-win-py314-mh03-b-s1 | 2026-11-22 |
+| `budget_heap_no_bytecode_kb` | 3476 | v10-win-py314-mh03-b-s1 | 2026-11-22 |
+| `budget_us_per_row_us` | 30.1 | v10-win-py314-mh03-b-s1 | 2026-11-22 |
+| `budget_cpu_ms_per_imu_s_ms` | 5.44 | v10-win-py314-mh03-b-s1 | 2026-11-22 |
+| `budget_win_wall_ms_per_imu_s_ms` | 5.82 | v10-win-py314-mh03-b-s1 | 2026-11-22 |
+| `budget313_input` | official/MH_03_medium_b_s1/mav0/imu0/data.csv | v10-win-py313-mh03-b-s1 | 2026-11-22 |
+| `budget313_rows_n` | 26106 | v10-win-py313-mh03-b-s1 | 2026-11-22 |
+| `budget313_python` | 3.13.5 | v10-win-py313-mh03-b-s1 | 2026-11-22 |
+| `budget313_heap_kb` | 787 | v10-win-py313-mh03-b-s1 | 2026-11-22 |
+| `budget313_heap_whole_run_kb` | 4158 | v10-win-py313-mh03-b-s1 | 2026-11-22 |
+| `budget313_heap_no_bytecode_kb` | 4158 | v10-win-py313-mh03-b-s1 | 2026-11-22 |
+| `budget313_us_per_row_us` | 25.1 | v10-win-py313-mh03-b-s1 | 2026-11-22 |
+| `budget313_cpu_ms_per_imu_s_ms` | 4.51 | v10-win-py313-mh03-b-s1 | 2026-11-22 |
+| `budget313_wall_ms_per_imu_s_ms` | 4.85 | v10-win-py313-mh03-b-s1 | 2026-11-22 |
+| `budget_wall_ms_per_imu_s_ms` | 6.60 | Antigravity AG-1, Docs/DOCKER_BENCH.md section 5 (PR #81, head d48a540) (ag1-final-mh03-b-s1) | 2026-11-22 |
+| `budget_docker_input` | official/MH_03_medium_b_s1/mav0/imu0/data.csv | Antigravity AG-1, Docs/DOCKER_BENCH.md section 5 (PR #81, head d48a540) (ag1-final-mh03-b-s1) | 2026-11-22 |
+| `budget_docker_wall_range_ms` | 6.56-7.67 | Antigravity AG-1, Docs/DOCKER_BENCH.md section 5 (PR #81, head d48a540), 7 inputs | 2026-11-22 |
+| `heldout_ape_reading_a` | 3.506 | = heldout_a_ape_m (v10-H46 vs v10floor-H46) | 2026-11-22 |
+| `heldout_ape_reading_b` | 3.373 | = heldout_b_ape_m (v10-H46 vs v10floor-H46) | 2026-11-22 |
+| `heldout_ape_floor` | 3.745 | = heldout_ape_floor_m (v10-H46 vs v10floor-H46) | 2026-11-22 |
+| `blind_rmse_vortex` | 2.494 | = heldout_blind_m (v10-H46 vs v10floor-H46) | 2026-11-22 |
+| `blind_rmse_floor` | 2.504 | = heldout_blind_floor_m (v10-H46 vs v10floor-H46) | 2026-11-22 |
 | `pytest_passed_n` | 410 | pytest Windows 11, Python 3.14.7, commit be064ed | 2026-11-19 |
 | `pytest_failed_n` | 0 | pytest Windows 11, Python 3.14.7, commit be064ed | 2026-11-19 |
 | `pytest_skipped_n` | 0 | pytest Windows 11, Python 3.14.7, commit be064ed | 2026-11-19 |
-| `experiments_off_n` | 9 | make_numbers.OFF | - |
+| `experiments_off_n` | 10 | make_numbers.OFF | - |
 | `off_ff_stuck6` | stuck-row filter: failed its rule (Step 3) | Step 3 | - |
 | `off_ff_spike` | spike filter: failed its rule (Step 3) | Step 3 | - |
 | `off_interp` | bridging missing rows: failed its rule (Step 3) | Step 3 | - |
@@ -256,4 +374,5 @@ Sets:
 | `off_zupt_den` | denoised stillness: failed its rule (Step 7b) | Step 7b | - |
 | `off_reset` | covariance reset: failed its rule (Step F) | Step F | - |
 | `off_shrink` | shrinkage about the centroid: failed its rule (Step L1) | Step L1 | - |
-| `switches_on` | V1_ON, V2_ON, V2P_ON, GAP_ON, DEAD_ON, FC_ON, PRE_HOLD, BGCAP_ON, REFRESH_ON, P0V_ON, FRONT_ON, SMOOTH_ON, PLATFORM_ON, TILT_ON | pathfinder.py | - |
+| `off_blind_fallback_rule_h` | blind window with a 5 s fallback: failed rule H (clean TUM-VI); the dead-run-only variant (rule H') ships (Step L3) | Step L3 | - |
+| `switches_on` | CAL_NOISE_ON, BGCAP_ON, V1_ON, V2_ON, V2P_ON, GAP_ON, DEAD_ON, FC_ON, PRE_HOLD, REFRESH_ON, P0V_ON, TILT_ON, TILT_LAG, BLIND_ON, BLIND_DEAD_ONLY, SMOOTH_ON, PLATFORM_ON, FRONT_ON | pathfinder.py | - |
