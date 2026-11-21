@@ -11,8 +11,12 @@ STEP 2+3 DONE: PR #83 https://github.com/ArnavJain2005/Vortex/pull/83 (track3/fi
   Gate on the shipped file: PASS 3.14.7; 3.13.5 heap 4,158 KB misses the 4 MB DESIGN target (8 MB limit holds) - known since 21 Nov.
   Repo Dockerfile FIXED: it ran stub + pathfinder.py + .pyc (against A1/B7); now builds and runs only the single file
   (image main.py = zip's; output = zip's estimated_trajectory.txt byte for byte).
-STEP 4 PLAN COMMITTED: track3/final-table f34d362 (stacked on #83; TRACK3_PLAN "Final table" + tools/final_table.py,
-  tested on synthetic only). 0 V2 copies on disk. WAITING for Arnav's "run the final table". No PR yet (opens with the table).
+STEP 4 DONE (Arnav: "Run the final table"): PR #84 https://github.com/ArnavJain2005/Vortex/pull/84 (stacked on #83).
+  Plan f34d362 (0 V2 copies then) -> input SHA-256 a4358a9 (before any estimate) -> result 08f43f2, run once, nothing changed.
+  V2 x a,b x s1-3 (18), shipped v1.0 file vs floor: APE 2.200 vs 2.156 m (+2.0 %), gap 2.130 vs 1.969 (+8.2 %),
+  blind 2.781 vs 2.769 (+0.4 %); V2_01 -10.5 %, V2_02 +12.6 %, V2_03 +5.1 %; 1/3 sequences better; contract 18/18 PASS.
+  No second scorer run. README (#83) still says V2 is untouched: needs one line once #84 merges (asked Arnav).
+WAITING: Arnav's "submitted" -> tag v1.0-submitted.
 V1.0 ZIP READY: dist/vortex_v1.0.zip (= dist/Vortex.zip, same bytes) sha256
   e251c4010248caf5103bbf2923122146bba64ae7e2b225069a89672ffbd4447c
   Built at tag v1.0 = 0e7c81d (track3/v1.0) = main 5e28668 + bundle/README.md only (README named no eval input and
