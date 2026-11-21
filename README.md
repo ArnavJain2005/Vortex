@@ -17,7 +17,7 @@
 
 ---
 
-> **Official-script held-out result (shipped v1.0 build):** On 36 EuRoC copies (six sequences, two column readings, seeds 4–6), Vortex records **3.440 m** mean SE(3)-aligned APE versus **3.745 m** for a never-moving trajectory: **8.1% lower**. Reading **a** is **3.506 vs 3.745 m**, reading **b** **3.373 vs 3.745 m**. In the blind five seconds Vortex **ties** the floor: **2.494 vs 2.504 m** (0.4% lower). These are results on these held-out copies, not a guarantee on hidden data. [Verified figures](Docs/NUMBERS.md) · [results](Docs/RESULTS.md) · [decision log](Docs/TRACK3_PLAN.md).
+> **Official-script held-out result (shipped v1.0 build):** On 36 EuRoC copies (six sequences, two column readings, seeds 4–6), Vortex records **3.440 m** mean SE(3)-aligned APE versus **3.745 m** for a never-moving trajectory: **8.1% lower**. Reading **a** is **3.506 vs 3.745 m**, reading **b** **3.373 vs 3.745 m**. In the blind five seconds Vortex **ties** the floor: **2.494 vs 2.504 m** (0.4% lower). These are results on these held-out copies, not a guarantee on hidden data: on the final test set (Vicon Room 2, 18 copies, run once on the v1.0 file) Vortex is **2.0% worse** than the floor (**2.200 vs 2.156 m**). [Final table](Docs/FINAL_TABLE.md) · [Verified figures](Docs/NUMBERS.md) · [results](Docs/RESULTS.md) · [decision log](Docs/TRACK3_PLAN.md).
 
 ## The challenge
 
@@ -110,9 +110,9 @@ The comparison here is against the **never-moving trajectory** on the *same inpu
 | TUM-VI rooms 1–4, official degradation · blind 5 s RMSE | **0.699 m** | 0.709 m | **1.4% lower** | A tie with the floor |
 | TUM-VI rooms 1–4, clean · full APE (4 sequences) | **0.879 m** | 1.137 m | **22.6% lower** | Clean hand-held trajectories |
 
-**Coverage and limits:** EuRoC full-trajectory APE beats the floor on **5/6** held-out sequences for seeds 4–6 (5/6 in each reading); for seeds 7–9 on **5/6** with both readings pooled (**4/6** in reading a, **5/6** in reading b). Clean EuRoC wins on **7/8**. TUM-VI wins on **2/2** held-out rooms and **4/4** measured rooms, with rooms 1–2 used for tuning. All **36/36** EuRoC copies for seeds 4–6, **36/36** for seeds 7–9, **36/36** for seeds 22–24 and **24/24** TUM-VI copies pass the output contract. The output contract is coverage, not evidence of position accuracy. [Verified counts](Docs/NUMBERS.md).
+**Coverage and limits:** EuRoC full-trajectory APE beats the floor on **5/6** held-out sequences for seeds 4–6 (5/6 in each reading); for seeds 7–9 on **5/6** with both readings pooled (**4/6** in reading a, **5/6** in reading b). Clean EuRoC wins on **7/8**. TUM-VI wins on **2/2** held-out rooms and **4/4** measured rooms, with rooms 1–2 used for tuning. All **36/36** EuRoC copies for seeds 4–6, **36/36** for seeds 7–9, **36/36** for seeds 22–24, **24/24** TUM-VI copies and **18/18** final-test Vicon Room 2 copies pass the output contract. The output contract is coverage, not evidence of position accuracy. [Verified counts](Docs/NUMBERS.md).
 
-**Where it is weaker:** The blind five seconds only **tie** the never-moving floor (EuRoC seeds 4–6: 2.494 vs 2.504 m; seeds 7–9: 2.495 vs 2.505 m; TUM-VI held-out rooms: 0.739 vs 0.741 m): the blind window holds the estimate near the floor's level, it does not predict the motion. The gap-window RMSE on seeds 7–9 is **3.298 vs 3.256 m** (1.3% higher; reading a 4.3% higher). V1_01 does not beat the floor in either reading (seeds 4–6: 2.245 and 2.049 vs 1.854 m). These matter for the challenge's blind and dropout scores. [Verified figures](Docs/NUMBERS.md).
+**Where it is weaker:** On the final test set, Vicon Room 2 (18 copies, run once on the v1.0 file), Vortex is **worse than standing still**: APE **2.200 vs 2.156 m** (2.0% higher), gap-window RMSE **2.130 vs 1.969 m** (8.2% higher); only V2_01 of three sequences beats the floor ([final table](Docs/FINAL_TABLE.md)). The blind five seconds only **tie** the never-moving floor (EuRoC seeds 4–6: 2.494 vs 2.504 m; seeds 7–9: 2.495 vs 2.505 m; TUM-VI held-out rooms: 0.739 vs 0.741 m): the blind window holds the estimate near the floor's level, it does not predict the motion. The gap-window RMSE on seeds 7–9 is **3.298 vs 3.256 m** (1.3% higher; reading a 4.3% higher). V1_01 does not beat the floor in either reading (seeds 4–6: 2.245 and 2.049 vs 1.854 m). These matter for the challenge's blind and dropout scores. [Verified figures](Docs/NUMBERS.md).
 
 **Measured resource budget, shipped single file:** against the challenge limits, not against the stationary trajectory. Every figure is for the shipped `src/main.py` compiled from source (no bytecode ships) on the zip's evaluation input, `MH_03_medium_b_s1` (reading b, 26,106 rows); heap values are tracemalloc peaks of the whole run, started before the file is compiled. [Budget record](Docs/BUDGET.md).
 
@@ -157,6 +157,17 @@ On this set, aggregate APE is **8.1% lower** than standing still and **five of s
 
 **Rule H' held-out set (seeds 22–24), written after rule H failed; weaker evidence.** The blind window (Step L3) was judged by rule H on seeds 13–15 and failed one condition (its fixed 5 s fallback made clean TUM-VI 1.13% worse). Rule H', the dead-run-only variant that ships, was written after seeing that and judged on seeds 22–24 of the same six flights. On those 36 EuRoC copies the shipped build records **3.554 vs 3.750 m** APE (5.2% lower), blind **2.501 vs 2.508 m**, gap **3.472 vs 3.414 m** (1.7% higher) and beats the floor on **4/6** sequences (3/6 in reading a); on 12 TUM-VI room 3–4 copies **1.077 vs 1.163 m** APE and blind **0.734 vs 0.740 m**. [Step L3](Docs/TRACK3_PLAN.md) · [numbers](Docs/NUMBERS.md).
 
+**Final test set: Vicon Room 2, run once.** V2_01–03 was held back as the final test set under the project rule (never read, fitted or plotted before the final run). The plan was committed before any V2 copy existed and the SHA-256 of the 18 copies (three sequences, readings a and b, seeds 1–3) before any estimate ran; the v1.0 zip's `src/main.py` then ran once and the result was recorded unchanged ([plan and result](Docs/TRACK3_PLAN.md) · [final table](Docs/FINAL_TABLE.md) · [input hashes](Docs/final/inputs.sha256)). On this set the shipped build is **worse than the never-moving floor overall**, unlike every held-out set above:
+
+| Vicon Room 2, 6 copies per sequence ↓ | APE: Vortex / floor | APE vs floor | Gap RMSE: Vortex / floor | Blind 5 s RMSE: Vortex / floor |
+|---|---:|---:|---:|---:|
+| V2_01_easy | 2.057 / 2.298 m | 10.5% lower | 1.927 / 2.181 m | 3.082 / 3.085 m |
+| V2_02_medium | 2.379 / 2.112 m | 12.6% higher | 2.301 / 1.897 m | 2.725 / 2.682 m |
+| V2_03_difficult | 2.163 / 2.058 m | 5.1% higher | 2.162 / 1.829 m | 2.536 / 2.539 m |
+| **All 18 copies** | **2.200 / 2.156 m** | **2.0% higher** | **2.130 / 1.969 m** (8.2% higher) | **2.781 / 2.769 m** (0.4% higher) |
+
+By reading: a **2.213 m**, b **2.186 m** (floor 2.156 m). All 18 outputs pass the output contract. These copies were scored only with our own scorer; no second scorer was run on them.
+
 On eight clean EuRoC sequences, the shipped build records **3.570 vs 3.930 m** APE. V2 is a prior rather than a measurement of velocity; the smoother uses later IMU samples, not an external motion cue. Results from the project's own placeholder fault injector are historical workflow evidence and **not a proxy for the organisers' script**. [Clean results](Docs/NUMBERS.md).
 
 **A negative control:** Step L1 shrinkage improved its aggregate objective, but failed the registered sequence check and its time-reversed output scored better. Shrinking an estimate can improve SE(3)-aligned scores without demonstrating motion information; shrinkage remains off. Step L2 gravity alignment initially failed rule G's reversed-time null. Its revised rule G2, written after that outcome, passed on later copies and ships; **this is weaker evidence than an unchanged first rule**. [Steps L1 and L2](Docs/TRACK3_PLAN.md).
@@ -171,7 +182,7 @@ On eight clean EuRoC sequences, the shipped build records **3.570 vs 3.930 m** A
 | Per-row confidence | Reference sigma did not rank error on MH_01/02 tuning data; no calibrated confidence claimed ([coverage](Docs/COVERAGE.md)) |
 | Submission bundle | `Vortex.zip` (tag `v1.0`): one generated, self-contained `src/main.py` (standard library only, no bytecode), README, Dockerfile, licence, manifest, and our output for an official degraded copy with its `metadata.json` ([guide](bundle/README.md)) |
 
-The 20 ms/IMU-second limit and the 8 MB **heap** limit hold for the shipped file on every measured Python; on 3.13.5 the heap (4,158 KB) is above our own 4 MB design target, so `benchmark.py --gate` reports that target as missed there. Whole-process RSS includes the interpreter and is not the organisers' memory metric. TUM-VI rooms 5–6 and Vicon Room 2 remain untouched final-test data ([plan](Docs/TRACK3_PLAN.md)).
+The 20 ms/IMU-second limit and the 8 MB **heap** limit hold for the shipped file on every measured Python; on 3.13.5 the heap (4,158 KB) is above our own 4 MB design target, so `benchmark.py --gate` reports that target as missed there. Whole-process RSS includes the interpreter and is not the organisers' memory metric. TUM-VI rooms 5–6 remain unused; Vicon Room 2 was used once, as the final test set above ([plan](Docs/TRACK3_PLAN.md)).
 
 ## Run Vortex
 
