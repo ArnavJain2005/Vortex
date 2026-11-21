@@ -165,4 +165,26 @@ After CC-L3 recorded Rule H' held-out Conditions 1–7 PASS on seeds `22–24` (
 - **CLI spot-checks (`python tools/ape_check.py --gt ... --est ...`):**
   - `HP-H-on` `MH_04_difficult_b_s22`: `ATE RMSE m: 6.31895686446` (`19,683` matched poses; CC JSON `6.31895686445924 m`).
   - `HP-T-on` `dataset-room3_512_16_b_s22`: `ATE RMSE m: 1.15790266807` (`15,083` matched poses; CC JSON `1.1579026680652604 m`).
-- **Not verified here:** Phase-windowed `blind_rmse`, `gap_rmse_mean`, `rpe200_rmse` (not computed by `tools/ape_check.py`), and Rule H' Condition 8 runtime/heap benchmark gate (open in CC-L3 pending a quiet machine, and AG-1 Docker re-bench held until CC-freeze's active run ends).
+- **Not verified here:** Phase-windowed `blind_rmse`, `gap_rmse_mean`, `rpe200_rmse` (not computed by `tools/ape_check.py`).
+
+---
+
+## 5. FINAL Shipped CHUNKED Bundle: 15-Run Linux Docker Benchmark (`main@5e28668`, PR `#79`)
+
+Measured inside the staged submission `bundle/Dockerfile` container (`python:3.12.7-slim-bookworm`, `ENTRYPOINT=["python", "-S", "/app/main.py"]`), built directly from `origin/main@5e28668` (`BLIND_ON=True`, `BLIND_DEAD_ONLY=True`, `CHUNKED` `src/main.py` SHA-256 `feb222ea9f27f077`). Every input CSV was copied onto container-local `/tmp/inputs/*.csv` via `docker cp` (no bind mounts). Each row is the **15-run median** of whole-process `python -S -B /app/main.py` (from source, zero bytecode), peak RSS via GNU `/usr/bin/time -v`, and direct `exec(compile)` whole-run `tracemalloc` peak (`typing_loaded=False`).
+
+| Tag | Input file | Rows (`imu_s`) | Whole process `-S -B` median (`µs/row`) | Whole process `-S -B` median (`ms/IMU-s`) | Min (`ms/IMU-s`) | Direct `exec(compile)` heap (`KB`) | Peak RSS median (`MiB`) | Output SHA-256 (16 hex) |
+|---|---|---:|---:|---:|---:|---:|---:|---|
+| `ag1-final-mh01-b-s1` | `MH_01_easy_b_s1` | 35,697 (`184.10s`) | 35.59 | **6.90** | 6.48 | 2,974.3 | 13.06 | `92fe58fe72028535` |
+| `ag1-final-mh03-a-s1` | `MH_03_medium_a_s1` | 26,106 (`135.03s`) | 35.02 | **6.77** | 6.49 | 2,974.3 | 13.06 | `d72f2c299f637b5e` |
+| `ag1-final-mh03-b-s1` | `MH_03_medium_b_s1` | 26,106 (`135.03s`) | 34.15 | **6.60** | 6.53 | 2,974.3 | 13.07 | `0e215ee3b078eaea` |
+| `ag1-final-room3-a-s1` | `dataset-room3_512_16_a_s1` | 27,241 (`141.05s`) | 36.63 | **7.07** | 6.86 | 2,974.3 | 13.27 | `61af6b6530ac1514` |
+| `ag1-final-room3-b-s1` | `dataset-room3_512_16_b_s1` | 27,241 (`141.05s`) | 39.71 | **7.67** | 7.41 | 2,974.3 | 13.28 | `bd75c9364f0face9` |
+| `ag1-final-mh01-b-s3` | `MH_01_easy_b_s3` (longest official) | 35,864 (`184.10s`) | 33.65 | **6.56** | 6.35 | 2,974.2 | 13.10 | `a5258b3c6f4f0eeb` |
+| `ag1-final-mh01-clean` | `MH_01_easy` clean (longest overall) | 36,820 (`184.10s`) | 35.89 | **7.18** | 6.84 | 2,974.2 | 13.21 | `d90f765bf1aa13a3` |
+
+- **Headline (`FINAL`, `main@5e28668` CHUNKED inside `bundle/Dockerfile`):**
+  - Whole-process from-source wall time (`python -S -B`, 15-run median): **`6.56 – 7.67 ms/IMU-s`** (`33.65 – 39.71 µs/row`) — more than 2× below the `15 ms/IMU-s` target and `20 ms/IMU-s` escalation limit.
+  - Direct `exec(compile)` whole-run `tracemalloc` peak: **`2,974.2 – 2,974.3 KB` (`2.90 MB`)** across all 7 files (flat to `0.1 KB`, confirming `O(1)` memory independent of sequence length, well under half the `8 MB` cap).
+  - Peak RSS (whole Linux Python 3.12.7 process): **`13.06 – 13.28 MiB`**.
+  - Output SHA-256 hashes (`92fe58fe72028535`, `0e215ee3b078eaea`, `bd75c9364f0face9`) match `Docs/CLEAN_MACHINE.md` Section 2 byte-for-byte.
