@@ -13,6 +13,13 @@ Timing varies about +-15% between reruns on the same laptop.
 
 | Run | Commit | Date | OS | CPU | Python | Input | Rows |
 |---|---|---|---|---|---|---|---|
+| bundle-chunked-9a304c7-win-py314-mh01-b-s1 | 9a304c7 | 2026-11-21 | Windows 11 | Intel(R) Core(TM) i7-14650HX | 3.14.7 | real: ../Vortex/data/official/MH_01_easy_b_s1/mav0/imu0/data.csv | 35697 (184 s) |
+| bundle-chunked-win-py313-mh01-b-s1 | d49cf06 | 2026-11-20 | Windows 11 | Intel(R) Core(TM) i7-14650HX | 3.13.5 | real: ../Vortex/data/official/MH_01_easy_b_s1/mav0/imu0/data.csv | 35697 (184 s) |
+| bundle-chunked-win-py314-mh01-b-s1 | d49cf06 | 2026-11-20 | Windows 11 | Intel(R) Core(TM) i7-14650HX | 3.14.7 | real: ../Vortex/data/official/MH_01_easy_b_s1/mav0/imu0/data.csv | 35697 (184 s) |
+| bundle-chunked-wsl-py312-mh01-b-s1 | - | 2026-11-20 | Linux 5.15.167.4-microsoft-standard-WSL2 | Intel(R) Core(TM) i7-14650HX | 3.12.3 | real: ../Vortex/data/official/MH_01_easy_b_s1/mav0/imu0/data.csv | 35697 (184 s) |
+| bundle-plain-win-py313-mh01-b-s1 | d49cf06 | 2026-11-20 | Windows 11 | Intel(R) Core(TM) i7-14650HX | 3.13.5 | real: ../Vortex/data/official/MH_01_easy_b_s1/mav0/imu0/data.csv | 35697 (184 s) |
+| bundle-plain-win-py314-mh01-b-s1 | d49cf06 | 2026-11-20 | Windows 11 | Intel(R) Core(TM) i7-14650HX | 3.14.7 | real: ../Vortex/data/official/MH_01_easy_b_s1/mav0/imu0/data.csv | 35697 (184 s) |
+| bundle-plain-wsl-py312-mh01-b-s1 | - | 2026-11-20 | Linux 5.15.167.4-microsoft-standard-WSL2 | Intel(R) Core(TM) i7-14650HX | 3.12.3 | real: ../Vortex/data/official/MH_01_easy_b_s1/mav0/imu0/data.csv | 35697 (184 s) |
 | lean-win-py313 | 3b06021 | 2026-11-18 | Windows 11 | Intel(R) Core(TM) i7-14650HX | 3.13.5 | SYNTHETIC (tools/synth_euroc.py, seed 0) | 36000 (180 s) |
 | lean-win-py314-mh01-b-s1 | 3b06021 | 2026-11-18 | Windows 11 | Intel(R) Core(TM) i7-14650HX | 3.14.7 | real: ../../../data/official/MH_01_easy_b_s1/mav0/imu0/data.csv | 35697 (184 s) |
 | lean-win-py314 | 3b06021 | 2026-11-18 | Windows 11 | Intel(R) Core(TM) i7-14650HX | 3.14.7 | SYNTHETIC (tools/synth_euroc.py, seed 0) | 36000 (180 s) |
@@ -73,6 +80,13 @@ Timing varies about +-15% between reruns on the same laptop.
 
 | Run | us per row | Left of 100 (of 50 target) | Wall ms per IMU-s | CPU ms per IMU-s | Left of 20 ms | Heap peak KB in-process / whole run | Left of 4 MB target | Heap KB, whole run, no cached bytecode | Peak RSS MiB (median / max, not gated) | Peak private MiB | Output |
 |---|---|---|---|---|---|---|---|---|---|---|---|
+| bundle-chunked-9a304c7-win-py314-mh01-b-s1 | 27.66 | 72.3 (22.3) | 5.36 | 5.18 | 14.6 | 1233.9 / 3475.9 | 620 KB | 3475.9 | 16.61 / 16.94 | 11.60 | PASS |
+| bundle-chunked-win-py313-mh01-b-s1 | 127.64 | -27.6 (-77.6) | 24.75 | 23.76 | -4.7 | 1114.0 / 3875.8 | 220 KB | 3875.8 | 15.49 / 15.91 | 10.18 | PASS |
+| bundle-chunked-win-py314-mh01-b-s1 | 139.88 | -39.9 (-89.9) | 27.12 | 26.48 | -7.1 | 1233.8 / 3185.8 | 910 KB | 3185.8 | 16.28 / 16.41 | 11.21 | PASS |
+| bundle-chunked-wsl-py312-mh01-b-s1 | 36.37 | 63.6 (13.6) | 7.05 | 3.69 | 12.9 | 1110.0 / 3555.5 | 541 KB | 3555.5 | 13.56 / 13.68 | - | PASS |
+| bundle-plain-win-py313-mh01-b-s1 | 131.82 | -31.8 (-81.8) | 25.56 | 24.36 | -5.6 | 1114.0 / 7953.7 | -3858 KB | 7953.7 | 19.26 / 19.33 | 13.99 | PASS |
+| bundle-plain-win-py314-mh01-b-s1 | 141.44 | -41.4 (-91.4) | 27.43 | 26.48 | -7.4 | 1233.8 / 7512.2 | -3416 KB | 7512.2 | 19.65 / 20.15 | 14.71 | PASS |
+| bundle-plain-wsl-py312-mh01-b-s1 | 36.12 | 63.9 (13.9) | 7.00 | 3.53 | 13.0 | 1110.0 / 7712.4 | -3616 KB | 7712.4 | 17.32 / 17.33 | - | PASS |
 | lean-win-py313 | 14.07 | 85.9 (35.9) | 2.81 | 2.69 | 17.2 | 392.5 / 1368.4 | 2728 KB | 6309.6 | 11.54 / 11.80 | 6.61 | PASS |
 | lean-win-py314-mh01-b-s1 | 12.49 | 87.5 (37.5) | 2.42 | 2.29 | 17.6 | 587.3 / 1083.6 | 3012 KB | 4935.8 | 12.60 / 12.66 | 7.71 | PASS |
 | lean-win-py314 | 13.14 | 86.9 (36.9) | 2.63 | 2.60 | 17.4 | 505.5 / 996.8 | 3099 KB | 4935.8 | 12.01 / 12.29 | 7.19 | PASS |
@@ -151,6 +165,34 @@ Runs measured with `--cbin` (step 9b, step A). Its output is compared byte for b
 
 | Run | Stage | us per row | min |
 |---|---|---|---|
+| bundle-chunked-9a304c7-win-py314-mh01-b-s1 | parse (read, split, 6 floats, timestamp) | 3.29 | 3.18 |
+| bundle-chunked-9a304c7-win-py314-mh01-b-s1 | parse + write (identity poses) | 4.08 | 4.01 |
+| bundle-chunked-9a304c7-win-py314-mh01-b-s1 | parse + init + strapdown integrator | 10.19 | 10.03 |
+| bundle-chunked-9a304c7-win-py314-mh01-b-s1 | parse + init + strapdown integrator + write (full main.py) | 27.64 | 24.63 |
+| bundle-chunked-win-py313-mh01-b-s1 | parse (read, split, 6 floats, timestamp) | 15.27 | 14.62 |
+| bundle-chunked-win-py313-mh01-b-s1 | parse + write (identity poses) | 19.60 | 17.85 |
+| bundle-chunked-win-py313-mh01-b-s1 | parse + init + strapdown integrator | 49.27 | 48.92 |
+| bundle-chunked-win-py313-mh01-b-s1 | parse + init + strapdown integrator + write (full main.py) | 118.23 | 107.43 |
+| bundle-chunked-win-py314-mh01-b-s1 | parse (read, split, 6 floats, timestamp) | 15.55 | 15.42 |
+| bundle-chunked-win-py314-mh01-b-s1 | parse + write (identity poses) | 17.81 | 17.61 |
+| bundle-chunked-win-py314-mh01-b-s1 | parse + init + strapdown integrator | 46.34 | 44.24 |
+| bundle-chunked-win-py314-mh01-b-s1 | parse + init + strapdown integrator + write (full main.py) | 130.89 | 128.45 |
+| bundle-chunked-wsl-py312-mh01-b-s1 | parse (read, split, 6 floats, timestamp) | 17.43 | 15.51 |
+| bundle-chunked-wsl-py312-mh01-b-s1 | parse + write (identity poses) | 17.87 | 14.22 |
+| bundle-chunked-wsl-py312-mh01-b-s1 | parse + init + strapdown integrator | 32.49 | 20.14 |
+| bundle-chunked-wsl-py312-mh01-b-s1 | parse + init + strapdown integrator + write (full main.py) | 26.01 | 21.91 |
+| bundle-plain-win-py313-mh01-b-s1 | parse (read, split, 6 floats, timestamp) | 15.18 | 15.11 |
+| bundle-plain-win-py313-mh01-b-s1 | parse + write (identity poses) | 18.13 | 13.12 |
+| bundle-plain-win-py313-mh01-b-s1 | parse + init + strapdown integrator | 51.43 | 49.29 |
+| bundle-plain-win-py313-mh01-b-s1 | parse + init + strapdown integrator + write (full main.py) | 114.48 | 98.03 |
+| bundle-plain-win-py314-mh01-b-s1 | parse (read, split, 6 floats, timestamp) | 16.06 | 15.82 |
+| bundle-plain-win-py314-mh01-b-s1 | parse + write (identity poses) | 19.62 | 13.61 |
+| bundle-plain-win-py314-mh01-b-s1 | parse + init + strapdown integrator | 52.93 | 52.31 |
+| bundle-plain-win-py314-mh01-b-s1 | parse + init + strapdown integrator + write (full main.py) | 132.09 | 129.41 |
+| bundle-plain-wsl-py312-mh01-b-s1 | parse (read, split, 6 floats, timestamp) | 10.93 | 10.07 |
+| bundle-plain-wsl-py312-mh01-b-s1 | parse + write (identity poses) | 14.27 | 13.56 |
+| bundle-plain-wsl-py312-mh01-b-s1 | parse + init + strapdown integrator | 32.50 | 27.23 |
+| bundle-plain-wsl-py312-mh01-b-s1 | parse + init + strapdown integrator + write (full main.py) | 38.89 | 27.24 |
 | lean-win-py313 | parse (read, split, 6 floats, timestamp) | 2.64 | 2.50 |
 | lean-win-py313 | parse + write (identity poses) | 3.59 | 3.50 |
 | lean-win-py313 | parse + init + strapdown integrator | 9.87 | 9.51 |
@@ -376,6 +418,13 @@ Runs measured with `--cbin` (step 9b, step A). Its output is compared byte for b
 
 | Run | Pass | us per row |
 |---|---|---|
+| bundle-chunked-9a304c7-win-py314-mh01-b-s1 | calibration scan + backward pre-anchor pass + forward pass (no smoother yet) | 27.64 |
+| bundle-chunked-win-py313-mh01-b-s1 | calibration scan + backward pre-anchor pass + forward pass (no smoother yet) | 118.23 |
+| bundle-chunked-win-py314-mh01-b-s1 | calibration scan + backward pre-anchor pass + forward pass (no smoother yet) | 130.89 |
+| bundle-chunked-wsl-py312-mh01-b-s1 | calibration scan + backward pre-anchor pass + forward pass (no smoother yet) | 26.01 |
+| bundle-plain-win-py313-mh01-b-s1 | calibration scan + backward pre-anchor pass + forward pass (no smoother yet) | 114.48 |
+| bundle-plain-win-py314-mh01-b-s1 | calibration scan + backward pre-anchor pass + forward pass (no smoother yet) | 132.09 |
+| bundle-plain-wsl-py312-mh01-b-s1 | calibration scan + backward pre-anchor pass + forward pass (no smoother yet) | 38.89 |
 | lean-win-py313 | calibration scan + backward pre-anchor pass + forward pass (no smoother yet) | 11.83 |
 | lean-win-py314-mh01-b-s1 | calibration scan + backward pre-anchor pass + forward pass (no smoother yet) | 11.39 |
 | lean-win-py314 | calibration scan + backward pre-anchor pass + forward pass (no smoother yet) | 12.79 |
@@ -440,6 +489,13 @@ The shipped witnesses (V1 stillness, V2 envelope and position prior; switches in
 
 | Run | Bytes per stored row | Stored this run | Worst-case total bytes |
 |---|---|---|---|
+| bundle-chunked-9a304c7-win-py314-mh01-b-s1 | 64 | 345024 (5391 rows) | 960000 |
+| bundle-chunked-win-py313-mh01-b-s1 | 64 | 345024 (5391 rows) | 960000 |
+| bundle-chunked-win-py314-mh01-b-s1 | 64 | 345024 (5391 rows) | 960000 |
+| bundle-chunked-wsl-py312-mh01-b-s1 | 64 | 345024 (5391 rows) | 960000 |
+| bundle-plain-win-py313-mh01-b-s1 | 64 | 345024 (5391 rows) | 960000 |
+| bundle-plain-win-py314-mh01-b-s1 | 64 | 345024 (5391 rows) | 960000 |
+| bundle-plain-wsl-py312-mh01-b-s1 | 64 | 345024 (5391 rows) | 960000 |
 | lean-win-py313 | 64 | 0 (0 rows) | 960000 |
 | lean-win-py314-mh01-b-s1 | 64 | 345024 (5391 rows) | 960000 |
 | lean-win-py314 | 64 | 0 (0 rows) | 960000 |
@@ -500,6 +556,20 @@ The shipped witnesses (V1 stillness, V2 envelope and position prior; switches in
 
 | Run | Command | us per row | Wall ms per IMU-s | Peak RSS MiB |
 |---|---|---|---|---|
+| bundle-chunked-9a304c7-win-py314-mh01-b-s1 | `python -S main.py` | 27.66 | 5.36 | 16.61 |
+| bundle-chunked-9a304c7-win-py314-mh01-b-s1 | `python main.py` | 27.21 | 5.28 | 18.39 |
+| bundle-chunked-win-py313-mh01-b-s1 | `python -S main.py` | 127.64 | 24.75 | 15.49 |
+| bundle-chunked-win-py313-mh01-b-s1 | `python main.py` | 129.00 | 25.01 | 15.69 |
+| bundle-chunked-win-py314-mh01-b-s1 | `python -S main.py` | 139.88 | 27.12 | 16.28 |
+| bundle-chunked-win-py314-mh01-b-s1 | `python main.py` | 146.37 | 28.38 | 18.03 |
+| bundle-chunked-wsl-py312-mh01-b-s1 | `python -S main.py` | 36.37 | 7.05 | 13.56 |
+| bundle-chunked-wsl-py312-mh01-b-s1 | `python main.py` | 36.10 | 7.00 | 13.88 |
+| bundle-plain-win-py313-mh01-b-s1 | `python -S main.py` | 131.82 | 25.56 | 19.26 |
+| bundle-plain-win-py313-mh01-b-s1 | `python main.py` | 129.78 | 25.16 | 19.73 |
+| bundle-plain-win-py314-mh01-b-s1 | `python -S main.py` | 141.44 | 27.43 | 19.65 |
+| bundle-plain-win-py314-mh01-b-s1 | `python main.py` | 147.54 | 28.61 | 22.36 |
+| bundle-plain-wsl-py312-mh01-b-s1 | `python -S main.py` | 36.12 | 7.00 | 17.32 |
+| bundle-plain-wsl-py312-mh01-b-s1 | `python main.py` | 37.44 | 7.26 | 18.12 |
 | lean-win-py313 | `python -S main.py` | 14.07 | 2.81 | 11.54 |
 | lean-win-py313 | `python main.py` | 14.05 | 2.81 | 11.70 |
 | lean-win-py313 | `python -S main.py, no cached bytecode` | 14.48 | 2.90 | 16.11 |

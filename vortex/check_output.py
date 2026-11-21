@@ -21,16 +21,12 @@ import math
 import sys
 from decimal import Decimal, InvalidOperation
 
-from .rowspec import is_data_line, seconds_text
+from .rowspec import data_lines, seconds_text
 
 
 def _expected_timestamps(imu_path):
-    out = []
     with open(imu_path, "rb") as f:
-        for line in f:
-            if is_data_line(line):
-                out.append(seconds_text(line.split(b",", 1)[0]))
-    return out
+        return [seconds_text(line.split(b",", 1)[0]) for line in data_lines(f)]
 
 
 def check(imu_path, out_path, ts_tol_s: float = 0.0, quat_tol: float = 1e-6, max_errors: int = 20) -> dict:

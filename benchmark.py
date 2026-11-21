@@ -27,6 +27,7 @@ Peak RSS is still measured and reported, but not gated: the FAQ says the interpr
 --allow-rss is accepted and ignored (older command lines). Timing gates are flaky: run on a quiet machine.
 RSS is measured in MiB (2^20 bytes); the JSON keys say "mb" for history, the ledger says MiB.
 """
+import hashlib
 import importlib.util
 import json
 import os
@@ -142,7 +143,7 @@ def heap_peak_process(stub, src, dst, no_cache_dir=None):
 
 def measure(a):
     rows, runs = a["rows"], a["runs"]
-    tmp = tempfile.gettempdir()
+    tmp = tempfile.mkdtemp(prefix="vortex_bench_")         # own folder: concurrent benchmarks never share an output file
     src = a["input"]
     label = "real: " + os.path.relpath(src, ROOT).replace(os.sep, "/") if src else None
     if not src:
@@ -186,22 +187,41 @@ def measure(a):
 
     procs = []
     stub, core = os.path.join(ROOT, "main.py"), os.path.join(ROOT, "pathfinder.py")
-    # The bytecode the bundle ships (tools/make_bundle.py), written explicitly: a warm-up run would not
-    # write it when PYTHONDONTWRITEBYTECODE is set (it was in the Windows shell used for step 9a).
-    py_compile.compile(core, cfile=importlib.util.cache_from_source(core), doraise=True,
-                       invalidation_mode=py_compile.PycInvalidationMode.CHECKED_HASH)
     cold = tempfile.mkdtemp(prefix="vortex_nocache_")                     # empty: nothing cached, -B: none written
-    peak, code = heap_peak_process(stub, src, dst)
-    res["tracemalloc_process_peak_kb"] = peak / 1024.0
-    peak_c, code_c = heap_peak_process(stub, src, dst, no_cache_dir=cold)
-    res["tracemalloc_process_nocache_peak_kb"] = peak_c / 1024.0
-    print("  tracemalloc peak, whole main.py run: %.1f KB with the shipped bytecode, %.1f KB compiling "
-          "pathfinder.py (exit %d, %d)" % (peak / 1024.0, peak_c / 1024.0, code, code_c))
-    for label_p, cmd in [("python -S main.py", [sys.executable, "-S", stub, src, dst]),
-                         ("python main.py", [sys.executable, stub, src, dst]),
-                         ("python -S main.py, no cached bytecode",
-                          [sys.executable, "-S", "-B", "-X", "pycache_prefix=" + cold, stub, src, dst]),
-                         ("python -S pathfinder.py", [sys.executable, "-S", core, src, dst])]:
+    bundle = a.get("bundle")
+    if bundle:
+        # the generated single file (tools/make_bundle.py): no bytecode exists, every run compiles it
+        stub = bundle
+        with open(bundle, "rb") as f:
+            text = f.read()
+        res["bundle"] = {"file": os.path.basename(bundle), "sha256": hashlib.sha256(text).hexdigest(),
+                         "layout": "chunked" if b"\nSRC = r'''" in text else "plain"}
+        # No -B / empty pycache_prefix here: a script named on the command line is compiled from source
+        # anyway (it has no bytecode), and those flags would also make the standard-library modules that
+        # runpy imports lazily compile inside the traced window (an artefact of the probe, ~3 MB on 3.13).
+        peak, code = heap_peak_process(stub, src, dst)
+        res["tracemalloc_process_peak_kb"] = res["tracemalloc_process_nocache_peak_kb"] = peak / 1024.0
+        print("  tracemalloc peak, whole run of the %s bundle from source: %.1f KB (exit %d)"
+              % (res["bundle"]["layout"], peak / 1024.0, code))
+        cases = [("python -S main.py", [sys.executable, "-S", "-B", stub, src, dst]),
+                 ("python main.py", [sys.executable, "-B", stub, src, dst])]
+    else:
+        # The bytecode the bundle shipped before 19 Nov, written explicitly: a warm-up run would not
+        # write it when PYTHONDONTWRITEBYTECODE is set (it was in the Windows shell used for step 9a).
+        py_compile.compile(core, cfile=importlib.util.cache_from_source(core), doraise=True,
+                           invalidation_mode=py_compile.PycInvalidationMode.CHECKED_HASH)
+        peak, code = heap_peak_process(stub, src, dst)
+        res["tracemalloc_process_peak_kb"] = peak / 1024.0
+        peak_c, code_c = heap_peak_process(stub, src, dst, no_cache_dir=cold)
+        res["tracemalloc_process_nocache_peak_kb"] = peak_c / 1024.0
+        print("  tracemalloc peak, whole main.py run: %.1f KB with the shipped bytecode, %.1f KB compiling "
+              "pathfinder.py (exit %d, %d)" % (peak / 1024.0, peak_c / 1024.0, code, code_c))
+        cases = [("python -S main.py", [sys.executable, "-S", stub, src, dst]),
+                 ("python main.py", [sys.executable, stub, src, dst]),
+                 ("python -S main.py, no cached bytecode",
+                  [sys.executable, "-S", "-B", "-X", "pycache_prefix=" + cold, stub, src, dst]),
+                 ("python -S pathfinder.py", [sys.executable, "-S", core, src, dst])]
+    for label_p, cmd in cases:
         s = measure_floor.summarise(measure_floor.repeat(cmd, runs))
         s["case"] = label_p
         s["wall_ms_per_imu_s"] = s["wall_ms_median"] / imu_s
@@ -373,7 +393,8 @@ def main(argv):
     get = lambda k, d: argv[argv.index(k) + 1] if k in argv else d  # noqa: E731
     a = {"rows": int(get("--rows", 36000)), "runs": int(get("--runs", 9)), "input": get("--input", None),
          "commit": get("--commit", None),
-         "cbin": os.path.abspath(get("--cbin", None)) if "--cbin" in argv else None}
+         "cbin": os.path.abspath(get("--cbin", None)) if "--cbin" in argv else None,
+         "bundle": os.path.abspath(get("--bundle", None)) if "--bundle" in argv else None}
     print("benchmark: Python %s" % platform.python_version())
     res = measure(a)
     os.makedirs(OUT_DIR, exist_ok=True)

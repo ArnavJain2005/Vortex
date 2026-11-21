@@ -2145,6 +2145,111 @@ Informational: rule G's verdict (OFF, 5fd288c) stands as recorded; the decision 
   and the gate. The floor tag `stepG-H-floor` (5fd288c) is reused; the never-moving baseline does not depend on
   the estimator build.
 
+## Freeze build: one self-contained `src/main.py` (19 Nov 2026, branch `track3/freeze-build`)
+
+Arnav's freeze-build requirements (19 Nov; ledger `Docs/SUBMISSION_RULES.md` A1, B1-B7): one generated
+`src/main.py`, standard library only, no bytecode, no C, no ctypes; every invocation form; never fail
+(constant pose per row, exit 0); exact `s.nnnnnnnnn` timestamps; input variants that do not change the
+output; `metadata.json` with commit, flags, input, rows, `cal_source`, heap and time; Python 3.10-3.14.
+
+Without bytecode Python compiles the whole file inside the traced run. The PLAIN layout (pathfinder.py
+with docstrings, comments and the OFF side of every switch removed; 16,483 parser tokens, still above
+CPython's 16,384-token step) peaks at 7,514 KB (Win 3.14) and 7,963 KB (Win 3.13) over the whole run
+on MH_03_medium_a_s1, against the 8,192 KB limit. Main before this branch was already at 7,188 / 7,551 KB
+from source (Docs/NUMBERS.md at 86711a9; Step 7 crossed the token step).
+
+### Bundle rule K (CHUNKED layout; not the loop's TUM-VI rule K of CC-3): committed BEFORE any measurement of the CHUNKED bundle
+
+Disclosure: one exploratory reading was taken before this rule: compiling the PLAIN file one top-level
+statement at a time inside a tracemalloc window (not the CHUNKED bundle, not a whole run) peaked at
+2,687 KB (3.14) / 2,593 KB (3.13), against 6,857 / 6,656 KB for compiling it whole.
+
+CHUNKED: a short loader (sys and builtins only), then pathfinder.py VERBATIM in one raw string; at run
+time each chunk of neighbouring top-level statements (up to N lines; N = 40, 120, 400 tried, the lowest
+peak kept) is compiled and executed in one namespace, line numbers kept, then `main(sys.argv)` runs. The
+loader's own fallback covers a failure of the exec loop. No estimator function is refactored or split.
+
+CHUNKED ships only if ALL hold, else PLAIN ships:
+- (a) output byte-identical to PLAIN and to the repo build on every official and clean copy on disk
+  (V2_* excluded), on Win 3.14 and WSL2 3.12;
+- (b) every B1/B2/B4/B5 test PLAIN passes also passes on CHUNKED;
+- (c) whole-run from-source heap peak at least 1.5 MB lower than PLAIN on MH_01_easy_b_s1 AND on the
+  longest official copy, on every Python measured (Win 3.14, Win 3.13, WSL2 3.12);
+- (d) us per row not worse than PLAIN by more than 5 % on the same inputs.
+The shipped layout must be <= 7 MB whole-run from source on every Python measured, or Arnav decides.
+Time box: 90 minutes after PLAIN passes; if exceeded, PLAIN ships and CHUNKED is marked PARKED.
+
+### Bundle rule K outcome (20 Nov 2026; d49cf06 plus two measurement-tool fixes, pathfinder.py unchanged)
+
+`tools/bundle_layouts.py measure` / `identity` (Docs/bundle/*.json) and `benchmark.py --bundle` (tags
+`bundle-{plain,chunked}-{win-py314,win-py313,wsl-py312}-mh01-b-s1`). Python 3.10 and 3.11 are not installed
+on this machine, so they were not measured.
+
+Whole-run heap peak from source (tracing started before the bundle is compiled; KB). It is the same on all four
+inputs, because compiling dominates:
+
+| Python | PLAIN | CHUNKED (N=120) | difference | `-X tracemalloc=1`, PLAIN / CHUNKED | largest chunk compile | estimator only, MH_01_easy_b_s1 |
+|---|---|---|---|---|---|---|
+| Win 3.14.7 | 7,512 | 3,186 | -4,326 | 10,239 / 7,033 | 2,599 (`_run`) | 1,283 |
+| Win 3.13.5 | 7,954 | 3,876 | -4,078 | 9,876 / 5,798 | 2,516 (`_run`) | 1,159 |
+| WSL2 3.12.3 | 7,713 | 3,555 | -4,158 | 9,682 / 5,525 | 2,434 (`_run`) | 1,157 |
+
+`-X tracemalloc=1` traces from interpreter start-up, so it also counts start-up allocations. Under it, CHUNKED
+on 3.14 is 7,033 KB, just above 7,000 KB and below 7 MiB (7,168 KB). Chunk size: N = 40 / 120 / 400 gave
+3,193 / 3,186 / (timed out at 600 s) KB on 3.14, 3,884 / 3,876 / 3,887 on 3.13, and 3,564 / 3,555 / 3,566 on
+3.12; outputs identical on 3.13 and 3.12 (the 3.14 scan stopped before comparing) (Docs/bundle/chunk-lines-scan.txt). N = 120 kept.
+
+us per row, `python -S main.py`. Median of 11 runs, PLAIN and CHUNKED interleaved; CHUNKED's change against
+PLAIN:
+
+| Python | MH_01_easy_b_s1 | MH_01_easy_a_s1 | MH_01_easy_a_s3 (longest) | room1_512_16_b_s1 | benchmark tag (5 runs) |
+|---|---|---|---|---|---|
+| Win 3.14 | 73.8 / 73.1 (-0.8 %) | 139.7 / 141.8 (+1.5 %) | 23.6 / 23.9 (+1.2 %) | 29.1 / 29.4 (+1.0 %) | 141.4 / 139.9 (-1.1 %) |
+| Win 3.13 | 22.0 / 21.7 (-1.1 %) | 20.4 / 20.6 (+1.1 %) | 20.7 / 21.0 (+1.6 %) | 155.9 / 157.7 (+1.1 %) | 131.8 / 127.6 (-3.2 %) |
+| WSL2 3.12 | 58.1 / 52.3 (-10.0 %) | 39.0 / 33.7 (-13.8 %) | 30.6 / 38.0 (**+24.3 %**) | 30.5 / 30.0 (-1.4 %) | 36.1 / 36.4 (+0.7 %) |
+
+The machine was shared with other sessions, so absolute times swing from 20 to 158 us/row between inputs. That
+swing is load, not the bundle; the interleaved pairs are the comparison.
+
+- (a) **PASS.** 412 of 412 copies on disk (official 280, official_tumvi 120, euroc 8, tumvi 4) are byte-identical
+  across the repo build, PLAIN and CHUNKED, on Win 3.14 and on WSL2 3.12. V2_* and TUM-VI rooms 5-6 were
+  excluded (final test data).
+- (b) Both layouts pass the test_freeze / test_bundle_layout runs on this branch (counts in the PR).
+- (c) **PASS.** CHUNKED is 4.1-4.3 MB lower on MH_01_easy_b_s1 and on MH_01_easy_a_s3, on every Python measured.
+- (d) **FAIL on 1 of 12 cells, read literally.** WSL2 3.12 MH_01_easy_a_s3 is +24.3 %. The other 11 cells are
+  between -13.8 % and +1.6 %, and the three benchmark tags between -3.2 % and +0.7 %. The run-time code is the
+  same estimator; CHUNKED only adds 15 module-level `exec` calls (one per chunk) and keeps the switch `if`s that PLAIN
+  folds away. So that cell looks like load, but the rule does not allow re-running until it passes.
+- Time box: exceeded (the build, tests and measurements took well over 90 minutes).
+- **Result by the letter: PLAIN ships and CHUNKED is PARKED. But PLAIN is 7.5-8.0 MB from source, above the
+  7 MB ceiling, so the layout goes to Arnav.** CHUNKED is 3.2-3.9 MB from source.
+- **Decision (Arnav, 21 Nov 2026): ship CHUNKED.** `tools/make_bundle.py` now builds CHUNKED by default (N = 120);
+  PLAIN stays buildable with `--layout plain`. Dockerfile, zip, verify and bundle/README.md use the shipped file.
+
+### CHUNKED rebuilt on main with Step L3 (21 Nov 2026; merge 9a304c7 = afdeab1 + main 4c25e91)
+
+`src/main.py` regenerated (CHUNKED, 15 chunks of at most 120 lines) from the merged pathfinder.py: main's estimator
+with BLIND_ON + BLIND_DEAD_ONLY (#77) plus this branch's front end (header without '#', leading-zero timestamps,
+argument forms, constant-pose fallback). Machine quiet: no other session running Python during these runs.
+
+- Identity: **PASS, 412 of 412** copies byte-identical across the repo build, PLAIN and CHUNKED on Win 3.14.7 and
+  WSL2 3.12.3 (Docs/bundle/identity-*.json; V2_* and TUM-VI rooms 5-6 excluded).
+- Whole-run heap from source, CHUNKED / PLAIN (KB; same on all four inputs): Win 3.14 **3,476** / 7,730; Win 3.13
+  **4,157** / 8,208; WSL2 3.12 **3,852** / 7,967. Under `-X tracemalloc=1`: 7,034 / 6,079 / 5,825 (CHUNKED). Up
+  281-297 KB from the afdeab1 build (Step L3 code); all below 7 MB from source.
+- us/row, median of 11 interleaved runs, CHUNKED vs PLAIN: Win 3.14 between -2.6 % and +1.2 %; Win 3.13 between
+  -7.5 % and +0.8 %; WSL2 3.12 between -22.7 % and **+8.0 %** (MH_01_easy_b_s1: 34.54 vs 31.99). The +24.3 % cell of
+  20 Nov (WSL2 MH_01_easy_a_s3) is -4.3 % now. Docs/bundle/matrix-*.json.
+- Gate, Win 3.14, chunked bundle, MH_01_easy_b_s1, 15 runs: **PASS**; heap 1,234 KB estimator / 3,476 KB whole run
+  from source; `python -S main.py` 27.66 us/row (5.36 ms per IMU second); checker PASS
+  (Docs/budget/bundle-chunked-9a304c7-win-py314-mh01-b-s1.json).
+- pytest: 507 passed, 1 failed on 9a304c7: tests/test_ccore.py::test_odd_fields (C-core experiment, never shipped)
+  still writes a zero-led timestamp as `00000140...` where this branch writes `1403...`. **Arnav (21 Nov): record it
+  as a documented difference**, like timestamps above 9.2e18 ns: test_odd_fields drops that row and
+  test_zero_led_timestamp_documented_difference pins it (only that row differs; equal once the zeros are stripped).
+  main.cpp unchanged. After that and main 88b1d27 (#78): **512 passed, 10 skipped, 1 xfailed** (Win 3.14, 31 min).
+- Not measured: Python 3.10/3.11 (not installed; AG-3), Docker.
+
 ### Gate on the L2 build with TILT_ON shipped (19 Nov 2026; carried over after #61 merged)
 
 Measured on `track3/stepL2-tilt` after #61 was merged, so they arrive here in a follow-up PR. Build: TILT_ON and
