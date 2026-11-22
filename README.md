@@ -20,9 +20,9 @@ Vortex rebuilds its full 6-DoF flight path from that sensor alone.</b></p>
 
 <br><br>
 
-<a href="assets/vortex-film.mp4"><img src="assets/vortex-film-poster.jpg" alt="Watch the Vortex film (1 minute): Pip, a little drone whose flight log is about to fall apart. Click to play." width="88%"></a>
+<a href="https://www.youtube.com/watch?v=bPd4NMj70VY"><img src="assets/vortex-film-poster.jpg" alt="Watch the Vortex film (1 minute): Pip, a little drone whose flight log is about to fall apart. Click to play." width="88%"></a>
 
-<sub>▶ <a href="assets/vortex-film.mp4"><b>Get the 60-second film</b></a> &nbsp;·&nbsp; 1080p MP4, 21 MB</sub>
+<sub>▶ <a href="https://www.youtube.com/watch?v=bPd4NMj70VY"><b>Watch the 60-second film on YouTube</b></a> &nbsp;·&nbsp; <a href="assets/vortex-film.mp4">MP4 download (21 MB)</a></sub>
 
 <br><br>
 
@@ -388,6 +388,7 @@ Every `*_ON` assignment in the shipped [`pathfinder.py`](pathfinder.py) is **on*
 
 <br>
 
+- [Project deck](Docs/deck/ManipalInstituteofTechnology_Vortex.pdf) ([PowerPoint](Docs/deck/ManipalInstituteofTechnology_Vortex.pptx))
 - [Track 3 plan](Docs/TRACK3_PLAN.md): registered decisions, open Q9 and next steps
 - [Verified figures](Docs/NUMBERS.md): every quotable number, with source tags
 - [Generated results](Docs/RESULTS.md): clean and degraded EuRoC metrics, stationary floor, ablations
