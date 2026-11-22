@@ -22,7 +22,7 @@ Vortex rebuilds its full 6-DoF flight path from that sensor alone.</b></p>
 
 <a href="assets/vortex-film.mp4"><img src="assets/vortex-film-poster.jpg" alt="Watch the Vortex film (1 minute): Pip, a little drone whose flight log is about to fall apart. Click to play." width="88%"></a>
 
-<sub>▶ <a href="assets/vortex-film.mp4"><b>Play the 60-second film</b></a> &nbsp;·&nbsp; 1080p MP4</sub>
+<sub>▶ <a href="assets/vortex-film.mp4"><b>Get the 60-second film</b></a> &nbsp;·&nbsp; 1080p MP4, 21 MB</sub>
 
 <br><br>
 
