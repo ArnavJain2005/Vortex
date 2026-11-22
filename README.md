@@ -24,6 +24,8 @@ Vortex rebuilds its full 6-DoF flight path from that sensor alone.</b></p>
 
 <sub>▶ <a href="https://www.youtube.com/watch?v=bPd4NMj70VY"><b>Watch the 60-second film on YouTube</b></a> &nbsp;·&nbsp; <a href="assets/vortex-film.mp4">MP4 download (21 MB)</a></sub>
 
+<h2><a href="https://www.youtube.com/watch?v=bPd4NMj70VY">See Arnav Explaining the Project</a></h2>
+
 <br><br>
 
 [**The problem**](#-the-problem) · [**How it works**](#-how-vortex-works) · [**Results**](#-results) · [**Budget**](#-inside-the-budget) · [**Run it**](#-run-it-in-60-seconds) · [**Deck**](Docs/deck/ManipalInstituteofTechnology_Vortex.pdf) · [**Team &amp; AI disclosure**](#-team-and-ai-disclosure)
