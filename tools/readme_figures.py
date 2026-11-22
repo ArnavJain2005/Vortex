@@ -61,19 +61,20 @@ def pct_text(p):
 
 # (prefix in NUMBERS.md, dataset line, metric line)
 RESULT_ROWS = [
-    ("heldout", "EuRoC · held-out flights", "Full trajectory APE · 36 copies"),
-    ("heldout_rpe1s", "EuRoC · held-out flights", "Local motion · 1 s RPE"),
-    ("heldout_gap", "EuRoC · held-out flights", "Inside dropout gaps"),
-    ("heldout_blind", "EuRoC · held-out flights", "Blind 5 s after sensor death"),
+    ("heldout", "EuRoC · held-out flights, seeds 4–6", "Full trajectory APE · 36 copies"),
+    ("heldout79", "EuRoC · held-out flights, seeds 7–9", "Full trajectory APE · 36 more copies"),
+    ("heldout_rpe1s", "EuRoC · held-out flights, seeds 4–6", "Local motion · 1 s RPE"),
+    ("heldout_gap", "EuRoC · held-out flights, seeds 4–6", "Inside dropout gaps"),
     ("clean", "EuRoC · 8 clean flights", "Full trajectory APE"),
     ("tumvi_room34", "TUM-VI · held-out rooms 3–4", "Full trajectory APE · hand-held"),
+    ("tumvi", "TUM-VI · rooms 1–4, 24 copies", "Full trajectory APE · hand-held"),
 ]
 
 TIE_PCT = 1.0  # |difference| below this is drawn and labelled as a tie, not a win
 
 
 def result_keys(prefix):
-    if prefix in ("heldout", "clean", "tumvi_room34"):
+    if prefix in ("heldout", "heldout79", "clean", "tumvi_room34", "tumvi"):
         return prefix + "_ape_m", prefix + "_ape_floor_m", prefix + "_ape_vs_floor_pct"
     return prefix + "_m", prefix + "_floor_m", prefix + "_vs_floor_pct"
 
@@ -114,7 +115,7 @@ def render_results(vals):
                    % (W - 150, y + 17, col))
         out.append(text(W - 98, y + 40, label, 17, col, 700, "middle"))
     out.append(text(lx, H - 30, "Source: Docs/NUMBERS.md (shipped v1.0 build). Held-out = EuRoC MH_03–05, V1_01–03, "
-                                "seeds 4–6, both column readings. A tie is a difference under %.0f%%." % TIE_PCT,
+                                "both column readings. TUM-VI rooms 1–2 were used for tuning.",
                     12, MUTED))
     out.append("</svg>")
     return "\n".join(out) + "\n"

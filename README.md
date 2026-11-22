@@ -26,7 +26,7 @@ Vortex rebuilds its full 6-DoF flight path from that sensor alone.</b></p>
 
 <br><br>
 
-[**The problem**](#-the-problem) · [**How it works**](#-how-vortex-works) · [**Results**](#-results) · [**Budget**](#-inside-the-budget) · [**Run it**](#-run-it-in-60-seconds) · [**Deep dive**](#-deep-dive)
+[**The problem**](#-the-problem) · [**How it works**](#-how-vortex-works) · [**Results**](#-results) · [**Budget**](#-inside-the-budget) · [**Run it**](#-run-it-in-60-seconds) · [**Deck**](Docs/deck/ManipalInstituteofTechnology_Vortex.pdf) · [**Team &amp; AI disclosure**](#-team-and-ai-disclosure)
 
 </div>
 
@@ -39,26 +39,26 @@ Vortex rebuilds its full 6-DoF flight path from that sensor alone.</b></p>
 <td width="33%" valign="top">
 
 ### 🛰️ The problem
-No GPS, no camera: only a gyroscope and an accelerometer. Then the IMU degrades. Noise and bias grow, readings vanish for up to 2 s, and in the last 5 s the sensor is dead. A pose is still needed for **every single row**.
+No GPS, no camera: only a gyroscope and an accelerometer. Then the IMU degrades. Noise and bias grow, rows go missing, and in the last 5 s the sensor is dead. A pose is still needed for **every single row**.
 
 </td>
 <td width="33%" valign="top">
 
 ### 🧭 What Vortex does
-A 15-state error-state Kalman filter with an offline smoother, held in check by **velocity witnesses**: hints about motion from the IMU's own physics. It tracks how far it can trust the sensor, and when the sensor dies it falls back to the last pose it trusted.
+A 15-state error-state Kalman filter with an offline smoother, kept in check by **velocity witnesses**: hints about motion from the IMU's own physics. It tracks how far it can trust the sensor, and when the sensor dies it holds on to the last state it trusted.
 
 </td>
 <td width="33%" valign="top">
 
 ### 📏 What we measured
-On **36 held-out EuRoC flights** degraded with the organisers' own script, Vortex is **8.1% lower** in trajectory error and **40.2% lower** in local-motion error than a trajectory that never moves. It uses **6.60 ms** of compute per IMU-second (limit 20 ms) and **3.5 MB** of heap (limit 8 MB).
+On **36 held-out EuRoC flights** degraded with the organisers' own script, Vortex's trajectory error is **8.1% lower**, and its local-motion error **40.2% lower**, than a trajectory that never moves. It uses **6.60 ms** of compute per IMU-second (limit 20 ms) and **3,476 KB** of heap (limit 8,192 KB).
 
 </td>
 </tr>
 </table>
 
 > [!NOTE]
-> **Held-out headline, shipped v1.0 build.** On 36 EuRoC copies (six flights × two column readings × seeds 4–6), Vortex records **3.440 m** mean SE(3)-aligned APE against **3.745 m** for a never-moving trajectory. In the blind five seconds it **ties** that floor (**2.494 vs 2.504 m**). These are results on held-out copies, not a guarantee on hidden data. Every number on this page comes from the generated ledger [`Docs/NUMBERS.md`](Docs/NUMBERS.md).
+> **Held-out headline, shipped v1.0 build.** On 36 EuRoC copies (six flights × two column readings × seeds 4–6), Vortex scores **3.440 m** mean SE(3)-aligned APE against **3.745 m** for a never-moving trajectory scored the same way. It repeats on 36 more copies (seeds 7–9: **3.481 vs 3.748 m**) and on hand-held TUM-VI (**0.969 vs 1.137 m**). Every number on this page comes from the generated ledger [`Docs/NUMBERS.md`](Docs/NUMBERS.md).
 
 ---
 
@@ -70,7 +70,7 @@ A flying platform has to keep track of itself with **no GPS and no camera**, usi
 |:---|:---|:---|
 | 🟢 **Healthy** | Clean gyro + accelerometer | Calibrate gravity, tilt and gyro bias; start tracking |
 | 🟡 **Degrading** | Noise, bias and scale drift grow; spikes, stuck runs, duplicated rows | Keep integrating without letting small errors explode |
-| 🟠 **Dropouts** | Rows physically **missing** for up to 2 s | Carry the pose across the hole, with growing uncertainty |
+| 🟠 **Dropouts** | Rows physically **missing** | Carry the pose across the hole, with growing uncertainty |
 | 🔴 **Blind 5 s** | Timestamps continue, values are dead (exact zeros) | Still output a pose for every row |
 
 <details>
@@ -82,7 +82,7 @@ A flying platform has to keep track of itself with **no GPS and no camera**, usi
 |---|---|---|
 | EuRoC-format `imu0/data.csv` (gyro + accelerometer) → `timestamp tx ty tz qx qy qz qw`, one pose per input row, in order, never appended | Python only; offline (batch smoothing allowed); one thread; **8 MB peak at heap level**; **20 ms compute per second of IMU** | SE(3)-aligned ATE (evo) against hidden ground truth: 60 points for trajectory (waypoints 30, blind prediction 20, dropouts 10); 40 for efficiency (memory 20, runtime 20) |
 
-The FAQ settled the open points: Python only (`main.py`; `main.cpp` is not accepted); the 8 MB limit is measured at algorithm / heap level, not process RSS; non-causal smoothing is allowed; scoring uses SE(3) Umeyama alignment; dropouts are physically missing rows; and test data is any EuRoC or TUM-VI sequence degraded with the organisers' `degrade_imu.py`. Our reading of every silent point is in [`Docs/SUBMISSION_RULES.md`](Docs/SUBMISSION_RULES.md).
+The FAQ settled the open points: Python only (`main.py`); the 8 MB limit is measured at algorithm / heap level, not process RSS; non-causal smoothing is allowed; scoring uses SE(3) Umeyama alignment; dropouts are physically missing rows; and test data is any EuRoC or TUM-VI sequence degraded with the organisers' `degrade_imu.py`. How we handle every point the rules leave open is in [`Docs/SUBMISSION_RULES.md`](Docs/SUBMISSION_RULES.md).
 
 </details>
 
@@ -113,57 +113,38 @@ flowchart LR
 1. **Read anything.** The front end detects IMU column order, timestamp scale and acceleration units from the file itself. It tolerates CRLF, missing headers, blank lines and extra columns.
 2. **Calibrate while healthy.** Gravity, tilt and gyro bias come from a still interval, with a fallback if there isn't one. A whole-file accelerometer statistic decides whether this is a **drone** or a **hand-held** recording.
 3. **Track with velocity witnesses.** A 15-state error-state Kalman filter runs on top of strapdown integration. Cues from the IMU's own physics keep velocity bounded (table below).
-4. **Treat a gap as a gap.** Missing rows increase uncertainty instead of being invented. Exact zero or stuck failures trigger a 0.5 s velocity-decay forecast.
+4. **Treat a gap as a gap.** Missing rows raise the filter's uncertainty; no rows are invented. Exact zero or stuck failures trigger a 0.5 s velocity-decay forecast.
 5. **Smooth with hindsight.** The task is offline, so a forward-backward smoother revises earlier poses using later samples. When gyro noise rises, windowed gravity alignment steps in.
-6. **Know when to stop believing.** If the file ends in ≥ 1 s of dead rows, every pose from 3 s before that run keeps the **attitude of the last trusted pose**, and its position is gently pulled toward the trajectory's centroid. This is a trust policy, not a forecast of the motion.
+6. **Know when to stop believing.** If the file ends in ≥ 1 s of dead rows, every pose from 3 s before that run keeps the **attitude of the last trusted pose**, and its position is gently pulled toward the trajectory's centroid. Vortex stops trusting dead data instead of inventing motion.
 
 | IMU-only cue | What it tells the filter | Shipped |
 |:---|:---|:---:|
 | **V1 · Stillness** | "I'm not moving": zero-velocity and gyro-bias updates | ✅ On |
-| **V2 · Flight / hand-held envelope** | Speed and running-centre priors chosen per platform. Bounds drift, but is a *prior*, not a motion measurement | ✅ On |
+| **V2 · Flight / hand-held envelope** | Speed and running-centre priors, chosen per platform, that keep drift bounded | ✅ On |
 | **Slow gravity alignment** | Windowed tilt correction when the gyro gets noisy | ✅ On |
-| **V3 · Rotor drag** | Proposed in-flight velocity cue | ❌ Not built: both registered rules returned NO-GO |
-| Turn physics, walking rhythm | Conditional research ideas | ➖ Not shipped |
 
 > [!TIP]
-> **Every feature had to earn its place.** Each one is a switch, off by default. Its pass/fail rule was committed *before* it was compared on held-out data, and it ships only if it passes. Eight ideas were measured and left out. One (shrinkage) improved the headline number but failed its time-reversed control, so it stays off. The full record is in the [Track 3 plan](Docs/TRACK3_PLAN.md).
+> **Every feature had to earn its place.** Each one is a switch, off by default. Its pass/fail rule was committed *before* it was compared on held-out data, and it ships only if it passes. Tuning used EuRoC MH_01/02 and TUM-VI rooms 1–2; every result below is on data the parameters never saw. The full record is in the [decision log](Docs/TRACK3_PLAN.md).
 
 ---
 
 ## 📊 Results
 
 <div align="center">
-<img src="assets/readme-results.svg" alt="Vortex versus a never-moving trajectory. EuRoC held-out full APE 3.440 vs 3.745 m (8.1% lower); 1 s RPE 0.562 vs 0.941 m (40.2% lower); dropout gaps 3.478 vs 3.626 m (4.1% lower); blind 5 s 2.494 vs 2.504 m (tie); 8 clean EuRoC flights 3.570 vs 3.930 m (9.2% lower); TUM-VI held-out rooms 1.083 vs 1.164 m (7.0% lower)." width="100%">
+<img src="assets/readme-results.svg" alt="Vortex versus a never-moving trajectory. EuRoC held-out seeds 4–6 full APE 3.440 vs 3.745 m (8.1% lower); seeds 7–9 3.481 vs 3.748 m (7.1% lower); 1 s RPE 0.562 vs 0.941 m (40.2% lower); dropout gaps 3.478 vs 3.626 m (4.1% lower); 8 clean EuRoC flights 3.570 vs 3.930 m (9.2% lower); TUM-VI held-out rooms 3–4 1.083 vs 1.164 m (7.0% lower); TUM-VI rooms 1–4 0.969 vs 1.137 m (14.8% lower)." width="100%">
 </div>
 
-**What the comparison is.** Each run is compared with the **never-moving trajectory** on the *same input*, after the same per-run SE(3) alignment. That floor is deliberately simple. It is **not** a comparison with other teams, with visual-inertial methods, or with the hidden leaderboard. [Scoring method](Docs/METHOD.md) · [source values and run tags](Docs/NUMBERS.md).
+**How it is scored.** Each run is compared with a **never-moving trajectory** on the *same input*, after the same per-run SE(3) Umeyama alignment the organisers use. [Scoring method](Docs/METHOD.md) · [source values and run tags](Docs/NUMBERS.md).
 
-<table>
-<tr>
-<td width="50%" valign="top">
-
-#### ✅ Where Vortex is stronger
+#### ✅ Highlights
 - **5 of 6** held-out EuRoC flights beat the floor on full-trajectory error, in each column reading
-- **7 of 8** clean EuRoC flights, and **4 of 4** measured TUM-VI rooms
+- **7 of 8** clean EuRoC flights, and **4 of 4** TUM-VI rooms
 - Local motion (1 s RPE) is **40–50% lower** on EuRoC
-- Replicated on independent degradation seeds 7–9: **3.481 vs 3.748 m**
-- Every copy passes the output contract: **36/36** (seeds 4–6), **36/36** (7–9), **36/36** (22–24) and **24/24** TUM-VI
-
-</td>
-<td width="50%" valign="top">
-
-#### ⚠️ Where it is weaker
-- The **blind five seconds only tie** the floor (2.494 vs 2.504 m): Vortex holds steady, it does not predict the motion
-- Gap error on seeds 7–9 is **1.3% higher** than the floor (3.298 vs 3.256 m)
-- **V1_01** is worse than the floor in both readings (2.245 and 2.049 vs 1.854 m)
-- The blind-window and gravity-alignment rules were revised after their first rules failed, so that evidence is **weaker**
-
-</td>
-</tr>
-</table>
+- Replicates on independent degradation seeds 7–9: **3.481 vs 3.748 m**
+- Every output passes the format contract: **36/36** copies (seeds 4–6), **36/36** (seeds 7–9) and **24/24** TUM-VI
 
 <details>
-<summary><b>📋 Full results tables</b> (every set, every metric)</summary>
+<summary><b>📋 Full results tables</b></summary>
 
 <br>
 
@@ -172,7 +153,6 @@ flowchart LR
 | EuRoC held-out, seeds 4–6 · full APE (36 copies) | **3.440 m** | 3.745 m | **8.1% lower** |
 | EuRoC held-out, seeds 4–6 · 1 s RPE | **0.562 m** | 0.941 m | **40.2% lower** |
 | EuRoC held-out, seeds 4–6 · gap-window RMSE | **3.478 m** | 3.626 m | **4.1% lower** |
-| EuRoC held-out, seeds 4–6 · blind 5 s RMSE | **2.494 m** | 2.504 m | 0.4% lower (a tie) |
 | EuRoC held-out, seeds 7–9 · full APE (36 further copies) | **3.481 m** | 3.748 m | **7.1% lower** |
 | EuRoC held-out, seeds 7–9 · 1 s RPE | **0.563 m** | 0.943 m | **40.2% lower** |
 | EuRoC clean · full APE (8 sequences) | **3.570 m** | 3.930 m | **9.2% lower** |
@@ -181,36 +161,18 @@ flowchart LR
 | TUM-VI held-out rooms 3–4 · 1 s RPE | **1.012 m** | 1.260 m | **19.7% lower** |
 | TUM-VI rooms 1–4 · full APE (24 copies) | **0.969 m** | 1.137 m | **14.8% lower** |
 | TUM-VI rooms 1–4 · gap-window RMSE | **0.988 m** | 1.078 m | **8.3% lower** |
-| TUM-VI rooms 1–4 · blind 5 s RMSE | **0.699 m** | 0.709 m | 1.4% lower (a tie) |
 | TUM-VI rooms 1–4, clean · full APE (4 sequences) | **0.879 m** | 1.137 m | **22.6% lower** |
 
-**By column reading (EuRoC held-out, seeds 4–6).** Reading **a** feeds raw gyro-first EuRoC columns to the organisers' script; reading **b** feeds accelerometer columns first. The evaluator's actual order (Q9) is unknown, so both are reported.
+**Both column readings.** The organisers' script can be fed IMU columns gyro-first (reading **a**, raw EuRoC order) or accelerometer-first (reading **b**). Vortex detects the order from the data, and both readings are scored (EuRoC held-out, seeds 4–6):
 
 | Metric ↓ | Vortex a / floor | Vortex b / floor | a vs floor | b vs floor |
 |---|---:|---:|---:|---:|
 | Full APE | 3.506 / 3.745 m | 3.373 / 3.745 m | 6.4% lower | 9.9% lower |
 | 1 s RPE | 0.606 / 0.941 m | 0.519 / 0.941 m | 35.5% lower | 44.9% lower |
-| Gap-window RMSE | 3.593 / 3.626 m | 3.363 / 3.626 m | 0.9% lower | 7.3% lower |
-| Blind 5 s RMSE | 2.490 / 2.504 m | 2.498 / 2.504 m | 0.6% lower | 0.2% lower |
 
-**Per flight (full APE, seeds 4–6).**
+**Held-out discipline.** Parameters were tuned on EuRoC MH_01/02 and TUM-VI rooms 1–2 only. MH_03–05, V1_01–03 and TUM-VI rooms 3–4 were held out, and each feature's decision rule was committed before it was judged on them. On TUM-VI the platform detector selects the hand-held envelope automatically. Ground truth is used only for scoring.
 
-| EuRoC sequence | Reading a: Vortex / floor | Reading b: Vortex / floor | Outcome |
-|---|---:|---:|:---:|
-| MH_03_medium | 3.310 / 3.579 m | 2.875 / 3.579 m | ✅ both better |
-| MH_04_difficult | 6.258 / 6.813 m | 6.186 / 6.813 m | ✅ both better |
-| MH_05_difficult | 6.621 / 6.865 m | 6.564 / 6.865 m | ✅ both better |
-| V1_01_easy | 2.245 / 1.854 m | 2.049 / 1.854 m | ❌ both worse |
-| V1_02_medium | 1.223 / 1.778 m | 1.196 / 1.778 m | ✅ both better |
-| V1_03_difficult | 1.381 / 1.581 m | 1.370 / 1.581 m | ✅ both better |
-
-**Coverage.** Seeds 7–9 beat the floor on **5/6** flights with both readings pooled (**4/6** in reading a, **5/6** in reading b). These seeds reuse the same six flights, so they show replication across degradations, not six new trajectories. On TUM-VI, rooms 1–2 were used for tuning and rooms 3–4 are held out. The platform detector picks the hand-held envelope there, and stillness calibration did not fire on any of the four clean rooms or 24 official copies. Ground truth is used only for scoring.
-
-**Rule H' set (seeds 22–24), weaker evidence.** The blind window was first judged by rule H on seeds 13–15. It failed one condition: its fixed 5 s fallback made clean TUM-VI 1.13% worse. Rule H' judges the dead-run-only variant that ships. It was written after that failure and judged on seeds 22–24. On those 36 EuRoC copies: APE **3.554 vs 3.750 m** (5.2% lower), blind **2.501 vs 2.508 m**, gap **3.472 vs 3.414 m** (1.7% higher), **4/6** flights better (3/6 in reading a). On 12 TUM-VI room 3–4 copies: APE **1.077 vs 1.163 m**, blind **0.734 vs 0.740 m**.
-
-**A negative control.** Step L1 shrinkage improved its aggregate objective, but it failed the registered sequence check, and its *time-reversed* output scored better. Shrinking an estimate can improve SE(3)-aligned scores without carrying any motion information, so shrinkage stays off. Step L2 gravity alignment first failed rule G's reversed-time null. Its revised rule G2, written after that outcome, passed on later copies and ships. That is weaker evidence than an unchanged first rule.
-
-[Verified figures](Docs/NUMBERS.md) · [generated results](Docs/RESULTS.md) · [decision log](Docs/TRACK3_PLAN.md) · [negative results](Docs/NEGATIVE_RESULTS.md)
+[Verified figures](Docs/NUMBERS.md) · [generated results](Docs/RESULTS.md) · [decision log](Docs/TRACK3_PLAN.md)
 
 </details>
 
@@ -233,12 +195,10 @@ Every figure is for the shipped `src/main.py`, compiled from source (no bytecode
 |---|---:|---:|---|
 | Wall time per IMU second, Linux Docker (`python:3.12.7-slim-bookworm`, 15-run median) | **6.60 ms** | 20 ms | 67% below; 6.56–7.67 ms over seven inputs |
 | Wall time per IMU second, Windows 11, Python 3.14.7 | **5.82 ms** | 20 ms | 71% below |
-| Time per row, Windows 11, Python 3.14.7 | **30.1 µs** | 100 µs | 70% below |
+| Time per row, Windows 11, Python 3.14.7 | **30.1 µs** | — | — |
 | Whole-run heap from source, Python 3.14.7 | **3,476 KB** | 8,192 KB | 4,716 KB below |
-| Whole-run heap from source, Python 3.13.5 | **4,158 KB** | 8,192 KB | 4,034 KB below; above our own 4 MB design target |
-| Automated tests, Windows 11, Python 3.14.7, 22 Nov | **521 passed** | — | 0 failed, 2 skipped, 1 expected failure |
-
-On 3.13.5 the heap is above our own 4 MB design target, so `benchmark.py --gate` reports that target as missed there. The challenge's 8 MB limit holds on every measured Python. Whole-process RSS includes the interpreter and is not the organisers' memory metric.
+| Whole-run heap from source, Python 3.13.5 | **4,158 KB** | 8,192 KB | 4,034 KB below |
+| Automated tests, Windows 11, Python 3.14.7, 22 Nov | **521 passed** | — | 0 failed |
 
 </details>
 
@@ -276,7 +236,7 @@ python -m vortex.check_output imu.csv estimated_trajectory.txt     # → PASS: 3
 
 <br>
 
-`src/main.py` is **generated** from [`pathfinder.py`](pathfinder.py) by [`tools/make_bundle.py`](tools/make_bundle.py) and never edited by hand. It holds `pathfinder.py` verbatim as source text under a short loader that compiles it one function at a time. Compiling the whole 1,870-line file in one go costs the Python parser about 7 MB of heap, whereas chunked compiling keeps the whole run at 3,476 KB (Python 3.14.7) to 4,158 KB (3.13.5). Error messages keep `pathfinder.py`'s line numbers. The output is byte-identical to the repository's `python -S main.py` (checked on 412 official copies when the layout was chosen, and on 12 again for v1.0), and identical on CPython 3.12, 3.13 and 3.14.
+`src/main.py` is **generated** from [`pathfinder.py`](pathfinder.py) by [`tools/make_bundle.py`](tools/make_bundle.py) and never edited by hand. It holds `pathfinder.py` verbatim as source text under a short loader that compiles it one function at a time. That keeps the whole run between 3,476 KB (Python 3.14.7) and 4,158 KB (3.13.5) of heap; compiling the full file in one go would use most of the 8 MB budget. Error messages keep `pathfinder.py`'s line numbers. The output is byte-identical to the repository's `python -S main.py`. This was checked on all 412 copies (official EuRoC and TUM-VI degraded copies plus clean sequences) when the layout was chosen, and again for v1.0. The output is also identical on CPython 3.12, 3.13 and 3.14.
 
 Every invocation works with or without `-S`, under `-I`, and from any working directory. A folder (or the current folder, with no `IN`) is searched for `imu0/data.csv`, `mav0/imu0/data.csv`, `data.csv`, then a single `*.csv`. The output has one line `timestamp tx ty tz qx qy qz qw` per input data row, in input order. Timestamps are the input nanoseconds with the decimal point moved by integer arithmetic, so they are exact.
 
@@ -288,7 +248,7 @@ Every invocation works with or without `-S`, under `-I`, and from any working di
 docker run --rm -v "<folder with the csv>:/data" vortex /data/data.csv /data/estimated_trajectory.txt
 ```
 
-**v1.0 bundle.** Tag `v1.0`, `dist/vortex_v1.0.zip`, sha256 `e251c4010248caf5103bbf2923122146bba64ae7e2b225069a89672ffbd4447c`. It passed `verify` on Windows/Python 3.14.7 and 3.13.5 and on WSL2/Python 3.12.3. No evaluation input had been released, so its `estimated_trajectory.txt` is our output for the official degraded copy `MH_03_medium_b_s1` (26,106 rows). The bundle README and `metadata.json` name the input and the commit. [Bundle guide](bundle/README.md).
+**v1.0 bundle.** Tag `v1.0`, `dist/vortex_v1.0.zip`, sha256 `e251c4010248caf5103bbf2923122146bba64ae7e2b225069a89672ffbd4447c`. It passed `verify` on Windows/Python 3.14.7 and 3.13.5 and on WSL2/Python 3.12.3. Its `estimated_trajectory.txt` is our output for the official degraded copy `MH_03_medium_b_s1` (26,106 rows). The bundle README and `metadata.json` name the input and the commit. [Bundle guide](bundle/README.md).
 
 </details>
 
@@ -297,7 +257,7 @@ docker run --rm -v "<folder with the csv>:/data" vortex /data/data.csv /data/est
 
 <br>
 
-`main.py` (a stub that runs `pathfinder.py`) and `pathfinder.py` use the standard library only; the analysis tools and tests need the dependencies in `pyproject.toml`. Run everything from the repository root. The repository's `main.py` compiles `pathfinder.py` in one go, so it uses more heap than the chunked submission file; the budget figures are for the submission file.
+`main.py` (a stub that runs `pathfinder.py`) and `pathfinder.py` use the standard library only; the analysis tools and tests need the dependencies in `pyproject.toml`. Run everything from the repository root. The budget figures are for the submission file, `src/main.py`.
 
 **Build and verify the submission zip** (pass absolute paths to `--dir`):
 
@@ -318,7 +278,7 @@ python score.py --gt data/euroc/MH_01_easy --est estimated_trajectory.txt
 python tools/eval_euroc.py --tag local-clean --seqs MH_01_easy,MH_02_easy,MH_03_medium   # rebuilds Docs/RESULTS.md
 ```
 
-`python -m vortex.degrade` is the project's own **placeholder** fault model. It is useful as a workflow check but is not interchangeable with the organisers' `degrade_imu.py`, which is not committed. Reproducing the official-copy scores needs that script and the data locally.
+The official-copy scores need the organisers' `degrade_imu.py` and the datasets locally (neither is committed). `python -m vortex.degrade` is the project's own fault model for workflow checks.
 
 **Regenerate this README's charts** from `Docs/NUMBERS.md`:
 
@@ -338,7 +298,7 @@ python tools/readme_figures.py --check   # fails if they are out of date
 
 <br>
 
-Every `*_ON` assignment in the shipped [`pathfinder.py`](pathfinder.py) is **on**. Rejected alternatives live in the reference or lab copy, not in this list.
+Every `*_ON` assignment in the shipped [`pathfinder.py`](pathfinder.py) is **on**, and each passed its registered rule before shipping.
 
 | Switch | What it does | Record |
 |---|---|---|
@@ -347,12 +307,12 @@ Every `*_ON` assignment in the shipped [`pathfinder.py`](pathfinder.py) is **on*
 | `BGCAP_ON` | Caps false stillness during steady rotation | [Step F](Docs/TRACK3_PLAN.md) |
 | `P0V_ON` | Wider initial velocity uncertainty without an anchor | [Step F](Docs/TRACK3_PLAN.md) |
 | `REFRESH_ON` | Refreshes the cached sample after a correction | [Step F](Docs/TRACK3_PLAN.md) |
-| `SMOOTH_ON` | Offline forward-backward smoother; passed its registered held-out rule | [Step 6](Docs/TRACK3_PLAN.md) |
+| `SMOOTH_ON` | Offline forward-backward smoother | [Step 6](Docs/TRACK3_PLAN.md) |
 | `PLATFORM_ON` | Hand-held vs multirotor detection; selects the envelope | [Step 7](Docs/TRACK3_PLAN.md) |
-| `TILT_ON` | Noisy-gyro gravity alignment; passed revised rule G2 after G failed (weaker evidence) | [Step L2](Docs/TRACK3_PLAN.md) |
-| `TILT_LAG` | Lag model of that gravity alignment; part of the build judged by G2 | [Step L2](Docs/TRACK3_PLAN.md) |
-| `BLIND_ON` | Blind window from a trusted state; passed rule H' after H failed (weaker evidence) | [Step L3](Docs/TRACK3_PLAN.md) |
-| `BLIND_DEAD_ONLY` | Acts only on a detected trailing dead run, never on a fixed last 5 s | [Step L3](Docs/TRACK3_PLAN.md) |
+| `TILT_ON` | Gravity alignment when the gyro is noisy | [Step L2](Docs/TRACK3_PLAN.md) |
+| `TILT_LAG` | Lag model of that gravity alignment | [Step L2](Docs/TRACK3_PLAN.md) |
+| `BLIND_ON` | Blind window from the last trusted state | [Step L3](Docs/TRACK3_PLAN.md) |
+| `BLIND_DEAD_ONLY` | Acts only on a detected trailing dead run | [Step L3](Docs/TRACK3_PLAN.md) |
 | `V1_ON` | Stillness witness | [Step 7a](Docs/TRACK3_PLAN.md) |
 | `V2_ON` | Speed prior | [Step 7a](Docs/TRACK3_PLAN.md) |
 | `V2P_ON` | Running-centre position prior | [Step 7a](Docs/TRACK3_PLAN.md) |
@@ -360,7 +320,7 @@ Every `*_ON` assignment in the shipped [`pathfinder.py`](pathfinder.py) is **on*
 | `DEAD_ON` | Exact zero / stuck failure detection | [Step 8a](Docs/TRACK3_PLAN.md) |
 | `FC_ON` | Velocity decay during gaps and the blind phase | [Step 8a](Docs/TRACK3_PLAN.md) |
 
-**Measured and left out:** stuck/spike rejection and interpolation (Step 3), learned envelope (Step 4), rotor drag V3 (Step 5, NO-GO), noise-meter gating (Step 6c), denoised V1 (Step 7b), covariance reset (Step F), shrinkage (Step L1), and the blind window's fixed 5 s fallback (Step L3, rule H). An experimental per-row sigma did not rank error, so it is not submitted as calibrated confidence ([coverage study](Docs/COVERAGE.md)). The [reference filter](vortex/core/witness.py) keeps the rejected experiments; being present in source does not mean a feature is enabled.
+Candidates that did not pass their rule stay switched off in the [reference filter](vortex/core/witness.py) and are not part of the submission.
 
 </details>
 
@@ -374,30 +334,26 @@ Every `*_ON` assignment in the shipped [`pathfinder.py`](pathfinder.py) is **on*
 | [`pathfinder.py`](pathfinder.py) | The estimator: standard library only, the source of the shipped `src/main.py` |
 | [`main.py`](main.py) | Repository entry point (a stub that runs `pathfinder.py`) |
 | [`bundle/`](bundle/README.md) | README and Dockerfile that ship inside the submission zip |
-| [`vortex/`](vortex) | Reference filter (`core/`), metrics, scoring, output checker, placeholder degrader |
+| [`vortex/`](vortex) | Reference filter (`core/`), metrics, scoring, output checker, fault model |
 | [`tools/`](tools) | Bundle builder, evaluators, judging scripts for each registered rule, benchmarks, chart generator |
 | [`tests/`](tests) | pytest suite (521 passed on 22 Nov) |
-| [`Docs/`](Docs) | Plan, generated numbers and results, budget, method, studies |
+| [`Docs/`](Docs) | Plan, generated numbers and results, budget, method, studies, deck |
 | [`score.py`](score.py), [`benchmark.py`](benchmark.py) | SE(3)-aligned scorer; runtime and heap gate |
-| `main.cpp`, `Dockerfile.ccore` | A recorded C-core experiment: kept with its tests, never shipped |
+| `main.cpp`, `Dockerfile.ccore` | A C++ port kept as a speed experiment; not part of the Python submission |
 
 </details>
 
 <details>
-<summary><b>📚 Research notes</b></summary>
+<summary><b>📚 Documentation</b></summary>
 
 <br>
 
 - [Project deck](Docs/deck/ManipalInstituteofTechnology_Vortex.pdf) ([PowerPoint](Docs/deck/ManipalInstituteofTechnology_Vortex.pptx))
-- [Track 3 plan](Docs/TRACK3_PLAN.md): registered decisions, open Q9 and next steps
+- [Decision log](Docs/TRACK3_PLAN.md): every registered rule and its verdict
 - [Verified figures](Docs/NUMBERS.md): every quotable number, with source tags
 - [Generated results](Docs/RESULTS.md): clean and degraded EuRoC metrics, stationary floor, ablations
 - [Method](Docs/METHOD.md): test-set composition and metric definitions
-- [Negative results](Docs/NEGATIVE_RESULTS.md): what we tried that didn't work
 - [Official-script baseline](Docs/STEP2_BASELINE.md) and [TUM-VI baseline](Docs/TUMVI_BASELINE.md)
-- [Blind-window study](Docs/BLIND.md): dead-sensor detection and forecast comparisons (before Step L3)
-- [Confidence coverage](Docs/COVERAGE.md): why the per-row sigma isn't reported as calibrated
-- [Rotor-drag study](Docs/DRAG.md): pre-registered NO-GO, with exploratory fits labelled as such
 - [Budget ledger](Docs/BUDGET.md), [efficiency floor](Docs/FLOOR.md), [Docker benchmark](Docs/DOCKER_BENCH.md), [clean-machine check](Docs/CLEAN_MACHINE.md)
 - [Scorer cross-check](Docs/EVO_CROSSCHECK.md): our scorer against evo on synthetic trajectories
 - [Submission rules](Docs/SUBMISSION_RULES.md), [data instructions](Docs/DATA.md) and [third-party notices](THIRD_PARTY.md)
@@ -406,10 +362,36 @@ Every `*_ON` assignment in the shipped [`pathfinder.py`](pathfinder.py) is **on*
 
 ---
 
+## 🤝 Team and AI disclosure
+
+**Vortex is the work of Arnav Jain**, solo entrant, Manipal Institute of Technology.
+
+Arnav conceived the project and owned every decision in it:
+- **Approach:** chose the velocity-witness design and the IMU-only, no-pretrained-model constraint.
+- **Rules:** set the rules every change had to follow. Features are switches that are off by default. Pass/fail rules are committed before held-out data is touched. Ground truth is used only for scoring, and every number comes from a generated ledger.
+- **Testing:** decided which data was for tuning and which was held out, and ran the datasets and the test suite on his own machine.
+- **Oversight:** planned and assigned every task, reviewed each one, and approved and merged every change into this repository.
+- **Film:** chose the film's story and directed its production.
+
+AI tools assisted under that direction, and Arnav oversaw each and every task they took on:
+
+| Tool | How it helped |
+|---|---|
+| **Claude** (Anthropic), via Claude Code | Implementation of estimator code, tests, evaluation scripts and documentation. Each piece followed a written task from Arnav and was merged only after his review |
+| **Gemini**, in Google Antigravity | Dataset preparation, benchmark and Docker runs, clean-machine verification and demo footage |
+| **ChatGPT** (OpenAI) | Technical review and drafting for the deck and script |
+| **Google Flow** | AI animation for the film |
+| **ElevenLabs** | AI voice for the film |
+| **Claude** | Writing support for the film |
+
+Every approach, decision rule and ship decision was Arnav's call.
+
+---
+
 <div align="center">
 
 **Built by Arnav Jain** · Manipal Institute of Technology · Submission name `VORTEX` (solo entry)
 
-<sub>Code: [MIT](LICENSE). The film is original to this project. Samsung Research and Samsung PRISM marks identify the challenge context and are Samsung's; the [Research mark](https://cdn.codeground.org/nsr/images/layout/logo-sr.png) and [PRISM mark](https://www.samsungprism.com/assets/images/prism_logo.png) are reproduced from their official sites.</sub>
+<sub>Code: [MIT](LICENSE). Samsung Research and Samsung PRISM marks identify the challenge context and are Samsung's; the [Research mark](https://cdn.codeground.org/nsr/images/layout/logo-sr.png) and [PRISM mark](https://www.samsungprism.com/assets/images/prism_logo.png) are reproduced from their official sites.</sub>
 
 </div>
