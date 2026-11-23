@@ -6,16 +6,14 @@ small 3D moments), made in [HyperFrames](https://github.com/heygen-com/hyperfram
 
 ## Downloads
 
-The video files are too large for git (GitHub's 100 MB file limit), so they are attached to the GitHub release
-**`video-v1`** (created as a draft; Arnav publishes it):
+| File | Where | What | Size |
+|---|---|---|---|
+| `renders/Vortex_Technical_review.mp4` | **In this repo** | The full video, 1080p30 H.264 CRF 23, AAC 192 kbps | 82 MB |
+| `Vortex_Technical_HQ.mp4` | Not in git (over GitHub's 100 MB file limit); attach to a release by hand | Same picture, 21 Mbps cap, AAC 320 kbps: the one to upload to YouTube | 335 MB |
+| `Vortex_Technical_master.mp4` | Not in git; attach to a release by hand | Full spec: CRF 16, H.264 High, yuv420p, AAC 48 kHz 320 kbps, faststart | 1.37 GB |
 
-| File | What | Size |
-|---|---|---|
-| `Vortex_Technical_master.mp4` | Full-spec master: 1920×1080, 30 fps, H.264 High, CRF 16, yuv420p, AAC 48 kHz 320 kbps, faststart | 1.37 GB |
-| `Vortex_Technical_HQ.mp4` | Same picture capped at 21 Mbps, for uploading/sharing | 335 MB |
-| `Vortex_Technical_review.mp4` | CRF 23 review copy | 82 MB |
-
-All three share one timeline: **131.43 s**, loudness **−14.0 LUFS** integrated, true peak **−2.5 dBTP**.
+All three share one timeline: **131.43 s**, loudness **−14.0 LUFS** integrated, true peak **−2.5 dBTP**,
+voice within 1 ms of the picture.
 
 ## What is in this folder
 
