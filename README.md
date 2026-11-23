@@ -20,17 +20,12 @@ using nothing but that recording's gyroscope and accelerometer.</p>
 
 <br><br>
 
-<a href="https://youtu.be/l0N_V60-v3E"><img src="assets/project-video-card.jpg" alt="Play the project video on YouTube: Team Vortex, MIT Manipal, Samsung PRISM XR Hackathon 2026, Track 3." width="88%"></a>
-
-<sub><a href="https://youtu.be/l0N_V60-v3E"><b>Watch the project video on YouTube</b></a></sub>
-
-<br><br>
-
-<a href="https://www.youtube.com/watch?v=bPd4NMj70VY"><img src="assets/vortex-film-poster.jpg" alt="Play the 60-second animated film on YouTube: Pip, a little drone whose flight log is about to fall apart." width="56%"></a>
-
-<sub>The 60-second animated film: <a href="https://www.youtube.com/watch?v=bPd4NMj70VY">YouTube</a> · <a href="assets/vortex-film.mp4">MP4 download (21 MB)</a></sub>
-
-<br><br>
+<table>
+<tr>
+<td width="50%"><a href="https://youtu.be/l0N_V60-v3E"><img src="assets/project-video-card.jpg" alt="Play the technical walkthrough on YouTube (2:11): Arnav explains how Vortex works, from the raw log to the results." width="100%"></a></td>
+<td width="50%"><a href="https://www.youtube.com/watch?v=bPd4NMj70VY"><img src="assets/vortex-film-poster.jpg" alt="Play the Pip film on YouTube (1:00): Pip, a little drone whose flight log is about to fall apart." width="100%"></a></td>
+</tr>
+</table>
 
 [The problem](#the-problem) · [How it works](#how-vortex-works) · [Results](#results) · [Runtime and memory](#runtime-and-memory) · [Running Vortex](#running-vortex) · [Deck](#the-deck) · [Scope and limits](#scope-and-limits) · [Team and AI disclosure](#team-and-ai-disclosure)
 
@@ -405,8 +400,8 @@ Candidates that did not pass their rule stay switched off in the [reference filt
 
 <br>
 
-- [Project deck](Docs/deck/ManipalInstituteofTechnology_Vortex.pdf) ([PowerPoint](Docs/deck/ManipalInstituteofTechnology_Vortex.pptx))
 - [Method](Docs/METHOD.md): the shipped v1.0 estimator, function by function
+- [Technical video](Docs/video/README.md): how the walkthrough was made, its sources and credits
 - [Decision log](Docs/TRACK3_PLAN.md): every registered rule and its verdict
 - [Verified figures](Docs/NUMBERS.md): every quotable number, with source tags
 - [Generated results](Docs/RESULTS.md): clean and degraded EuRoC metrics, constant-pose baseline, ablations
@@ -429,7 +424,7 @@ Arnav conceived the project and owned every decision in it:
 - **Rules.** He set the rules every change had to follow. Features are switches that are off by default, and pass/fail rules are committed before held-out data is touched. Ground truth is used only for scoring, and every number comes from a generated ledger.
 - **Testing.** He decided which data was for tuning and which was held out, and ran the datasets and the test suite on his own machine.
 - **Oversight.** He planned and assigned every task, reviewed each one, and approved and merged every change into this repository.
-- **Film.** He chose the film's story and directed its production.
+- **Videos.** He chose the film's story and directed its production, and he recorded and presents the technical walkthrough himself.
 
 AI tools assisted under that direction, and Arnav oversaw every task they took on:
 
@@ -440,7 +435,7 @@ AI tools assisted under that direction, and Arnav oversaw every task they took o
 | ChatGPT (OpenAI) | Technical review and drafting for the deck and script |
 | Google Flow | AI animation for the film |
 | ElevenLabs | AI voice for the film |
-| Claude | Writing support for the film |
+| Claude | Writing support for the film, and the code-built animation and editing pipeline of the technical walkthrough (HyperFrames), around Arnav's own camera recordings |
 
 Every approach, decision rule and ship decision was Arnav's call.
 
