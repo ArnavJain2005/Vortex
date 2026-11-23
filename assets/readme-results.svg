@@ -1,14 +1,14 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 744" width="960" height="744" role="img" aria-label="Vortex error versus a never-moving trajectory on held-out and clean data">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 744" width="960" height="744" role="img" aria-label="Vortex error versus a constant-pose baseline">
 <rect width="960" height="744" rx="20" fill="#0a0e2e"/>
-<text x="40.0" y="52.0" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="24" font-weight="700" fill="#f3f5ff" text-anchor="start">Vortex vs. a never-moving trajectory</text>
-<text x="40.0" y="80.0" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="14" font-weight="400" fill="#9aa6d6" text-anchor="start">Error after SE(3) alignment, organisers' degradation script. Lower is better. Bars are scaled so the floor = 100%.</text>
+<text x="40.0" y="52.0" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="24" font-weight="700" fill="#f3f5ff" text-anchor="start">Vortex vs. a constant-pose baseline</text>
+<text x="40.0" y="80.0" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="14" font-weight="400" fill="#9aa6d6" text-anchor="start">Translational error (m) after the same per-run SE(3) alignment for both. Lower is better. Bars: baseline = 100%.</text>
 <rect x="40" y="96" width="14" height="14" rx="3" fill="#5ec8f2"/>
 <text x="62.0" y="108.0" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" font-weight="600" fill="#f3f5ff" text-anchor="start">Vortex</text>
 <rect x="140" y="96" width="14" height="14" rx="3" fill="#4b5694"/>
-<text x="162.0" y="108.0" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" font-weight="600" fill="#f3f5ff" text-anchor="start">Never-moving floor</text>
+<text x="162.0" y="108.0" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" font-weight="600" fill="#f3f5ff" text-anchor="start">Constant-pose baseline</text>
 <rect x="20" y="128" width="920" height="68" rx="12" fill="#121a45"/>
-<text x="40.0" y="156.0" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" font-weight="500" fill="#9aa6d6" text-anchor="start">EuRoC · held-out flights, seeds 4–6</text>
-<text x="40.0" y="178.0" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="16" font-weight="600" fill="#f3f5ff" text-anchor="start">Full trajectory APE · 36 copies</text>
+<text x="40.0" y="156.0" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" font-weight="500" fill="#9aa6d6" text-anchor="start">6 held-out EuRoC sequences · 36 copies</text>
+<text x="40.0" y="178.0" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="16" font-weight="600" fill="#f3f5ff" text-anchor="start">Full-trajectory APE</text>
 <rect x="330" y="142" width="380.0" height="16" rx="4" fill="#4b5694"/>
 <text x="718.0" y="155.0" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12" font-weight="400" fill="#9aa6d6" text-anchor="start">3.745 m</text>
 <rect x="330" y="166" width="349.1" height="16" rx="4" fill="#5ec8f2"/>
@@ -16,44 +16,44 @@
 <rect x="810" y="145" width="104" height="34" rx="17" fill="none" stroke="#7ee0b5" stroke-width="2"/>
 <text x="862.0" y="168.0" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="17" font-weight="700" fill="#7ee0b5" text-anchor="middle">−8.1%</text>
 <rect x="20" y="206" width="920" height="68" rx="12" fill="#0a0e2e"/>
-<text x="40.0" y="234.0" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" font-weight="500" fill="#9aa6d6" text-anchor="start">EuRoC · held-out flights, seeds 7–9</text>
-<text x="40.0" y="256.0" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="16" font-weight="600" fill="#f3f5ff" text-anchor="start">Full trajectory APE · 36 more copies</text>
+<text x="40.0" y="234.0" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" font-weight="500" fill="#9aa6d6" text-anchor="start">6 held-out EuRoC sequences · seeds 4–6</text>
+<text x="40.0" y="256.0" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="16" font-weight="600" fill="#f3f5ff" text-anchor="start">Error inside dropout gaps</text>
 <rect x="330" y="220" width="380.0" height="16" rx="4" fill="#4b5694"/>
-<text x="718.0" y="233.0" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12" font-weight="400" fill="#9aa6d6" text-anchor="start">3.748 m</text>
-<rect x="330" y="244" width="352.9" height="16" rx="4" fill="#5ec8f2"/>
-<text x="690.9" y="257.0" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12" font-weight="600" fill="#f3f5ff" text-anchor="start">3.481 m</text>
+<text x="718.0" y="233.0" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12" font-weight="400" fill="#9aa6d6" text-anchor="start">3.626 m</text>
+<rect x="330" y="244" width="364.5" height="16" rx="4" fill="#5ec8f2"/>
+<text x="702.5" y="257.0" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12" font-weight="600" fill="#f3f5ff" text-anchor="start">3.478 m</text>
 <rect x="810" y="223" width="104" height="34" rx="17" fill="none" stroke="#7ee0b5" stroke-width="2"/>
-<text x="862.0" y="246.0" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="17" font-weight="700" fill="#7ee0b5" text-anchor="middle">−7.1%</text>
+<text x="862.0" y="246.0" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="17" font-weight="700" fill="#7ee0b5" text-anchor="middle">−4.1%</text>
 <rect x="20" y="284" width="920" height="68" rx="12" fill="#121a45"/>
-<text x="40.0" y="312.0" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" font-weight="500" fill="#9aa6d6" text-anchor="start">EuRoC · held-out flights, seeds 4–6</text>
-<text x="40.0" y="334.0" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="16" font-weight="600" fill="#f3f5ff" text-anchor="start">Local motion · 1 s RPE</text>
+<text x="40.0" y="312.0" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" font-weight="500" fill="#9aa6d6" text-anchor="start">6 held-out EuRoC sequences · seeds 4–6</text>
+<text x="40.0" y="334.0" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="16" font-weight="600" fill="#f3f5ff" text-anchor="start">Error in the blind 5 s</text>
 <rect x="330" y="298" width="380.0" height="16" rx="4" fill="#4b5694"/>
-<text x="718.0" y="311.0" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12" font-weight="400" fill="#9aa6d6" text-anchor="start">0.941 m</text>
-<rect x="330" y="322" width="227.0" height="16" rx="4" fill="#5ec8f2"/>
-<text x="565.0" y="335.0" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12" font-weight="600" fill="#f3f5ff" text-anchor="start">0.562 m</text>
-<rect x="810" y="301" width="104" height="34" rx="17" fill="none" stroke="#7ee0b5" stroke-width="2"/>
-<text x="862.0" y="324.0" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="17" font-weight="700" fill="#7ee0b5" text-anchor="middle">−40.2%</text>
+<text x="718.0" y="311.0" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12" font-weight="400" fill="#9aa6d6" text-anchor="start">2.504 m</text>
+<rect x="330" y="322" width="378.5" height="16" rx="4" fill="#5ec8f2"/>
+<text x="716.5" y="335.0" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12" font-weight="600" fill="#f3f5ff" text-anchor="start">2.494 m</text>
+<rect x="810" y="301" width="104" height="34" rx="17" fill="none" stroke="#f5c26b" stroke-width="2"/>
+<text x="862.0" y="324.0" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="17" font-weight="700" fill="#f5c26b" text-anchor="middle">level</text>
 <rect x="20" y="362" width="920" height="68" rx="12" fill="#0a0e2e"/>
-<text x="40.0" y="390.0" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" font-weight="500" fill="#9aa6d6" text-anchor="start">EuRoC · held-out flights, seeds 4–6</text>
-<text x="40.0" y="412.0" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="16" font-weight="600" fill="#f3f5ff" text-anchor="start">Inside dropout gaps</text>
+<text x="40.0" y="390.0" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" font-weight="500" fill="#9aa6d6" text-anchor="start">Same 6 sequences · repeat trials (seeds 7–9)</text>
+<text x="40.0" y="412.0" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="16" font-weight="600" fill="#f3f5ff" text-anchor="start">Full-trajectory APE</text>
 <rect x="330" y="376" width="380.0" height="16" rx="4" fill="#4b5694"/>
-<text x="718.0" y="389.0" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12" font-weight="400" fill="#9aa6d6" text-anchor="start">3.626 m</text>
-<rect x="330" y="400" width="364.5" height="16" rx="4" fill="#5ec8f2"/>
-<text x="702.5" y="413.0" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12" font-weight="600" fill="#f3f5ff" text-anchor="start">3.478 m</text>
+<text x="718.0" y="389.0" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12" font-weight="400" fill="#9aa6d6" text-anchor="start">3.748 m</text>
+<rect x="330" y="400" width="352.9" height="16" rx="4" fill="#5ec8f2"/>
+<text x="690.9" y="413.0" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12" font-weight="600" fill="#f3f5ff" text-anchor="start">3.481 m</text>
 <rect x="810" y="379" width="104" height="34" rx="17" fill="none" stroke="#7ee0b5" stroke-width="2"/>
-<text x="862.0" y="402.0" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="17" font-weight="700" fill="#7ee0b5" text-anchor="middle">−4.1%</text>
+<text x="862.0" y="402.0" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="17" font-weight="700" fill="#7ee0b5" text-anchor="middle">−7.1%</text>
 <rect x="20" y="440" width="920" height="68" rx="12" fill="#121a45"/>
-<text x="40.0" y="468.0" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" font-weight="500" fill="#9aa6d6" text-anchor="start">EuRoC · 8 clean flights</text>
-<text x="40.0" y="490.0" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="16" font-weight="600" fill="#f3f5ff" text-anchor="start">Full trajectory APE</text>
+<text x="40.0" y="468.0" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" font-weight="500" fill="#9aa6d6" text-anchor="start">6 held-out EuRoC sequences · seeds 4–6</text>
+<text x="40.0" y="490.0" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="16" font-weight="600" fill="#f3f5ff" text-anchor="start">1 s RPE (diagnostic, not scored)</text>
 <rect x="330" y="454" width="380.0" height="16" rx="4" fill="#4b5694"/>
-<text x="718.0" y="467.0" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12" font-weight="400" fill="#9aa6d6" text-anchor="start">3.930 m</text>
-<rect x="330" y="478" width="345.2" height="16" rx="4" fill="#5ec8f2"/>
-<text x="683.2" y="491.0" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12" font-weight="600" fill="#f3f5ff" text-anchor="start">3.570 m</text>
+<text x="718.0" y="467.0" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12" font-weight="400" fill="#9aa6d6" text-anchor="start">0.941 m</text>
+<rect x="330" y="478" width="227.0" height="16" rx="4" fill="#5ec8f2"/>
+<text x="565.0" y="491.0" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12" font-weight="600" fill="#f3f5ff" text-anchor="start">0.562 m</text>
 <rect x="810" y="457" width="104" height="34" rx="17" fill="none" stroke="#7ee0b5" stroke-width="2"/>
-<text x="862.0" y="480.0" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="17" font-weight="700" fill="#7ee0b5" text-anchor="middle">−9.2%</text>
+<text x="862.0" y="480.0" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="17" font-weight="700" fill="#7ee0b5" text-anchor="middle">−40.2%</text>
 <rect x="20" y="518" width="920" height="68" rx="12" fill="#0a0e2e"/>
-<text x="40.0" y="546.0" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" font-weight="500" fill="#9aa6d6" text-anchor="start">TUM-VI · held-out rooms 3–4</text>
-<text x="40.0" y="568.0" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="16" font-weight="600" fill="#f3f5ff" text-anchor="start">Full trajectory APE · hand-held</text>
+<text x="40.0" y="546.0" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" font-weight="500" fill="#9aa6d6" text-anchor="start">TUM-VI held-out rooms 3–4 · 12 copies</text>
+<text x="40.0" y="568.0" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="16" font-weight="600" fill="#f3f5ff" text-anchor="start">Full-trajectory APE · hand-held</text>
 <rect x="330" y="532" width="380.0" height="16" rx="4" fill="#4b5694"/>
 <text x="718.0" y="545.0" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12" font-weight="400" fill="#9aa6d6" text-anchor="start">1.164 m</text>
 <rect x="330" y="556" width="353.6" height="16" rx="4" fill="#5ec8f2"/>
@@ -61,13 +61,14 @@
 <rect x="810" y="535" width="104" height="34" rx="17" fill="none" stroke="#7ee0b5" stroke-width="2"/>
 <text x="862.0" y="558.0" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="17" font-weight="700" fill="#7ee0b5" text-anchor="middle">−7.0%</text>
 <rect x="20" y="596" width="920" height="68" rx="12" fill="#121a45"/>
-<text x="40.0" y="624.0" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" font-weight="500" fill="#9aa6d6" text-anchor="start">TUM-VI · rooms 1–4, 24 copies</text>
-<text x="40.0" y="646.0" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="16" font-weight="600" fill="#f3f5ff" text-anchor="start">Full trajectory APE · hand-held</text>
+<text x="40.0" y="624.0" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" font-weight="500" fill="#9aa6d6" text-anchor="start">8 clean EuRoC sequences (incl. tuning)</text>
+<text x="40.0" y="646.0" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="16" font-weight="600" fill="#f3f5ff" text-anchor="start">Full-trajectory APE · no degradation</text>
 <rect x="330" y="610" width="380.0" height="16" rx="4" fill="#4b5694"/>
-<text x="718.0" y="623.0" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12" font-weight="400" fill="#9aa6d6" text-anchor="start">1.137 m</text>
-<rect x="330" y="634" width="323.9" height="16" rx="4" fill="#5ec8f2"/>
-<text x="661.9" y="647.0" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12" font-weight="600" fill="#f3f5ff" text-anchor="start">0.969 m</text>
+<text x="718.0" y="623.0" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12" font-weight="400" fill="#9aa6d6" text-anchor="start">3.930 m</text>
+<rect x="330" y="634" width="345.2" height="16" rx="4" fill="#5ec8f2"/>
+<text x="683.2" y="647.0" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12" font-weight="600" fill="#f3f5ff" text-anchor="start">3.570 m</text>
 <rect x="810" y="613" width="104" height="34" rx="17" fill="none" stroke="#7ee0b5" stroke-width="2"/>
-<text x="862.0" y="636.0" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="17" font-weight="700" fill="#7ee0b5" text-anchor="middle">−14.8%</text>
-<text x="40.0" y="714.0" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12" font-weight="400" fill="#9aa6d6" text-anchor="start">Source: Docs/NUMBERS.md (shipped v1.0 build). Held-out = EuRoC MH_03–05, V1_01–03, both column readings. TUM-VI rooms 1–2 were used for tuning.</text>
+<text x="862.0" y="636.0" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="17" font-weight="700" fill="#7ee0b5" text-anchor="middle">−9.2%</text>
+<text x="40.0" y="700.0" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12" font-weight="400" fill="#9aa6d6" text-anchor="start">Held-out EuRoC = MH_03–05, V1_01–03, both column readings; copies = seeds × readings of the same flights. Faults: organisers' degrade_imu.py.</text>
+<text x="40.0" y="720.0" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12" font-weight="400" fill="#9aa6d6" text-anchor="start">Source: Docs/NUMBERS.md, shipped v1.0 build.</text>
 </svg>

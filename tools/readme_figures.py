@@ -61,16 +61,16 @@ def pct_text(p):
 
 # (prefix in NUMBERS.md, dataset line, metric line)
 RESULT_ROWS = [
-    ("heldout", "EuRoC · held-out flights, seeds 4–6", "Full trajectory APE · 36 copies"),
-    ("heldout79", "EuRoC · held-out flights, seeds 7–9", "Full trajectory APE · 36 more copies"),
-    ("heldout_rpe1s", "EuRoC · held-out flights, seeds 4–6", "Local motion · 1 s RPE"),
-    ("heldout_gap", "EuRoC · held-out flights, seeds 4–6", "Inside dropout gaps"),
-    ("clean", "EuRoC · 8 clean flights", "Full trajectory APE"),
-    ("tumvi_room34", "TUM-VI · held-out rooms 3–4", "Full trajectory APE · hand-held"),
-    ("tumvi", "TUM-VI · rooms 1–4, 24 copies", "Full trajectory APE · hand-held"),
+    ("heldout", "6 held-out EuRoC sequences · 36 copies", "Full-trajectory APE"),
+    ("heldout_gap", "6 held-out EuRoC sequences · seeds 4–6", "Error inside dropout gaps"),
+    ("heldout_blind", "6 held-out EuRoC sequences · seeds 4–6", "Error in the blind 5 s"),
+    ("heldout79", "Same 6 sequences · repeat trials (seeds 7–9)", "Full-trajectory APE"),
+    ("heldout_rpe1s", "6 held-out EuRoC sequences · seeds 4–6", "1 s RPE (diagnostic, not scored)"),
+    ("tumvi_room34", "TUM-VI held-out rooms 3–4 · 12 copies", "Full-trajectory APE · hand-held"),
+    ("clean", "8 clean EuRoC sequences (incl. tuning)", "Full-trajectory APE · no degradation"),
 ]
 
-TIE_PCT = 1.0  # |difference| below this is drawn and labelled as a tie, not a win
+TIE_PCT = 1.0  # |difference| below this is drawn and labelled "level", not a win
 
 
 def result_keys(prefix):
@@ -84,15 +84,15 @@ def render_results(vals):
     H = top + rowh * len(RESULT_ROWS) + 70
     lx, bx, bw = 40, 330, 380
     out = ['<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 %d %d" width="%d" height="%d" role="img" '
-           'aria-label="Vortex error versus a never-moving trajectory on held-out and clean data">' % (W, H, W, H),
+           'aria-label="Vortex error versus a constant-pose baseline">' % (W, H, W, H),
            '<rect width="%d" height="%d" rx="20" fill="%s"/>' % (W, H, BG),
-           text(lx, 52, "Vortex vs. a never-moving trajectory", 24, TEXT, 700),
-           text(lx, 80, "Error after SE(3) alignment, organisers' degradation script. Lower is better. "
-                        "Bars are scaled so the floor = 100%.", 14, MUTED),
+           text(lx, 52, "Vortex vs. a constant-pose baseline", 24, TEXT, 700),
+           text(lx, 80, "Translational error (m) after the same per-run SE(3) alignment for both. Lower is better. "
+                        "Bars: baseline = 100%.", 14, MUTED),
            '<rect x="%d" y="96" width="14" height="14" rx="3" fill="%s"/>' % (lx, CYAN),
            text(lx + 22, 108, "Vortex", 13, TEXT, 600),
            '<rect x="%d" y="96" width="14" height="14" rx="3" fill="%s"/>' % (lx + 100, FLOOR),
-           text(lx + 122, 108, "Never-moving floor", 13, TEXT, 600)]
+           text(lx + 122, 108, "Constant-pose baseline", 13, TEXT, 600)]
     for i, (prefix, ds, metric) in enumerate(RESULT_ROWS):
         kv, kf, kp = result_keys(prefix)
         v, f = num(vals, kv), num(vals, kf)
@@ -110,13 +110,13 @@ def render_results(vals):
         out.append(text(bx + vw + 8, y + 51, "%.3f m" % v, 12, TEXT, 600))
         tie = abs(p) < TIE_PCT
         col = TIE if tie else (GOOD if p < 0 else SALMON)
-        label = "tie" if tie else ("−%.1f%%" % abs(p) if p < 0 else "+%.1f%%" % p)
+        label = "level" if tie else ("−%.1f%%" % abs(p) if p < 0 else "+%.1f%%" % p)
         out.append('<rect x="%d" y="%d" width="104" height="34" rx="17" fill="none" stroke="%s" stroke-width="2"/>'
                    % (W - 150, y + 17, col))
         out.append(text(W - 98, y + 40, label, 17, col, 700, "middle"))
-    out.append(text(lx, H - 30, "Source: Docs/NUMBERS.md (shipped v1.0 build). Held-out = EuRoC MH_03–05, V1_01–03, "
-                                "both column readings. TUM-VI rooms 1–2 were used for tuning.",
-                    12, MUTED))
+    out.append(text(lx, H - 44, "Held-out EuRoC = MH_03–05, V1_01–03, both column readings; copies = seeds × readings of the "
+                                "same flights. Faults: organisers' degrade_imu.py.", 12, MUTED))
+    out.append(text(lx, H - 24, "Source: Docs/NUMBERS.md, shipped v1.0 build.", 12, MUTED))
     out.append("</svg>")
     return "\n".join(out) + "\n"
 
@@ -146,11 +146,11 @@ def render_budget(vals):
            text(40, 80, "Shipped single-file src/main.py on an official degraded copy (MH_03_medium_b_s1, {:,} rows).".format(
                 int(num(vals, "budget_rows_n"))),
                 14, MUTED)]
-    out += gauge(40, 120, 410, "Compute per IMU-second", "Linux Docker, python:3.12.7-slim, 15-run median",
-                 docker, 20.0, "ms", "{:.2f}", "{:.0f}", CYAN, "Windows 11, Python 3.14.7: %.2f ms" % win)
-    out += gauge(510, 120, 410, "Peak heap, whole run", "tracemalloc, compiled from source, Python 3.14.7",
-                 heap314, 8192.0, "KB", "{:,.0f}", "{:,.0f}", VIOLET, "Python 3.13.5: {:,.0f} KB".format(heap313))
-    out.append(text(40, H - 40, "Single thread · standard library only · %d automated tests passing" % tests,
+    out += gauge(40, 120, 410, "Wall time per IMU-second", "Whole process from source, Linux Docker, Python 3.12.7, 15-run median",
+                 docker, 20.0, "ms", "{:.2f}", "{:.0f}", CYAN, "Windows 11, Python 3.14.7: %.2f ms wall time" % win)
+    out += gauge(510, 120, 410, "Peak heap, whole run", "tracemalloc from source, Windows 11, Python 3.14.7",
+                 heap314, 8192.0, "KB", "{:,.0f}", "{:,.0f}", VIOLET, "Windows 11, Python 3.13.5: {:,.0f} KB".format(heap313))
+    out.append(text(40, H - 40, "Single thread · standard library only · %d tests passed (Windows 11, Python 3.14.7)" % tests,
                     14, GOOD, 600))
     out.append(text(W - 40, H - 40, "Source: Docs/NUMBERS.md, Docs/BUDGET.md", 12, MUTED, 400, "end"))
     out.append("</svg>")

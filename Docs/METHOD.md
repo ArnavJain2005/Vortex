@@ -1,7 +1,10 @@
 # Method: shipped IMU-only estimator
 
-This describes `main.py` and the shipped `pathfinder.py` at `d1fc504` (18 November
-2026). The input is a degraded IMU CSV; the output has one timestamped 6-DoF pose
+This describes `main.py` and the shipped `pathfinder.py` of tag `v1.0` (commit
+`0e7c81d`, 22 November 2026; `pathfinder.py` on `main` is identical). The note was
+first written against `d1fc504` (18 November) and was updated on 23 November for the
+three later steps that ship in v1.0: the platform-dependent envelope (Step 7), gravity
+alignment under a noisy gyro (Step L2) and the trailing dead-run blind window (Step L3). The input is a degraded IMU CSV; the output has one timestamped 6-DoF pose
 per nonblank, noncomment input row. Hidden ground truth and waypoints are never
 inputs. The official script's two possible column readings are evaluated
 separately because the organisers' input order is unresolved (`Docs/TRACK3_PLAN.md`,
@@ -80,6 +83,17 @@ When V1 has not fired, its position observation is `z_p = c`, residual
 vertical `V2P_SIGMA_V = 2 m`. The centre comes from the estimate itself;
 it is a volume prior rather than an independent position measurement.
 
+`pathfinder.py` `_plat_stat`, `_plat_hh` (`PLATFORM_ON`, Step 7): before the
+filter runs, the whole file is scanned once. For each 1 s window the mean
+squared second difference of the accelerometer is computed, and the 0.75
+quantile over windows is compared with `PLAT_HF = 1.0 (m/s²)²`. Below it the
+file is treated as hand-held, because rotor vibration on the EuRoC multirotor
+puts the statistic far above that value. A hand-held file uses a tighter
+envelope: `HH_V2_SIGMA_H = 0.5 m/s`, `HH_V2_SIGMA_V = 0.3 m/s`,
+`HH_V2P_SIGMA_H = 1.0 m`, `HH_V2P_SIGMA_V = 0.3 m` and `HH_V2P_TAU = 30 s`.
+The envelope values were chosen on TUM-VI rooms 1–2. Either way V2 and V2P
+remain priors, not observations.
+
 ## Missing and dead IMU samples
 
 `pathfinder.py` `_run` detects a nonfinite/extreme reading, an all-zero
@@ -97,7 +111,26 @@ forecaster in `pathfinder.py` `_run` uses a 0.5-second decay constant:
 `p_new = p_old + 0.5 [1 − exp(−Δt/0.5)] v_old`.
 During the final invalid-value blind window, timestamps are still present;
 no extra rows are appended. The forecast tends to stop rather than extend
-the last velocity indefinitely. This is a prior, not recovered motion.
+the last velocity indefinitely. This is a prior, not recovered motion. When
+the file ends in a detected dead run, the written poses there come from the
+Step L3 rule (“The blind window at the end of the file”).
+
+## Gravity alignment when the gyro is noisy
+
+`pathfinder.py` `_run` (tick close), `_tilt_weight`, `_tilt_var` (`TILT_ON`,
+`TILT_LAG`, Step L2): a gyro noise meter takes the second differences of the
+gyro at every row, converts them to a per-axis variance each tick, and keeps the
+median over the last 40 ticks (10 s). Its square root sets a weight that is 0
+below `TILT_G_LO = 0.05 rad/s` and ramps to 1 at `TILT_G_HI = 0.10 rad/s`, so the
+update is silent while the gyro is clean. With a nonzero weight, the world-frame
+specific force is averaged with a `TILT_TAU = 4 s` exponential window. Its
+horizontal components, divided by g, are used as roll and pitch error
+pseudo-measurements (the averaged specific force should point straight up). The
+variance grows as the weight falls. The update is skipped while the estimated
+horizontal acceleration over the same window exceeds `TILT_GATE_A = 0.5 m/s²`.
+`TILT_LAG` adds the gyro-bias terms that the 4 s window accumulates to the same
+measurement row. This bounds tilt drift from the IMU alone; it does not observe
+yaw or position.
 
 ## Offline correction of earlier poses
 
@@ -110,7 +143,25 @@ pass writes one pose per original row, interpolating the six relevant
 corrections (position and attitude) between stored ticks. The cap is 1,024
 blocks: when full, `_smooth_merge` composes neighbouring blocks so storage
 stays bounded, including on long files. The final blind state has no future
-observation and remains its filtered state (`Docs/TRACK3_PLAN.md`, “Step 6”).
+observation and remains its filtered state (`Docs/TRACK3_PLAN.md`, “Step 6”);
+when a trailing dead run is detected, the poses around it are then replaced as
+described in the next section.
+
+## The blind window at the end of the file
+
+`pathfinder.py` `_run_smoothed`, `_run` (`BLIND_ON`, `BLIND_DEAD_ONLY`, Step L3).
+The first (store) pass tracks the last run of rejected rows. If the file ends in
+such a run lasting at least `BLIND_MIN_S = 1 s`, its first timestamp is the blind
+start. Otherwise nothing changes: with `BLIND_DEAD_ONLY` there is no fallback to
+"the last 5 s by timestamp". In the write pass, the anchor time is
+`BLIND_L = 3 s` before the blind start. Rows written before the anchor are
+unchanged; their positions give a centroid. From the anchor on, every row keeps
+the attitude of the last pose before the anchor, and its position moves linearly
+from that pose to the centroid, reaching it at the blind start
+(`BLIND_BETA = 1`) and staying there to the end of the file. This is a
+prior-based estimate chosen to limit error under SE(3) alignment, not recovered
+motion. The 0.5 s velocity decay described above still applies inside the filter, but the
+written blind-window positions come from this rule.
 
 The Step E tuning-only smoother trial was rejected before a held-out rule
 existed. The later Step 6 rule was registered and judged on official-script
@@ -139,7 +190,8 @@ calibration did not fire there. This is a measured coverage limit.
 
 - `Docs/TRACK3_PLAN.md`, “Direction”, describes a jamming meter setting trust
   and a per-flight learned envelope as part of the original approach. The
-  shipped `pathfinder.py` has fixed V2/V2P noise and no `JAM_ON` or `LEARN_ON`;
+  shipped `pathfinder.py` has fixed V2/V2P noise for each of the two platform
+  envelopes and no `JAM_ON` or `LEARN_ON`;
   the rejected implementations are in `tools/pathfinder_lab.py` (“Lean
   pathfinder” in the plan).
 - `Docs/TRACK3_PLAN.md`, “Step L1”, says shrinkage was copied into
