@@ -13,6 +13,17 @@
 Our own code is MIT-licensed (see `LICENSE`). Anything that would bring GPL code into the repo needs a
 decision first. Samsung's rules on prior work and open data have not been checked yet.
 
+## Explainer video (`Docs/video/`)
+
+Used only to make the technical video; nothing here is part of the estimator or the submission bundle.
+
+| Item | Use | Licence | Committed? |
+|---|---|---|---|
+| HyperFrames (heygen-com/hyperframes, via `npx`) | Renders the slide compositions | Apache-2.0 | No (run with `npx`) |
+| GSAP 3.15 + plugins (npm `gsap`) | Animation timeline in the compositions | GSAP Standard "No Charge" licence | No (fetched from npm, see `Docs/video/README.md`) |
+| sherpa-onnx with Parakeet TDT 0.6B v2 and Whisper medium.en | Word timestamps and cut verification | Apache-2.0 / model licences | No |
+| Music and SFX (Pixabay files, DAEDAL pack CC0, alfred.makes kit CC0) | Soundtrack | See `Docs/video/CREDITS.txt` | No |
+
 ## Citation
 
 ```

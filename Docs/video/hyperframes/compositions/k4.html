@@ -1,0 +1,156 @@
+<template>
+<style>
+
+#root{position:absolute;inset:0;overflow:hidden;font-family:Inter,sans-serif;color:#f3f5ff;}
+#root .world{position:absolute;inset:0;transform-origin:50% 45%;}
+#root .mono{font-family:'JetBrains Mono',monospace;}
+#root .panel{position:absolute;background:rgba(18,26,69,.86);border:1px solid rgba(94,200,242,.22);border-radius:22px;
+  box-shadow:0 18px 60px rgba(0,0,0,.45), inset 0 1px 0 rgba(255,255,255,.05);}
+#root .label{font-weight:700;letter-spacing:.01em;}
+#root .sub{color:rgba(243,245,255,.72);font-weight:400;}
+#root .tag{position:absolute;padding:6px 14px;border-radius:999px;font-weight:700;font-size:22px;letter-spacing:.06em;}
+#root .glow-c{text-shadow:0 0 18px rgba(94,200,242,.55),0 0 2px rgba(94,200,242,.9);}
+#root .glow-m{text-shadow:0 0 18px rgba(126,224,181,.55),0 0 2px rgba(126,224,181,.9);}
+#root [data-layout-ignore]{}
+#root .schem{position:absolute;font-family:'JetBrains Mono',monospace;font-size:18px;letter-spacing:.12em;
+  color:rgba(243,245,255,.55);text-transform:lowercase;border:1px solid rgba(243,245,255,.25);padding:4px 10px;border-radius:6px;}
+#root .sweep{position:absolute;inset:0;pointer-events:none;mix-blend-mode:screen;
+  background:linear-gradient(105deg,transparent 35%,rgba(255,255,255,.22) 50%,transparent 65%);background-size:300% 100%;}
+
+
+#k4-rail{position:absolute;left:150px;top:328px;width:1620px;height:4px;border-radius:2px;background:#5ec8f2;box-shadow:0 0 18px #5ec8f2;}
+.k4-b{position:absolute;top:255px;width:250px;height:150px;border-radius:18px;background:rgba(18,26,69,.95);
+  border:2px solid rgba(94,200,242,.55);box-shadow:0 10px 40px rgba(0,0,0,.45);}
+.k4-b .nm{position:absolute;left:0;right:0;top:20px;text-align:center;font-size:25px;font-weight:700;padding:0 10px;line-height:1.15;}
+.k4-b .ix{position:absolute;left:16px;bottom:12px;font-family:'JetBrains Mono',monospace;font-size:20px;color:#5ec8f2;}
+.k4-sub{position:absolute;top:418px;width:262px;font-family:'JetBrains Mono',monospace;font-size:19px;line-height:1.32;color:rgba(243,245,255,.8);text-align:center;}
+.k4-slot{position:absolute;top:255px;width:250px;height:150px;border-radius:18px;border:2px dashed rgba(94,200,242,.35);}
+#k4-prior{position:absolute;left:1010px;top:214px;padding:5px 16px;border-radius:999px;background:#c38bf5;color:#0a0e2e;font-weight:900;font-size:24px;letter-spacing:.14em;}
+#k4-lane{position:absolute;left:150px;top:540px;width:1340px;height:54px;border-radius:12px;border:1px solid rgba(245,163,94,.45);
+  background:rgba(245,163,94,.07);font-family:'JetBrains Mono',monospace;font-size:20px;color:#f5a35e;display:flex;align-items:center;padding:0 22px;white-space:nowrap;}
+#k4-stage{position:absolute;left:150px;top:630px;width:1340px;height:400px;}
+.k4-h{position:absolute;inset:0;}
+.k4-cap{position:absolute;left:0;top:0;font-size:24px;font-weight:700;color:#5ec8f2;letter-spacing:.06em;}
+/* approved 3D #2: line-shaded drone silhouette (four rotors, no face) */
+#k4-d3{position:absolute;left:470px;top:40px;width:400px;height:330px;perspective:900px;}
+#k4-dr{position:absolute;left:200px;top:180px;width:0;height:0;transform-style:preserve-3d;}
+.k4-arm{position:absolute;left:-150px;top:-3px;width:300px;height:6px;border-radius:3px;background:#5ec8f2;box-shadow:0 0 12px rgba(94,200,242,.7);}
+.k4-rot{position:absolute;width:110px;height:110px;margin:-55px 0 0 -55px;border-radius:50%;border:3px solid #7ee0b5;box-shadow:0 0 12px rgba(126,224,181,.5);}
+.k4-body{position:absolute;left:-42px;top:-42px;width:84px;height:84px;border-radius:22px;border:4px solid #f3f5ff;background:rgba(18,26,69,.9);}
+#k4-g{position:absolute;left:880px;top:40px;width:120px;height:300px;}
+#k4-gl{position:absolute;left:1040px;top:120px;font-size:22px;color:rgba(243,245,255,.8);}
+#k4-lvl{position:absolute;left:300px;top:330px;width:740px;height:2px;background:rgba(243,245,255,.25);}
+.k4-cell{position:absolute;width:86px;height:46px;border-radius:9px;border:2px solid rgba(94,200,242,.4);}
+.k4-rl{position:absolute;font-size:21px;color:rgba(243,245,255,.85);text-align:right;width:200px;}
+#k4-dial{position:absolute;left:470px;top:50px;}
+#k4-env{position:absolute;left:380px;top:20px;}
+#k4-sm{position:absolute;left:180px;top:30px;}
+
+</style>
+<div id="root" data-composition-id="k4" data-width="1920" data-height="1080" data-duration="29.040" >
+<div class="world" id="k4-world">
+<div id="k4-rail"></div><div class="k4-slot" style="left:110px"></div><div class="k4-b" id="k4-b0" style="left:110px"><div class="nm">Calibrate</div><div class="ix" data-layout-ignore>01</div></div><div class="k4-sub mono" id="k4-s0" style="left:104px"></div><div class="k4-slot" style="left:400px"></div><div class="k4-b" id="k4-b1" style="left:400px"><div class="nm">15-state filter</div><div class="ix" data-layout-ignore>02</div></div><div class="k4-sub mono" id="k4-s1" style="left:394px"></div><div class="k4-slot" style="left:690px"></div><div class="k4-b" id="k4-b2" style="left:690px"><div class="nm">Stillness</div><div class="ix" data-layout-ignore>03</div></div><div class="k4-sub mono" id="k4-s2" style="left:684px"></div><div class="k4-slot" style="left:980px"></div><div class="k4-b" id="k4-b3" style="left:980px"><div class="nm">Speed & centre envelope</div><div class="ix" data-layout-ignore>04</div></div><div class="k4-sub mono" id="k4-s3" style="left:974px"></div><div class="k4-slot" style="left:1270px"></div><div class="k4-b" id="k4-b4" style="left:1270px"><div class="nm">Gravity alignment</div><div class="ix" data-layout-ignore>05</div></div><div class="k4-sub mono" id="k4-s4" style="left:1264px"></div><div class="k4-slot" style="left:1560px"></div><div class="k4-b" id="k4-b5" style="left:1560px"><div class="nm">Offline smoother</div><div class="ix" data-layout-ignore>06</div></div><div class="k4-sub mono" id="k4-s5" style="left:1554px"></div>
+<div id="k4-prior">PRIOR</div>
+<div id="k4-lane">gaps widen uncertainty · no rows invented · 0.5 s velocity-decay forecast on dead rows</div>
+<div id="k4-stage">
+ <div class="k4-h" id="k4-h0"><div class="k4-cap">calibrate: level from a still interval</div>
+  <div id="k4-lvl"></div>
+  <div id="k4-d3"><div id="k4-dr"><div class="k4-arm" style="transform:rotateZ(45deg)"></div><div class="k4-arm" style="transform:rotateZ(-45deg)"></div>
+   <div class="k4-rot" style="transform:translate3d(106px,106px,0)"></div><div class="k4-rot" style="transform:translate3d(-106px,106px,0)"></div>
+   <div class="k4-rot" style="transform:translate3d(106px,-106px,0)"></div><div class="k4-rot" style="transform:translate3d(-106px,-106px,0)"></div>
+   <div class="k4-body"></div></div></div>
+  <svg id="k4-g" viewBox="0 0 120 300"><line id="k4-gv" x1="60" y1="20" x2="60" y2="250" stroke="#f5a35e" stroke-width="6" stroke-linecap="round"/>
+   <path d="M40 232 L60 270 L80 232" fill="none" stroke="#f5a35e" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+  <div id="k4-gl">gravity</div></div>
+ <div class="k4-h" id="k4-h1"><div class="k4-cap">15 error states, x · y · z</div><div class="k4-rl" style="left:200px;top:30px">position</div><div class="k4-cell" id="k4-c00" style="left:430px;top:20px"></div><div class="k4-cell" id="k4-c01" style="left:532px;top:20px"></div><div class="k4-cell" id="k4-c02" style="left:634px;top:20px"></div><div class="k4-rl" style="left:200px;top:92px">velocity</div><div class="k4-cell" id="k4-c10" style="left:430px;top:82px"></div><div class="k4-cell" id="k4-c11" style="left:532px;top:82px"></div><div class="k4-cell" id="k4-c12" style="left:634px;top:82px"></div><div class="k4-rl" style="left:200px;top:154px">attitude</div><div class="k4-cell" id="k4-c20" style="left:430px;top:144px"></div><div class="k4-cell" id="k4-c21" style="left:532px;top:144px"></div><div class="k4-cell" id="k4-c22" style="left:634px;top:144px"></div><div class="k4-rl" style="left:200px;top:216px">gyro bias</div><div class="k4-cell" id="k4-c30" style="left:430px;top:206px"></div><div class="k4-cell" id="k4-c31" style="left:532px;top:206px"></div><div class="k4-cell" id="k4-c32" style="left:634px;top:206px"></div><div class="k4-rl" style="left:200px;top:278px">accel bias</div><div class="k4-cell" id="k4-c40" style="left:430px;top:268px"></div><div class="k4-cell" id="k4-c41" style="left:532px;top:268px"></div><div class="k4-cell" id="k4-c42" style="left:634px;top:268px"></div></div>
+ <div class="k4-h" id="k4-h2"><div class="k4-cap">genuinely still → velocity pinned to zero</div>
+  <svg id="k4-dial" width="400" height="320" viewBox="0 0 400 320"><path d="M60 260 A150 150 0 0 1 340 260" fill="none" stroke="rgba(243,245,255,.25)" stroke-width="10" stroke-linecap="round"/>
+   <text x="200" y="300" fill="#f3f5ff" font-family="JetBrains Mono" font-size="26" text-anchor="middle">v = <tspan id="k4-v">0.42</tspan> m/s</text>
+   <g id="k4-needle"><line x1="200" y1="260" x2="200" y2="125" stroke="#7ee0b5" stroke-width="7" stroke-linecap="round"/></g><circle cx="200" cy="260" r="12" fill="#7ee0b5"/></svg></div>
+ <div class="k4-h" id="k4-h3"><div class="k4-cap" style="color:#c38bf5">a cautious assumption · not a sensor · no control</div>
+  <svg id="k4-env" width="600" height="380" viewBox="0 0 600 380"><ellipse id="k4-eb" cx="300" cy="200" rx="230" ry="150" fill="rgba(195,139,245,.07)" stroke="#c38bf5" stroke-width="3" stroke-dasharray="12 10"/>
+   <circle cx="300" cy="200" r="9" fill="#c38bf5"/><text x="300" y="240" fill="#c38bf5" font-family="Inter" font-size="22" text-anchor="middle">running centre</text>
+   <circle id="k4-ed" cx="300" cy="200" r="11" fill="#7ee0b5"/></svg></div>
+ <div class="k4-h" id="k4-h4"><div class="k4-cap">gravity alignment: tilt corrected slowly</div></div>
+ <div class="k4-h" id="k4-h5"><div class="k4-cap">later readings revise earlier ones</div>
+  <svg id="k4-sm" width="1000" height="360" viewBox="0 0 1000 360">
+   <path id="k4-kink" d="M40 260 C 200 240 300 150 420 200 L 470 60 L 520 210 C 640 260 800 180 960 150" fill="none" stroke="#5ec8f2" stroke-width="5" stroke-linecap="round"/>
+   <path id="k4-fix"  d="M40 260 C 200 240 300 150 420 200 L 470 190 L 520 210 C 640 260 800 180 960 150" fill="none" stroke="#7ee0b5" stroke-width="5" stroke-linecap="round" opacity="0"/>
+   <g id="k4-sweep"><path d="M0 -16 L-30 0 L0 16 Z" fill="#7ee0b5"/></g>
+   <text x="980" y="190" fill="rgba(243,245,255,.6)" font-family="JetBrains Mono" font-size="18" text-anchor="end">schematic</text></svg></div>
+</div></div>
+</div>
+<script>
+(function(){
+gsap.registerPlugin(DrawSVGPlugin, MorphSVGPlugin, MotionPathPlugin);
+
+const P={bg:'#0a0e2e',panel:'#121a45',text:'#f3f5ff',cyan:'#5ec8f2',mint:'#7ee0b5',violet:'#c38bf5',amber:'#f5a35e',red:'#ff6b6b'};
+function rng(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;}}
+function typeOn(tl,sel,text,at,dur){const el=document.querySelector(sel);const o={n:0};el.textContent='';
+  tl.fromTo(o,{n:0},{n:text.length,duration:dur,ease:'none',onUpdate:()=>{el.textContent=text.slice(0,Math.round(o.n));}},at);}
+function countUp(tl,sel,to,dec,at,dur,suffix){const el=document.querySelector(sel);const o={v:0};
+  tl.fromTo(o,{v:0},{v:to,duration:dur,ease:'power3.out',onUpdate:()=>{el.textContent=o.v.toFixed(dec)+(suffix||'');}},at);}
+function inBlur(tl,sel,at,d){tl.fromTo(sel,{opacity:0,filter:'blur(8px)'},{opacity:1,filter:'blur(0px)',duration:d||0.35,ease:'power3.out'},at);}
+function outBlur(tl,sel,at,d){tl.to(sel,{opacity:0,filter:'blur(8px)',duration:d||0.22,ease:'power2.in'},at);}
+function popIn(tl,sel,at,d){tl.fromTo(sel,{opacity:0,scale:0.86},{opacity:1,scale:1,duration:d||0.45,ease:'expo.out'},at);}
+function sweep(tl,sel,at){tl.fromTo(sel,{backgroundPosition:'120% 0'},{backgroundPosition:'-20% 0',duration:0.9,ease:'power2.inOut'},at);
+  tl.fromTo(sel,{opacity:0},{opacity:1,duration:0.15},at);tl.to(sel,{opacity:0,duration:0.2},at+0.75);}
+
+const tl = gsap.timeline({paused:true});
+const D=29.040;
+// slow, never-stopping drift of the whole scene (B-roll feel)
+tl.fromTo('#k4-world',{scale:1.0},{scale:1.03,duration:D,ease:'none'},0);
+
+const C=[0.94, 3.9, 7.18, 13.18, 20.62, 24.54], S=['gyro bias · gravity · tilt, from a still interval', 'error-state Kalman filter on strapdown integration', 'V1 witness · zero-velocity + gyro-bias update', 'V2 speed bound · V2P running centre', 'windowed tilt correction when the gyro is noisy', 'forward-backward (RTS) pass over the whole file'];
+tl.set('#k4-dr',{rotationX:64,rotationY:-18,rotationZ:14},0);
+gsap.set(['.k4-b','.k4-sub','#k4-prior','#k4-lane','.k4-h'],{opacity:0});
+tl.fromTo('#k4-rail',{opacity:1},{opacity:1,duration:0.01},0);
+// one block per sentence, each with its subtitle typed on
+for(let i=0;i<6;i++){
+  tl.fromTo('#k4-b'+i,{opacity:0,y:-40,scale:0.9},{opacity:1,y:0,scale:1,duration:0.55,ease:'expo.out'},C[i]-0.1);
+  tl.set('#k4-s'+i,{opacity:1},C[i]+0.15); typeOn(tl,'#k4-s'+i,S[i],C[i]+0.15,Math.min(1.3,S[i].length*0.028));
+  tl.to('#k4-b'+i,{borderColor:'#7ee0b5',boxShadow:'0 0 36px rgba(126,224,181,.45)',duration:0.3},C[i]+0.1);
+  if(i>0) tl.to('#k4-b'+(i-1),{borderColor:'rgba(94,200,242,.55)',boxShadow:'0 10px 40px rgba(0,0,0,.45)',duration:0.4},C[i]);
+  // stage: one hero visual at a time
+  const e=(i<5?C[i+1]:28.32)-0.3;
+  tl.fromTo('#k4-h'+i,{opacity:0,y:20},{opacity:1,y:0,duration:0.45,ease:'expo.out'},C[i]+0.05);
+  if(i!==0&&i!==4) tl.to('#k4-h'+i,{opacity:0,y:-10,duration:0.3,ease:'power2.in'},e);
+}
+// 0 calibrate (3D): the drone silhouette starts tilted, then levels against gravity
+tl.fromTo('#k4-dr',{rotationX:64,rotationY:-18,rotationZ:14},{rotationX:58,rotationY:0,rotationZ:0,duration:1.8,ease:'power3.inOut'},C[0]+0.5);
+tl.fromTo('#k4-gv',{drawSVG:'0%'},{drawSVG:'100%',duration:0.6,ease:'power2.out'},C[0]+0.2);
+tl.to('#k4-h0',{opacity:0,duration:0.3},C[1]-0.3);
+// 1 filter: 15 slots fill row by row
+for(let r=0;r<5;r++) for(let c=0;c<3;c++) tl.to('#k4-c'+r+c,{backgroundColor:'rgba(94,200,242,.45)',borderColor:'#5ec8f2',duration:0.18},C[1]+0.4+r*0.22+c*0.06);
+// 2 stillness: the needle swings, then snaps to zero on 'zero'
+const vv={v:0.42}; const vt=document.getElementById('k4-v');
+tl.fromTo('#k4-needle',{rotation:-38,svgOrigin:'200 260'},{rotation:24,duration:1.0,ease:'sine.inOut',svgOrigin:'200 260'},C[2]+0.3);
+tl.to('#k4-needle',{rotation:0,duration:0.35,ease:'back.out(2)',svgOrigin:'200 260'},11.18-0.05);
+tl.fromTo(vv,{v:0.42},{v:0,duration:0.35,ease:'power3.out',onUpdate:()=>{vt.textContent=vv.v.toFixed(2);}},11.18-0.05);
+// 3 envelope: a dot wanders but stays inside the soft boundary; PRIOR tag in violet
+tl.fromTo('#k4-ed',{attr:{cx:300,cy:200}},{keyframes:[{attr:{cx:470,cy:140},duration:0.9},{attr:{cx:410,cy:290},duration:0.9},{attr:{cx:180,cy:240},duration:0.9},{attr:{cx:260,cy:130},duration:0.9},{attr:{cx:330,cy:220},duration:0.9}],ease:'sine.inOut'},C[3]+0.3);
+tl.fromTo('#k4-prior',{opacity:0,scale:0.7},{opacity:1,scale:1,duration:0.45,ease:'back.out(1.8)'},C[3]-0.05);
+tl.fromTo('#k4-eb',{drawSVG:'0%'},{drawSVG:'100%',duration:0.9,ease:'power2.inOut'},C[3]+0.15);
+// 4 gravity alignment (3D reprise): the drone reappears tilted and rights itself slowly
+tl.to('#k4-h0',{opacity:1,duration:0.35},C[4]+0.05);
+tl.set('#k4-h0 .k4-cap',{opacity:0},C[4]); tl.set('#k4-h4',{opacity:1},C[4]+0.05);
+tl.fromTo('#k4-dr',{rotationX:58,rotationY:22,rotationZ:-16},{rotationX:58,rotationY:0,rotationZ:0,duration:2.6,ease:'power1.inOut'},C[4]+0.35);
+tl.to(['#k4-h0','#k4-h4'],{opacity:0,duration:0.3},C[5]-0.3);
+// 5 smoother: an arrow sweeps backwards along the path and straightens the earlier kink
+tl.fromTo('#k4-kink',{drawSVG:'0%'},{drawSVG:'100%',duration:0.8,ease:'power2.out'},C[5]+0.1);
+tl.fromTo('#k4-sweep',{opacity:0},{opacity:1,duration:0.2},26.3-0.4);
+tl.fromTo('#k4-sweep',{motionPath:{path:'#k4-fix',align:'#k4-fix',alignOrigin:[0.5,0.5],start:1,end:1}},{motionPath:{path:'#k4-fix',align:'#k4-fix',alignOrigin:[0.5,0.5],start:1,end:0},duration:1.5,ease:'power2.inOut'},26.3-0.4);
+tl.to('#k4-kink',{morphSVG:'#k4-fix',stroke:'#7ee0b5',duration:0.6,ease:'power3.inOut'},26.3+0.45);
+// fault lane, then the full pipeline holds for its end pause
+tl.fromTo('#k4-lane',{opacity:0,y:10},{opacity:1,y:0,duration:0.5,ease:'expo.out'},26.58);
+tl.to('#k4-b5',{borderColor:'rgba(94,200,242,.55)',boxShadow:'0 10px 40px rgba(0,0,0,.45)',duration:0.4},28.32);
+tl.to('#k4-h5',{opacity:0,duration:0.4},28.32+0.2);
+// hand-off: the pipeline collapses into main.py (S-c)
+tl.to(['.k4-sub','#k4-lane','#k4-prior','.k4-slot'],{opacity:0,duration:0.3},28.29);
+tl.to('.k4-b',{x:(i)=>[850,560,270,-20,-310,-600][i],y:110,scale:0.3,opacity:0,duration:0.6,ease:'power3.in',stagger:0.03},28.29+0.05);
+tl.to('#k4-rail',{scaleX:0,transformOrigin:'50% 50%',opacity:0,duration:0.55,ease:'power3.in'},28.29+0.05);
+
+window.__timelines["k4"] = tl;
+})();
+</script>
+</template>

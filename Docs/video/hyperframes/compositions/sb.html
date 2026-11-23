@@ -1,0 +1,70 @@
+<template>
+<style>
+
+#root{position:absolute;inset:0;overflow:hidden;font-family:Inter,sans-serif;color:#f3f5ff;}
+#root .world{position:absolute;inset:0;transform-origin:50% 45%;}
+#root .mono{font-family:'JetBrains Mono',monospace;}
+#root .panel{position:absolute;background:rgba(18,26,69,.86);border:1px solid rgba(94,200,242,.22);border-radius:22px;
+  box-shadow:0 18px 60px rgba(0,0,0,.45), inset 0 1px 0 rgba(255,255,255,.05);}
+#root .label{font-weight:700;letter-spacing:.01em;}
+#root .sub{color:rgba(243,245,255,.72);font-weight:400;}
+#root .tag{position:absolute;padding:6px 14px;border-radius:999px;font-weight:700;font-size:22px;letter-spacing:.06em;}
+#root .glow-c{text-shadow:0 0 18px rgba(94,200,242,.55),0 0 2px rgba(94,200,242,.9);}
+#root .glow-m{text-shadow:0 0 18px rgba(126,224,181,.55),0 0 2px rgba(126,224,181,.9);}
+#root [data-layout-ignore]{}
+#root .schem{position:absolute;font-family:'JetBrains Mono',monospace;font-size:18px;letter-spacing:.12em;
+  color:rgba(243,245,255,.55);text-transform:lowercase;border:1px solid rgba(243,245,255,.25);padding:4px 10px;border-radius:6px;}
+#root .sweep{position:absolute;inset:0;pointer-events:none;mix-blend-mode:screen;
+  background:linear-gradient(105deg,transparent 35%,rgba(255,255,255,.22) 50%,transparent 65%);background-size:300% 100%;}
+
+
+#sb-node{position:absolute;left:690px;top:295px;width:140px;height:140px;border-radius:50%;border:3px solid #5ec8f2;
+  background:radial-gradient(circle,#1b2a6e 0%,#121a45 70%);box-shadow:0 0 40px rgba(94,200,242,.45),inset 0 0 30px rgba(94,200,242,.25);}
+#sb-node .n{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:22px;letter-spacing:.14em;}
+#sb-inner{position:absolute;inset:0;background:radial-gradient(ellipse at 50% 40%,#16205a,#0b1035 75%);}
+#sb-rail{position:absolute;left:150px;top:328px;width:1620px;height:4px;border-radius:2px;background:#5ec8f2;box-shadow:0 0 18px #5ec8f2;}
+.sb-slot{position:absolute;top:255px;width:250px;height:150px;border-radius:18px;border:2px dashed rgba(94,200,242,.35);}
+#sb-txt{position:absolute;left:0;width:1920px;top:560px;text-align:center;font-size:46px;font-weight:700;letter-spacing:.3em;color:rgba(243,245,255,.85);}
+
+</style>
+<div id="root" data-composition-id="sb" data-width="1920" data-height="1080" data-duration="3.490" >
+<div class="world" id="sb-world">
+<div id="sb-inner"><div id="sb-rail"></div><div class="sb-slot" id="sb-s0" style="left:110px"></div><div class="sb-slot" id="sb-s1" style="left:400px"></div><div class="sb-slot" id="sb-s2" style="left:690px"></div><div class="sb-slot" id="sb-s3" style="left:980px"></div><div class="sb-slot" id="sb-s4" style="left:1270px"></div><div class="sb-slot" id="sb-s5" style="left:1560px"></div><div id="sb-txt">IN STAGES</div></div>
+<div id="sb-node"><div class="n">VORTEX</div></div></div>
+</div>
+<script>
+(function(){
+gsap.registerPlugin(DrawSVGPlugin, MorphSVGPlugin, MotionPathPlugin);
+
+const P={bg:'#0a0e2e',panel:'#121a45',text:'#f3f5ff',cyan:'#5ec8f2',mint:'#7ee0b5',violet:'#c38bf5',amber:'#f5a35e',red:'#ff6b6b'};
+function rng(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;}}
+function typeOn(tl,sel,text,at,dur){const el=document.querySelector(sel);const o={n:0};el.textContent='';
+  tl.fromTo(o,{n:0},{n:text.length,duration:dur,ease:'none',onUpdate:()=>{el.textContent=text.slice(0,Math.round(o.n));}},at);}
+function countUp(tl,sel,to,dec,at,dur,suffix){const el=document.querySelector(sel);const o={v:0};
+  tl.fromTo(o,{v:0},{v:to,duration:dur,ease:'power3.out',onUpdate:()=>{el.textContent=o.v.toFixed(dec)+(suffix||'');}},at);}
+function inBlur(tl,sel,at,d){tl.fromTo(sel,{opacity:0,filter:'blur(8px)'},{opacity:1,filter:'blur(0px)',duration:d||0.35,ease:'power3.out'},at);}
+function outBlur(tl,sel,at,d){tl.to(sel,{opacity:0,filter:'blur(8px)',duration:d||0.22,ease:'power2.in'},at);}
+function popIn(tl,sel,at,d){tl.fromTo(sel,{opacity:0,scale:0.86},{opacity:1,scale:1,duration:d||0.45,ease:'expo.out'},at);}
+function sweep(tl,sel,at){tl.fromTo(sel,{backgroundPosition:'120% 0'},{backgroundPosition:'-20% 0',duration:0.9,ease:'power2.inOut'},at);
+  tl.fromTo(sel,{opacity:0},{opacity:1,duration:0.15},at);tl.to(sel,{opacity:0,duration:0.2},at+0.75);}
+
+const tl = gsap.timeline({paused:true});
+const D=3.490;
+// slow, never-stopping drift of the whole scene (B-roll feel)
+tl.fromTo('#sb-world',{scale:1.0},{scale:1.03,duration:D,ease:'none'},0);
+
+// zoom-through: the camera dives into the VORTEX node until its inside fills the frame, then it opens like an iris
+tl.set('#sb-inner',{clipPath:'circle(0px at 760px 365px)'},0);
+tl.fromTo('#sb-node',{scale:1},{scale:16,duration:0.9,ease:'power3.in'},0.8999999999999999);
+tl.to('#sb-node .n',{opacity:0,duration:0.25},0.8999999999999999+0.1);
+tl.to('#sb-inner',{clipPath:'circle(1400px at 760px 365px)',duration:0.75,ease:'expo.out'},0.8999999999999999+0.75);
+tl.to('#sb-node',{opacity:0,duration:0.2},0.8999999999999999+0.9);
+tl.fromTo('#sb-rail',{scaleX:0,transformOrigin:'0 50%'},{scaleX:1,duration:0.9,ease:'expo.out'},0.8999999999999999+0.95);
+tl.fromTo('.sb-slot',{opacity:0,y:20},{opacity:1,y:0,duration:0.5,ease:'expo.out',stagger:0.08},2.55-0.4);
+tl.fromTo('#sb-txt',{opacity:0,filter:'blur(8px)'},{opacity:1,filter:'blur(0px)',duration:0.4},2.55-0.15);
+tl.to('#sb-txt',{opacity:0,filter:'blur(8px)',duration:0.25},2.99);
+
+window.__timelines["sb"] = tl;
+})();
+</script>
+</template>

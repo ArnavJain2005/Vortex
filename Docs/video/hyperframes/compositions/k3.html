@@ -1,0 +1,132 @@
+<template>
+<style>
+
+#root{position:absolute;inset:0;overflow:hidden;font-family:Inter,sans-serif;color:#f3f5ff;}
+#root .world{position:absolute;inset:0;transform-origin:50% 45%;}
+#root .mono{font-family:'JetBrains Mono',monospace;}
+#root .panel{position:absolute;background:rgba(18,26,69,.86);border:1px solid rgba(94,200,242,.22);border-radius:22px;
+  box-shadow:0 18px 60px rgba(0,0,0,.45), inset 0 1px 0 rgba(255,255,255,.05);}
+#root .label{font-weight:700;letter-spacing:.01em;}
+#root .sub{color:rgba(243,245,255,.72);font-weight:400;}
+#root .tag{position:absolute;padding:6px 14px;border-radius:999px;font-weight:700;font-size:22px;letter-spacing:.06em;}
+#root .glow-c{text-shadow:0 0 18px rgba(94,200,242,.55),0 0 2px rgba(94,200,242,.9);}
+#root .glow-m{text-shadow:0 0 18px rgba(126,224,181,.55),0 0 2px rgba(126,224,181,.9);}
+#root [data-layout-ignore]{}
+#root .schem{position:absolute;font-family:'JetBrains Mono',monospace;font-size:18px;letter-spacing:.12em;
+  color:rgba(243,245,255,.55);text-transform:lowercase;border:1px solid rgba(243,245,255,.25);padding:4px 10px;border-radius:6px;}
+#root .sweep{position:absolute;inset:0;pointer-events:none;mix-blend-mode:screen;
+  background:linear-gradient(105deg,transparent 35%,rgba(255,255,255,.22) 50%,transparent 65%);background-size:300% 100%;}
+
+
+#k3-in{left:110px;top:170px;width:450px;height:390px;overflow:hidden;}
+#k3-in .hd{position:absolute;left:22px;top:16px;font-size:22px;font-weight:700;} #k3-in .hd span{color:#5ec8f2;font-family:'JetBrains Mono',monospace;}
+#k3-in .meta{position:absolute;left:22px;top:52px;font-size:17px;color:#7ee0b5;}
+.k3-row{position:absolute;left:22px;width:406px;height:20px;border-radius:5px;background:rgba(94,200,242,.20);}
+#k3-node{position:absolute;left:690px;top:295px;width:140px;height:140px;border-radius:50%;border:3px solid #5ec8f2;
+  background:radial-gradient(circle,#1b2a6e 0%,#121a45 70%);box-shadow:0 0 40px rgba(94,200,242,.45),inset 0 0 30px rgba(94,200,242,.25);}
+#k3-node .n{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:22px;letter-spacing:.14em;}
+#k3-tag{position:absolute;left:615px;top:236px;width:290px;text-align:center;font-size:19px;color:#c38bf5;font-weight:700;letter-spacing:.05em;}
+#k3-svg{position:absolute;left:0;top:0;width:1920px;height:1080px;overflow:visible;}
+.k3-m{position:absolute;width:0;height:0;}
+.k3-dot{position:absolute;left:-7px;top:-7px;width:14px;height:14px;border-radius:50%;background:#7ee0b5;box-shadow:0 0 12px rgba(126,224,181,.8);}
+.k3-arr{position:absolute;left:0;top:-1.5px;width:34px;height:3px;background:#7ee0b5;transform-origin:0 50%;}
+.k3-arr:after{content:'';position:absolute;right:-2px;top:-5px;border-left:10px solid #7ee0b5;border-top:6.5px solid transparent;border-bottom:6.5px solid transparent;}
+.k3-m.blind .k3-dot{background:transparent;border:2px dashed #f5a35e;box-shadow:0 0 26px 10px rgba(245,163,94,.25);}
+.k3-m.blind .k3-arr{background:#f5a35e;opacity:.55;} .k3-m.blind .k3-arr:after{border-left-color:#f5a35e;}
+.k3-giz{position:absolute;left:0;top:0;width:0;height:0;perspective:600px;}
+.k3-gz{position:absolute;left:0;top:0;transform-style:preserve-3d;}
+.k3-ax{position:absolute;left:0;top:-2px;height:4px;width:70px;transform-origin:0 50%;border-radius:2px;}
+.k3-ax i{position:absolute;right:-6px;top:-14px;font-style:normal;font-size:16px;font-weight:700;font-family:'JetBrains Mono',monospace;}
+#k3-out{position:absolute;left:560px;top:690px;font-size:30px;color:#f3f5ff;letter-spacing:.02em;}
+#k3-outc{position:absolute;left:560px;top:742px;font-size:22px;color:rgba(243,245,255,.7);}
+#k3-nog{position:absolute;font-size:18px;color:rgba(243,245,255,.6);font-family:'JetBrains Mono',monospace;}
+#k3-sch{left:1640px;top:110px;}
+
+</style>
+<div id="root" data-composition-id="k3" data-width="1920" data-height="1080" data-duration="15.710" >
+<div class="world" id="k3-world">
+<svg id="k3-svg" viewBox="0 0 1920 1080"><path id="k3-path" d="M 840 365 C 960 360 1010 250 1120 240 S 1300 330 1380 300 S 1520 170 1600 200 S 1700 330 1760 300" fill="none" stroke="rgba(94,200,242,.35)" stroke-width="3" stroke-dasharray="2 10" stroke-linecap="round"/></svg>
+<div class="panel" id="k3-in"><div class="hd">input <span>imu0/data.csv</span></div><div class="meta">EuRoC format · ~200 Hz · gyro + accel</div><div class="k3-row" id="k3-r0" style="top:96px"></div><div class="k3-row" id="k3-r1" style="top:122px"></div><div class="k3-row" id="k3-r2" style="top:148px"></div><div class="k3-row" id="k3-r3" style="top:174px"></div><div class="k3-row" id="k3-r4" style="top:200px"></div><div class="k3-row" id="k3-r5" style="top:226px"></div><div class="k3-row" id="k3-r6" style="top:252px"></div><div class="k3-row" id="k3-r7" style="top:278px"></div><div class="k3-row" id="k3-r8" style="top:304px"></div><div class="k3-row" id="k3-r9" style="top:330px"></div><div class="k3-row" id="k3-r10" style="top:356px"></div></div>
+<div id="k3-tag">offline · smoothing allowed</div>
+<div id="k3-node"><div class="n">VORTEX</div></div>
+<div class="k3-m" id="k3-m0"><div class="k3-dot"></div><div class="k3-arr"></div></div><div class="k3-m" id="k3-m1"><div class="k3-dot"></div><div class="k3-arr"></div></div><div class="k3-m" id="k3-m2"><div class="k3-dot"></div><div class="k3-arr"></div></div><div class="k3-m" id="k3-m3"><div class="k3-dot"></div><div class="k3-arr"></div></div><div class="k3-m" id="k3-m4"><div class="k3-dot"></div><div class="k3-arr"></div></div><div class="k3-m" id="k3-m5"><div class="k3-dot"></div><div class="k3-arr"></div></div><div class="k3-m" id="k3-m6"><div class="k3-dot"></div><div class="k3-arr"></div></div><div class="k3-m" id="k3-m7"><div class="k3-dot"></div><div class="k3-arr"></div></div><div class="k3-m" id="k3-m8"><div class="k3-dot"></div><div class="k3-arr"></div></div><div class="k3-m" id="k3-m9"><div class="k3-dot"></div><div class="k3-arr"></div></div><div class="k3-m" id="k3-m10"><div class="k3-dot"></div><div class="k3-arr"></div></div><div class="k3-m" id="k3-m11"><div class="k3-dot"></div><div class="k3-arr"></div></div><div class="k3-m" id="k3-m12"><div class="k3-dot"></div><div class="k3-arr"></div></div><div class="k3-m" id="k3-m13"><div class="k3-dot"></div><div class="k3-arr"></div></div><div class="k3-m" id="k3-m14"><div class="k3-dot"></div><div class="k3-arr"></div></div><div class="k3-m" id="k3-m15"><div class="k3-dot"></div><div class="k3-arr"></div></div><div class="k3-m" id="k3-m16"><div class="k3-dot"></div><div class="k3-arr"></div></div><div class="k3-m" id="k3-m17"><div class="k3-dot"></div><div class="k3-arr"></div></div><div class="k3-m" id="k3-m18"><div class="k3-dot"></div><div class="k3-arr"></div></div><div class="k3-m" id="k3-m19"><div class="k3-dot"></div><div class="k3-arr"></div></div><div class="k3-m" id="k3-m20"><div class="k3-dot"></div><div class="k3-arr"></div></div><div class="k3-m" id="k3-m21"><div class="k3-dot"></div><div class="k3-arr"></div></div><div class="k3-m blind" id="k3-m22"><div class="k3-dot"></div><div class="k3-arr"></div></div><div class="k3-m blind" id="k3-m23"><div class="k3-dot"></div><div class="k3-arr"></div></div><div class="k3-m blind" id="k3-m24"><div class="k3-dot"></div><div class="k3-arr"></div></div><div class="k3-m blind" id="k3-m25"><div class="k3-dot"></div><div class="k3-arr"></div></div><div class="k3-giz" id="k3-g0"><div class="k3-gz" id="k3-gz0">
+<div class="k3-ax" style="background:#ff6b6b;transform:rotateZ(0deg)"><i style="color:#ff6b6b">x</i></div>
+<div class="k3-ax" style="background:#7ee0b5;transform:rotateZ(-90deg)"><i style="color:#7ee0b5">y</i></div>
+<div class="k3-ax" style="background:#5ec8f2;transform:rotateY(-90deg)"><i style="color:#5ec8f2">z</i></div></div></div><div class="k3-giz" id="k3-g1"><div class="k3-gz" id="k3-gz1">
+<div class="k3-ax" style="background:#ff6b6b;transform:rotateZ(0deg)"><i style="color:#ff6b6b">x</i></div>
+<div class="k3-ax" style="background:#7ee0b5;transform:rotateZ(-90deg)"><i style="color:#7ee0b5">y</i></div>
+<div class="k3-ax" style="background:#5ec8f2;transform:rotateY(-90deg)"><i style="color:#5ec8f2">z</i></div></div></div><div class="k3-giz" id="k3-g2"><div class="k3-gz" id="k3-gz2">
+<div class="k3-ax" style="background:#ff6b6b;transform:rotateZ(0deg)"><i style="color:#ff6b6b">x</i></div>
+<div class="k3-ax" style="background:#7ee0b5;transform:rotateZ(-90deg)"><i style="color:#7ee0b5">y</i></div>
+<div class="k3-ax" style="background:#5ec8f2;transform:rotateY(-90deg)"><i style="color:#5ec8f2">z</i></div></div></div>
+<div id="k3-nog">no output</div>
+<div id="k3-out" class="mono"></div><div id="k3-outc">one pose per input row, in order</div>
+<div class="schem" id="k3-sch" data-layout-ignore>schematic</div></div>
+</div>
+<script>
+(function(){
+gsap.registerPlugin(DrawSVGPlugin, MorphSVGPlugin, MotionPathPlugin);
+
+const P={bg:'#0a0e2e',panel:'#121a45',text:'#f3f5ff',cyan:'#5ec8f2',mint:'#7ee0b5',violet:'#c38bf5',amber:'#f5a35e',red:'#ff6b6b'};
+function rng(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;}}
+function typeOn(tl,sel,text,at,dur){const el=document.querySelector(sel);const o={n:0};el.textContent='';
+  tl.fromTo(o,{n:0},{n:text.length,duration:dur,ease:'none',onUpdate:()=>{el.textContent=text.slice(0,Math.round(o.n));}},at);}
+function countUp(tl,sel,to,dec,at,dur,suffix){const el=document.querySelector(sel);const o={v:0};
+  tl.fromTo(o,{v:0},{v:to,duration:dur,ease:'power3.out',onUpdate:()=>{el.textContent=o.v.toFixed(dec)+(suffix||'');}},at);}
+function inBlur(tl,sel,at,d){tl.fromTo(sel,{opacity:0,filter:'blur(8px)'},{opacity:1,filter:'blur(0px)',duration:d||0.35,ease:'power3.out'},at);}
+function outBlur(tl,sel,at,d){tl.to(sel,{opacity:0,filter:'blur(8px)',duration:d||0.22,ease:'power2.in'},at);}
+function popIn(tl,sel,at,d){tl.fromTo(sel,{opacity:0,scale:0.86},{opacity:1,scale:1,duration:d||0.45,ease:'expo.out'},at);}
+function sweep(tl,sel,at){tl.fromTo(sel,{backgroundPosition:'120% 0'},{backgroundPosition:'-20% 0',duration:0.9,ease:'power2.inOut'},at);
+  tl.fromTo(sel,{opacity:0},{opacity:1,duration:0.15},at);tl.to(sel,{opacity:0,duration:0.2},at+0.75);}
+
+const tl = gsap.timeline({paused:true});
+const D=15.710;
+// slow, never-stopping drift of the whole scene (B-roll feel)
+tl.fromTo('#k3-world',{scale:1.0},{scale:1.03,duration:D,ease:'none'},0);
+
+const path=MotionPathPlugin.getRawPath('#k3-path'); MotionPathPlugin.cacheRawPathMeasurements(path);
+const M=26, pos=[];
+for(let i=0;i<M;i++){ const p=MotionPathPlugin.getPositionOnPath(path, 0.03+i*0.94/(M-1), true); pos.push(p);
+  const el=document.getElementById('k3-m'+i); el.style.left=p.x+'px'; el.style.top=p.y+'px';
+  el.querySelector('.k3-arr').style.transform='rotate('+(p.angle-25+Math.sin(i*1.7)*35).toFixed(1)+'deg)'; }
+const nog=document.getElementById('k3-nog'); nog.style.left=(pos[10].x-50)+'px'; nog.style.top=(pos[10].y+34)+'px';
+[0,1,2].forEach(k=>{ const p=pos[[3,6,15][k]]; const g=document.getElementById('k3-g'+k); g.style.left=p.x+'px'; g.style.top=p.y+'px'; });
+gsap.set('.k3-m',{opacity:0,scale:0.4}); gsap.set('.k3-giz',{opacity:0});
+// enter: the K-2 card lands here as the input card; node and tag build
+tl.fromTo('#k3-in',{opacity:0},{opacity:1,duration:0.2},0.54+0.42);
+tl.fromTo('.k3-row',{scaleX:0,transformOrigin:'0 50%'},{scaleX:1,duration:0.4,ease:'expo.out',stagger:0.04},0.54+0.5);
+popIn(tl,'#k3-node',0.54-0.1,0.6);
+tl.fromTo('#k3-tag',{opacity:0,y:10},{opacity:1,y:0,duration:0.5,ease:'expo.out'},2.06-0.1);
+// rows stream from the card into the node (data dust)
+for(let i=0;i<14;i++){ const d=document.createElement('div'); d.className='k3-fly'; d.id='k3-f'+i;
+  d.style.cssText='position:absolute;left:560px;top:'+(270+(i%7)*26)+'px;width:26px;height:6px;border-radius:3px;background:#5ec8f2;box-shadow:0 0 10px #5ec8f2;opacity:0';
+  document.getElementById('k3-world').appendChild(d);
+  const t=0.54+0.3+i*0.22; tl.fromTo(d,{x:0,y:0,opacity:0},{keyframes:[{opacity:1,duration:0.08},{x:190,y:(365-(270+(i%7)*26))*1.0,duration:0.42,ease:'power2.in'},{opacity:0,duration:0.06}]},t); }
+tl.to('#k3-path',{attr:{'stroke-dasharray':'2 10'},duration:0.1},3.66);
+tl.fromTo('#k3-path',{drawSVG:'0%'},{drawSVG:'100%',duration:1.6,ease:'power2.inOut'},3.66-0.2);
+// one pose marker per row, in order (rows 9-12 never arrive -> no marker)
+for(let i=0;i<22;i++){ if(i>=9&&i<=12) continue; tl.to('#k3-m'+i,{opacity:1,scale:1,duration:0.35,ease:'expo.out'},3.66+0.1+i*0.07); }
+// approved 3D #1: three markers open into x/y/z gizmos, turn, then flatten back into the path
+[0,1,2].forEach(k=>{ const g='#k3-g'+k, z='#k3-gz'+k;
+  tl.fromTo(g,{opacity:0,scale:0.3},{opacity:1,scale:1,duration:0.45,ease:'expo.out'},5.74+k*0.12);
+  tl.fromTo(z,{rotationX:-20,rotationY:30,rotationZ:0},{rotationX:-55,rotationY:160+k*40,rotationZ:25,duration:1.7,ease:'power2.inOut'},5.74+k*0.12);
+  tl.to(z,{rotationX:0,rotationY:0,rotationZ:0,scale:0.4,duration:0.5,ease:'power3.in'},5.74+1.9);
+  tl.to(g,{opacity:0,duration:0.25},5.74+2.25); });
+// output line, typed
+inBlur(tl,'#k3-outc',6.94+0.6,0.4);
+typeOn(tl,'#k3-out','timestamp tx ty tz qx qy qz qw',6.94-0.3,0.9);
+// missing rows: gaps in the input, no marker for them
+tl.to(['#k3-r4','#k3-r5','#k3-r6'],{opacity:0.08,duration:0.3},9.26);
+tl.fromTo('#k3-nog',{opacity:0},{opacity:1,duration:0.4},9.26+0.25);
+// blind rows: grey-amber rows -> faded dashed markers with an uncertainty halo
+tl.to(['#k3-r8','#k3-r9','#k3-r10'],{backgroundColor:'rgba(245,163,94,.28)',duration:0.4},12.3);
+for(let i=22;i<26;i++) tl.to('#k3-m'+i,{opacity:0.7,scale:1,duration:0.5,ease:'expo.out'},12.3+0.4+(i-22)*0.22);
+tl.fromTo('.k3-m.blind .k3-dot',{scale:0.6},{scale:1.25,duration:0.8,ease:'sine.inOut'},14.22);
+tl.fromTo('#k3-sch',{opacity:0},{opacity:1,duration:0.5},3.66+0.4);
+// hand-off: everything but the node clears; S-b dives into it
+tl.to(['#k3-in','#k3-tag','.k3-m','#k3-path','#k3-out','#k3-outc','#k3-nog','#k3-sch'],{opacity:0,filter:'blur(10px)',duration:0.45,ease:'power2.in'},14.81);
+
+window.__timelines["k3"] = tl;
+})();
+</script>
+</template>

@@ -1,0 +1,95 @@
+<template>
+<style>
+
+#root{position:absolute;inset:0;overflow:hidden;font-family:Inter,sans-serif;color:#f3f5ff;}
+#root .world{position:absolute;inset:0;transform-origin:50% 45%;}
+#root .mono{font-family:'JetBrains Mono',monospace;}
+#root .panel{position:absolute;background:rgba(18,26,69,.86);border:1px solid rgba(94,200,242,.22);border-radius:22px;
+  box-shadow:0 18px 60px rgba(0,0,0,.45), inset 0 1px 0 rgba(255,255,255,.05);}
+#root .label{font-weight:700;letter-spacing:.01em;}
+#root .sub{color:rgba(243,245,255,.72);font-weight:400;}
+#root .tag{position:absolute;padding:6px 14px;border-radius:999px;font-weight:700;font-size:22px;letter-spacing:.06em;}
+#root .glow-c{text-shadow:0 0 18px rgba(94,200,242,.55),0 0 2px rgba(94,200,242,.9);}
+#root .glow-m{text-shadow:0 0 18px rgba(126,224,181,.55),0 0 2px rgba(126,224,181,.9);}
+#root [data-layout-ignore]{}
+#root .schem{position:absolute;font-family:'JetBrains Mono',monospace;font-size:18px;letter-spacing:.12em;
+  color:rgba(243,245,255,.55);text-transform:lowercase;border:1px solid rgba(243,245,255,.25);padding:4px 10px;border-radius:6px;}
+#root .sweep{position:absolute;inset:0;pointer-events:none;mix-blend-mode:screen;
+  background:linear-gradient(105deg,transparent 35%,rgba(255,255,255,.22) 50%,transparent 65%);background-size:300% 100%;}
+
+
+.k5-g{position:absolute;top:130px;overflow:visible;}
+#k5-docker{position:absolute;left:1065px;top:600px;width:520px;text-align:center;font-family:'JetBrains Mono',monospace;font-size:27px;color:rgba(243,245,255,.6);}
+#k5-chips{position:absolute;left:0;width:1920px;top:770px;display:flex;justify-content:center;gap:18px;flex-wrap:wrap;padding:0 160px;}
+.k5-c{padding:12px 22px;border-radius:999px;border:1px solid rgba(126,224,181,.5);background:rgba(126,224,181,.08);font-size:25px;color:#f3f5ff;}
+#k5-well{position:absolute;left:0;width:1920px;top:62px;text-align:center;font-size:30px;font-weight:700;letter-spacing:.2em;color:#7ee0b5;}
+
+</style>
+<div id="root" data-composition-id="k5" data-width="1920" data-height="1080" data-duration="9.670" >
+<div class="world" id="k5-world">
+<svg class="k5-g" id="k5-mem" style="left:340px" width="520" height="440" viewBox="0 0 520 440">
+<path d="M118.58 371.42 A200 200 0 1 1 401.42 371.42" fill="none" stroke="rgba(243,245,255,.12)" stroke-width="30" stroke-linecap="round"/>
+<path id="k5-mem-head" d="M118.58 371.42 A200 200 0 1 1 401.42 371.42" fill="none" stroke="rgba(126,224,181,.0)" stroke-width="30" stroke-linecap="round"/>
+<path id="k5-mem-arc" d="M118.58 371.42 A200 200 0 1 1 401.42 371.42" fill="none" stroke="#5ec8f2" stroke-width="30" stroke-linecap="round"/>
+<line id="k5-mem-lim" x1="0" y1="0" x2="0" y2="0" stroke="#ff6b6b" stroke-width="8" stroke-linecap="round"/>
+<text x="260" y="250" text-anchor="middle" fill="#f3f5ff" font-family="Inter" font-weight="900" font-size="92"><tspan id="k5-mem-n">0.0</tspan><tspan font-size="44" font-weight="700" dx="10">MB</tspan></text>
+<text x="260" y="300" text-anchor="middle" fill="rgba(243,245,255,.7)" font-family="Inter" font-size="26">of 8 MB limit</text>
+<text x="260" y="420" text-anchor="middle" fill="#f3f5ff" font-family="Inter" font-weight="700" font-size="30">peak memory · whole run</text></svg><svg class="k5-g" id="k5-cpu" style="left:1065px" width="520" height="440" viewBox="0 0 520 440">
+<path d="M118.58 371.42 A200 200 0 1 1 401.42 371.42" fill="none" stroke="rgba(243,245,255,.12)" stroke-width="30" stroke-linecap="round"/>
+<path id="k5-cpu-head" d="M118.58 371.42 A200 200 0 1 1 401.42 371.42" fill="none" stroke="rgba(126,224,181,.0)" stroke-width="30" stroke-linecap="round"/>
+<path id="k5-cpu-arc" d="M118.58 371.42 A200 200 0 1 1 401.42 371.42" fill="none" stroke="#5ec8f2" stroke-width="30" stroke-linecap="round"/>
+<line id="k5-cpu-lim" x1="0" y1="0" x2="0" y2="0" stroke="#ff6b6b" stroke-width="8" stroke-linecap="round"/>
+<text x="260" y="250" text-anchor="middle" fill="#f3f5ff" font-family="Inter" font-weight="900" font-size="92"><tspan id="k5-cpu-n">0.0</tspan><tspan font-size="44" font-weight="700" dx="10">ms</tspan></text>
+<text x="260" y="300" text-anchor="middle" fill="rgba(243,245,255,.7)" font-family="Inter" font-size="26">of 20 ms limit</text>
+<text x="260" y="420" text-anchor="middle" fill="#f3f5ff" font-family="Inter" font-weight="700" font-size="30">per IMU-second</text></svg>
+<div id="k5-docker">Linux Docker</div>
+<div id="k5-well">WELL INSIDE THE LIMITS</div>
+<div id="k5-chips"><div class="k5-c" id="k5-c0">one thread</div><div class="k5-c" id="k5-c1">standard library only</div><div class="k5-c" id="k5-c2">never crashes on any readable input: writes a valid pose for every row</div><div class="k5-c" id="k5-c3">521 tests passed</div></div></div>
+</div>
+<script>
+(function(){
+gsap.registerPlugin(DrawSVGPlugin, MorphSVGPlugin, MotionPathPlugin);
+
+const P={bg:'#0a0e2e',panel:'#121a45',text:'#f3f5ff',cyan:'#5ec8f2',mint:'#7ee0b5',violet:'#c38bf5',amber:'#f5a35e',red:'#ff6b6b'};
+function rng(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;}}
+function typeOn(tl,sel,text,at,dur){const el=document.querySelector(sel);const o={n:0};el.textContent='';
+  tl.fromTo(o,{n:0},{n:text.length,duration:dur,ease:'none',onUpdate:()=>{el.textContent=text.slice(0,Math.round(o.n));}},at);}
+function countUp(tl,sel,to,dec,at,dur,suffix){const el=document.querySelector(sel);const o={v:0};
+  tl.fromTo(o,{v:0},{v:to,duration:dur,ease:'power3.out',onUpdate:()=>{el.textContent=o.v.toFixed(dec)+(suffix||'');}},at);}
+function inBlur(tl,sel,at,d){tl.fromTo(sel,{opacity:0,filter:'blur(8px)'},{opacity:1,filter:'blur(0px)',duration:d||0.35,ease:'power3.out'},at);}
+function outBlur(tl,sel,at,d){tl.to(sel,{opacity:0,filter:'blur(8px)',duration:d||0.22,ease:'power2.in'},at);}
+function popIn(tl,sel,at,d){tl.fromTo(sel,{opacity:0,scale:0.86},{opacity:1,scale:1,duration:d||0.45,ease:'expo.out'},at);}
+function sweep(tl,sel,at){tl.fromTo(sel,{backgroundPosition:'120% 0'},{backgroundPosition:'-20% 0',duration:0.9,ease:'power2.inOut'},at);
+  tl.fromTo(sel,{opacity:0},{opacity:1,duration:0.15},at);tl.to(sel,{opacity:0,duration:0.2},at+0.75);}
+
+const tl = gsap.timeline({paused:true});
+const D=9.670;
+// slow, never-stopping drift of the whole scene (B-roll feel)
+tl.fromTo('#k5-world',{scale:1.0},{scale:1.03,duration:D,ease:'none'},0);
+
+// arc geometry: 270-degree sweep; value fraction f of the limit
+function arcPt(f){ const a0=Math.PI*(0.75), a=a0+f*Math.PI*1.5; return [260+200*Math.cos(a), 230+200*Math.sin(a)]; }
+['mem','cpu'].forEach(g=>{ const p=arcPt(1.0); const l=document.getElementById('k5-'+g+'-lim');
+  const dx=Math.cos(Math.PI*2.25), dy=Math.sin(Math.PI*2.25); l.setAttribute('x1',p[0]-dx*26); l.setAttribute('y1',p[1]-dy*26); l.setAttribute('x2',p[0]+dx*26); l.setAttribute('y2',p[1]+dy*26); });
+tl.fromTo('.k5-g',{opacity:0,scale:0.6,transformOrigin:'50% 50%'},{opacity:1,scale:1,duration:0.6,ease:'expo.out',stagger:0.08},0.15);
+tl.set(['#k5-mem-arc','#k5-cpu-arc'],{drawSVG:'0%'},0);
+tl.fromTo(['#k5-mem-lim','#k5-cpu-lim'],{opacity:0},{opacity:1,duration:0.3},0.6);
+// 3.5 MB of 8 MB; 6.6 ms of 20 ms: arcs fill and numbers count up, landing on the spoken word
+tl.to('#k5-mem-arc',{drawSVG:'0% '+(3.5/8*100).toFixed(2)+'%',duration:1.0,ease:'power3.out'},0.94-0.6);
+countUp(tl,'#k5-mem-n',3.5,1,0.94-0.6,1.0);
+tl.to('#k5-cpu-arc',{drawSVG:'0% '+(6.6/20*100).toFixed(2)+'%',duration:1.0,ease:'power3.out'},3.5-0.6);
+countUp(tl,'#k5-cpu-n',6.6,1,3.5-0.6,1.0);
+inBlur(tl,'#k5-docker',3.5+0.3,0.4);
+// headroom glows mint on 'well inside the limits'
+tl.set(['#k5-mem-head','#k5-cpu-head'],{drawSVG:'100% 100%'},0);
+tl.to('#k5-mem-head',{drawSVG:(3.5/8*100+2).toFixed(2)+'% 100%',stroke:'rgba(126,224,181,.55)',duration:0.8,ease:'power2.out'},7.58);
+tl.to('#k5-cpu-head',{drawSVG:(6.6/20*100+2).toFixed(2)+'% 100%',stroke:'rgba(126,224,181,.55)',duration:0.8,ease:'power2.out'},7.58);
+tl.fromTo('#k5-well',{opacity:0,filter:'blur(8px)'},{opacity:1,filter:'blur(0px)',duration:0.4},7.58);
+tl.fromTo('.k5-c',{opacity:0,y:16},{opacity:1,y:0,duration:0.45,ease:'expo.out',stagger:0.25},3.5+1.3);
+// hand-off: whip-pan left into the results board
+tl.to('#k5-world',{x:-1500,filter:'blur(14px)',duration:0.32,ease:'power3.in'},9.05);
+
+window.__timelines["k5"] = tl;
+})();
+</script>
+</template>

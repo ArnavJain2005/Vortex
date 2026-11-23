@@ -1,0 +1,58 @@
+<template>
+<style>
+
+#root{position:absolute;inset:0;overflow:hidden;font-family:Inter,sans-serif;color:#f3f5ff;}
+#root .world{position:absolute;inset:0;transform-origin:50% 45%;}
+#root .mono{font-family:'JetBrains Mono',monospace;}
+#root .panel{position:absolute;background:rgba(18,26,69,.86);border:1px solid rgba(94,200,242,.22);border-radius:22px;
+  box-shadow:0 18px 60px rgba(0,0,0,.45), inset 0 1px 0 rgba(255,255,255,.05);}
+#root .label{font-weight:700;letter-spacing:.01em;}
+#root .sub{color:rgba(243,245,255,.72);font-weight:400;}
+#root .tag{position:absolute;padding:6px 14px;border-radius:999px;font-weight:700;font-size:22px;letter-spacing:.06em;}
+#root .glow-c{text-shadow:0 0 18px rgba(94,200,242,.55),0 0 2px rgba(94,200,242,.9);}
+#root .glow-m{text-shadow:0 0 18px rgba(126,224,181,.55),0 0 2px rgba(126,224,181,.9);}
+#root [data-layout-ignore]{}
+#root .schem{position:absolute;font-family:'JetBrains Mono',monospace;font-size:18px;letter-spacing:.12em;
+  color:rgba(243,245,255,.55);text-transform:lowercase;border:1px solid rgba(243,245,255,.25);padding:4px 10px;border-radius:6px;}
+#root .sweep{position:absolute;inset:0;pointer-events:none;mix-blend-mode:screen;
+  background:linear-gradient(105deg,transparent 35%,rgba(255,255,255,.22) 50%,transparent 65%);background-size:300% 100%;}
+
+
+.cp{position:absolute;left:110px;top:900px;font-weight:900;font-size:58px;letter-spacing:.02em;text-shadow:0 4px 24px rgba(0,0,0,.6);}
+.cp span{display:inline-block;}
+
+</style>
+<div id="root" data-composition-id="cap" data-width="1920" data-height="1080" data-duration="131.420" >
+<div class="world" id="cap-world"><div class="cp" id="cap-a" style="color:#f3f5ff;"><span>no&nbsp;</span><span>GPS&nbsp;</span><span>·&nbsp;</span><span>no&nbsp;</span><span>camera&nbsp;</span><span>·&nbsp;</span><span>no&nbsp;</span><span>map&nbsp;</span></div><div class="cp" id="cap-b" style="color:#c38bf5;top:96px;"><span>PRIOR&nbsp;</span></div><div class="cp" id="cap-c" style="color:#7ee0b5;top:812px;"><span>−8.1&nbsp;</span><span>%&nbsp;</span></div><div class="cp" id="cap-d" style="color:#7ee0b5;top:812px;"><span>−40&nbsp;</span><span>%&nbsp;</span></div><div class="cp" id="cap-e" style="color:#7ee0b5;top:812px;"><span>−14.8&nbsp;</span><span>%&nbsp;</span></div><div class="cp" id="cap-f" style="color:#f5a35e;top:930px;"><span>stops&nbsp;</span><span>trusting&nbsp;</span><span>it&nbsp;</span></div></div>
+</div>
+<script>
+(function(){
+gsap.registerPlugin(DrawSVGPlugin, MorphSVGPlugin, MotionPathPlugin);
+
+const P={bg:'#0a0e2e',panel:'#121a45',text:'#f3f5ff',cyan:'#5ec8f2',mint:'#7ee0b5',violet:'#c38bf5',amber:'#f5a35e',red:'#ff6b6b'};
+function rng(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;}}
+function typeOn(tl,sel,text,at,dur){const el=document.querySelector(sel);const o={n:0};el.textContent='';
+  tl.fromTo(o,{n:0},{n:text.length,duration:dur,ease:'none',onUpdate:()=>{el.textContent=text.slice(0,Math.round(o.n));}},at);}
+function countUp(tl,sel,to,dec,at,dur,suffix){const el=document.querySelector(sel);const o={v:0};
+  tl.fromTo(o,{v:0},{v:to,duration:dur,ease:'power3.out',onUpdate:()=>{el.textContent=o.v.toFixed(dec)+(suffix||'');}},at);}
+function inBlur(tl,sel,at,d){tl.fromTo(sel,{opacity:0,filter:'blur(8px)'},{opacity:1,filter:'blur(0px)',duration:d||0.35,ease:'power3.out'},at);}
+function outBlur(tl,sel,at,d){tl.to(sel,{opacity:0,filter:'blur(8px)',duration:d||0.22,ease:'power2.in'},at);}
+function popIn(tl,sel,at,d){tl.fromTo(sel,{opacity:0,scale:0.86},{opacity:1,scale:1,duration:d||0.45,ease:'expo.out'},at);}
+function sweep(tl,sel,at){tl.fromTo(sel,{backgroundPosition:'120% 0'},{backgroundPosition:'-20% 0',duration:0.9,ease:'power2.inOut'},at);
+  tl.fromTo(sel,{opacity:0},{opacity:1,duration:0.15},at);tl.to(sel,{opacity:0,duration:0.2},at+0.75);}
+
+const tl = gsap.timeline({paused:true});
+const D=131.420;
+// slow, never-stopping drift of the whole scene (B-roll feel)
+
+gsap.set('.cp',{opacity:0});
+tl.set('#cap-a',{opacity:1},17.250);tl.fromTo('#cap-a span',{opacity:0,filter:'blur(6px)'},{opacity:1,filter:'blur(0px)',duration:0.13,stagger:0.067},17.250);tl.to('#cap-a span',{opacity:0,filter:'blur(6px)',duration:0.18,stagger:0.03},20.540);
+tl.set('#cap-b',{opacity:1},51.170);tl.fromTo('#cap-b span',{opacity:0,filter:'blur(6px)'},{opacity:1,filter:'blur(0px)',duration:0.13,stagger:0.067},51.170);tl.to('#cap-b span',{opacity:0,filter:'blur(6px)',duration:0.18,stagger:0.03},52.820);
+tl.set('#cap-c',{opacity:1},92.320);tl.fromTo('#cap-c span',{opacity:0,filter:'blur(6px)'},{opacity:1,filter:'blur(0px)',duration:0.13,stagger:0.067},92.320);tl.to('#cap-c span',{opacity:0,filter:'blur(6px)',duration:0.18,stagger:0.03},94.120);
+tl.set('#cap-d',{opacity:1},95.600);tl.fromTo('#cap-d span',{opacity:0,filter:'blur(6px)'},{opacity:1,filter:'blur(0px)',duration:0.13,stagger:0.067},95.600);tl.to('#cap-d span',{opacity:0,filter:'blur(6px)',duration:0.18,stagger:0.03},97.300);
+tl.set('#cap-e',{opacity:1},105.680);tl.fromTo('#cap-e span',{opacity:0,filter:'blur(6px)'},{opacity:1,filter:'blur(0px)',duration:0.13,stagger:0.067},105.680);tl.to('#cap-e span',{opacity:0,filter:'blur(6px)',duration:0.18,stagger:0.03},107.680);
+tl.set('#cap-f',{opacity:1},112.850);tl.fromTo('#cap-f span',{opacity:0,filter:'blur(6px)'},{opacity:1,filter:'blur(0px)',duration:0.13,stagger:0.067},112.850);tl.to('#cap-f span',{opacity:0,filter:'blur(6px)',duration:0.18,stagger:0.03},114.600);
+window.__timelines["cap"] = tl;
+})();
+</script>
+</template>

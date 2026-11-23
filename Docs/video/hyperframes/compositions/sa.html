@@ -1,0 +1,100 @@
+<template>
+<style>
+
+#root{position:absolute;inset:0;overflow:hidden;font-family:Inter,sans-serif;color:#f3f5ff;}
+#root .world{position:absolute;inset:0;transform-origin:50% 45%;}
+#root .mono{font-family:'JetBrains Mono',monospace;}
+#root .panel{position:absolute;background:rgba(18,26,69,.86);border:1px solid rgba(94,200,242,.22);border-radius:22px;
+  box-shadow:0 18px 60px rgba(0,0,0,.45), inset 0 1px 0 rgba(255,255,255,.05);}
+#root .label{font-weight:700;letter-spacing:.01em;}
+#root .sub{color:rgba(243,245,255,.72);font-weight:400;}
+#root .tag{position:absolute;padding:6px 14px;border-radius:999px;font-weight:700;font-size:22px;letter-spacing:.06em;}
+#root .glow-c{text-shadow:0 0 18px rgba(94,200,242,.55),0 0 2px rgba(94,200,242,.9);}
+#root .glow-m{text-shadow:0 0 18px rgba(126,224,181,.55),0 0 2px rgba(126,224,181,.9);}
+#root [data-layout-ignore]{}
+#root .schem{position:absolute;font-family:'JetBrains Mono',monospace;font-size:18px;letter-spacing:.12em;
+  color:rgba(243,245,255,.55);text-transform:lowercase;border:1px solid rgba(243,245,255,.25);padding:4px 10px;border-radius:6px;}
+#root .sweep{position:absolute;inset:0;pointer-events:none;mix-blend-mode:screen;
+  background:linear-gradient(105deg,transparent 35%,rgba(255,255,255,.22) 50%,transparent 65%);background-size:300% 100%;}
+
+
+#sa-card{position:absolute;left:96px;top:92px;width:372px;padding:6px 6px 0;border-radius:20px;background:#121a45;
+  border:1px solid rgba(94,200,242,.3);box-shadow:0 16px 50px rgba(0,0,0,.5);}
+#sa-card img{display:block;width:360px;height:201px;object-fit:cover;border-radius:15px;}
+#sa-card .cap{font-size:24px;color:rgba(243,245,255,.75);padding:10px 8px 12px;font-style:italic;}
+#sa-wave,#sa-wr,#sa-wb{position:absolute;left:0;top:0;}
+#sa-wr{mix-blend-mode:screen;opacity:0;} #sa-wb{mix-blend-mode:screen;opacity:0;}
+#sa-lbl{position:absolute;left:1240px;top:620px;font-size:30px;font-weight:700;color:#f5a35e;letter-spacing:.08em;}
+#sa-pip{position:absolute;left:162px;top:640px;font-size:24px;font-weight:700;letter-spacing:.2em;color:#5ec8f2;}
+
+</style>
+<div id="root" data-composition-id="sa" data-width="1920" data-height="1080" data-duration="10.490" >
+<div class="world" id="sa-world">
+<canvas id="sa-wave" width="1920" height="1080"></canvas><canvas id="sa-wr" width="1920" height="1080"></canvas><canvas id="sa-wb" width="1920" height="1080"></canvas>
+<div id="sa-card"><img src="assets/pip_still.jpg" alt="Pip"/><div class="cap">from our Pip film</div></div>
+<div id="sa-pip">PIP · GYRO</div><div id="sa-lbl">LAST 5 S</div></div>
+</div>
+<script>
+(function(){
+gsap.registerPlugin(DrawSVGPlugin, MorphSVGPlugin, MotionPathPlugin);
+
+const P={bg:'#0a0e2e',panel:'#121a45',text:'#f3f5ff',cyan:'#5ec8f2',mint:'#7ee0b5',violet:'#c38bf5',amber:'#f5a35e',red:'#ff6b6b'};
+function rng(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;}}
+function typeOn(tl,sel,text,at,dur){const el=document.querySelector(sel);const o={n:0};el.textContent='';
+  tl.fromTo(o,{n:0},{n:text.length,duration:dur,ease:'none',onUpdate:()=>{el.textContent=text.slice(0,Math.round(o.n));}},at);}
+function countUp(tl,sel,to,dec,at,dur,suffix){const el=document.querySelector(sel);const o={v:0};
+  tl.fromTo(o,{v:0},{v:to,duration:dur,ease:'power3.out',onUpdate:()=>{el.textContent=o.v.toFixed(dec)+(suffix||'');}},at);}
+function inBlur(tl,sel,at,d){tl.fromTo(sel,{opacity:0,filter:'blur(8px)'},{opacity:1,filter:'blur(0px)',duration:d||0.35,ease:'power3.out'},at);}
+function outBlur(tl,sel,at,d){tl.to(sel,{opacity:0,filter:'blur(8px)',duration:d||0.22,ease:'power2.in'},at);}
+function popIn(tl,sel,at,d){tl.fromTo(sel,{opacity:0,scale:0.86},{opacity:1,scale:1,duration:d||0.45,ease:'expo.out'},at);}
+function sweep(tl,sel,at){tl.fromTo(sel,{backgroundPosition:'120% 0'},{backgroundPosition:'-20% 0',duration:0.9,ease:'power2.inOut'},at);
+  tl.fromTo(sel,{opacity:0},{opacity:1,duration:0.15},at);tl.to(sel,{opacity:0,duration:0.2},at+0.75);}
+
+const tl = gsap.timeline({paused:true});
+const D=10.490;
+// slow, never-stopping drift of the whole scene (B-roll feel)
+tl.fromTo('#sa-world',{scale:1.0},{scale:1.03,duration:D,ease:'none'},0);
+
+const t0=2.45, tN=6.23, tG=7.03, tD=8.47;     // scene-local times of: start, 'noisy', 'loses rows', 'dies'
+const W0=160, W1=1440, Y=470, AMP=120, SPAN=5.0; // waveform box; 5 s of signal across the frame
+function state(tau){ return tau<tN?0: tau<tG?1: tau<tD?2:3; }
+function sig(tau){ return Math.sin(tau*3.1)*0.55+Math.sin(tau*7.7+1)*0.25+Math.sin(tau*1.3+2)*0.2; }
+function jitter(tau){ const i=Math.floor(tau*200); const h=Math.sin(i*12.9898)*43758.5453; return (h-Math.floor(h))*2-1; }
+function gap(tau){ const i=Math.floor(tau*3.0); const h=Math.sin(i*78.233)*12345.678; return (h-Math.floor(h))<0.42; }
+const ctxs=['sa-wave','sa-wr','sa-wb'].map(id=>document.getElementById(id).getContext('2d'));
+const cols=[null,'rgba(255,80,80,.9)','rgba(80,200,255,.9)'];
+const clk={t:0};
+function draw(){ const t=clk.t; ctxs.forEach((c,ci)=>{ c.clearRect(0,0,1920,1080); c.lineWidth=3.2; c.lineJoin='round';
+  let pen=false, lastS=-1;
+  for(let px=0;px<=W1-W0;px+=2){ const tau=t-SPAN+px/(W1-W0)*SPAN;
+    const s=state(tau); let v=sig(tau); if(s>=1&&s<3) v+=jitter(tau)*0.55; if(s===3) v=0;
+    const hide=(s===2&&gap(tau));
+    if(hide){ if(pen){c.stroke();} pen=false; continue; }
+    if(s!==lastS&&pen){ c.stroke(); pen=false; }
+    if(!pen){ c.beginPath(); c.strokeStyle= ci? cols[ci] : (s===3?'#f5a35e':'#5ec8f2'); c.shadowColor=c.strokeStyle; c.shadowBlur=ci?0:10;
+      c.moveTo(W0+px,Y-v*AMP); pen=true; lastS=s; } else c.lineTo(W0+px,Y-v*AMP); }
+  if(pen) c.stroke();
+  // write head
+  if(ci===0){ c.fillStyle=state(t)===3?'#f5a35e':'#f3f5ff'; c.beginPath(); c.arc(W1,Y-(state(t)===3?0:sig(t))*AMP,6,0,6.283); c.fill(); }
+ }); }
+tl.fromTo(clk,{t:t0},{t:10.49,duration:10.49-t0,ease:'none',onUpdate:draw},t0);
+// Pip bridge card: ~1.5 s, then dissolves into the waveform's start
+tl.fromTo('#sa-card',{opacity:0,y:18,filter:'blur(8px)'},{opacity:1,y:0,filter:'blur(0px)',duration:0.55,ease:'expo.out'},0.55-0.1);
+tl.to('#sa-card',{x:80,y:330,scale:0.35,opacity:0,filter:'blur(10px)',duration:0.8,ease:'power3.in'},0.55+1.6);
+inBlur(tl,'#sa-pip',0.55+1.9,0.4);
+tl.fromTo(['#sa-wave'],{opacity:0},{opacity:1,duration:0.6},t0-0.3);
+// glitch on 'dies': RGB split, tear and stutter, then stillness
+tl.fromTo(['#sa-wr'],{opacity:0,x:0},{opacity:0.85,x:-14,duration:0.05},tD);
+tl.fromTo(['#sa-wb'],{opacity:0,x:0},{opacity:0.85,x:14,duration:0.05},tD);
+tl.to(['#sa-wr','#sa-wb'],{x:0,opacity:0,duration:0.06},tD+0.32);
+tl.fromTo('#sa-world',{x:0},{keyframes:[{x:-22,duration:0.03},{x:16,duration:0.04},{x:-8,duration:0.03},{x:0,duration:0.05}]},tD);
+tl.fromTo('#sa-wave',{clipPath:'inset(0 0 0 0)'},{keyframes:[{clipPath:'inset(38% 0 52% 0)',duration:0.04},{clipPath:'inset(0 0 0 0)',duration:0.05},{clipPath:'inset(55% 0 30% 0)',duration:0.04},{clipPath:'inset(0 0 0 0)',duration:0.05}]},tD+0.02);
+tl.fromTo('#sa-lbl',{opacity:0,x:-20},{opacity:1,x:0,duration:0.5,ease:'expo.out'},tD+0.35);
+// hand-off: the flat trace compresses towards the CSV card
+tl.to(['#sa-wave','#sa-lbl','#sa-pip'],{scaleX:0.42,scaleY:0.6,x:150,y:-40,opacity:0,transformOrigin:'50% 44%',duration:0.6,ease:'power3.in'},9.87);
+draw();
+
+window.__timelines["sa"] = tl;
+})();
+</script>
+</template>

@@ -1,0 +1,98 @@
+<template>
+<style>
+
+#root{position:absolute;inset:0;overflow:hidden;font-family:Inter,sans-serif;color:#f3f5ff;}
+#root .world{position:absolute;inset:0;transform-origin:50% 45%;}
+#root .mono{font-family:'JetBrains Mono',monospace;}
+#root .panel{position:absolute;background:rgba(18,26,69,.86);border:1px solid rgba(94,200,242,.22);border-radius:22px;
+  box-shadow:0 18px 60px rgba(0,0,0,.45), inset 0 1px 0 rgba(255,255,255,.05);}
+#root .label{font-weight:700;letter-spacing:.01em;}
+#root .sub{color:rgba(243,245,255,.72);font-weight:400;}
+#root .tag{position:absolute;padding:6px 14px;border-radius:999px;font-weight:700;font-size:22px;letter-spacing:.06em;}
+#root .glow-c{text-shadow:0 0 18px rgba(94,200,242,.55),0 0 2px rgba(94,200,242,.9);}
+#root .glow-m{text-shadow:0 0 18px rgba(126,224,181,.55),0 0 2px rgba(126,224,181,.9);}
+#root [data-layout-ignore]{}
+#root .schem{position:absolute;font-family:'JetBrains Mono',monospace;font-size:18px;letter-spacing:.12em;
+  color:rgba(243,245,255,.55);text-transform:lowercase;border:1px solid rgba(243,245,255,.25);padding:4px 10px;border-radius:6px;}
+#root .sweep{position:absolute;inset:0;pointer-events:none;mix-blend-mode:screen;
+  background:linear-gradient(105deg,transparent 35%,rgba(255,255,255,.22) 50%,transparent 65%);background-size:300% 100%;}
+
+
+#k6-hd{position:absolute;left:110px;top:70px;font-size:30px;font-weight:700;letter-spacing:.18em;color:#7ee0b5;}
+#k6-leg{position:absolute;left:560px;top:76px;font-size:22px;color:rgba(243,245,255,.75);}
+#k6-leg i{display:inline-block;width:26px;height:12px;border-radius:6px;margin:0 8px 0 22px;vertical-align:middle;}
+.k6-lab{position:absolute;left:110px;width:420px;font-size:26px;font-weight:700;line-height:1.15;}
+.k6-bar{position:absolute;left:560px;height:26px;border-radius:13px;transform-origin:0 50%;}
+.k6-ref{background:rgba(243,245,255,.28);} .k6-vx{background:#5ec8f2;box-shadow:0 0 18px rgba(94,200,242,.55);}
+.k6-tag{position:absolute;padding:6px 16px;border-radius:12px;background:#7ee0b5;color:#0a0e2e;font-weight:900;font-size:34px;}
+.k6-tag small{font-size:24px;font-weight:700;margin-left:8px;}
+#k6-five{position:absolute;left:110px;top:240px;font-size:22px;color:#7ee0b5;font-weight:700;}
+.k6-pip{position:absolute;top:618px;width:22px;height:22px;border-radius:50%;border:2px solid #7ee0b5;}
+#k6-rooms{position:absolute;left:560px;top:614px;font-size:22px;color:rgba(243,245,255,.7);}
+#k6-notes{position:absolute;left:110px;top:700px;width:1360px;font-size:23px;line-height:1.55;color:rgba(243,245,255,.78);}
+#k6-notes b{color:#f3f5ff;}
+#k6-foot{position:absolute;left:110px;top:965px;width:1360px;font-family:'JetBrains Mono',monospace;font-size:20px;color:rgba(243,245,255,.6);}
+#k6-sweep{position:absolute;left:540px;top:180px;width:1000px;height:420px;}
+
+</style>
+<div id="root" data-composition-id="k6" data-width="1920" data-height="1080" data-duration="29.320" >
+<div class="world" id="k6-world">
+<div id="k6-hd">LOWER IS BETTER</div>
+<div id="k6-leg"><i style="background:rgba(243,245,255,.35)"></i>static reference, scored the same way <i style="background:#5ec8f2"></i>Vortex</div>
+<div class="k6-lab" id="k6-lr1a" style="top:204px">Held-out EuRoC · error</div><div class="k6-bar k6-ref" id="k6-refr1a" style="top:206px;width:759px"></div><div class="k6-bar k6-vx" id="k6-vxr1a" style="top:236px;width:697px"></div><div class="k6-tag" id="k6-tr1a" style="left:1353px;top:208px">−8.1 %<small>error</small></div><div class="k6-lab" id="k6-lr1b" style="top:294px">Held-out EuRoC · 1 s drift</div><div class="k6-bar k6-ref" id="k6-refr1b" style="top:296px;width:760px"></div><div class="k6-bar k6-vx" id="k6-vxr1b" style="top:326px;width:454px"></div><div class="k6-tag" id="k6-tr1b" style="left:1354px;top:298px">−40.2 %<small>one-second drift</small></div><div class="k6-lab" id="k6-lr2" style="top:424px">Repeat, seeds 7–9 · error</div><div class="k6-bar k6-ref" id="k6-refr2" style="top:426px;width:760px"></div><div class="k6-bar k6-vx" id="k6-vxr2" style="top:456px;width:705px"></div><div class="k6-tag" id="k6-tr2" style="left:1354px;top:428px">−7.1 %</div><div class="k6-lab" id="k6-lr3" style="top:554px">TUM-VI hand-held, rooms 1–4 · error</div><div class="k6-bar k6-ref" id="k6-refr3" style="top:556px;width:691px"></div><div class="k6-bar k6-vx" id="k6-vxr3" style="top:586px;width:589px"></div><div class="k6-tag" id="k6-tr3" style="left:1285px;top:558px">−14.8 %</div><div class="sweep" id="k6-sweep"></div>
+<div id="k6-five">5 of 6 flights improved</div>
+<div id="k6-rooms">rooms</div><div class="k6-pip" id="k6-p0" style="left:1000px"></div><div class="k6-pip" id="k6-p1" style="left:1040px"></div><div class="k6-pip" id="k6-p2" style="left:1080px"></div><div class="k6-pip" id="k6-p3" style="left:1120px"></div>
+<div id="k6-notes"><b>Tuning:</b> only on EuRoC MH_01/02 and TUM-VI rooms 1–2 · EuRoC rows are held-out flights; the TUM-VI row covers <span style="white-space:nowrap">rooms 1–4</span>, incl. the 2 tuning rooms<br/>
+<b>Metric key:</b> absolute error = APE after SE(3) alignment · drift = 1 s RPE</div>
+<div id="k6-foot">Shipped v1.0 · organisers' degrade_imu.py · SE(3)-aligned APE vs a static reference</div></div>
+</div>
+<script>
+(function(){
+gsap.registerPlugin(DrawSVGPlugin, MorphSVGPlugin, MotionPathPlugin);
+
+const P={bg:'#0a0e2e',panel:'#121a45',text:'#f3f5ff',cyan:'#5ec8f2',mint:'#7ee0b5',violet:'#c38bf5',amber:'#f5a35e',red:'#ff6b6b'};
+function rng(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;}}
+function typeOn(tl,sel,text,at,dur){const el=document.querySelector(sel);const o={n:0};el.textContent='';
+  tl.fromTo(o,{n:0},{n:text.length,duration:dur,ease:'none',onUpdate:()=>{el.textContent=text.slice(0,Math.round(o.n));}},at);}
+function countUp(tl,sel,to,dec,at,dur,suffix){const el=document.querySelector(sel);const o={v:0};
+  tl.fromTo(o,{v:0},{v:to,duration:dur,ease:'power3.out',onUpdate:()=>{el.textContent=o.v.toFixed(dec)+(suffix||'');}},at);}
+function inBlur(tl,sel,at,d){tl.fromTo(sel,{opacity:0,filter:'blur(8px)'},{opacity:1,filter:'blur(0px)',duration:d||0.35,ease:'power3.out'},at);}
+function outBlur(tl,sel,at,d){tl.to(sel,{opacity:0,filter:'blur(8px)',duration:d||0.22,ease:'power2.in'},at);}
+function popIn(tl,sel,at,d){tl.fromTo(sel,{opacity:0,scale:0.86},{opacity:1,scale:1,duration:d||0.45,ease:'expo.out'},at);}
+function sweep(tl,sel,at){tl.fromTo(sel,{backgroundPosition:'120% 0'},{backgroundPosition:'-20% 0',duration:0.9,ease:'power2.inOut'},at);
+  tl.fromTo(sel,{opacity:0},{opacity:1,duration:0.15},at);tl.to(sel,{opacity:0,duration:0.2},at+0.75);}
+
+const tl = gsap.timeline({paused:true});
+const D=29.320;
+// slow, never-stopping drift of the whole scene (B-roll feel)
+tl.fromTo('#k6-world',{scale:1.0},{scale:1.03,duration:D,ease:'none'},0);
+
+// whip-pan arrival: lands blurred and sharpens
+tl.fromTo('#k6-world',{x:1500,filter:'blur(14px)'},{x:0,filter:'blur(0px)',duration:0.45,ease:'expo.out'},0.0);
+gsap.set(['.k6-tag','#k6-five','#k6-notes','#k6-foot','.k6-pip','#k6-rooms'],{opacity:0});
+tl.fromTo(['#k6-hd','#k6-leg'],{opacity:0},{opacity:1,duration:0.4},0.35);
+const R=[['r1a',10.91],['r1b',14.19],['r2',17.47],['r3',24.27]];
+R.forEach(([r,t],k)=>{
+  // every row's label and grey static-reference bar build in on 'static reference'; the Vortex bar lands with its tag
+  const ref=7.55+k*0.14;
+  inBlur(tl,'#k6-l'+r,ref,0.35);
+  tl.fromTo('#k6-ref'+r,{scaleX:0},{scaleX:1,duration:0.8,ease:'expo.out'},ref+0.1);
+  const enter = (r==='r1b') ? 10.91-1.2 : t-1.3;
+  tl.fromTo('#k6-vx'+r,{scaleX:0},{scaleX:1,duration:0.9,ease:'expo.out'},enter+0.25);
+  tl.fromTo('#k6-t'+r,{opacity:0,scale:0.7,x:-20},{opacity:1,scale:1,x:0,duration:0.5,ease:'back.out(1.7)'},t-0.13);
+});
+sweep(tl,'#k6-sweep',10.91+0.2);
+tl.to('#k6-five',{opacity:1,duration:0.5},10.91+0.4);
+// four TUM-VI room pips light one by one on 'all four rooms'
+tl.to('#k6-rooms',{opacity:1,duration:0.3},27.39-0.3);
+for(let i=0;i<4;i++) tl.fromTo('#k6-p'+i,{opacity:0,scale:0.5,backgroundColor:'rgba(126,224,181,0)'},{opacity:1,scale:1,backgroundColor:'#7ee0b5',duration:0.3,ease:'back.out(2)'},27.39+i*0.16);
+tl.fromTo('#k6-notes',{opacity:0,y:12},{opacity:1,y:0,duration:0.5},3.39);
+tl.fromTo('#k6-foot',{opacity:0},{opacity:1,duration:0.5},4.27);
+// hand-off: the bars stretch into K-7's schematic path
+tl.to(['.k6-lab','.k6-tag','.k6-ref','#k6-five','#k6-notes','#k6-foot','.k6-pip','#k6-rooms','#k6-hd','#k6-leg'],{opacity:0,duration:0.3},28.57);
+tl.to('.k6-vx',{scaleX:1.9,y:(i)=>[310,220,90,-40][i],opacity:0.0,duration:0.65,ease:'power3.inOut'},28.57);
+
+window.__timelines["k6"] = tl;
+})();
+</script>
+</template>

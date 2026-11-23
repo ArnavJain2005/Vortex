@@ -1,0 +1,93 @@
+<template>
+<style>
+
+#root{position:absolute;inset:0;overflow:hidden;font-family:Inter,sans-serif;color:#f3f5ff;}
+#root .world{position:absolute;inset:0;transform-origin:50% 45%;}
+#root .mono{font-family:'JetBrains Mono',monospace;}
+#root .panel{position:absolute;background:rgba(18,26,69,.86);border:1px solid rgba(94,200,242,.22);border-radius:22px;
+  box-shadow:0 18px 60px rgba(0,0,0,.45), inset 0 1px 0 rgba(255,255,255,.05);}
+#root .label{font-weight:700;letter-spacing:.01em;}
+#root .sub{color:rgba(243,245,255,.72);font-weight:400;}
+#root .tag{position:absolute;padding:6px 14px;border-radius:999px;font-weight:700;font-size:22px;letter-spacing:.06em;}
+#root .glow-c{text-shadow:0 0 18px rgba(94,200,242,.55),0 0 2px rgba(94,200,242,.9);}
+#root .glow-m{text-shadow:0 0 18px rgba(126,224,181,.55),0 0 2px rgba(126,224,181,.9);}
+#root [data-layout-ignore]{}
+#root .schem{position:absolute;font-family:'JetBrains Mono',monospace;font-size:18px;letter-spacing:.12em;
+  color:rgba(243,245,255,.55);text-transform:lowercase;border:1px solid rgba(243,245,255,.25);padding:4px 10px;border-radius:6px;}
+#root .sweep{position:absolute;inset:0;pointer-events:none;mix-blend-mode:screen;
+  background:linear-gradient(105deg,transparent 35%,rgba(255,255,255,.22) 50%,transparent 65%);background-size:300% 100%;}
+
+
+.sd-u{position:absolute;top:250px;width:200px;height:330px;}
+.sd-card{position:absolute;left:10px;top:0;width:180px;height:120px;border-radius:14px;border:2px solid rgba(243,245,255,.3);background:rgba(18,26,69,.9);}
+.sd-card svg{position:absolute;left:66px;top:22px;}
+.sd-card .ln{position:absolute;left:24px;height:6px;border-radius:3px;background:rgba(243,245,255,.25);}
+.sd-sw{position:absolute;left:50px;top:170px;width:100px;height:52px;border-radius:26px;background:rgba(243,245,255,.15);border:2px solid rgba(243,245,255,.3);}
+.sd-k{position:absolute;left:5px;top:4px;width:40px;height:40px;border-radius:50%;background:#f3f5ff;}
+#sd-t{position:absolute;left:0;width:1920px;top:660px;text-align:center;font-size:44px;font-weight:700;letter-spacing:.2em;}
+#sd-l{position:absolute;left:0;width:1500px;top:742px;text-align:center;font-size:27px;color:rgba(243,245,255,.75);}
+
+</style>
+<div id="root" data-composition-id="sd" data-width="1920" data-height="1080" data-duration="4.320" >
+<div class="world" id="sd-world"><div class="sd-u" id="sd-u0" style="left:200px"><div class="sd-card" id="sd-c0">
+<svg width="48" height="56" viewBox="0 0 48 56"><rect x="4" y="24" width="40" height="30" rx="6" fill="none" stroke="#f3f5ff" stroke-width="4"/>
+<path d="M12 24 V16 A12 12 0 0 1 36 16 V24" fill="none" stroke="#f3f5ff" stroke-width="4"/></svg>
+<div class="ln" style="top:88px;width:130px"></div></div><div class="sd-sw" id="sd-s0"><div class="sd-k" id="sd-k0"></div></div></div><div class="sd-u" id="sd-u1" style="left:415px"><div class="sd-card" id="sd-c1">
+<svg width="48" height="56" viewBox="0 0 48 56"><rect x="4" y="24" width="40" height="30" rx="6" fill="none" stroke="#f3f5ff" stroke-width="4"/>
+<path d="M12 24 V16 A12 12 0 0 1 36 16 V24" fill="none" stroke="#f3f5ff" stroke-width="4"/></svg>
+<div class="ln" style="top:88px;width:130px"></div></div><div class="sd-sw" id="sd-s1"><div class="sd-k" id="sd-k1"></div></div></div><div class="sd-u" id="sd-u2" style="left:630px"><div class="sd-card" id="sd-c2">
+<svg width="48" height="56" viewBox="0 0 48 56"><rect x="4" y="24" width="40" height="30" rx="6" fill="none" stroke="#f3f5ff" stroke-width="4"/>
+<path d="M12 24 V16 A12 12 0 0 1 36 16 V24" fill="none" stroke="#f3f5ff" stroke-width="4"/></svg>
+<div class="ln" style="top:88px;width:130px"></div></div><div class="sd-sw" id="sd-s2"><div class="sd-k" id="sd-k2"></div></div></div><div class="sd-u" id="sd-u3" style="left:845px"><div class="sd-card" id="sd-c3">
+<svg width="48" height="56" viewBox="0 0 48 56"><rect x="4" y="24" width="40" height="30" rx="6" fill="none" stroke="#f3f5ff" stroke-width="4"/>
+<path d="M12 24 V16 A12 12 0 0 1 36 16 V24" fill="none" stroke="#f3f5ff" stroke-width="4"/></svg>
+<div class="ln" style="top:88px;width:130px"></div></div><div class="sd-sw" id="sd-s3"><div class="sd-k" id="sd-k3"></div></div></div><div class="sd-u" id="sd-u4" style="left:1060px"><div class="sd-card" id="sd-c4">
+<svg width="48" height="56" viewBox="0 0 48 56"><rect x="4" y="24" width="40" height="30" rx="6" fill="none" stroke="#f3f5ff" stroke-width="4"/>
+<path d="M12 24 V16 A12 12 0 0 1 36 16 V24" fill="none" stroke="#f3f5ff" stroke-width="4"/></svg>
+<div class="ln" style="top:88px;width:130px"></div></div><div class="sd-sw" id="sd-s4"><div class="sd-k" id="sd-k4"></div></div></div><div class="sd-u" id="sd-u5" style="left:1275px"><div class="sd-card" id="sd-c5">
+<svg width="48" height="56" viewBox="0 0 48 56"><rect x="4" y="24" width="40" height="30" rx="6" fill="none" stroke="#f3f5ff" stroke-width="4"/>
+<path d="M12 24 V16 A12 12 0 0 1 36 16 V24" fill="none" stroke="#f3f5ff" stroke-width="4"/></svg>
+<div class="ln" style="top:88px;width:130px"></div></div><div class="sd-sw" id="sd-s5"><div class="sd-k" id="sd-k5"></div></div></div><div class="sd-u" id="sd-u6" style="left:1490px"><div class="sd-card" id="sd-c6">
+<svg width="48" height="56" viewBox="0 0 48 56"><rect x="4" y="24" width="40" height="30" rx="6" fill="none" stroke="#f3f5ff" stroke-width="4"/>
+<path d="M12 24 V16 A12 12 0 0 1 36 16 V24" fill="none" stroke="#f3f5ff" stroke-width="4"/></svg>
+<div class="ln" style="top:88px;width:130px"></div></div><div class="sd-sw" id="sd-s6"><div class="sd-k" id="sd-k6"></div></div></div><div id="sd-t">RULE FIRST, TEST SECOND</div>
+<div id="sd-l">every feature is a switch, off by default · rule committed before the held-out run · ships only if it passes</div></div>
+</div>
+<script>
+(function(){
+gsap.registerPlugin(DrawSVGPlugin, MorphSVGPlugin, MotionPathPlugin);
+
+const P={bg:'#0a0e2e',panel:'#121a45',text:'#f3f5ff',cyan:'#5ec8f2',mint:'#7ee0b5',violet:'#c38bf5',amber:'#f5a35e',red:'#ff6b6b'};
+function rng(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;}}
+function typeOn(tl,sel,text,at,dur){const el=document.querySelector(sel);const o={n:0};el.textContent='';
+  tl.fromTo(o,{n:0},{n:text.length,duration:dur,ease:'none',onUpdate:()=>{el.textContent=text.slice(0,Math.round(o.n));}},at);}
+function countUp(tl,sel,to,dec,at,dur,suffix){const el=document.querySelector(sel);const o={v:0};
+  tl.fromTo(o,{v:0},{v:to,duration:dur,ease:'power3.out',onUpdate:()=>{el.textContent=o.v.toFixed(dec)+(suffix||'');}},at);}
+function inBlur(tl,sel,at,d){tl.fromTo(sel,{opacity:0,filter:'blur(8px)'},{opacity:1,filter:'blur(0px)',duration:d||0.35,ease:'power3.out'},at);}
+function outBlur(tl,sel,at,d){tl.to(sel,{opacity:0,filter:'blur(8px)',duration:d||0.22,ease:'power2.in'},at);}
+function popIn(tl,sel,at,d){tl.fromTo(sel,{opacity:0,scale:0.86},{opacity:1,scale:1,duration:d||0.45,ease:'expo.out'},at);}
+function sweep(tl,sel,at){tl.fromTo(sel,{backgroundPosition:'120% 0'},{backgroundPosition:'-20% 0',duration:0.9,ease:'power2.inOut'},at);
+  tl.fromTo(sel,{opacity:0},{opacity:1,duration:0.15},at);tl.to(sel,{opacity:0,duration:0.2},at+0.75);}
+
+const tl = gsap.timeline({paused:true});
+const D=4.320;
+// slow, never-stopping drift of the whole scene (B-roll feel)
+tl.fromTo('#sd-world',{scale:1.0},{scale:1.03,duration:D,ease:'none'},0);
+
+const ON=[0, 2, 3, 5];
+tl.fromTo('.sd-u',{opacity:0,y:40},{opacity:1,y:0,duration:0.5,ease:'expo.out',stagger:0.06},0.3);
+for(let i=0;i<7;i++){ const t=2.19-0.2+i*0.12;
+  if(ON.includes(i)){ tl.to('#sd-c'+i,{borderColor:'#7ee0b5',backgroundColor:'rgba(126,224,181,.16)',duration:0.25},t);
+    tl.to('#sd-k'+i,{x:48,backgroundColor:'#0a0e2e',duration:0.3,ease:'back.out(1.6)'},t+0.15);
+    tl.to('#sd-s'+i,{backgroundColor:'#7ee0b5',borderColor:'#7ee0b5',duration:0.3},t+0.15); }
+  else tl.to('#sd-c'+i,{opacity:0.55,duration:0.3},t); }
+tl.fromTo('#sd-t',{opacity:0,filter:'blur(8px)'},{opacity:1,filter:'blur(0px)',duration:0.4},0.55);
+tl.fromTo('#sd-l',{opacity:0},{opacity:1,duration:0.5},0.9);
+// hand-off: the switches collapse into the VORTEX wordmark on the end slate
+tl.to(['#sd-t','#sd-l'],{opacity:0,duration:0.3},3.57);
+tl.to('.sd-u',{x:(i)=>1290-(200+i*215)-100,y:-60,scale:0.25,opacity:0,duration:0.6,ease:'power3.in',stagger:0.03},3.57);
+
+window.__timelines["sd"] = tl;
+})();
+</script>
+</template>
