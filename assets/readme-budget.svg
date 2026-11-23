@@ -2,20 +2,20 @@
 <rect width="960" height="330" rx="20" fill="#0a0e2e"/>
 <text x="40.0" y="52.0" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="24" font-weight="700" fill="#f3f5ff" text-anchor="start">Inside the challenge budget</text>
 <text x="40.0" y="80.0" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="14" font-weight="400" fill="#9aa6d6" text-anchor="start">Shipped single-file src/main.py on an official degraded copy (MH_03_medium_b_s1, 26,106 rows).</text>
-<text x="40.0" y="120.0" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="16" font-weight="600" fill="#f3f5ff" text-anchor="start">Compute per IMU-second</text>
-<text x="40.0" y="140.0" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12" font-weight="400" fill="#9aa6d6" text-anchor="start">Linux Docker, python:3.12.7-slim, 15-run median</text>
+<text x="40.0" y="120.0" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="16" font-weight="600" fill="#f3f5ff" text-anchor="start">Wall time per IMU-second</text>
+<text x="40.0" y="140.0" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12" font-weight="400" fill="#9aa6d6" text-anchor="start">Whole process from source, Linux Docker, Python 3.12.7, 15-run median</text>
 <rect x="40" y="154" width="410" height="22" rx="11" fill="#2a3570"/>
 <rect x="40" y="154" width="135.3" height="22" rx="11" fill="#5ec8f2"/>
 <text x="40.0" y="200.0" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="22" font-weight="700" fill="#5ec8f2" text-anchor="start">6.60 ms</text>
 <text x="450.0" y="200.0" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" font-weight="500" fill="#9aa6d6" text-anchor="end">limit 20 ms</text>
-<text x="40.0" y="222.0" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12" font-weight="400" fill="#9aa6d6" text-anchor="start">Windows 11, Python 3.14.7: 5.82 ms</text>
+<text x="40.0" y="222.0" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12" font-weight="400" fill="#9aa6d6" text-anchor="start">Windows 11, Python 3.14.7: 5.82 ms wall time</text>
 <text x="510.0" y="120.0" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="16" font-weight="600" fill="#f3f5ff" text-anchor="start">Peak heap, whole run</text>
-<text x="510.0" y="140.0" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12" font-weight="400" fill="#9aa6d6" text-anchor="start">tracemalloc, compiled from source, Python 3.14.7</text>
+<text x="510.0" y="140.0" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12" font-weight="400" fill="#9aa6d6" text-anchor="start">tracemalloc from source, Windows 11, Python 3.14.7</text>
 <rect x="510" y="154" width="410" height="22" rx="11" fill="#2a3570"/>
 <rect x="510" y="154" width="174.0" height="22" rx="11" fill="#c38bf5"/>
 <text x="510.0" y="200.0" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="22" font-weight="700" fill="#c38bf5" text-anchor="start">3,476 KB</text>
 <text x="920.0" y="200.0" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="13" font-weight="500" fill="#9aa6d6" text-anchor="end">limit 8,192 KB</text>
-<text x="510.0" y="222.0" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12" font-weight="400" fill="#9aa6d6" text-anchor="start">Python 3.13.5: 4,158 KB</text>
-<text x="40.0" y="290.0" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="14" font-weight="600" fill="#7ee0b5" text-anchor="start">Single thread · standard library only · 521 automated tests passing</text>
+<text x="510.0" y="222.0" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12" font-weight="400" fill="#9aa6d6" text-anchor="start">Windows 11, Python 3.13.5: 4,158 KB</text>
+<text x="40.0" y="290.0" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="14" font-weight="600" fill="#7ee0b5" text-anchor="start">Single thread · standard library only · 521 tests passed (Windows 11, Python 3.14.7)</text>
 <text x="920.0" y="290.0" font-family="Inter, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="12" font-weight="400" fill="#9aa6d6" text-anchor="end">Source: Docs/NUMBERS.md, Docs/BUDGET.md</text>
 </svg>
