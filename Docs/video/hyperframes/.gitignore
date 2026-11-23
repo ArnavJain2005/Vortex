@@ -1,0 +1,5 @@
+# kept out of git: large media and vendored third-party code (see Docs/video/README.md)
+assets/face_cut.mp4
+assets/lib/
+.hyperframes/
+node_modules/

@@ -1,0 +1,67 @@
+<template>
+<style>
+
+#root{position:absolute;inset:0;overflow:hidden;font-family:Inter,sans-serif;color:#f3f5ff;}
+#root .world{position:absolute;inset:0;transform-origin:50% 45%;}
+#root .mono{font-family:'JetBrains Mono',monospace;}
+#root .panel{position:absolute;background:rgba(18,26,69,.86);border:1px solid rgba(94,200,242,.22);border-radius:22px;
+  box-shadow:0 18px 60px rgba(0,0,0,.45), inset 0 1px 0 rgba(255,255,255,.05);}
+#root .label{font-weight:700;letter-spacing:.01em;}
+#root .sub{color:rgba(243,245,255,.72);font-weight:400;}
+#root .tag{position:absolute;padding:6px 14px;border-radius:999px;font-weight:700;font-size:22px;letter-spacing:.06em;}
+#root .glow-c{text-shadow:0 0 18px rgba(94,200,242,.55),0 0 2px rgba(94,200,242,.9);}
+#root .glow-m{text-shadow:0 0 18px rgba(126,224,181,.55),0 0 2px rgba(126,224,181,.9);}
+#root [data-layout-ignore]{}
+#root .schem{position:absolute;font-family:'JetBrains Mono',monospace;font-size:18px;letter-spacing:.12em;
+  color:rgba(243,245,255,.55);text-transform:lowercase;border:1px solid rgba(243,245,255,.25);padding:4px 10px;border-radius:6px;}
+#root .sweep{position:absolute;inset:0;pointer-events:none;mix-blend-mode:screen;
+  background:linear-gradient(105deg,transparent 35%,rgba(255,255,255,.22) 50%,transparent 65%);background-size:300% 100%;}
+
+
+#k8-word{position:absolute;left:900px;width:900px;top:300px;text-align:center;font-weight:900;font-size:150px;letter-spacing:.14em;padding-left:.14em;
+  text-shadow:0 0 34px rgba(94,200,242,.5);}
+#k8-line{position:absolute;left:900px;width:900px;top:500px;text-align:center;font-size:30px;color:#5ec8f2;font-weight:700;letter-spacing:.04em;}
+#k8-name{position:absolute;left:900px;width:900px;top:590px;text-align:center;font-size:36px;font-weight:700;}
+#k8-url{position:absolute;left:900px;width:900px;top:648px;text-align:center;font-family:'JetBrains Mono',monospace;font-size:30px;color:#7ee0b5;}
+#k8-disc{position:absolute;left:900px;width:900px;top:960px;text-align:center;font-size:26px;color:rgba(243,245,255,.6);}
+#k8-sweep{position:absolute;left:960px;top:300px;width:780px;height:180px;}
+
+</style>
+<div id="root" data-composition-id="k8" data-width="1920" data-height="1080" data-duration="7.470" >
+<div class="world" id="k8-world"><div id="k8-word">VORTEX</div><div class="sweep" id="k8-sweep"></div>
+<div id="k8-line">a navigator that knows how much to trust its sensor</div>
+<div id="k8-name">Arnav Jain · Manipal Institute of Technology</div>
+<div id="k8-url">github.com/ArnavJain2005/Vortex</div>
+<div id="k8-disc">Pip film: AI-animated · narration voice by ElevenLabs</div></div>
+</div>
+<script>
+(function(){
+gsap.registerPlugin(DrawSVGPlugin, MorphSVGPlugin, MotionPathPlugin);
+
+const P={bg:'#0a0e2e',panel:'#121a45',text:'#f3f5ff',cyan:'#5ec8f2',mint:'#7ee0b5',violet:'#c38bf5',amber:'#f5a35e',red:'#ff6b6b'};
+function rng(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;}}
+function typeOn(tl,sel,text,at,dur){const el=document.querySelector(sel);const o={n:0};el.textContent='';
+  tl.fromTo(o,{n:0},{n:text.length,duration:dur,ease:'none',onUpdate:()=>{el.textContent=text.slice(0,Math.round(o.n));}},at);}
+function countUp(tl,sel,to,dec,at,dur,suffix){const el=document.querySelector(sel);const o={v:0};
+  tl.fromTo(o,{v:0},{v:to,duration:dur,ease:'power3.out',onUpdate:()=>{el.textContent=o.v.toFixed(dec)+(suffix||'');}},at);}
+function inBlur(tl,sel,at,d){tl.fromTo(sel,{opacity:0,filter:'blur(8px)'},{opacity:1,filter:'blur(0px)',duration:d||0.35,ease:'power3.out'},at);}
+function outBlur(tl,sel,at,d){tl.to(sel,{opacity:0,filter:'blur(8px)',duration:d||0.22,ease:'power2.in'},at);}
+function popIn(tl,sel,at,d){tl.fromTo(sel,{opacity:0,scale:0.86},{opacity:1,scale:1,duration:d||0.45,ease:'expo.out'},at);}
+function sweep(tl,sel,at){tl.fromTo(sel,{backgroundPosition:'120% 0'},{backgroundPosition:'-20% 0',duration:0.9,ease:'power2.inOut'},at);
+  tl.fromTo(sel,{opacity:0},{opacity:1,duration:0.15},at);tl.to(sel,{opacity:0,duration:0.2},at+0.75);}
+
+const tl = gsap.timeline({paused:true});
+const D=7.470;
+// slow, never-stopping drift of the whole scene (B-roll feel)
+tl.fromTo('#k8-world',{scale:1.0},{scale:1.03,duration:D,ease:'none'},0);
+
+tl.fromTo('#k8-word',{opacity:0,scale:0.7,filter:'blur(12px)'},{opacity:1,scale:1,filter:'blur(0px)',duration:0.7,ease:'expo.out'},0.47-0.15);
+sweep(tl,'#k8-sweep',0.47+0.5);
+inBlur(tl,'#k8-line',1.51,0.45);
+tl.fromTo(['#k8-name','#k8-url'],{opacity:0,y:14},{opacity:1,y:0,duration:0.5,ease:'expo.out',stagger:0.15},3.75);
+tl.fromTo('#k8-disc',{opacity:0},{opacity:1,duration:0.6},3.75+0.4);
+
+window.__timelines["k8"] = tl;
+})();
+</script>
+</template>

@@ -1,0 +1,24 @@
+Vortex: technical video (Samsung PRISM XR Hackathon 2026, Track 3: Path Finder)
+Arnav Jain · Manipal Institute of Technology · github.com/ArnavJain2005/Vortex
+
+PICTURE
+- Talking head: Arnav Jain's own camera footage (original phone recordings).
+- All slides, diagrams and animation: built in HyperFrames (HTML + GSAP), code-generated; no AI image or video generation, no stock footage.
+- Pip stills (S-a bridge card): from our Pip film, AI-animated. Narration voice in the Pip film by ElevenLabs.
+
+MUSIC (supplied by Arnav; licence text not supplied with the files; file names follow Pixabay's pattern,
+so these are listed as Pixabay downloads under the Pixabay Content License, which needs no on-screen credit)
+- "Abstract Technology Ambient" by yurasoop (Pixabay #519876): background track, edited on bar lines.
+- "Warm Tech Logo" by sergequadrado (Pixabay #21474): end-slate hit (first 3.2 s).
+- "Sub Drop Short" by brvhrtz (Pixabay #232033): impact on the results drop.
+- "UI Data Processing Beep" by soundshelfstudio (Pixabay #527474): data blips in K-3 (first 1.8 s).
+
+SOUND EFFECTS
+- DAEDAL Transition SFX Pack by DAEDAL, CC0 1.0 (no attribution required):
+  DAEDAL_Whoosh_02_Airy, DAEDAL_Whoosh_03_Deep, DAEDAL_Whoosh_04_Whip, DAEDAL_Riser_04_Short_1s,
+  DAEDAL_Click_03_Tick, DAEDAL_Glitch_02, DAEDAL_Impact_05_Thud_Dry.
+- alfred.makes starter sound kit, CC0 1.0 (no attribution required). Original Freesound recordings:
+  alfredmakes-click-ui-1.wav: "Normal click" by Breviceps (freesound.org/people/Breviceps/sounds/448086/), CC0.
+  alfredmakes-pop-tiny-1.wav: "Message Pop Sound" by ImAFoley (freesound.org/people/ImAFoley/sounds/537061/), CC0.
+
+No downloaded music or SFX were used beyond the files Arnav supplied.

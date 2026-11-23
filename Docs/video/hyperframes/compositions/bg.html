@@ -1,0 +1,105 @@
+<template>
+<style>
+
+#root{position:absolute;inset:0;overflow:hidden;font-family:Inter,sans-serif;color:#f3f5ff;}
+#root .world{position:absolute;inset:0;transform-origin:50% 45%;}
+#root .mono{font-family:'JetBrains Mono',monospace;}
+#root .panel{position:absolute;background:rgba(18,26,69,.86);border:1px solid rgba(94,200,242,.22);border-radius:22px;
+  box-shadow:0 18px 60px rgba(0,0,0,.45), inset 0 1px 0 rgba(255,255,255,.05);}
+#root .label{font-weight:700;letter-spacing:.01em;}
+#root .sub{color:rgba(243,245,255,.72);font-weight:400;}
+#root .tag{position:absolute;padding:6px 14px;border-radius:999px;font-weight:700;font-size:22px;letter-spacing:.06em;}
+#root .glow-c{text-shadow:0 0 18px rgba(94,200,242,.55),0 0 2px rgba(94,200,242,.9);}
+#root .glow-m{text-shadow:0 0 18px rgba(126,224,181,.55),0 0 2px rgba(126,224,181,.9);}
+#root [data-layout-ignore]{}
+#root .schem{position:absolute;font-family:'JetBrains Mono',monospace;font-size:18px;letter-spacing:.12em;
+  color:rgba(243,245,255,.55);text-transform:lowercase;border:1px solid rgba(243,245,255,.25);padding:4px 10px;border-radius:6px;}
+#root .sweep{position:absolute;inset:0;pointer-events:none;mix-blend-mode:screen;
+  background:linear-gradient(105deg,transparent 35%,rgba(255,255,255,.22) 50%,transparent 65%);background-size:300% 100%;}
+
+
+#bg-base{position:absolute;inset:0;background:radial-gradient(1400px 900px at 50% 38%,#16205a 0%,#0d1340 45%,#0a0e2e 80%);}
+#bg-grid{position:absolute;left:-1600px;top:-1200px;width:5200px;height:3600px;opacity:.18;
+  background-image:linear-gradient(rgba(94,200,242,.22) 1px,transparent 1px),linear-gradient(90deg,rgba(94,200,242,.22) 1px,transparent 1px);
+  background-size:96px 96px;}
+#bg-stars{position:absolute;left:-600px;top:-400px;width:3120px;height:1880px;}
+#bg-fore{position:absolute;left:-1600px;top:-1200px;width:5200px;height:3600px;opacity:.55;}
+
+</style>
+<div id="root" data-composition-id="bg" data-width="1920" data-height="1080" data-duration="131.420" >
+<div class="world" id="bg-world" data-layout-ignore><div id="bg-base"></div><canvas id="bg-stars" width="3120" height="1880"></canvas>
+<div id="bg-grid" data-layout-ignore></div><canvas id="bg-fore" width="2600" height="1800" style="width:5200px;height:3600px"></canvas></div>
+</div>
+<script>
+(function(){
+gsap.registerPlugin(DrawSVGPlugin, MorphSVGPlugin, MotionPathPlugin);
+
+const P={bg:'#0a0e2e',panel:'#121a45',text:'#f3f5ff',cyan:'#5ec8f2',mint:'#7ee0b5',violet:'#c38bf5',amber:'#f5a35e',red:'#ff6b6b'};
+function rng(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;}}
+function typeOn(tl,sel,text,at,dur){const el=document.querySelector(sel);const o={n:0};el.textContent='';
+  tl.fromTo(o,{n:0},{n:text.length,duration:dur,ease:'none',onUpdate:()=>{el.textContent=text.slice(0,Math.round(o.n));}},at);}
+function countUp(tl,sel,to,dec,at,dur,suffix){const el=document.querySelector(sel);const o={v:0};
+  tl.fromTo(o,{v:0},{v:to,duration:dur,ease:'power3.out',onUpdate:()=>{el.textContent=o.v.toFixed(dec)+(suffix||'');}},at);}
+function inBlur(tl,sel,at,d){tl.fromTo(sel,{opacity:0,filter:'blur(8px)'},{opacity:1,filter:'blur(0px)',duration:d||0.35,ease:'power3.out'},at);}
+function outBlur(tl,sel,at,d){tl.to(sel,{opacity:0,filter:'blur(8px)',duration:d||0.22,ease:'power2.in'},at);}
+function popIn(tl,sel,at,d){tl.fromTo(sel,{opacity:0,scale:0.86},{opacity:1,scale:1,duration:d||0.45,ease:'expo.out'},at);}
+function sweep(tl,sel,at){tl.fromTo(sel,{backgroundPosition:'120% 0'},{backgroundPosition:'-20% 0',duration:0.9,ease:'power2.inOut'},at);
+  tl.fromTo(sel,{opacity:0},{opacity:1,duration:0.15},at);tl.to(sel,{opacity:0,duration:0.2},at+0.75);}
+
+const tl = gsap.timeline({paused:true});
+const D=131.420;
+// slow, never-stopping drift of the whole scene (B-roll feel)
+tl.fromTo('#bg-world',{scale:1.0},{scale:1.03,duration:D,ease:'none'},0);
+
+const st=document.getElementById('bg-stars').getContext('2d'); const r=rng(7); const S=[];
+for(let i=0;i<380;i++) S.push([r()*3120,r()*1880,r()*1.6+0.3,r()*6.28,0.4+r()*1.2]);
+const fg=document.getElementById('bg-fore').getContext('2d'); const r2=rng(11); const F=[];
+for(let i=0;i<70;i++) F.push([r2()*2600,r2()*1800,r2()*3+1.5,r2()*6.28]);
+const clock={t:0};
+function draw(){const t=clock.t; st.clearRect(0,0,3120,1880);
+ for(const s of S){const a=0.25+0.35*(0.5+0.5*Math.sin(t*s[4]+s[3])); st.fillStyle='rgba(200,225,255,'+a.toFixed(3)+')';
+  st.beginPath(); st.arc(s[0]+Math.sin(t*0.05+s[3])*6, s[1], s[2], 0, 6.283); st.fill();}
+ fg.clearRect(0,0,2600,1800);
+ for(const f of F){const x=f[0]+Math.sin(t*0.07+f[3])*20, y=(f[1]+t*1.5)%1800, R=f[2]*5; const g=fg.createRadialGradient(x,y,0,x,y,R);
+   g.addColorStop(0,'rgba(94,200,242,0.16)'); g.addColorStop(1,'rgba(94,200,242,0)'); fg.fillStyle=g; fg.fillRect(x-R,y-R,2*R,2*R);}
+}
+tl.fromTo(clock,{t:0},{t:D,duration:D,ease:'none',onUpdate:draw},0);
+draw();
+tl.to('#bg-grid',{x:-260,y:0,duration:0.9,ease:'power2.inOut'},4.360);
+tl.to('#bg-fore',{x:-468,y:0,duration:0.9,ease:'power2.inOut'},4.360);
+tl.to('#bg-stars',{x:-91,y:0,duration:0.9,ease:'power2.inOut'},4.360);
+tl.to('#bg-grid',{x:-260,y:-180,duration:0.9,ease:'power2.inOut'},14.250);
+tl.to('#bg-fore',{x:-468,y:-324,duration:0.9,ease:'power2.inOut'},14.250);
+tl.to('#bg-stars',{x:-91,y:-63,duration:0.9,ease:'power2.inOut'},14.250);
+tl.to('#bg-grid',{x:-560,y:-120,duration:0.9,ease:'power2.inOut'},19.890);
+tl.to('#bg-fore',{x:-1008,y:-216,duration:0.9,ease:'power2.inOut'},19.890);
+tl.to('#bg-stars',{x:-196,y:-42,duration:0.9,ease:'power2.inOut'},19.890);
+tl.to('#bg-grid',{x:-680,y:-340,duration:0.9,ease:'power2.inOut'},35.000);
+tl.to('#bg-fore',{x:-1224,y:-612,duration:0.9,ease:'power2.inOut'},35.000);
+tl.to('#bg-stars',{x:-238,y:-119,duration:0.9,ease:'power2.inOut'},35.000);
+tl.to('#bg-grid',{x:-960,y:-340,duration:0.9,ease:'power2.inOut'},37.890);
+tl.to('#bg-fore',{x:-1728,y:-612,duration:0.9,ease:'power2.inOut'},37.890);
+tl.to('#bg-stars',{x:-336,y:-119,duration:0.9,ease:'power2.inOut'},37.890);
+tl.to('#bg-grid',{x:-960,y:-140,duration:0.9,ease:'power2.inOut'},66.330);
+tl.to('#bg-fore',{x:-1728,y:-252,duration:0.9,ease:'power2.inOut'},66.330);
+tl.to('#bg-stars',{x:-336,y:-49,duration:0.9,ease:'power2.inOut'},66.330);
+tl.to('#bg-grid',{x:-1280,y:-140,duration:0.9,ease:'power2.inOut'},72.290);
+tl.to('#bg-fore',{x:-2304,y:-252,duration:0.9,ease:'power2.inOut'},72.290);
+tl.to('#bg-stars',{x:-448,y:-49,duration:0.9,ease:'power2.inOut'},72.290);
+tl.to('#bg-grid',{x:-1480,y:-260,duration:0.5,ease:'power2.inOut'},81.360);
+tl.to('#bg-fore',{x:-2664,y:-468,duration:0.5,ease:'power2.inOut'},81.360);
+tl.to('#bg-stars',{x:-518,y:-91,duration:0.5,ease:'power2.inOut'},81.360);
+tl.to('#bg-grid',{x:-1740,y:-180,duration:0.9,ease:'power2.inOut'},110.080);
+tl.to('#bg-fore',{x:-3132,y:-324,duration:0.9,ease:'power2.inOut'},110.080);
+tl.to('#bg-stars',{x:-609,y:-63,duration:0.9,ease:'power2.inOut'},110.080);
+tl.to('#bg-grid',{x:-1740,y:-380,duration:0.9,ease:'power2.inOut'},120.080);
+tl.to('#bg-fore',{x:-3132,y:-684,duration:0.9,ease:'power2.inOut'},120.080);
+tl.to('#bg-stars',{x:-609,y:-133,duration:0.9,ease:'power2.inOut'},120.080);
+tl.to('#bg-grid',{x:-1980,y:-380,duration:0.9,ease:'power2.inOut'},123.800);
+tl.to('#bg-fore',{x:-3564,y:-684,duration:0.9,ease:'power2.inOut'},123.800);
+tl.to('#bg-stars',{x:-693,y:-133,duration:0.9,ease:'power2.inOut'},123.800);
+
+window.__timelines["bg"] = tl;
+})();
+</script>
+</template>

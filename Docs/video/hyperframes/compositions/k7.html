@@ -1,0 +1,98 @@
+<template>
+<style>
+
+#root{position:absolute;inset:0;overflow:hidden;font-family:Inter,sans-serif;color:#f3f5ff;}
+#root .world{position:absolute;inset:0;transform-origin:50% 45%;}
+#root .mono{font-family:'JetBrains Mono',monospace;}
+#root .panel{position:absolute;background:rgba(18,26,69,.86);border:1px solid rgba(94,200,242,.22);border-radius:22px;
+  box-shadow:0 18px 60px rgba(0,0,0,.45), inset 0 1px 0 rgba(255,255,255,.05);}
+#root .label{font-weight:700;letter-spacing:.01em;}
+#root .sub{color:rgba(243,245,255,.72);font-weight:400;}
+#root .tag{position:absolute;padding:6px 14px;border-radius:999px;font-weight:700;font-size:22px;letter-spacing:.06em;}
+#root .glow-c{text-shadow:0 0 18px rgba(94,200,242,.55),0 0 2px rgba(94,200,242,.9);}
+#root .glow-m{text-shadow:0 0 18px rgba(126,224,181,.55),0 0 2px rgba(126,224,181,.9);}
+#root [data-layout-ignore]{}
+#root .schem{position:absolute;font-family:'JetBrains Mono',monospace;font-size:18px;letter-spacing:.12em;
+  color:rgba(243,245,255,.55);text-transform:lowercase;border:1px solid rgba(243,245,255,.25);padding:4px 10px;border-radius:6px;}
+#root .sweep{position:absolute;inset:0;pointer-events:none;mix-blend-mode:screen;
+  background:linear-gradient(105deg,transparent 35%,rgba(255,255,255,.22) 50%,transparent 65%);background-size:300% 100%;}
+
+
+#k7-stage{position:absolute;left:0;top:0;width:1920px;height:1080px;perspective:1400px;}
+#k7-plane{position:absolute;left:0;top:0;width:1920px;height:1080px;transform-style:preserve-3d;transform-origin:50% 60%;}
+#k7-svg{position:absolute;left:0;top:0;width:1920px;height:1080px;overflow:visible;}
+#k7-dead{position:absolute;left:930px;top:320px;padding:6px 14px;border-radius:10px;background:#f5a35e;color:#0a0e2e;font-weight:900;font-size:26px;letter-spacing:.08em;}
+#k7-gl{position:absolute;left:1190px;top:170px;font-size:24px;color:#ff6b6b;font-family:'JetBrains Mono',monospace;}
+#k7-hl{position:absolute;left:1180px;top:452px;font-size:26px;color:#7ee0b5;font-weight:700;}
+#k7-stamp{position:absolute;left:1100px;top:170px;width:560px;padding:18px 24px;border:4px solid #7ee0b5;border-radius:16px;color:#7ee0b5;
+  text-align:center;font-weight:900;font-size:34px;line-height:1.15;background:rgba(10,14,46,.85);}
+#k7-stamp small{display:block;font-family:'JetBrains Mono',monospace;font-weight:700;font-size:24px;color:#f3f5ff;margin-top:8px;}
+#k7-rule{left:110px;top:720px;width:900px;padding:20px 26px;font-size:24px;line-height:1.4;}
+#k7-rule b{color:#f5a35e;}
+#k7-sch{left:110px;top:110px;}
+
+</style>
+<div id="root" data-composition-id="k7" data-width="1920" data-height="1080" data-duration="10.600" >
+<div class="world" id="k7-world"><div id="k7-stage"><div id="k7-plane">
+<svg id="k7-svg" viewBox="0 0 1920 1080">
+ <path id="k7-path" d="M 120 560 C 300 520 420 420 560 450 S 800 520 960 420" fill="none" stroke="#5ec8f2" stroke-width="6" stroke-linecap="round"/>
+ <path id="k7-ghost" d="M 960 420 C 1080 340 1100 200 1180 230 S 1320 420 1250 140 S 1420 60 1500 120" fill="none" stroke="#ff6b6b" stroke-width="5" stroke-dasharray="14 10" stroke-linecap="round" opacity="0.9"/>
+ <path id="k7-hold" d="M 960 420 L 1160 430" fill="none" stroke="#7ee0b5" stroke-width="7" stroke-linecap="round"/>
+ <circle id="k7-dot" cx="960" cy="420" r="13" fill="#f5a35e"/>
+</svg>
+<div id="k7-dead">IMU DEAD</div><div id="k7-gl">raw integration</div><div id="k7-hl">last trusted state</div>
+</div></div>
+<div class="panel" id="k7-rule"><b>Blind rule:</b> trailing dead run ≥ 1 s → poses from 3 s before keep the attitude of the last trusted pose</div>
+<div id="k7-stamp">100 % format checks passed · one pose per row<small>36/36 · 36/36 · 24/24</small></div>
+<div class="schem" id="k7-sch" data-layout-ignore>schematic</div></div>
+</div>
+<script>
+(function(){
+gsap.registerPlugin(DrawSVGPlugin, MorphSVGPlugin, MotionPathPlugin);
+
+const P={bg:'#0a0e2e',panel:'#121a45',text:'#f3f5ff',cyan:'#5ec8f2',mint:'#7ee0b5',violet:'#c38bf5',amber:'#f5a35e',red:'#ff6b6b'};
+function rng(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;}}
+function typeOn(tl,sel,text,at,dur){const el=document.querySelector(sel);const o={n:0};el.textContent='';
+  tl.fromTo(o,{n:0},{n:text.length,duration:dur,ease:'none',onUpdate:()=>{el.textContent=text.slice(0,Math.round(o.n));}},at);}
+function countUp(tl,sel,to,dec,at,dur,suffix){const el=document.querySelector(sel);const o={v:0};
+  tl.fromTo(o,{v:0},{v:to,duration:dur,ease:'power3.out',onUpdate:()=>{el.textContent=o.v.toFixed(dec)+(suffix||'');}},at);}
+function inBlur(tl,sel,at,d){tl.fromTo(sel,{opacity:0,filter:'blur(8px)'},{opacity:1,filter:'blur(0px)',duration:d||0.35,ease:'power3.out'},at);}
+function outBlur(tl,sel,at,d){tl.to(sel,{opacity:0,filter:'blur(8px)',duration:d||0.22,ease:'power2.in'},at);}
+function popIn(tl,sel,at,d){tl.fromTo(sel,{opacity:0,scale:0.86},{opacity:1,scale:1,duration:d||0.45,ease:'expo.out'},at);}
+function sweep(tl,sel,at){tl.fromTo(sel,{backgroundPosition:'120% 0'},{backgroundPosition:'-20% 0',duration:0.9,ease:'power2.inOut'},at);
+  tl.fromTo(sel,{opacity:0},{opacity:1,duration:0.15},at);tl.to(sel,{opacity:0,duration:0.2},at+0.75);}
+
+const tl = gsap.timeline({paused:true});
+const D=10.600;
+// slow, never-stopping drift of the whole scene (B-roll feel)
+tl.fromTo('#k7-world',{scale:1.0},{scale:1.03,duration:D,ease:'none'},0);
+
+gsap.set(['#k7-ghost','#k7-hold','#k7-dot','#k7-dead','#k7-gl','#k7-hl','#k7-stamp','#k7-rule'],{opacity:0});
+tl.fromTo('#k7-path',{drawSVG:'0%'},{drawSVG:'100%',duration:1.0,ease:'power2.inOut'},0.05);
+tl.fromTo('#k7-sch',{opacity:0},{opacity:1,duration:0.4},0.4);
+// 'dies': amber IMU-dead marker + glitch burst, then a beat of stillness
+tl.to(['#k7-dot','#k7-dead'],{opacity:1,duration:0.15},1.55);
+tl.fromTo('#k7-world',{x:0},{keyframes:[{x:-18,duration:0.03},{x:14,duration:0.04},{x:-6,duration:0.03},{x:0,duration:0.05}]},1.55);
+tl.fromTo('#k7-svg',{filter:'drop-shadow(8px 0 0 rgba(255,80,80,.8)) drop-shadow(-8px 0 0 rgba(80,200,255,.8))'},{filter:'drop-shadow(0px 0 0 rgba(255,80,80,0)) drop-shadow(0px 0 0 rgba(80,200,255,0))',duration:0.3},1.55);
+tl.fromTo('#k7-dead',{clipPath:'inset(0 0 0 0)'},{keyframes:[{clipPath:'inset(40% 0 30% 0)',duration:0.04},{clipPath:'inset(0 0 0 0)',duration:0.06}]},1.55+0.03);
+// approved 3D #3 (optional): the path plane tilts into perspective, the ghost curls off in 3D, the held line stays put
+tl.to('#k7-plane',{rotationX:38,rotationY:-10,y:-40,duration:0.9,ease:'power2.inOut'},2.67-0.2);
+tl.set('#k7-ghost',{opacity:0.9},2.67);
+tl.fromTo('#k7-ghost',{drawSVG:'0%'},{drawSVG:'100%',duration:1.0,ease:'power2.in'},2.67);
+tl.fromTo('#k7-gl',{opacity:0},{opacity:1,duration:0.3},2.67+0.5);
+tl.to(['#k7-ghost','#k7-gl'],{opacity:0,duration:0.6},2.67+1.5);
+tl.to('#k7-plane',{rotationX:0,rotationY:0,y:0,duration:0.9,ease:'power2.inOut'},2.67+1.7);
+tl.set('#k7-hold',{opacity:1},3.79);
+tl.fromTo('#k7-hold',{drawSVG:'0%'},{drawSVG:'100%',duration:0.7,ease:'power3.out'},3.79);
+tl.fromTo('#k7-hl',{opacity:0,x:-12},{opacity:1,x:0,duration:0.5,ease:'expo.out'},3.79+0.3);
+tl.fromTo('#k7-rule',{opacity:0,y:14},{opacity:1,y:0,duration:0.5,ease:'expo.out'},3.79+0.7);
+// stamp thud on 'format check'
+tl.fromTo('#k7-stamp',{opacity:0,scale:1.6,rotation:-6},{opacity:1,scale:1,rotation:-2,duration:0.28,ease:'power4.in'},8.42-0.25);
+tl.to('#k7-stamp',{scale:1.03,duration:0.08,yoyo:true,repeat:1},8.42+0.03);
+// hand-off: path clears; the switch row comes up in S-d
+tl.to(['#k7-plane','#k7-rule','#k7-stamp','#k7-sch'],{opacity:0,y:-20,duration:0.4,ease:'power2.in'},10.0);
+
+window.__timelines["k7"] = tl;
+})();
+</script>
+</template>

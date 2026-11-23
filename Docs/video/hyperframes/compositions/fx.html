@@ -1,0 +1,69 @@
+<template>
+<style>
+
+#root{position:absolute;inset:0;overflow:hidden;font-family:Inter,sans-serif;color:#f3f5ff;}
+#root .world{position:absolute;inset:0;transform-origin:50% 45%;}
+#root .mono{font-family:'JetBrains Mono',monospace;}
+#root .panel{position:absolute;background:rgba(18,26,69,.86);border:1px solid rgba(94,200,242,.22);border-radius:22px;
+  box-shadow:0 18px 60px rgba(0,0,0,.45), inset 0 1px 0 rgba(255,255,255,.05);}
+#root .label{font-weight:700;letter-spacing:.01em;}
+#root .sub{color:rgba(243,245,255,.72);font-weight:400;}
+#root .tag{position:absolute;padding:6px 14px;border-radius:999px;font-weight:700;font-size:22px;letter-spacing:.06em;}
+#root .glow-c{text-shadow:0 0 18px rgba(94,200,242,.55),0 0 2px rgba(94,200,242,.9);}
+#root .glow-m{text-shadow:0 0 18px rgba(126,224,181,.55),0 0 2px rgba(126,224,181,.9);}
+#root [data-layout-ignore]{}
+#root .schem{position:absolute;font-family:'JetBrains Mono',monospace;font-size:18px;letter-spacing:.12em;
+  color:rgba(243,245,255,.55);text-transform:lowercase;border:1px solid rgba(243,245,255,.25);padding:4px 10px;border-radius:6px;}
+#root .sweep{position:absolute;inset:0;pointer-events:none;mix-blend-mode:screen;
+  background:linear-gradient(105deg,transparent 35%,rgba(255,255,255,.22) 50%,transparent 65%);background-size:300% 100%;}
+
+
+#fx-vig{position:absolute;inset:0;background:radial-gradient(ellipse at 50% 50%,transparent 58%,rgba(0,0,0,.08) 80%,rgba(0,0,0,.08) 100%);}
+#fx-grain{position:absolute;inset:-64px;background-image:url('assets/grain.png');background-size:512px 512px;opacity:.07;mix-blend-mode:overlay;}
+#fx-top,#fx-bot{position:absolute;left:0;width:1920px;height:60px;background:#000;}
+#fx-top{top:0;transform-origin:50% 0;} #fx-bot{bottom:0;transform-origin:50% 100%;}
+#fx-black{position:absolute;inset:0;background:#000;}
+
+</style>
+<div id="root" data-composition-id="fx" data-width="1920" data-height="1080" data-duration="131.420" >
+<div class="world" id="fx-world"><div id="fx-vig"></div><div id="fx-grain"></div><div id="fx-top"></div><div id="fx-bot"></div><div id="fx-black"></div></div>
+</div>
+<script>
+(function(){
+gsap.registerPlugin(DrawSVGPlugin, MorphSVGPlugin, MotionPathPlugin);
+
+const P={bg:'#0a0e2e',panel:'#121a45',text:'#f3f5ff',cyan:'#5ec8f2',mint:'#7ee0b5',violet:'#c38bf5',amber:'#f5a35e',red:'#ff6b6b'};
+function rng(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;}}
+function typeOn(tl,sel,text,at,dur){const el=document.querySelector(sel);const o={n:0};el.textContent='';
+  tl.fromTo(o,{n:0},{n:text.length,duration:dur,ease:'none',onUpdate:()=>{el.textContent=text.slice(0,Math.round(o.n));}},at);}
+function countUp(tl,sel,to,dec,at,dur,suffix){const el=document.querySelector(sel);const o={v:0};
+  tl.fromTo(o,{v:0},{v:to,duration:dur,ease:'power3.out',onUpdate:()=>{el.textContent=o.v.toFixed(dec)+(suffix||'');}},at);}
+function inBlur(tl,sel,at,d){tl.fromTo(sel,{opacity:0,filter:'blur(8px)'},{opacity:1,filter:'blur(0px)',duration:d||0.35,ease:'power3.out'},at);}
+function outBlur(tl,sel,at,d){tl.to(sel,{opacity:0,filter:'blur(8px)',duration:d||0.22,ease:'power2.in'},at);}
+function popIn(tl,sel,at,d){tl.fromTo(sel,{opacity:0,scale:0.86},{opacity:1,scale:1,duration:d||0.45,ease:'expo.out'},at);}
+function sweep(tl,sel,at){tl.fromTo(sel,{backgroundPosition:'120% 0'},{backgroundPosition:'-20% 0',duration:0.9,ease:'power2.inOut'},at);
+  tl.fromTo(sel,{opacity:0},{opacity:1,duration:0.15},at);tl.to(sel,{opacity:0,duration:0.2},at+0.75);}
+
+const tl = gsap.timeline({paused:true});
+const D=131.420;
+// slow, never-stopping drift of the whole scene (B-roll feel)
+
+
+tl.set(['#fx-top','#fx-bot'],{scaleY:0},0);
+tl.fromTo('#fx-black',{opacity:1},{opacity:0,duration:0.6,ease:'power2.out'},0);
+tl.to('#fx-black',{opacity:1,duration:0.9,ease:'power2.in'},130.470);
+const g=document.getElementById('fx-grain'); const gr=rng(3); const JX=[],JY=[]; for(let i=0;i<64;i++){JX.push(Math.floor(gr()*512));JY.push(Math.floor(gr()*512));}
+const gc={f:0}; tl.fromTo(gc,{f:0},{f:3942,duration:D,ease:'none',onUpdate:()=>{const i=Math.floor(gc.f)%64; g.style.backgroundPosition=JX[i]+'px '+JY[i]+'px';}},0);
+tl.to(['#fx-top','#fx-bot'],{scaleY:1,duration:0.5,ease:'power2.out'},4.710);
+tl.to(['#fx-top','#fx-bot'],{scaleY:0,duration:0.4,ease:'power2.in'},14.500);
+tl.to(['#fx-top','#fx-bot'],{scaleY:1,duration:0.5,ease:'power2.out'},35.350);
+tl.to(['#fx-top','#fx-bot'],{scaleY:0,duration:0.4,ease:'power2.in'},38.140);
+tl.to(['#fx-top','#fx-bot'],{scaleY:1,duration:0.5,ease:'power2.out'},66.680);
+tl.to(['#fx-top','#fx-bot'],{scaleY:0,duration:0.4,ease:'power2.in'},72.540);
+tl.to(['#fx-top','#fx-bot'],{scaleY:1,duration:0.5,ease:'power2.out'},120.430);
+tl.to(['#fx-top','#fx-bot'],{scaleY:0,duration:0.4,ease:'power2.in'},124.050);
+
+window.__timelines["fx"] = tl;
+})();
+</script>
+</template>
