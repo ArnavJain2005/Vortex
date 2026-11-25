@@ -94,7 +94,7 @@ Deadline **22 Nov 2026, 11:59 PM IST**, confirmed by the FAQ (Q1 closed). Full-t
 | NUMBERS (K6, early) | `tools/make_numbers.py` -> `Docs/NUMBERS.md` + `Docs/numbers/numbers.json`: every number the deck, script and README may quote, as `key | value | source tag | date`, generated from committed result, TUM-VI, budget and pytest files. Keys are stable (ChatGPT's `[[N:key]]`); when the shipped build changes, `SOURCES` in the script points at the new tags | **Done (verified)** 18 Nov: headline keys reproduce the Step F verdict to the digit (held-out 4.962 vs floor 3.745 m; reading a 6.181, b 3.744; gap 5.036; blind 6.992). Budget from a fresh lean run (`lean-win-py314-mh01-b-s1`) | `tests/test_numbers.py` (3); `--check` in the suite |
 | L2 | Slow gravity alignment over a 4 s window with a lag model, weighted by a gyro noise meter (`TILT_ON`) | **Done (verified): ON** by rule G2 (18 Nov, rule at 3e2646e, seeds 16-18, base with the Step 6 smoother): all 13 checks pass, held-out APE 4.922 -> 3.575 m (floor 3.746), DiD null 1.347 vs 1.187 m. Rule G (seeds 10-12) had failed its level null; G2 was **written after seeing that: weaker evidence, same 6 flights** | Rule G2 on 36 fresh held-out copies + TUM-VI room3/4 |
 | v1.0 | Submission zip from the frozen main 5e28668; NUMBERS, README and RESULTS from one set of runs of the shipped file | **Done (verified)** 22 Nov: `dist/vortex_v1.0.zip` sha256 e251c401...447c, tag `v1.0` (0e7c81d); verify PASS Win 3.14/3.13, WSL2 3.12; 316 reporting runs, contract PASS; see "v1.0 zip and the reporting runs" | Zip verified on three Pythons |
-| Final | Final table: V2_01..03 x a,b x seeds 1-3 on the frozen v1.0 file + floor | **Planned**; runs only on Arnav's "run the final table" (plan: section "Final table", committed on `track3/final-table` before any V2 copy exists) | Reported as it comes out |
+| Final | Final table: V2_01..03 x a,b x seeds 1-3 on the frozen v1.0 file + floor | **Done (run once)** 22 Nov: APE 2.200 vs floor 2.156 m (+2.0 %), gap +8.2 %, blind +0.4 %, 1/3 sequences better, contract 18/18 (plan f34d362 committed before any V2 copy existed; section "Final table result") | Reported as it comes out |
 | L3 | Blind window from a trusted state (`BLIND_ON` + `BLIND_DEAD_ONLY`, **on**): on a detected trailing dead run >= 1 s, the rows from 3 s before it ramp to the earlier estimate's centroid (a trust policy); no 5 s fallback | **Done** (21 Nov): rule H failed condition 7 (clean TUM-VI +1.13 %, the fallback); rule H' (no fallback, seeds 22-24, weaker evidence) **passed 1-8**: H blind -18.6 % (6/6 sequences), APE -1.6 %, T blind -43.9 %, clean unchanged, gate PASS (attempt 5 of 5, all recorded) | Freeze-build bundle rebuilt from the merged pathfinder.py |
 
 ## Open questions (Q1 to Q5 are in the email drafted for prism@samsung.com on 15 Nov)
@@ -2596,3 +2596,62 @@ two stages: `tools/make_bundle.py single` generates the CHUNKED `src/main.py`, t
 
 pytest on `track3/final-docs`: recorded by `python tools/make_numbers.py --pytest` in `Docs/numbers/pytest.json` and
 the `pytest_*` keys of `Docs/NUMBERS.md`.
+
+## Final table: Vicon Room 2 on the frozen v1.0 file (plan committed 22 Nov 2026, BEFORE any V2 copy exists or any V2 file is read)
+
+Arnav's instruction (22 Nov, "Final stretch", step 4): after the v1.0 zip, and only when Arnav says "run the final
+table"; run once; record exactly what comes out; change nothing afterwards. At this commit no V2 official copy exists
+(`data/official` holds 0 `V2_*` folders) and no V2 file has been read, fitted or plotted.
+
+**What is frozen.** The estimator is `src/main.py` extracted from `dist/vortex_v1.0.zip` (zip sha256
+`e251c4010248caf5103bbf2923122146bba64ae7e2b225069a89672ffbd4447c`; tag `v1.0` = 0e7c81d = main 5e28668 + bundle README;
+src/main.py sha256 `feb222ea9f27f077c9113b39edd7cb513a6a3e496ec4db35f3c9416349d10811`). Its sha256 is checked after
+extraction, before the first run. No switch, constant, tool or scoring change between this plan and the table. The
+floor is `tools/baseline_still.py` (never moving), scored the same way.
+
+**Inputs (18 copies).** V2_01_easy, V2_02_medium, V2_03_difficult x readings a, b x seeds 1, 2, 3, made from
+`data/euroc/V2_0*` with the organisers' `degrade_imu.py` (copied unchanged into the git-ignored `tools/official/`)
+through `python tools/official_degrade.py --all --seqs V2_01_easy,V2_02_medium,V2_03_difficult --readings a,b
+--seeds 1,2,3 --final`. The SHA-256 of every `mav0/imu0/data.csv` is recorded in the result note before any estimate
+runs. Seed 42 is not used.
+
+**Runs (once each, Win 3.14.7, the machine that built v1.0).**
+1. `python tools/eval_euroc.py --tag final-v10-V2 --official --final --main <extracted src/main.py> --seqs <the 18>`
+2. `python tools/eval_euroc.py --tag final-floor-V2 --official --final --main tools/baseline_still.py --seqs <the 18>`
+3. `python tools/final_table.py --est final-v10-V2 --floor final-floor-V2` -> `Docs/FINAL_TABLE.md`
+
+Scorer: `vortex/scoring.py` as at this commit (APE: SE(3) Umeyama fitted on the run being scored; gap RMSE inside
+missing-row bursts and blind RMSE over the final dead-sensor window, both from each copy's `degrade.json`).
+
+**What is reported (generated, never by hand).** `tools/final_table.py` (committed here with
+`tests/test_final_table.py`, tested on synthetic results only): pooled over all 18 copies and per reading; per
+sequence (both readings, three seeds); per sequence and reading; per copy. For each: mean APE, mean gap RMSE and mean
+blind RMSE for Vortex and the floor, and `100 (est / floor - 1)`; the output-contract PASS count; the number of the
+3 sequences better than the floor on pooled APE. A copy with an error is listed and left out of the means, never
+dropped silently.
+
+**No decision rides on it.** Reported as it comes out, good or bad. Nothing is tuned, re-run or re-selected afterwards.
+A crash or contract FAIL is reported to Arnav in chat and recorded, not fixed in the build. If a second scorer (evo,
+or Antigravity's independent scorer) is run on the same outputs and any copy differs by more than 1 mm, that is
+escalated to Arnav and both numbers are recorded.
+
+### Final table result (22 Nov 2026, run once on Arnav's "Run the final table"; recorded as it came out, nothing changed)
+
+Inputs: the 18 copies whose SHA-256 were committed in `Docs/final/inputs.sha256` (a4358a9) before any estimate ran;
+organisers' script sha256 cc7398db...2f31 (pandas 3.0.5). Estimator: `src/main.py` extracted from
+`dist/vortex_v1.0.zip`, sha256 checked = feb222ea...0811. Both runs once, Win 3.14.7, at a4358a9. Full table:
+`Docs/FINAL_TABLE.md`; runs: `Docs/results/final-v10-V2.json`, `Docs/results/final-floor-V2.json`.
+
+| V2 (shipped v1.0 vs never-moving floor) | APE (m) | gap RMSE (m) | blind RMSE (m) |
+|---|---|---|---|
+| All 18 copies | 2.200 vs 2.156 (**+2.0 %**) | 2.130 vs 1.969 (+8.2 %) | 2.781 vs 2.769 (+0.4 %) |
+| Reading a (9) / reading b (9) | 2.213 / 2.186 (+2.6 / +1.4 %) | 2.166 / 2.094 (+10.0 / +6.3 %) | 2.781 / 2.781 (+0.4 / +0.4 %) |
+| V2_01_easy (6) | 2.057 vs 2.298 (-10.5 %) | 1.927 vs 2.181 (-11.6 %) | 3.082 vs 3.085 (-0.1 %) |
+| V2_02_medium (6) | 2.379 vs 2.112 (+12.6 %) | 2.301 vs 1.897 (+21.3 %) | 2.725 vs 2.682 (+1.6 %) |
+| V2_03_difficult (6) | 2.163 vs 2.058 (+5.1 %) | 2.162 vs 1.829 (+18.2 %) | 2.536 vs 2.539 (-0.1 %) |
+
+Output contract 18/18 PASS; no crash, no fallback error. Sequences better than the floor on pooled APE: **1 of 3**
+(V2_01). On this untouched final set the shipped build is **worse than standing still** overall (+2.0 % APE), worse
+in the gap windows on V2_02 and V2_03, and ties the floor in the blind window (as L3 is designed to). This differs
+from the held-out EuRoC sets (MH_03..05 + V1_01..03: -5 to -8 % APE) and is reported as the final-test result.
+No second scorer was run here.

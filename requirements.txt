@@ -1,0 +1,7 @@
+# The submitted estimator (src/main.py in the zip; pathfinder.py + main.py here) needs NOTHING:
+# pure Python 3.10+ standard library. These are for the analysis tools, scorer and tests only.
+# Same list as pyproject.toml ([project] dependencies + the dev extra).
+numpy>=1.24
+pandas>=2.0
+matplotlib>=3.7
+pytest>=7
