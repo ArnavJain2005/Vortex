@@ -129,15 +129,17 @@ The challenge scores full-trajectory (waypoint) error, error in the blind 5 s an
 - **Repeat trials:** seeds 7–9 degrade the same six sequences again. They test robustness to a fresh degradation, not new trajectories.
 - **Clean EuRoC:** eight undegraded sequences (MH_01–05, V1_01–03), including the tuning flights MH_01 and MH_02.
 - **TUM-VI:** hand-held recordings. Rooms 1–2 were used for tuning; rooms 3–4 are held out. The rooms 1–4 figures below include the tuning rooms.
+- **Final test set:** Vicon Room 2 (V2_01–03), held back until after the submitted file was frozen, then run once: three sequences, two readings, seeds 1–3 (18 copies). The plan and the input hashes were committed before the run, and the result was recorded unchanged. [Final table](Docs/FINAL_TABLE.md)
 - The EuRoC recordings are real flights. The faults in every evaluation are applied by the organisers' degradation script.
 
 ### What the results show, and where they stop
 
+- **On the final test set (Vicon Room 2) Vortex is worse than the baseline:** full APE 2.200 m vs 2.156 m (+2.0%), dropout gaps 2.130 m vs 1.969 m (+8.2%), blind 5 s level (2.781 m vs 2.769 m). Only V2_01 of the three sequences is better (−10.5%); V2_02 is +12.6% and V2_03 +5.1%. The held-out gains below did not carry over to this set.
 - Full-trajectory error is lower than the baseline on five of the six held-out sequences, in each column reading. The exception is V1_01: worse than the baseline in both readings, on both seed sets.
 - On the repeat trials (seeds 7–9) the full-trajectory result holds at 3.481 m vs 3.748 m. Error inside dropout gaps, though, is slightly higher than the baseline there (3.298 m vs 3.256 m, +1.3%).
 - In the blind 5 s, Vortex is level with the baseline (2.494 m vs 2.504 m on seeds 4–6). The blind-window rule holds the estimate steady; it does not predict the motion.
 - Local motion (1 s RPE) is 40.2% lower on the held-out copies and 49.9% lower on the clean sequences.
-- Every output passed the format contract: 36 of 36 copies on seeds 4–6, 36 of 36 on seeds 7–9 and 24 of 24 on TUM-VI.
+- Every output passed the format contract: 36 of 36 copies on seeds 4–6, 36 of 36 on seeds 7–9, 24 of 24 on TUM-VI and 18 of 18 on Vicon Room 2.
 
 <details>
 <summary><b>Full results tables</b></summary>
@@ -162,6 +164,9 @@ The challenge scores full-trajectory (waypoint) error, error in the blind 5 s an
 | TUM-VI rooms 1–4 · gap-window RMSE | 0.988 m | 1.078 m | 8.3% lower |
 | TUM-VI rooms 1–4 · blind 5 s RMSE | 0.699 m | 0.709 m | 1.4% lower (level) |
 | TUM-VI rooms 1–4, clean (4 sequences) · full APE | 0.879 m | 1.137 m | 22.6% lower |
+| **Final test, Vicon Room 2 (18 copies, run once) · full APE** | **2.200 m** | **2.156 m** | **2.0% higher** |
+| Final test, Vicon Room 2 · gap-window RMSE | 2.130 m | 1.969 m | 8.2% higher |
+| Final test, Vicon Room 2 · blind 5 s RMSE | 2.781 m | 2.769 m | 0.4% higher (level) |
 
 **Column readings.** The organisers' script can be given the IMU columns gyroscope-first (reading a, the raw EuRoC order) or accelerometer-first (reading b). Vortex detects the order from the data, and both readings are scored (held-out EuRoC, seeds 4–6):
 
@@ -170,7 +175,7 @@ The challenge scores full-trajectory (waypoint) error, error in the blind 5 s an
 | Full APE | 3.506 / 3.745 m | 3.373 / 3.745 m | 6.4% lower | 9.9% lower |
 | 1 s RPE (diagnostic) | 0.606 / 0.941 m | 0.519 / 0.941 m | 35.5% lower | 44.9% lower |
 
-**Per-sequence counts.** Lower full APE than the baseline: 5 of 6 held-out sequences in each reading on seeds 4–6; 4 of 6 (reading a) and 5 of 6 (reading b) on seeds 7–9; 7 of 8 clean EuRoC sequences; 4 of 4 TUM-VI rooms (rooms 1–2 being tuning rooms).
+**Per-sequence counts.** Lower full APE than the baseline: 5 of 6 held-out sequences in each reading on seeds 4–6; 4 of 6 (reading a) and 5 of 6 (reading b) on seeds 7–9; 7 of 8 clean EuRoC sequences; 4 of 4 TUM-VI rooms (rooms 1–2 being tuning rooms); 1 of 3 Vicon Room 2 sequences (final test).
 
 [Verified figures](Docs/NUMBERS.md) · [generated results](Docs/RESULTS.md) · [decision log](Docs/TRACK3_PLAN.md)
 
